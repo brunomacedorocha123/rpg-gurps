@@ -476,172 +476,217 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('registerForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const formLoader = document.getElementById('formLoader');
-            const togglePassword = document.getElementById('togglePassword');
-            const passwordInput = document.getElementById('password');
-            
-            // Toggle password visibility
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
-            });
-            
-            // Form submission
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                if (validateForm()) {
-                    await registerUser();
-                }
-            });
-            
-            // Check if email confirmation modal should be shown
-            checkEmailConfirmation();
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const formLoader = document.getElementById('formLoader');
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        
+        // Toggle password visibility
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
         });
         
-        function validateForm() {
-            const name = document.getElementById('fullName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            let isValid = true;
-            
-            // Validate name
-            if (name.length < 3) {
-                document.getElementById('nameError').textContent = 'O nome deve ter pelo menos 3 caracteres';
-                document.getElementById('nameError').style.display = 'block';
-                document.getElementById('fullName').classList.add('error');
-                isValid = false;
-            } else {
-                document.getElementById('nameError').style.display = 'none';
-                document.getElementById('fullName').classList.remove('error');
+            if (validateForm()) {
+                await registerUser();
             }
-            
-            // Validate email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                document.getElementById('emailError').textContent = 'Por favor, insira um e-mail válido';
-                document.getElementById('emailError').style.display = 'block';
-                document.getElementById('email').classList.add('error');
-                isValid = false;
-            } else {
-                document.getElementById('emailError').style.display = 'none';
-                document.getElementById('email').classList.remove('error');
-            }
-            
-            // Validate password
-            if (password.length < 6) {
-                document.getElementById('passwordError').textContent = 'A senha deve ter pelo menos 6 caracteres';
-                document.getElementById('passwordError').style.display = 'block';
-                document.getElementById('password').classList.add('error');
-                isValid = false;
-            } else {
-                document.getElementById('passwordError').style.display = 'none';
-                document.getElementById('password').classList.remove('error');
-            }
-            
-            // Validate confirm password
-            if (password !== confirmPassword) {
-                document.getElementById('confirmPasswordError').textContent = 'As senhas não coincidem';
-                document.getElementById('confirmPasswordError').style.display = 'block';
-                document.getElementById('confirmPassword').classList.add('error');
-                isValid = false;
-            } else {
-                document.getElementById('confirmPasswordError').style.display = 'none';
-                document.getElementById('confirmPassword').classList.remove('error');
-            }
-            
-            return isValid;
+        });
+        
+        // Check if email confirmation modal should be shown
+        checkEmailConfirmation();
+    });
+    
+    function validateForm() {
+        const name = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        let isValid = true;
+        
+        // Validate name
+        if (name.length < 3) {
+            document.getElementById('nameError').textContent = 'O nome deve ter pelo menos 3 caracteres';
+            document.getElementById('nameError').style.display = 'block';
+            document.getElementById('fullName').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('nameError').style.display = 'none';
+            document.getElementById('fullName').classList.remove('error');
         }
         
-        async function registerUser() {
-            const submitBtn = document.getElementById('submitBtn');
-            const formLoader = document.getElementById('formLoader');
-            const fullName = document.getElementById('fullName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            document.getElementById('emailError').textContent = 'Por favor, insira um e-mail válido';
+            document.getElementById('emailError').style.display = 'block';
+            document.getElementById('email').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('emailError').style.display = 'none';
+            document.getElementById('email').classList.remove('error');
+        }
+        
+        // Validate password
+        if (password.length < 6) {
+            document.getElementById('passwordError').textContent = 'A senha deve ter pelo menos 6 caracteres';
+            document.getElementById('passwordError').style.display = 'block';
+            document.getElementById('password').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('passwordError').style.display = 'none';
+            document.getElementById('password').classList.remove('error');
+        }
+        
+        // Validate confirm password
+        if (password !== confirmPassword) {
+            document.getElementById('confirmPasswordError').textContent = 'As senhas não coincidem';
+            document.getElementById('confirmPasswordError').style.display = 'block';
+            document.getElementById('confirmPassword').classList.add('error');
+            isValid = false;
+        } else {
+            document.getElementById('confirmPasswordError').style.display = 'none';
+            document.getElementById('confirmPassword').classList.remove('error');
+        }
+        
+        return isValid;
+    }
+    
+    async function registerUser() {
+        const submitBtn = document.getElementById('submitBtn');
+        const formLoader = document.getElementById('formLoader');
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        
+        // Show loading state
+        submitBtn.style.display = 'none';
+        formLoader.style.display = 'block';
+        
+        try {
+            // Check if supabaseAuth is available
+            if (!window.supabaseAuth || !window.supabaseAuth.registerUser) {
+                throw new Error('Sistema de autenticação não disponível');
+            }
             
-            // Show loading state
-            submitBtn.style.display = 'none';
-            formLoader.style.display = 'block';
+            // Register user
+            const result = await window.supabaseAuth.registerUser(email, password, fullName);
             
-            try {
-                // Check if supabaseAuth is available
-                if (!window.supabaseAuth || !window.supabaseAuth.registerUser) {
-                    throw new Error('Sistema de autenticação não disponível');
+            // DEBUG: Mostrar resultado no console
+            console.log('Resultado do registro:', result);
+            
+            if (result.success) {
+                // Show success modal
+                document.getElementById('successModal').style.display = 'flex';
+                console.log('Cadastro realizado com sucesso!');
+            } else {
+                // Verificar se o erro é um objeto e extrair a mensagem
+                let errorMessage = 'Erro desconhecido no cadastro';
+                
+                if (result.error) {
+                    if (typeof result.error === 'object') {
+                        errorMessage = result.error.message || JSON.stringify(result.error);
+                    } else {
+                        errorMessage = result.error.toString();
+                    }
                 }
                 
-                // Register user
-                const result = await window.supabaseAuth.registerUser(email, password, fullName);
+                throw new Error(errorMessage);
+            }
+            
+        } catch (error) {
+            // Show error modal
+            console.error('Erro no cadastro:', error);
+            
+            let errorMessage = error.message || 'Erro desconhecido';
+            
+            // Tratar erros específicos do Supabase
+            if (errorMessage.includes('User already registered')) {
+                errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.';
+            } else if (errorMessage.includes('Password should')) {
+                errorMessage = 'A senha não atende aos requisitos de segurança.';
+            } else if (errorMessage.includes('Invalid email')) {
+                errorMessage = 'Por favor, insira um e-mail válido.';
+            }
+            
+            document.getElementById('errorMessage').textContent = errorMessage;
+            document.getElementById('errorModal').style.display = 'flex';
+        } finally {
+            // Restore button state
+            submitBtn.style.display = 'flex';
+            formLoader.style.display = 'none';
+        }
+    }
+    
+    function checkEmailConfirmation() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const confirmed = urlParams.get('confirmed');
+        
+        console.log('Verificando confirmação de email:', confirmed);
+        
+        if (confirmed === 'true') {
+            // User confirmed email, show modal with player code
+            showEmailConfirmedModal();
+        }
+    }
+    
+    async function showEmailConfirmedModal() {
+        try {
+            console.log('Tentando mostrar modal de email confirmado...');
+            
+            if (window.supabaseAuth && window.supabaseAuth.getCurrentUserProfile) {
+                const result = await window.supabaseAuth.getCurrentUserProfile();
                 
-                if (result.success) {
-                    // Show success modal
-                    document.getElementById('successModal').style.display = 'flex';
+                console.log('Resultado do perfil:', result);
+                
+                if (result.success && result.profile) {
+                    document.getElementById('playerCodeDisplay').textContent = result.profile.player_code;
+                    document.getElementById('emailConfirmedModal').style.display = 'flex';
+                    console.log('Código do jogador:', result.profile.player_code);
                 } else {
-                    throw new Error(result.error || 'Erro desconhecido no cadastro');
-                }
-                
-            } catch (error) {
-                // Show error modal
-                document.getElementById('errorMessage').textContent = error.message;
-                document.getElementById('errorModal').style.display = 'flex';
-            } finally {
-                // Restore button state
-                submitBtn.style.display = 'flex';
-                formLoader.style.display = 'none';
-            }
-        }
-        
-        function checkEmailConfirmation() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const confirmed = urlParams.get('confirmed');
-            
-            if (confirmed === 'true') {
-                // User confirmed email, show modal with player code
-                showEmailConfirmedModal();
-            }
-        }
-        
-        async function showEmailConfirmedModal() {
-            try {
-                if (window.supabaseAuth && window.supabaseAuth.getCurrentUserProfile) {
-                    const result = await window.supabaseAuth.getCurrentUserProfile();
-                    
-                    if (result.success && result.profile) {
-                        document.getElementById('playerCodeDisplay').textContent = result.profile.player_code;
+                    console.error('Erro ao obter perfil:', result.error);
+                    // Tenta gerar um código localmente como fallback
+                    if (window.supabaseAuth.generatePlayerCode) {
+                        const fallbackCode = window.supabaseAuth.generatePlayerCode();
+                        document.getElementById('playerCodeDisplay').textContent = fallbackCode;
                         document.getElementById('emailConfirmedModal').style.display = 'flex';
                     }
                 }
-            } catch (error) {
-                console.error('Error showing confirmation modal:', error);
+            } else {
+                console.error('supabaseAuth não disponível');
             }
+        } catch (error) {
+            console.error('Error showing confirmation modal:', error);
         }
-        
-        function closeSuccessModal() {
-            document.getElementById('successModal').style.display = 'none';
-            // Clear form
-            document.getElementById('registerForm').reset();
-            // Remove validation classes
-            const inputs = document.querySelectorAll('.form-input');
-            inputs.forEach(input => {
-                input.classList.remove('success', 'error');
-            });
-        }
-        
-        function closeErrorModal() {
-            document.getElementById('errorModal').style.display = 'none';
-        }
-        
-        function goToLogin() {
-            window.location.href = 'login.html';
-        }
-    </script>
+    }
+    
+    function closeSuccessModal() {
+        document.getElementById('successModal').style.display = 'none';
+        // Clear form
+        document.getElementById('registerForm').reset();
+        // Remove validation classes
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => {
+            input.classList.remove('success', 'error');
+        });
+    }
+    
+    function closeErrorModal() {
+        document.getElementById('errorModal').style.display = 'none';
+    }
+    
+    function goToLogin() {
+        window.location.href = 'login.html';
+    }
+</script>
 </body>
 </html>
