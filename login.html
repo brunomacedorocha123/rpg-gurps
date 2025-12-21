@@ -4,139 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - GURPS Tool</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f1419;
-            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            background: #0a0e14;
+            color: white;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(46, 92, 58, 0.3) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(44, 32, 8, 0.3) 0%, transparent 40%);
         }
         .container {
             width: 100%;
-            max-width: 420px;
-            background: rgba(26, 32, 44, 0.95);
-            padding: 35px;
-            border-radius: 12px;
+            max-width: 400px;
+            background: #1a1f2e;
+            padding: 30px;
+            border-radius: 10px;
             border: 2px solid #2e5c3a;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-        }
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #2e5c3a, #1e4028, #4a7c59, #2e5c3a);
-            border-radius: 14px;
-            z-index: -1;
-            animation: border-glow 4s linear infinite;
-            background-size: 400% 400%;
-        }
-        @keyframes border-glow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            box-shadow: 0 0 20px rgba(46, 92, 58, 0.3);
         }
         h1 {
             color: #2e5c3a;
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 28px;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
         .subtitle {
             text-align: center;
-            color: #d4af37;
+            color: #888;
             margin-bottom: 25px;
-            font-size: 14px;
-        }
-        .form-group {
-            margin-bottom: 22px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #c0c0c0;
-            font-weight: 500;
         }
         input {
             width: 100%;
             padding: 14px;
-            background: rgba(15, 20, 31, 0.8);
+            margin: 12px 0;
+            background: #0f1419;
             border: 1px solid #444;
             border-radius: 6px;
             color: white;
             font-size: 16px;
-            transition: all 0.3s;
+            transition: border 0.3s;
         }
         input:focus {
             outline: none;
             border-color: #2e5c3a;
-            box-shadow: 0 0 0 3px rgba(46, 92, 58, 0.2);
         }
-        .password-container {
-            position: relative;
-        }
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        .toggle-password:hover {
-            color: #2e5c3a;
-        }
-        .options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .remember {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .remember input {
-            width: auto;
-            accent-color: #2e5c3a;
-        }
-        .remember label {
-            margin: 0;
-            cursor: pointer;
-        }
-        .forgot-password {
-            color: #2e5c3a;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .forgot-password:hover {
-            text-decoration: underline;
-            color: #4a7c59;
-        }
-        button[type="submit"] {
+        button {
             width: 100%;
             padding: 16px;
             background: linear-gradient(135deg, #2e5c3a, #1e4028);
@@ -145,66 +61,45 @@
             border-radius: 6px;
             font-size: 18px;
             font-weight: bold;
+            margin-top: 15px;
             cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: transform 0.2s;
         }
-        button[type="submit"]:hover {
+        button:hover {
             background: linear-gradient(135deg, #3a7c4a, #2e5c3a);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46, 92, 58, 0.4);
         }
-        button[type="submit"]:active {
+        button:active {
             transform: translateY(0);
         }
-        button[type="submit"]:disabled {
+        button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none !important;
         }
         .message {
-            padding: 14px;
+            padding: 12px;
             margin: 15px 0;
             border-radius: 6px;
             text-align: center;
             display: none;
-            font-weight: 500;
-            animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .success {
-            background: rgba(46, 92, 58, 0.9);
-            border: 1px solid #4a7c59;
-            color: #e0ffe0;
+            font-weight: bold;
         }
         .error {
-            background: rgba(139, 0, 0, 0.9);
-            border: 1px solid #a52a2a;
-            color: #ffe0e0;
+            background: #8b0000;
+            border: 1px solid #ff4444;
+            color: white;
+        }
+        .success {
+            background: #2e5c3a;
+            border: 1px solid #44ff44;
+            color: white;
         }
         .loading {
             text-align: center;
-            margin: 15px 0;
-            display: none;
             color: #2e5c3a;
-        }
-        .loading-spinner {
-            border: 3px solid rgba(46, 92, 58, 0.3);
-            border-top: 3px solid #2e5c3a;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            margin: 10px 0;
+            display: none;
         }
         .links {
             text-align: center;
@@ -216,126 +111,87 @@
             color: #2e5c3a;
             text-decoration: none;
             margin: 0 10px;
-            font-weight: 500;
-            transition: color 0.3s;
+            font-weight: bold;
         }
         .links a:hover {
-            color: #4a7c59;
             text-decoration: underline;
         }
-        .user-code-info {
-            background: rgba(44, 32, 8, 0.3);
-            border-left: 4px solid #d4af37;
-            padding: 12px;
-            margin-top: 20px;
-            border-radius: 4px;
-            text-align: center;
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
         }
-        .user-code-info strong {
-            color: #d4af37;
-            font-size: 18px;
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .remember input {
+            width: auto;
+            margin: 0;
+            accent-color: #2e5c3a;
+        }
+        .forgot {
+            color: #2e5c3a;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .forgot:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🏰 GURPS TOOL</h1>
-        <p class="subtitle">Entre na Taverna</p>
+        <p class="subtitle">Entre na sua conta</p>
         
         <div id="message" class="message"></div>
-        <div id="loading" class="loading">
-            <div class="loading-spinner"></div>
-            <p>Entrando na taverna...</p>
-        </div>
+        <div id="loading" class="loading">⏳ Entrando...</div>
         
         <form id="loginForm">
-            <div class="form-group">
-                <label for="email">📧 E-mail</label>
-                <input type="email" id="email" placeholder="seu@email.com" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">🔑 Senha</label>
-                <div class="password-container">
-                    <input type="password" id="password" required>
-                    <button type="button" class="toggle-password" id="togglePassword">👁️</button>
-                </div>
-            </div>
+            <input type="email" id="email" placeholder="📧 Email" required>
+            <input type="password" id="password" placeholder="🔑 Senha" required>
             
             <div class="options">
                 <div class="remember">
                     <input type="checkbox" id="remember">
                     <label for="remember">Lembrar-me</label>
                 </div>
-                <a href="#" class="forgot-password" id="forgotPassword">Esqueci a senha</a>
+                <a href="#" class="forgot" id="forgotBtn">Esqueci a senha</a>
             </div>
             
-            <button type="submit" id="submitBtn">🎮 Entrar na Taverna</button>
+            <button type="submit" id="submitBtn">🎮 Entrar</button>
         </form>
-        
-        <div class="user-code-info">
-            <p>Seu <strong>código único de 7 dígitos</strong> será exibido após o login!</p>
-        </div>
         
         <div class="links">
             <a href="cadastro.html">Criar nova conta</a> | 
-            <a href="index.html">Voltar ao Início</a>
+            <a href="index.html">Voltar ao início</a>
         </div>
     </div>
 
     <script>
+        // CONFIGURAÇÃO ÚNICA
+        (function() {
+            const SUPABASE_URL = 'https://mdyohqtvswunkhefbrkr.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1keW9ocXR2c3d1bmtoZWZicmtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODA4NzYsImV4cCI6MjA4MTg1Njg3Nn0.bfc4sh8kDNhAXf9b1eRAlDuB0lGTfQIWNl6Sju1LViE';
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        })();
+        
         // Elementos DOM
         const form = document.getElementById('loginForm');
         const message = document.getElementById('message');
         const loading = document.getElementById('loading');
         const submitBtn = document.getElementById('submitBtn');
-        const toggleBtn = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-        const forgotPasswordBtn = document.getElementById('forgotPassword');
-        
-        // Mostrar/ocultar senha
-        toggleBtn.addEventListener('click', function() {
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-            this.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
-        });
+        const forgotBtn = document.getElementById('forgotBtn');
         
         // Mostrar mensagem
         function showMessage(text, type) {
             message.textContent = text;
             message.className = `message ${type}`;
             message.style.display = 'block';
-            message.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        
-        // Recuperação de senha
-        forgotPasswordBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            
-            const email = prompt('Digite seu e-mail para redefinir a senha:');
-            if (!email) return;
-            
-            if (!email.includes('@')) {
-                showMessage('❌ Digite um e-mail válido!', 'error');
-                return;
-            }
-            
-            try {
-                loading.style.display = 'block';
-                
-                const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/login.html'
-                });
-                
-                if (error) throw error;
-                
-                showMessage(`✅ E-mail de recuperação enviado para ${email}! Verifique sua caixa de entrada.`, 'success');
-            } catch (error) {
-                showMessage(`❌ Erro: ${error.message}`, 'error');
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
         
         // Login
         form.addEventListener('submit', async function(e) {
@@ -343,21 +199,20 @@
             
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const rememberMe = document.getElementById('remember').checked;
+            const remember = document.getElementById('remember').checked;
             
-            // Validações
             if (!email || !password) {
                 showMessage('❌ Preencha todos os campos!', 'error');
                 return;
             }
             
-            // UI Loading
             loading.style.display = 'block';
             message.style.display = 'none';
             submitBtn.disabled = true;
             
             try {
-                // LOGIN NO SUPABASE
+                console.log('Tentando login:', email);
+                
                 const { data, error } = await window.supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -365,17 +220,16 @@
                 
                 if (error) throw error;
                 
-                // SUCESSO
-                showMessage('✅ Login realizado com sucesso! Redirecionando...', 'success');
+                console.log('Login bem-sucedido:', data.user);
                 
-                // Salvar email se "Lembrar-me" estiver marcado
-                if (rememberMe) {
-                    localStorage.setItem('gurps_remember_email', email);
-                } else {
-                    localStorage.removeItem('gurps_remember_email');
+                // Salvar email se "lembrar-me"
+                if (remember) {
+                    localStorage.setItem('gurps_email', email);
                 }
                 
-                // Redirecionar para home após 1.5 segundos
+                showMessage('✅ Login realizado! Redirecionando...', 'success');
+                
+                // Redirecionar para home
                 setTimeout(() => {
                     window.location.href = 'home.html';
                 }, 1500);
@@ -384,11 +238,9 @@
                 console.error('Erro login:', error);
                 
                 if (error.message.includes('Invalid login credentials')) {
-                    showMessage('❌ E-mail ou senha incorretos!', 'error');
+                    showMessage('❌ Email ou senha incorretos!', 'error');
                 } else if (error.message.includes('Email not confirmed')) {
-                    showMessage('⚠️ Confirme seu e-mail antes de fazer login! Verifique sua caixa de entrada.', 'error');
-                } else if (error.message.includes('rate limit')) {
-                    showMessage('⏱️ Muitas tentativas. Aguarde alguns minutos.', 'error');
+                    showMessage('⚠️ Confirme seu email antes de fazer login!', 'error');
                 } else {
                     showMessage(`❌ Erro: ${error.message}`, 'error');
                 }
@@ -398,26 +250,46 @@
             }
         });
         
-        // Preencher email salvo
-        function loadSavedEmail() {
-            const savedEmail = localStorage.getItem('gurps_remember_email');
+        // Recuperação de senha
+        forgotBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const email = prompt('Digite seu email para redefinir a senha:');
+            if (!email) return;
+            
+            try {
+                const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/login.html'
+                });
+                
+                if (error) throw error;
+                
+                showMessage(`✅ Email de recuperação enviado para ${email}!`, 'success');
+            } catch (error) {
+                showMessage(`❌ Erro: ${error.message}`, 'error');
+            }
+        });
+        
+        // Carregar email salvo
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedEmail = localStorage.getItem('gurps_email');
             if (savedEmail) {
                 document.getElementById('email').value = savedEmail;
                 document.getElementById('remember').checked = true;
             }
-        }
-        
-        // Verificar se já está logado
-        async function checkAuth() {
-            const { data } = await window.supabaseClient.auth.getSession();
-            if (data.session) {
-                window.location.href = 'home.html';
+            
+            // Verificar se já está logado
+            async function checkAuth() {
+                try {
+                    const { data } = await window.supabaseClient.auth.getSession();
+                    if (data.session) {
+                        window.location.href = 'home.html';
+                    }
+                } catch (err) {
+                    console.log('Não há sessão ativa');
+                }
             }
-        }
-        
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSavedEmail();
+            
             checkAuth();
         });
     </script>
