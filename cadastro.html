@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - GURPS Tool</title>
-    <!-- APENAS UMA VEZ o script do Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -25,248 +24,113 @@
             padding: 30px;
             border-radius: 10px;
             border: 2px solid #d4af37;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
         }
         h1 {
             color: #d4af37;
             text-align: center;
             margin-bottom: 10px;
-            font-size: 28px;
         }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 25px;
+        .form-group {
+            margin-bottom: 20px;
         }
         input {
             width: 100%;
-            padding: 14px;
-            margin: 12px 0;
+            padding: 12px;
             background: #0f1419;
             border: 1px solid #444;
-            border-radius: 6px;
+            border-radius: 5px;
             color: white;
             font-size: 16px;
-            transition: border 0.3s;
-        }
-        input:focus {
-            outline: none;
-            border-color: #d4af37;
+            margin-top: 5px;
         }
         button {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #d4af37, #b8941f);
+            padding: 14px;
+            background: #d4af37;
             color: black;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             font-size: 18px;
             font-weight: bold;
-            margin-top: 15px;
             cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:hover {
-            background: linear-gradient(135deg, #f4d03f, #d4af37);
-            transform: translateY(-2px);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
         }
         .message {
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 6px;
-            text-align: center;
-            display: none;
-            font-weight: bold;
-        }
-        .error {
-            background: #8b0000;
-            border: 1px solid #ff4444;
-            color: white;
-        }
-        .success {
-            background: #2e5c3a;
-            border: 1px solid #44ff44;
-            color: white;
-        }
-        .loading {
-            text-align: center;
-            color: #d4af37;
+            padding: 10px;
             margin: 10px 0;
+            border-radius: 5px;
             display: none;
+            text-align: center;
         }
+        .error { background: #8b0000; }
+        .success { background: #2e5c3a; }
         .links {
             text-align: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
+            margin-top: 20px;
         }
         .links a {
             color: #d4af37;
             text-decoration: none;
-            margin: 0 10px;
-            font-weight: bold;
-        }
-        .links a:hover {
-            text-decoration: underline;
-        }
-        .code-info {
-            background: rgba(212, 175, 55, 0.1);
-            border-left: 4px solid #d4af37;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #ccc;
-        }
-        .password-container {
-            position: relative;
-        }
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏰 GURPS TOOL</h1>
-        <p class="subtitle">Crie sua conta</p>
+        <h1>Cadastro GURPS</h1>
         
         <div id="message" class="message"></div>
-        <div id="loading" class="loading">⏳ Criando conta...</div>
         
         <form id="registerForm">
-            <input type="email" id="email" placeholder="📧 Seu email" required>
-            
-            <div class="password-container">
-                <input type="password" id="password" placeholder="🔑 Senha (mínimo 6 caracteres)" minlength="6" required>
-                <button type="button" class="toggle-password" onclick="togglePassword()">👁️</button>
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email" required>
             </div>
             
-            <input type="password" id="confirm" placeholder="🔑 Confirmar senha" required>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Senha (mínimo 6)" minlength="6" required>
+            </div>
             
-            <button type="submit" id="submitBtn">⚔️ Criar Conta</button>
+            <div class="form-group">
+                <input type="password" id="confirm" placeholder="Confirmar Senha" required>
+            </div>
+            
+            <button type="submit">Criar Conta</button>
         </form>
         
-        <div class="code-info">
-            ⚠️ <strong>Importante:</strong> Após confirmar o email, seu código único de 7 dígitos será gerado automaticamente.
-        </div>
-        
         <div class="links">
-            <a href="login.html">Já tem conta? Entre</a> | 
-            <a href="index.html">Voltar ao início</a>
+            <a href="login.html">Já tem conta? Login</a> | 
+            <a href="index.html">Voltar</a>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO ÚNICA - sem arquivo externo
-        (function() {
-            // Configuração Supabase
-            const SUPABASE_URL = 'https://mdyohqtvswunkhefbrkr.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1keW9ocXR2c3d1bmtoZWZicmtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODA4NzYsImV4cCI6MjA4MTg1Njg3Nn0.bfc4sh8kDNhAXf9b1eRAlDuB0lGTfQIWNl6Sju1LViE';
-            
-            // Cria cliente Supabase global
-            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        })();
+        // Configuração Supabase
+        const SUPABASE_URL = 'https://mdyohqtvswunkhefbrkr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1keW9ocXR2c3d1bmtoZWZicmtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODA4NzYsImV4cCI6MjA4MTg1Njg3Nn0.bfc4sh8kDNhAXf9b1eRAlDuB0lGTfQIWNl6Sju1LViE';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // Elementos DOM
         const form = document.getElementById('registerForm');
         const message = document.getElementById('message');
-        const loading = document.getElementById('loading');
-        const submitBtn = document.getElementById('submitBtn');
         
-        // Função para mostrar/ocultar senha
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const confirmInput = document.getElementById('confirm');
-            const toggleBtn = document.querySelector('.toggle-password');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                confirmInput.type = 'text';
-                toggleBtn.textContent = '👁️‍🗨️';
-            } else {
-                passwordInput.type = 'password';
-                confirmInput.type = 'password';
-                toggleBtn.textContent = '👁️';
-            }
-        }
-        
-        // Mostrar mensagem
-        function showMessage(text, type) {
-            message.textContent = text;
-            message.className = `message ${type}`;
-            message.style.display = 'block';
-            message.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
-        // Gerar código único
-        function generateUserCode() {
-            const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Removido I, O
-            const numbers = '23456789'; // Removido 0, 1
-            let code = '';
-            
-            // 3 letras
-            for (let i = 0; i < 3; i++) {
-                code += letters.charAt(Math.floor(Math.random() * letters.length));
-            }
-            // 4 números
-            for (let i = 0; i < 4; i++) {
-                code += numbers.charAt(Math.floor(Math.random() * numbers.length));
-            }
-            
-            return code;
-        }
-        
-        // Cadastro
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm').value;
+            const confirm = document.getElementById('confirm').value;
             
-            // Validações
-            if (!email || !password || !confirmPassword) {
-                showMessage('❌ Preencha todos os campos!', 'error');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showMessage('❌ As senhas não coincidem!', 'error');
+            if (password !== confirm) {
+                showMessage('Senhas não coincidem!', 'error');
                 return;
             }
             
             if (password.length < 6) {
-                showMessage('❌ A senha precisa ter no mínimo 6 caracteres!', 'error');
+                showMessage('Senha precisa de 6+ caracteres!', 'error');
                 return;
             }
             
-            // UI Loading
-            loading.style.display = 'block';
-            message.style.display = 'none';
-            submitBtn.disabled = true;
+            showMessage('Cadastrando...', 'success');
             
             try {
-                console.log('Tentando cadastrar:', email);
-                
-                // 1. CADASTRA USUÁRIO
-                const { data, error } = await window.supabaseClient.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
@@ -274,85 +138,21 @@
                     }
                 });
                 
-                if (error) {
-                    console.error('Erro Supabase:', error);
-                    throw error;
-                }
+                if (error) throw error;
                 
-                console.log('Usuário criado:', data.user);
-                
-                // 2. TENTA GERAR CÓDIGO (se usuário foi criado)
-                if (data.user && data.user.id) {
-                    const userCode = generateUserCode();
-                    console.log('Código gerado:', userCode);
-                    
-                    // Tenta salvar código na tabela profiles
-                    try {
-                        const { error: profileError } = await window.supabaseClient
-                            .from('profiles')
-                            .insert([{
-                                id: data.user.id,
-                                user_code: userCode
-                            }]);
-                        
-                        if (profileError) {
-                            console.warn('Não conseguiu salvar código agora:', profileError);
-                            // Não é crítico - pode salvar depois
-                        } else {
-                            console.log('Código salvo com sucesso!');
-                        }
-                    } catch (profileErr) {
-                        console.warn('Erro ao salvar perfil:', profileErr);
-                        // Continua mesmo com erro
-                    }
-                }
-                
-                // SUCESSO
-                showMessage(`✅ Conta criada com sucesso! Verifique seu email (${email}) para confirmar. Após confirmação, faça login para ver seu código único.`, 'success');
-                
-                // Limpar formulário
+                showMessage('✅ Conta criada! Verifique seu email.', 'success');
                 form.reset();
                 
-                // Auto-redirecionar após 5 segundos
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 5000);
-                
             } catch (error) {
-                console.error('Erro completo:', error);
-                
-                // Mensagens específicas
-                if (error.message.includes('User already registered')) {
-                    showMessage('❌ Este email já está cadastrado!', 'error');
-                } else if (error.message.includes('Invalid email')) {
-                    showMessage('❌ Email inválido!', 'error');
-                } else if (error.message.includes('Database error')) {
-                    showMessage('❌ Erro no servidor. Tente novamente em alguns minutos.', 'error');
-                } else {
-                    showMessage(`❌ Erro: ${error.message}`, 'error');
-                }
-            } finally {
-                loading.style.display = 'none';
-                submitBtn.disabled = false;
+                showMessage('Erro: ' + error.message, 'error');
             }
         });
         
-        // Verifica se já está logado
-        async function checkAuth() {
-            try {
-                const { data } = await window.supabaseClient.auth.getSession();
-                if (data.session) {
-                    window.location.href = 'home.html';
-                }
-            } catch (err) {
-                console.log('Não há sessão ativa');
-            }
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
         }
-        
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-        });
     </script>
 </body>
 </html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - GURPS Tool</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -24,273 +24,109 @@
             padding: 30px;
             border-radius: 10px;
             border: 2px solid #2e5c3a;
-            box-shadow: 0 0 20px rgba(46, 92, 58, 0.3);
         }
         h1 {
             color: #2e5c3a;
             text-align: center;
             margin-bottom: 10px;
-            font-size: 28px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 25px;
         }
         input {
             width: 100%;
-            padding: 14px;
-            margin: 12px 0;
+            padding: 12px;
+            margin: 10px 0;
             background: #0f1419;
             border: 1px solid #444;
-            border-radius: 6px;
+            border-radius: 5px;
             color: white;
             font-size: 16px;
-            transition: border 0.3s;
-        }
-        input:focus {
-            outline: none;
-            border-color: #2e5c3a;
         }
         button {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #2e5c3a, #1e4028);
+            padding: 14px;
+            background: #2e5c3a;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             font-size: 18px;
             font-weight: bold;
-            margin-top: 15px;
             cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:hover {
-            background: linear-gradient(135deg, #3a7c4a, #2e5c3a);
-            transform: translateY(-2px);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
+            margin-top: 10px;
         }
         .message {
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 6px;
-            text-align: center;
-            display: none;
-            font-weight: bold;
-        }
-        .error {
-            background: #8b0000;
-            border: 1px solid #ff4444;
-            color: white;
-        }
-        .success {
-            background: #2e5c3a;
-            border: 1px solid #44ff44;
-            color: white;
-        }
-        .loading {
-            text-align: center;
-            color: #2e5c3a;
+            padding: 10px;
             margin: 10px 0;
+            border-radius: 5px;
             display: none;
+            text-align: center;
         }
         .links {
             text-align: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
+            margin-top: 20px;
         }
         .links a {
             color: #2e5c3a;
             text-decoration: none;
-            margin: 0 10px;
-            font-weight: bold;
-        }
-        .links a:hover {
-            text-decoration: underline;
-        }
-        .options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0;
-        }
-        .remember {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .remember input {
-            width: auto;
-            margin: 0;
-            accent-color: #2e5c3a;
-        }
-        .forgot {
-            color: #2e5c3a;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .forgot:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏰 GURPS TOOL</h1>
-        <p class="subtitle">Entre na sua conta</p>
+        <h1>Login GURPS</h1>
         
         <div id="message" class="message"></div>
-        <div id="loading" class="loading">⏳ Entrando...</div>
         
         <form id="loginForm">
-            <input type="email" id="email" placeholder="📧 Email" required>
-            <input type="password" id="password" placeholder="🔑 Senha" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Senha" required>
             
-            <div class="options">
-                <div class="remember">
-                    <input type="checkbox" id="remember">
-                    <label for="remember">Lembrar-me</label>
-                </div>
-                <a href="#" class="forgot" id="forgotBtn">Esqueci a senha</a>
-            </div>
-            
-            <button type="submit" id="submitBtn">🎮 Entrar</button>
+            <button type="submit">Entrar</button>
         </form>
         
         <div class="links">
-            <a href="cadastro.html">Criar nova conta</a> | 
-            <a href="index.html">Voltar ao início</a>
+            <a href="cadastro.html">Criar conta</a> | 
+            <a href="index.html">Voltar</a>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO ÚNICA
-        (function() {
-            const SUPABASE_URL = 'https://mdyohqtvswunkhefbrkr.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1keW9ocXR2c3d1bmtoZWZicmtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODA4NzYsImV4cCI6MjA4MTg1Njg3Nn0.bfc4sh8kDNhAXf9b1eRAlDuB0lGTfQIWNl6Sju1LViE';
-            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        })();
+        const SUPABASE_URL = 'https://mdyohqtvswunkhefbrkr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1keW9ocXR2c3d1bmtoZWZicmtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODA4NzYsImV4cCI6MjA4MTg1Njg3Nn0.bfc4sh8kDNhAXf9b1eRAlDuB0lGTfQIWNl6Sju1LViE';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // Elementos DOM
         const form = document.getElementById('loginForm');
         const message = document.getElementById('message');
-        const loading = document.getElementById('loading');
-        const submitBtn = document.getElementById('submitBtn');
-        const forgotBtn = document.getElementById('forgotBtn');
         
-        // Mostrar mensagem
-        function showMessage(text, type) {
-            message.textContent = text;
-            message.className = `message ${type}`;
-            message.style.display = 'block';
-        }
-        
-        // Login
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const remember = document.getElementById('remember').checked;
             
-            if (!email || !password) {
-                showMessage('❌ Preencha todos os campos!', 'error');
-                return;
-            }
-            
-            loading.style.display = 'block';
-            message.style.display = 'none';
-            submitBtn.disabled = true;
+            message.textContent = 'Entrando...';
+            message.style.display = 'block';
             
             try {
-                console.log('Tentando login:', email);
-                
-                const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+                const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
                 
                 if (error) throw error;
                 
-                console.log('Login bem-sucedido:', data.user);
+                message.textContent = '✅ Login realizado!';
+                message.style.color = 'white';
+                message.style.background = '#2e5c3a';
                 
-                // Salvar email se "lembrar-me"
-                if (remember) {
-                    localStorage.setItem('gurps_email', email);
-                }
-                
-                showMessage('✅ Login realizado! Redirecionando...', 'success');
-                
-                // Redirecionar para home
+                // Redireciona para home
                 setTimeout(() => {
                     window.location.href = 'home.html';
-                }, 1500);
+                }, 1000);
                 
             } catch (error) {
-                console.error('Erro login:', error);
-                
-                if (error.message.includes('Invalid login credentials')) {
-                    showMessage('❌ Email ou senha incorretos!', 'error');
-                } else if (error.message.includes('Email not confirmed')) {
-                    showMessage('⚠️ Confirme seu email antes de fazer login!', 'error');
-                } else {
-                    showMessage(`❌ Erro: ${error.message}`, 'error');
-                }
-            } finally {
-                loading.style.display = 'none';
-                submitBtn.disabled = false;
+                message.textContent = 'Erro: ' + error.message;
+                message.style.color = 'white';
+                message.style.background = '#8b0000';
             }
-        });
-        
-        // Recuperação de senha
-        forgotBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            
-            const email = prompt('Digite seu email para redefinir a senha:');
-            if (!email) return;
-            
-            try {
-                const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/login.html'
-                });
-                
-                if (error) throw error;
-                
-                showMessage(`✅ Email de recuperação enviado para ${email}!`, 'success');
-            } catch (error) {
-                showMessage(`❌ Erro: ${error.message}`, 'error');
-            }
-        });
-        
-        // Carregar email salvo
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedEmail = localStorage.getItem('gurps_email');
-            if (savedEmail) {
-                document.getElementById('email').value = savedEmail;
-                document.getElementById('remember').checked = true;
-            }
-            
-            // Verificar se já está logado
-            async function checkAuth() {
-                try {
-                    const { data } = await window.supabaseClient.auth.getSession();
-                    if (data.session) {
-                        window.location.href = 'home.html';
-                    }
-                } catch (err) {
-                    console.log('Não há sessão ativa');
-                }
-            }
-            
-            checkAuth();
         });
     </script>
 </body>
