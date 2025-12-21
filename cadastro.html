@@ -6,17 +6,13 @@
     <title>Cadastro - GURPS Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
-    <style type="text/css">
-        /* ============ RESET ============ */
+    <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* ============ VARIÁVEIS CSS ============ */
         :root {
             --primary-dark: #1a1200;
             --secondary-dark: #2c2008;
@@ -26,20 +22,23 @@
             --accent-green: #2e5c3a;
             --text-light: #f5f5dc;
             --text-gold: #ffd700;
+            --parchment: #f7f3e9;
             --wood-dark: #5d4037;
             --wood-light: #8d6e63;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
-        /* ============ BODY ============ */
         body {
             font-family: 'Cinzel', serif;
             background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
             color: var(--text-light);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
             position: relative;
         }
 
@@ -51,678 +50,340 @@
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
+                url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="%232c2008" stroke-width="0.5"/></svg>'),
+                linear-gradient(0deg, transparent 24%, rgba(139, 0, 0, 0.05) 25%, rgba(139, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(139, 0, 0, 0.05) 75%, rgba(139, 0, 0, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px, 10px 10px;
+            opacity: 0.3;
             z-index: -1;
         }
 
-        /* ============ BOTÃO VOLTAR ============ */
-        .back-home {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-        }
-
-        .back-home a {
-            color: var(--primary-gold);
-            text-decoration: none;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(26, 18, 0, 0.8);
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid var(--wood-dark);
-            transition: all 0.3s;
-        }
-
-        .back-home a:hover {
-            color: var(--secondary-gold);
-            border-color: var(--primary-gold);
-            transform: translateX(-5px);
-        }
-
-        /* ============ CONTAINER PRINCIPAL ============ */
         .container {
             width: 100%;
             max-width: 500px;
-            margin: 0 auto;
+            padding: 20px;
         }
 
-        /* ============ CARD DE CADASTRO ============ */
-        .register-container {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
-            border: 3px solid var(--wood-dark);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        .login-box {
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.95));
+            border: 3px solid var(--primary-gold);
+            border-radius: 15px;
+            padding: 40px 30px;
+            box-shadow: 
+                0 0 30px rgba(212, 175, 55, 0.3),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
             position: relative;
+            overflow: hidden;
         }
 
-        .register-container::before {
+        .login-box::before {
             content: '';
             position: absolute;
             top: -2px;
             left: -2px;
             right: -2px;
             bottom: -2px;
-            background: linear-gradient(45deg, var(--primary-gold), transparent, var(--accent-red), transparent, var(--primary-gold));
-            border-radius: 22px;
+            background: linear-gradient(45deg, var(--primary-gold), var(--accent-red), var(--primary-gold));
             z-index: -1;
-            animation: borderGlow 3s linear infinite;
+            border-radius: 17px;
+            opacity: 0.5;
         }
 
-        @keyframes borderGlow {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* ============ LOGO ============ */
-        .logo {
+        .header {
             text-align: center;
             margin-bottom: 30px;
         }
 
-        .logo h1 {
+        .header h1 {
             font-family: 'Uncial Antiqua', cursive;
             color: var(--text-gold);
             font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
 
-        .logo p {
-            color: var(--wood-light);
-            font-style: italic;
+        .header p {
+            color: var(--text-light);
+            opacity: 0.9;
         }
 
-        /* ============ INFO BOX ============ */
-        .info-box {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid var(--primary-gold);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 25px;
-            text-align: center;
-            display: none;
-        }
-
-        .info-box i {
-            color: var(--primary-gold);
-            margin-right: 10px;
-        }
-
-        /* ============ FORMULÁRIO ============ */
         .form-group {
             margin-bottom: 25px;
-            position: relative;
         }
 
-        .form-label {
+        label {
             display: block;
+            color: var(--secondary-gold);
             margin-bottom: 8px;
-            color: var(--text-gold);
-            font-weight: bold;
             font-size: 1.1rem;
         }
 
-        .form-input {
+        input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 15px;
             background: rgba(26, 18, 0, 0.8);
             border: 2px solid var(--wood-light);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--text-light);
             font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.3s;
         }
 
-        .form-input:focus {
+        input:focus {
             outline: none;
             border-color: var(--primary-gold);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
         }
 
-        .form-input.error {
-            border-color: #ff6b6b;
-        }
-
-        .input-icon {
-            position: absolute;
-            right: 20px;
-            top: 45px;
-            color: var(--wood-light);
-            cursor: pointer;
-        }
-
-        .error-message {
-            color: #ff6b6b;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            display: none;
-        }
-
-        /* ============ BOTÕES ============ */
         .btn {
             width: 100%;
             padding: 18px;
             font-family: 'Cinzel', serif;
             font-size: 1.2rem;
             font-weight: bold;
-            border: none;
-            border-radius: 10px;
+            background: linear-gradient(145deg, var(--primary-gold), #b8941f);
+            color: var(--primary-dark);
+            border: 2px solid var(--secondary-gold);
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-primary {
-            background: linear-gradient(145deg, var(--primary-gold), #b8941f);
-            color: var(--primary-dark);
-            border: 2px solid var(--secondary-gold);
-        }
-
-        .btn-primary:hover:not(:disabled) {
+        .btn:hover {
             background: linear-gradient(145deg, #e6c158, #b8941f);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .btn:active {
+            transform: translateY(0);
         }
 
-        .btn-secondary {
-            background: linear-gradient(145deg, var(--accent-green), #1e3a27);
-            color: white;
-            border: 2px solid #3a7d4f;
-            padding: 12px 25px;
-            font-size: 0.95rem;
+        .btn-back {
+            background: linear-gradient(145deg, var(--accent-green), #1e4028);
+            color: var(--text-light);
+            border-color: #4a7c59;
+            margin-top: 20px;
+        }
+
+        .btn-back:hover {
+            background: linear-gradient(145deg, #3a7c4a, #1e4028);
+        }
+
+        .message {
+            padding: 15px;
             border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: linear-gradient(145deg, #3a7d4f, #1e3a27);
-        }
-
-        .btn-secondary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* ============ LOADER ============ */
-        .loader {
+            margin-bottom: 20px;
+            text-align: center;
             display: none;
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--wood-light);
-            border-top: 4px solid var(--primary-gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .message.success {
+            background: rgba(46, 125, 50, 0.2);
+            border: 1px solid #2e7d32;
+            color: #a5d6a7;
         }
 
-        /* ============ REENVIAR ============ */
-        .resend-container {
+        .message.error {
+            background: rgba(198, 40, 40, 0.2);
+            border: 1px solid #c62828;
+            color: #ffabab;
+        }
+
+        .message.info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid #2196f3;
+            color: #90caf9;
+        }
+
+        .id-display {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--primary-gold);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .id-display h3 {
+            color: var(--text-gold);
+            margin-bottom: 10px;
+        }
+
+        .user-id {
+            font-family: monospace;
+            font-size: 2rem;
+            color: var(--secondary-gold);
+            font-weight: bold;
+            letter-spacing: 3px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .links {
             text-align: center;
             margin-top: 20px;
-            display: none;
         }
 
-        /* ============ LINK LOGIN ============ */
-        .login-link {
-            text-align: center;
-            margin-top: 25px;
-            color: var(--wood-light);
-        }
-
-        .login-link a {
-            color: var(--primary-gold);
+        .links a {
+            color: var(--secondary-gold);
             text-decoration: none;
-            font-weight: bold;
+            transition: color 0.3s;
         }
 
-        .login-link a:hover {
+        .links a:hover {
+            color: var(--text-gold);
             text-decoration: underline;
         }
 
-        /* ============ MODAIS ============ */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
-            border: 3px solid var(--primary-gold);
-            border-radius: 15px;
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
+        .character-note {
+            font-style: italic;
+            color: var(--wood-light);
+            font-size: 0.9rem;
+            margin-top: 5px;
             text-align: center;
-            animation: modalFadeIn 0.3s;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal-icon {
-            font-size: 4rem;
-            color: var(--primary-gold);
-            margin-bottom: 20px;
-        }
-
-        .modal h2 {
-            color: var(--text-gold);
-            margin-bottom: 15px;
-            font-family: 'Uncial Antiqua', cursive;
-        }
-
-        .modal p {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .player-code-display {
-            background: rgba(26, 18, 0, 0.8);
-            border: 2px solid var(--primary-gold);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-            font-size: 2rem;
-            font-weight: bold;
-            letter-spacing: 3px;
-            color: var(--text-gold);
-            font-family: monospace;
-        }
-
-        .btn-close {
-            background: linear-gradient(145deg, var(--accent-red), #6b0000);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn-close:hover {
-            background: linear-gradient(145deg, #a30000, #6b0000);
-        }
-
-        /* ============ RESPONSIVO ============ */
-        @media (max-width: 600px) {
-            .register-container {
-                padding: 30px 20px;
-            }
-            
-            .logo h1 {
-                font-size: 2rem;
-            }
-            
-            .form-input {
-                padding: 12px 15px;
-            }
-            
-            .modal-content {
-                padding: 30px 20px;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="back-home">
-        <a href="index.html"><i class="fas fa-arrow-left"></i> Voltar</a>
-    </div>
-
     <div class="container">
-        <div class="register-container">
-            <div class="logo">
-                <h1>Cadastro</h1>
-                <p>Junte-se à nossa aventura</p>
+        <div class="login-box">
+            <div class="header">
+                <h1><i class="fas fa-scroll"></i> Registrar-se</h1>
+                <p>Junte-se à nossa guilda de aventureiros</p>
             </div>
 
-            <div class="info-box" id="infoBox">
-                <p><i class="fas fa-info-circle"></i> <span id="infoMessage"></span></p>
-            </div>
+            <div id="message" class="message"></div>
 
             <form id="registerForm">
                 <div class="form-group">
-                    <label class="form-label" for="fullName"><i class="fas fa-user"></i> Nome Completo</label>
-                    <input type="text" id="fullName" class="form-input" placeholder="Seu nome de aventureiro" required>
-                    <div class="error-message" id="nameError"></div>
+                    <label for="nome"><i class="fas fa-user"></i> Nome Completo</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Digite seu nome">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="email"><i class="fas fa-envelope"></i> E-mail</label>
-                    <input type="email" id="email" class="form-input" placeholder="seu@email.com" required>
-                    <div class="error-message" id="emailError"></div>
+                    <label for="email"><i class="fas fa-envelope"></i> E-mail</label>
+                    <input type="email" id="email" name="email" required placeholder="seu@email.com">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="password"><i class="fas fa-lock"></i> Senha</label>
-                    <input type="password" id="password" class="form-input" placeholder="Crie uma senha segura" required>
-                    <i class="fas fa-eye input-icon" id="togglePassword"></i>
-                    <div class="error-message" id="passwordError"></div>
+                    <label for="senha"><i class="fas fa-key"></i> Senha</label>
+                    <input type="password" id="senha" name="senha" required placeholder="Mínimo 6 caracteres" minlength="6">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="confirmPassword"><i class="fas fa-lock"></i> Confirmar Senha</label>
-                    <input type="password" id="confirmPassword" class="form-input" placeholder="Digite a senha novamente" required>
-                    <div class="error-message" id="confirmPasswordError"></div>
+                    <label for="confirmarSenha"><i class="fas fa-shield-alt"></i> Confirmar Senha</label>
+                    <input type="password" id="confirmarSenha" name="confirmarSenha" required placeholder="Digite a senha novamente">
                 </div>
 
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <i class="fas fa-scroll"></i> Registrar-se
-                    </button>
-                    <div class="loader" id="formLoader"></div>
-                </div>
+                <button type="submit" class="btn">
+                    <i class="fas fa-user-plus"></i> Criar Conta
+                </button>
             </form>
 
-            <div class="resend-container" id="resendContainer">
-                <button class="btn-secondary" id="resendBtn">
-                    <i class="fas fa-paper-plane"></i> Reenviar Email de Confirmação
-                </button>
+            <div id="idDisplay" class="id-display">
+                <h3>Seu ID de Aventureiro</h3>
+                <div class="user-id" id="userIdDisplay"></div>
+                <p class="character-note">Guarde este ID! Ele será usado para identificar seu personagem nas campanhas.</p>
             </div>
 
-            <div class="login-link">
-                <p>Já tem uma conta? <a href="login.html">Faça login aqui</a></p>
+            <div class="links">
+                <p>Já tem uma conta? <a href="login.html">Entre aqui</a></p>
+                <p><a href="index.html"><i class="fas fa-home"></i> Voltar ao Início</a></p>
             </div>
+
+            <button onclick="window.location.href='index.html'" class="btn btn-back">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
         </div>
     </div>
 
-    <!-- MODAIS -->
-    <div class="modal" id="successModal">
-        <div class="modal-content">
-            <div class="modal-icon"><i class="fas fa-envelope-circle-check"></i></div>
-            <h2>Cadastro Realizado!</h2>
-            <p>Enviamos um e-mail de confirmação para <strong id="registeredEmail"></strong>.</p>
-            <p><strong>Importante:</strong> Verifique sua caixa de entrada e clique no link de confirmação.</p>
-            <div style="background: rgba(26,18,0,0.8); padding:15px; border-radius:10px; margin:20px 0; border:1px solid var(--primary-gold);">
-                <p style="color:var(--text-gold); margin:0 0 10px 0;">Código temporário:</p>
-                <div style="font-size:1.5rem; font-weight:bold; color:var(--text-light);" id="tempPlayerCode"></div>
-            </div>
-            <button class="btn-close" onclick="closeSuccessModal()">Entendido</button>
-        </div>
-    </div>
-
-    <div class="modal" id="emailConfirmedModal">
-        <div class="modal-content">
-            <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
-            <h2>E-mail Confirmado!</h2>
-            <p>✅ Sua conta foi ativada com sucesso!</p>
-            <p>Seu código de jogador é:</p>
-            <div class="player-code-display" id="playerCodeDisplay"></div>
-            <p>Guarde este código, ele será seu identificador único no sistema.</p>
-            <button class="btn-close" onclick="goToLogin()">Ir para Login</button>
-        </div>
-    </div>
-
-    <div class="modal" id="errorModal">
-        <div class="modal-content">
-            <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
-            <h2>Erro no Cadastro</h2>
-            <p id="errorMessage"></p>
-            <button class="btn-close" onclick="closeErrorModal()">Tentar Novamente</button>
-        </div>
-    </div>
-
-    <div class="modal" id="resendModal">
-        <div class="modal-content">
-            <div class="modal-icon"><i class="fas fa-paper-plane"></i></div>
-            <h2>Email Reenviado!</h2>
-            <p id="resendMessage"></p>
-            <button class="btn-close" onclick="closeResendModal()">OK</button>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script>
-    // ============ INICIALIZAÇÃO ============
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Página carregada');
-        
-        // Toggle senha
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-        
-        // Form submit
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            if (validateForm()) {
-                await registerUser();
-            }
-        });
-        
-        // Botão reenviar
-        document.getElementById('resendBtn').addEventListener('click', async function() {
-            await resendConfirmationEmail();
-        });
-        
-        // Verificar confirmação
-        checkEmailConfirmation();
-        checkPendingRegistration();
-    });
-    
-    // ============ VALIDAÇÃO ============
-    function validateForm() {
-        const name = document.getElementById('fullName').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        let isValid = true;
-        
-        // Reset erros
-        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
-        
-        // Validar
-        if (name.length < 3) {
-            showError('nameError', 'Nome deve ter pelo menos 3 caracteres', 'fullName');
-            isValid = false;
-        }
-        
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            showError('emailError', 'Email inválido', 'email');
-            isValid = false;
-        }
-        
-        if (password.length < 6) {
-            showError('passwordError', 'Senha deve ter pelo menos 6 caracteres', 'password');
-            isValid = false;
-        }
-        
-        if (password !== confirmPassword) {
-            showError('confirmPasswordError', 'Senhas não coincidem', 'confirmPassword');
-            isValid = false;
-        }
-        
-        return isValid;
-    }
-    
-    function showError(elementId, message, inputId) {
-        document.getElementById(elementId).textContent = message;
-        document.getElementById(elementId).style.display = 'block';
-        document.getElementById(inputId).classList.add('error');
-    }
-    
-    // ============ REGISTRO ============
-    async function registerUser() {
-        const submitBtn = document.getElementById('submitBtn');
-        const loader = document.getElementById('formLoader');
-        const fullName = document.getElementById('fullName').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        
-        // Mostrar loading
-        submitBtn.style.display = 'none';
-        loader.style.display = 'block';
-        
-        try {
-            console.log('Registrando:', email);
-            
-            if (!window.supabaseAuth || !window.supabaseAuth.registerUser) {
-                throw new Error('Erro: Sistema não disponível');
-            }
-            
-            const result = await window.supabaseAuth.registerUser(email, password, fullName);
-            
-            if (result.success) {
-                // Sucesso
-                document.getElementById('registeredEmail').textContent = email;
-                document.getElementById('tempPlayerCode').textContent = result.playerCode || 'GERANDO...';
-                document.getElementById('successModal').style.display = 'flex';
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registerForm');
+            const messageDiv = document.getElementById('message');
+            const idDisplay = document.getElementById('idDisplay');
+            const userIdDisplay = document.getElementById('userIdDisplay');
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                // Salvar dados
-                localStorage.setItem('pending_registration', 'true');
-                localStorage.setItem('pending_email', email);
-                localStorage.setItem('pending_name', fullName);
-                localStorage.setItem('pending_code', result.playerCode || '');
-                
-                // Mostrar botão reenvio
-                document.getElementById('resendContainer').style.display = 'block';
-                document.getElementById('infoBox').style.display = 'block';
-                document.getElementById('infoMessage').textContent = 'Aguardando confirmação do email. Verifique sua caixa de entrada.';
-                
-            } else {
-                throw new Error(result.error || 'Erro desconhecido');
-            }
-            
-        } catch (error) {
-            console.error('Erro:', error);
-            document.getElementById('errorMessage').textContent = error.message;
-            document.getElementById('errorModal').style.display = 'flex';
-        } finally {
-            submitBtn.style.display = 'flex';
-            loader.style.display = 'none';
-        }
-    }
-    
-    // ============ REENVIAR EMAIL ============
-    async function resendConfirmationEmail() {
-        const email = document.getElementById('email').value.trim() || localStorage.getItem('pending_email');
-        const btn = document.getElementById('resendBtn');
-        const originalText = btn.innerHTML;
-        
-        if (!email) {
-            alert('Digite seu email primeiro');
-            return;
-        }
-        
-        try {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-            
-            if (window.supabaseAuth && window.supabaseAuth.resendConfirmationEmail) {
-                const result = await window.supabaseAuth.resendConfirmationEmail(email);
-                
-                if (result.success) {
-                    document.getElementById('resendMessage').textContent = `Email reenviado para ${email}`;
-                    document.getElementById('resendModal').style.display = 'flex';
-                    
-                    // Bloquear por 2 minutos
-                    setTimeout(() => btn.disabled = false, 120000);
-                } else {
-                    throw new Error(result.error);
+                const nome = document.getElementById('nome').value;
+                const email = document.getElementById('email').value;
+                const senha = document.getElementById('senha').value;
+                const confirmarSenha = document.getElementById('confirmarSenha').value;
+
+                // Validações
+                if (senha !== confirmarSenha) {
+                    showMessage('As senhas não coincidem!', 'error');
+                    return;
                 }
-            } else {
-                throw new Error('Função não disponível');
+
+                if (senha.length < 6) {
+                    showMessage('A senha deve ter pelo menos 6 caracteres!', 'error');
+                    return;
+                }
+
+                // Gerar ID único
+                const userId = gerarIDUnico();
+
+                try {
+                    // Registrar usuário no Supabase
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: senha,
+                        options: {
+                            data: {
+                                nome: nome,
+                                user_id: userId.toString(),
+                                email_verified: false
+                            }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    // Mostrar mensagem de sucesso
+                    showMessage('Conta criada com sucesso! Verifique seu e-mail para ativar sua conta.', 'success');
+                    
+                    // Mostrar ID do usuário
+                    userIdDisplay.textContent = userId;
+                    idDisplay.style.display = 'block';
+                    
+                    // Limpar formulário
+                    form.reset();
+                    
+                    // Salvar ID localmente (para referência)
+                    localStorage.setItem('temp_user_id', userId);
+
+                } catch (error) {
+                    showMessage('Erro ao criar conta: ' + error.message, 'error');
+                }
+            });
+
+            function showMessage(text, type) {
+                messageDiv.textContent = text;
+                messageDiv.className = 'message ' + type;
+                messageDiv.style.display = 'block';
+                
+                // Auto-esconder após 5 segundos
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
             }
-        } catch (error) {
-            alert('Erro: ' + error.message);
-        } finally {
-            btn.innerHTML = originalText;
-        }
-    }
-    
-    // ============ VERIFICAÇÕES ============
-    function checkEmailConfirmation() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const confirmed = urlParams.get('confirmed');
-        const code = urlParams.get('code');
-        
-        if (confirmed === 'true') {
-            // Email confirmado
-            const playerCode = code || localStorage.getItem('pending_code') || Math.floor(1000000 + Math.random() * 9000000).toString();
-            showEmailConfirmedModal(playerCode);
-            
-            // Limpar
-            localStorage.removeItem('pending_registration');
-            localStorage.removeItem('pending_email');
-            localStorage.removeItem('pending_name');
-            localStorage.removeItem('pending_code');
-        }
-    }
-    
-    function checkPendingRegistration() {
-        if (localStorage.getItem('pending_registration') === 'true') {
-            const email = localStorage.getItem('pending_email');
-            if (email) {
-                document.getElementById('email').value = email;
-                document.getElementById('resendContainer').style.display = 'block';
-                document.getElementById('infoBox').style.display = 'block';
-                document.getElementById('infoMessage').textContent = `Aguardando confirmação do email ${email}`;
-            }
-        }
-    }
-    
-    function showEmailConfirmedModal(playerCode) {
-        document.getElementById('playerCodeDisplay').textContent = playerCode;
-        document.getElementById('emailConfirmedModal').style.display = 'flex';
-        localStorage.setItem('player_code', playerCode);
-        localStorage.setItem('registration_complete', 'true');
-    }
-    
-    // ============ FUNÇÕES MODAIS ============
-    function closeSuccessModal() {
-        document.getElementById('successModal').style.display = 'none';
-    }
-    
-    function closeErrorModal() {
-        document.getElementById('errorModal').style.display = 'none';
-    }
-    
-    function closeResendModal() {
-        document.getElementById('resendModal').style.display = 'none';
-    }
-    
-    function goToLogin() {
-        const code = localStorage.getItem('player_code') || '0000000';
-        window.location.href = 'login.html?registered=true&code=' + code;
-    }
+        });
     </script>
 </body>
 </html>
