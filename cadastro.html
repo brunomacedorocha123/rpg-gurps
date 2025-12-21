@@ -7,16 +7,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     
-    <!-- CARREGAR SUPABASE PRIMEIRO, ANTES DE QUALQUER COISA -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
+    <!-- SUPABASE PRIMEIRO -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
             --primary-dark: #1a1200;
             --secondary-dark: #2c2008;
@@ -26,18 +22,11 @@
             --accent-green: #2e5c3a;
             --text-light: #f5f5dc;
             --text-gold: #ffd700;
-            --parchment: #f7f3e9;
-            --wood-dark: #5d4037;
-            --wood-light: #8d6e63;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
         body {
             font-family: 'Cinzel', serif;
             background-color: var(--primary-dark);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
             color: var(--text-light);
             min-height: 100vh;
             display: flex;
@@ -57,56 +46,20 @@
             position: relative;
         }
 
-        .header-border {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 120%;
-            border: 3px solid var(--primary-gold);
-            border-image: linear-gradient(45deg, var(--primary-gold), var(--secondary-gold), var(--primary-gold)) 1;
-            border-radius: 10px;
-            z-index: -1;
-        }
-
         h1 {
             font-family: 'Uncial Antiqua', cursive;
             font-size: 2.5rem;
             color: var(--text-gold);
             text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.8);
             margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .subtitle {
-            font-family: 'MedievalSharp', cursive;
-            color: var(--text-light);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-            margin-bottom: 20px;
         }
 
         .form-container {
             background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
             padding: 40px 30px;
             border-radius: 15px;
-            border: 2px solid var(--wood-light);
-            box-shadow: 
-                0 10px 30px rgba(0, 0, 0, 0.5),
-                inset 0 0 20px rgba(0, 0, 0, 0.3);
-            position: relative;
-        }
-
-        .form-container::before {
-            content: '';
-            position: absolute;
-            top: -5px;
-            left: -5px;
-            right: -5px;
-            bottom: -5px;
-            background: linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-            border-radius: 20px;
-            z-index: -1;
+            border: 2px solid #8d6e63;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         .form-group {
@@ -118,7 +71,6 @@
             margin-bottom: 8px;
             color: var(--secondary-gold);
             font-weight: bold;
-            font-size: 1.1rem;
         }
 
         .input-with-icon {
@@ -131,25 +83,22 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--primary-gold);
-            font-size: 1.2rem;
         }
 
         input {
             width: 100%;
             padding: 15px 15px 15px 50px;
             background: rgba(26, 18, 0, 0.7);
-            border: 2px solid var(--wood-dark);
+            border: 2px solid #5d4037;
             border-radius: 8px;
             color: var(--text-light);
             font-family: 'Cinzel', serif;
             font-size: 1rem;
-            transition: all 0.3s;
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary-gold);
-            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
         }
 
         .btn {
@@ -158,49 +107,26 @@
             font-family: 'Cinzel', serif;
             font-size: 1.2rem;
             font-weight: bold;
-            text-decoration: none;
             border-radius: 8px;
             border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
+            margin-top: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .btn-register {
             background: linear-gradient(145deg, var(--primary-gold), #b8941f);
             color: var(--primary-dark);
             border: 2px solid var(--secondary-gold);
-            box-shadow: 0 4px 0 #b8941f;
-        }
-
-        .btn-register:hover {
-            background: linear-gradient(145deg, #e6c158, #b8941f);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 0 #b8941f;
-        }
-
-        .btn-register:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 0 #b8941f;
         }
 
         .btn-back {
             background: linear-gradient(145deg, var(--secondary-dark), #1a1200);
             color: var(--text-light);
-            border: 2px solid var(--wood-dark);
-            margin-top: 15px;
-        }
-
-        .btn-back:hover {
-            background: linear-gradient(145deg, #3a2e08, #1a1200);
+            border: 2px solid #5d4037;
         }
 
         .message {
@@ -231,7 +157,6 @@
 
         .loading i {
             color: var(--primary-gold);
-            font-size: 1.5rem;
             animation: spin 1s linear infinite;
         }
 
@@ -243,7 +168,7 @@
         .login-link {
             text-align: center;
             margin-top: 25px;
-            color: var(--wood-light);
+            color: #8d6e63;
         }
 
         .login-link a {
@@ -251,16 +176,11 @@
             text-decoration: none;
             font-weight: bold;
         }
-
-        .login-link a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="header-border"></div>
             <h1>REGISTRO</h1>
             <p class="subtitle">Junte-se à nossa taverna</p>
         </div>
@@ -277,7 +197,7 @@
             </div>
 
             <div class="form-group">
-                <label for="email">Pergaminho de Contato (Email)</label>
+                <label for="email">Email</label>
                 <div class="input-with-icon">
                     <i class="fas fa-envelope"></i>
                     <input type="email" id="email" placeholder="seu@email.com" required>
@@ -285,10 +205,10 @@
             </div>
 
             <div class="form-group">
-                <label for="password">Senha Secreta</label>
+                <label for="password">Senha</label>
                 <div class="input-with-icon">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Crie uma senha forte" required minlength="6">
+                    <input type="password" id="password" placeholder="Mínimo 6 caracteres" required minlength="6">
                 </div>
             </div>
 
@@ -309,8 +229,8 @@
                 <i class="fas fa-scroll"></i> Registrar-se
             </button>
 
-            <button class="btn btn-back" onclick="window.location.href='index.html'">
-                <i class="fas fa-arrow-left"></i> Voltar à Taverna
+            <button class="btn btn-back" id="backBtn">
+                <i class="fas fa-arrow-left"></i> Voltar
             </button>
 
             <div class="login-link">
@@ -319,142 +239,108 @@
         </div>
     </div>
 
-    <!-- SCRIPT ÚNICO E DEFINITIVO -->
     <script>
-        // ================= CONFIGURAÇÃO =================
+        // ============ CONFIGURAÇÃO ============
         const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
         
-        // ================= VARIÁVEIS GLOBAIS =================
-        let supabase = null;
-        let systemReady = false;
+        // ============ INICIALIZAR SUPABASE ============
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('✅ Supabase inicializado');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar Supabase:', error);
+            alert('ERRO: Sistema não carregou. Recarregue a página.');
+        }
         
-        // ================= INICIALIZAR SUPABASE =================
-        function initSupabase() {
-            console.log('Inicializando Supabase...');
-            
-            // Verificar se a biblioteca está disponível
-            if (typeof supabase === 'undefined') {
-                console.error('ERRO: Biblioteca Supabase não carregada!');
-                showMessage('Erro crítico: Sistema não carregado. Recarregue a página.', 'error');
+        // ============ FUNÇÕES AUXILIARES ============
+        function gerarUserId() {
+            return Math.floor(1000000 + Math.random() * 9000000).toString();
+        }
+        
+        function mostrarMensagem(texto, tipo) {
+            const div = document.getElementById('message');
+            div.innerHTML = texto;
+            div.className = `message ${tipo}`;
+            div.style.display = 'block';
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function validarFormulario(nome, email, senha, confirmar) {
+            if (!nome || !email || !senha || !confirmar) {
+                mostrarMensagem('Preencha todos os campos!', 'error');
                 return false;
             }
             
-            try {
-                // Criar cliente Supabase
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('✅ Supabase inicializado com sucesso');
-                systemReady = true;
-                
-                // Mostrar mensagem de sucesso
-                showMessage('✅ Sistema pronto para cadastro!', 'success');
-                return true;
-                
-            } catch (error) {
-                console.error('Erro ao criar cliente Supabase:', error);
-                showMessage('Erro ao conectar com o servidor. Tente novamente.', 'error');
+            if (senha !== confirmar) {
+                mostrarMensagem('Senhas não coincidem!', 'error');
                 return false;
             }
+            
+            if (senha.length < 6) {
+                mostrarMensagem('Senha deve ter 6+ caracteres', 'error');
+                return false;
+            }
+            
+            if (!email.includes('@') || !email.includes('.')) {
+                mostrarMensagem('Email inválido', 'error');
+                return false;
+            }
+            
+            return true;
         }
         
-        // ================= FUNÇÕES AUXILIARES =================
-        function generateUserId() {
-            // Garantir que seja sempre 7 dígitos
-            let userId;
-            do {
-                userId = Math.floor(1000000 + Math.random() * 9000000).toString();
-            } while (userId.length !== 7);
-            return userId;
-        }
-        
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            if (!messageDiv) {
-                console.error('Elemento de mensagem não encontrado');
-                alert(text);
+        // ============ FUNÇÃO PRINCIPAL ============
+        async function cadastrarUsuario() {
+            console.log('Iniciando cadastro...');
+            
+            if (!supabase) {
+                mostrarMensagem('Sistema não carregado. Recarregue.', 'error');
                 return;
             }
             
-            messageDiv.innerHTML = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-            
-            // Rolar para a mensagem
-            setTimeout(() => {
-                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-        
-        // ================= FUNÇÃO DE CADASTRO =================
-        async function registerUser() {
-            console.log('Iniciando processo de cadastro...');
-            
-            // Verificar se sistema está pronto
-            if (!systemReady || !supabase) {
-                showMessage('Sistema ainda não está pronto. Aguarde...', 'error');
-                return;
-            }
-            
-            // Pegar dados do formulário
+            // Pegar valores
             const nome = document.getElementById('nome').value.trim();
             const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+            const senha = document.getElementById('password').value;
+            const confirmar = document.getElementById('confirmPassword').value;
             
-            // Validações
-            if (!nome || !email || !password || !confirmPassword) {
-                showMessage('Por favor, preencha todos os campos.', 'error');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showMessage('As senhas não coincidem!', 'error');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showMessage('A senha deve ter pelo menos 6 caracteres.', 'error');
-                return;
-            }
-            
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showMessage('Por favor, insira um email válido.', 'error');
-                return;
-            }
+            // Validar
+            if (!validarFormulario(nome, email, senha, confirmar)) return;
             
             // Mostrar loading
-            const loadingDiv = document.getElementById('loading');
-            loadingDiv.style.display = 'block';
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
             
             try {
-                // Gerar ID único
-                const userId = generateUserId();
+                // Gerar ID
+                const userId = gerarUserId();
                 console.log('ID gerado:', userId);
                 
-                // 1. CRIAR USUÁRIO NO SUPABASE AUTH
-                console.log('Criando usuário no auth...');
+                // 1. CRIAR NO AUTH (Autenticação)
+                console.log('Criando no Auth...');
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email,
-                    password: password,
+                    password: senha,
                     options: {
                         data: {
                             nome: nome,
                             user_id: userId
-                        },
-                        emailRedirectTo: window.location.origin + '/login.html'
+                        }
                     }
                 });
                 
                 if (authError) {
-                    console.error('Erro no auth:', authError);
+                    console.error('Erro Auth:', authError);
                     throw authError;
                 }
                 
-                console.log('Usuário criado no auth:', authData);
+                console.log('Auth criado:', authData);
                 
-                // 2. CRIAR PERFIL NA TABELA 'usuarios'
-                console.log('Criando perfil na tabela...');
-                const { error: tableError } = await supabase
+                // 2. CRIAR NA TABELA usuarios
+                console.log('Criando na tabela...');
+                const { data: tabelaData, error: tabelaError } = await supabase
                     .from('usuarios')
                     .insert([
                         {
@@ -463,51 +349,52 @@
                             nome: nome,
                             data_criacao: new Date().toISOString()
                         }
-                    ]);
+                    ])
+                    .select();
                 
-                if (tableError) {
-                    console.error('Erro na tabela:', tableError);
+                if (tabelaError) {
+                    console.error('Erro tabela:', tabelaError);
                     
-                    // Tentar deletar usuário do auth se falhou na tabela
-                    if (authData?.user?.id) {
-                        try {
-                            // Nota: Esta função só funciona no lado do servidor
-                            // Em produção, você precisaria de uma edge function
-                            console.warn('Falha na tabela, mas usuário criado no auth');
-                        } catch (deleteError) {
-                            console.error('Erro ao tentar limpar:', deleteError);
-                        }
+                    // Se deu erro na tabela MAS criou no auth, avisar
+                    if (authData?.user) {
+                        console.warn('⚠️ Usuário criado no Auth mas não na tabela');
                     }
                     
-                    throw tableError;
+                    throw tabelaError;
                 }
                 
-                console.log('Perfil criado com sucesso');
+                console.log('Tabela criada:', tabelaData);
                 
-                // ================= SUCESSO =================
-                showMessage(`
+                // ============ SUCESSO ============
+                mostrarMensagem(`
                     <div style="text-align: center;">
-                        <h3 style="color: #ffd700;">🎉 CADASTRO CONCLUÍDO!</h3>
-                        <p style="margin: 15px 0;">Seu ID de aventureiro é:</p>
+                        <h3 style="color: gold; margin-bottom: 15px;">🎉 CADASTRO CONCLUÍDO!</h3>
                         <div style="
-                            font-size: 32px;
-                            font-weight: bold;
-                            color: #ffd700;
                             background: rgba(0,0,0,0.5);
-                            padding: 15px;
+                            padding: 20px;
                             border-radius: 10px;
                             border: 2px solid gold;
                             margin: 15px 0;
-                            text-shadow: 2px 2px 4px #000;
                         ">
-                            ${userId}
+                            <p style="margin-bottom: 10px;"><strong>SEU ID ÚNICO:</strong></p>
+                            <div style="
+                                font-size: 32px;
+                                font-weight: bold;
+                                color: #ffd700;
+                                letter-spacing: 3px;
+                            ">
+                                ${userId}
+                            </div>
                         </div>
-                        <p><strong>⚠️ IMPORTANTE: ANOTE ESTE ID! ⚠️</strong></p>
+                        <p style="color: #ff6b6b; font-weight: bold;">
+                            ⚠️ ANOTE OU PRINTE ESTE ID! ⚠️
+                        </p>
                         <p>Você precisará dele para fazer login.</p>
-                        <hr style="margin: 20px 0; border-color: #555;">
-                        <p>📧 Verifique seu email: <strong>${email}</strong></p>
-                        <p>🔗 Clique no link de confirmação enviado</p>
-                        <p>✅ Após confirmar, faça login com seu email ou ID</p>
+                        <hr style="margin: 15px 0; border-color: #555;">
+                        <p><strong>Próximos passos:</strong></p>
+                        <p>1. Verifique seu email: <strong>${email}</strong></p>
+                        <p>2. Clique no link de confirmação</p>
+                        <p>3. Faça login com seu email ou ID</p>
                     </div>
                 `, 'success');
                 
@@ -517,91 +404,78 @@
                 document.getElementById('password').value = '';
                 document.getElementById('confirmPassword').value = '';
                 
-                // Salvar localmente para referência
-                localStorage.setItem('last_user_id', userId);
-                localStorage.setItem('last_user_email', email);
+                // Salvar ID localmente
+                localStorage.setItem('gurps_user_id', userId);
                 
             } catch (error) {
-                console.error('Erro completo no cadastro:', error);
+                console.error('ERRO COMPLETO:', error);
                 
-                // Mensagens amigáveis de erro
-                let errorMsg = 'Erro ao criar conta: ';
+                let mensagemErro = 'Erro ao criar conta. ';
                 
-                if (error.message.includes('already registered') || 
-                    error.message.includes('User already registered')) {
-                    errorMsg = '📧 Este email já está cadastrado!<br>Faça login ou use outro email.';
+                if (error.message.includes('already registered')) {
+                    mensagemErro = 'Este email já está cadastrado! Faça login.';
                 } else if (error.message.includes('Invalid email')) {
-                    errorMsg = '❌ Email inválido. Verifique o formato do email.';
+                    mensagemErro = 'Email inválido. Use um email real.';
                 } else if (error.message.includes('password')) {
-                    errorMsg = '🔒 A senha deve ter pelo menos 6 caracteres.';
-                } else if (error.message.includes('duplicate key')) {
-                    errorMsg = '🔄 ID duplicado gerado. Clique em Registrar-se novamente.';
+                    mensagemErro = 'Senha muito fraca. Use 6+ caracteres.';
+                } else if (error.message.includes('401') || error.message.includes('permission')) {
+                    mensagemErro = 'ERRO DE PERMISSÃO: Execute o SQL que eu mandei no Supabase!';
                 } else if (error.message.includes('fetch') || error.message.includes('network')) {
-                    errorMsg = '🌐 Erro de conexão. Verifique sua internet.';
-                } else if (error.message.includes('JWT')) {
-                    errorMsg = '🔑 Erro de autenticação. Verifique suas credenciais.';
+                    mensagemErro = 'Sem internet. Conecte-se e tente novamente.';
                 } else {
-                    errorMsg += error.message;
+                    mensagemErro += error.message;
                 }
                 
-                showMessage(errorMsg, 'error');
+                mostrarMensagem(mensagemErro, 'error');
                 
             } finally {
                 // Esconder loading
-                loadingDiv.style.display = 'none';
+                loading.style.display = 'none';
             }
         }
         
-        // ================= INICIALIZAÇÃO DA PÁGINA =================
+        // ============ CONFIGURAR EVENTOS ============
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM carregado, configurando página...');
+            console.log('Página carregada');
             
-            // Configurar botão de registro
-            document.getElementById('registerBtn').addEventListener('click', registerUser);
+            // Botão de cadastro
+            document.getElementById('registerBtn').addEventListener('click', cadastrarUsuario);
             
-            // Permitir cadastro com Enter
-            document.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    registerUser();
+            // Botão de voltar
+            document.getElementById('backBtn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+            
+            // Enter para cadastrar
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cadastrarUsuario();
                 }
             });
             
-            // Inicializar Supabase após um pequeno delay
-            setTimeout(() => {
-                if (!initSupabase()) {
-                    // Tentar novamente se falhou
-                    console.log('Tentando novamente em 2 segundos...');
-                    setTimeout(initSupabase, 2000);
+            // Testar conexão
+            setTimeout(async () => {
+                if (supabase) {
+                    try {
+                        const { data, error } = await supabase.from('usuarios').select('count');
+                        if (!error) {
+                            console.log('✅ Conexão com banco OK');
+                        }
+                    } catch (e) {
+                        console.log('⚠️ Não foi possível testar tabela');
+                    }
                 }
-            }, 500);
+            }, 1000);
         });
         
-        // ================= VERIFICAÇÃO DE CONEXÃO =================
-        // Testar conexão com Supabase
-        async function testConnection() {
-            if (!supabase) return false;
-            
-            try {
-                const { data, error } = await supabase
-                    .from('usuarios')
-                    .select('count', { count: 'exact', head: true });
-                
-                if (error) throw error;
-                
-                console.log('✅ Conexão com Supabase estabelecida');
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Erro na conexão:', error);
-                return false;
-            }
-        }
-        
-        // Testar após inicialização
+        // Verificar se supabase carregou
         window.addEventListener('load', function() {
-            console.log('Página totalmente carregada');
-            setTimeout(testConnection, 1500);
+            if (!supabase) {
+                mostrarMensagem('Erro: Recarregue a página (F5)', 'error');
+            } else {
+                mostrarMensagem('✅ Sistema pronto para cadastro', 'success');
+            }
         });
     </script>
 </body>
