@@ -1,9 +1,12 @@
 // supabase-config.js
-const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
+// Verificar se supabase já foi declarado
+if (!window.supabase) {
+    const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
 
-// Inicializar Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Inicializar Supabase
+    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 
 // Função para gerar ID único de 7 dígitos
 function generateUserId() {
@@ -41,5 +44,27 @@ async function createUserProfile(userId, email, nome) {
         .select()
         .single();
 
+    return { data, error };
+}
+
+// Função para buscar usuário por ID
+async function getUserById(userId) {
+    const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+    
+    return { data, error };
+}
+
+// Função para buscar usuário por email
+async function getUserByEmail(email) {
+    const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('email', email)
+        .single();
+    
     return { data, error };
 }
