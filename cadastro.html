@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - GURPS Tool</title>
+    <title>Login - GURPS Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Configuração Supabase INLINE para evitar problemas -->
     <script>
-        // Configuração Supabase
+        // Configuração Supabase - MESMO DO CADASTRO
         const SUPABASE_URL = 'https://ozhoccdcvcksodnyvlug.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96aG9jY2RjdmNrc29kbnl2bHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMjY0MDEsImV4cCI6MjA4MTkwMjQwMX0.Xa29T0YVnIeGZDdAPivOU21C3HSlflWpVp8McAJwqSQ';
         
-        // Inicializar Supabase
         window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
                 persistSession: true,
@@ -24,7 +22,7 @@
     </script>
     
     <style>
-        /* ESTILOS MANTIDOS IGUAIS - só ajustei o container */
+        /* Mesmos estilos do cadastro */
         * {
             margin: 0;
             padding: 0;
@@ -158,217 +156,129 @@
         .link a:hover {
             text-decoration: underline;
         }
-
-        .debug-info {
-            margin-top: 20px;
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 5px;
-            font-size: 0.8rem;
-            color: #888;
-            display: none;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>GURPS TOOL</h1>
-        <p>Junte-se à Guilda</p>
+        <p>Entre na Guilda</p>
 
-        <div class="alert" id="registerAlert"></div>
-
-        <label>Nome do Aventureiro</label>
-        <input type="text" id="username" placeholder="Ex: Arkan, o Bravo">
+        <div class="alert" id="loginAlert"></div>
 
         <label>Email</label>
         <input type="email" id="email" placeholder="seu@email.com">
 
         <label>Senha</label>
-        <input type="password" id="password" placeholder="Mínimo 6 caracteres">
+        <input type="password" id="password" placeholder="Sua senha">
 
-        <button onclick="registerUser()" id="registerBtn">
-            <i class="fas fa-scroll"></i> Criar Conta
+        <button onclick="loginUser()" id="loginBtn">
+            <i class="fas fa-door-open"></i> Entrar
         </button>
 
         <div class="link">
-            Já possui conta? <a href="login.html">Entrar</a>
-        </div>
-        
-        <div class="debug-info" id="debugInfo">
-            <!-- Informações de debug serão exibidas aqui -->
+            Novo por aqui? <a href="cadastro.html">Crie sua conta</a>
         </div>
     </div>
 
 <script>
 // Função para mostrar alerta
-function showAlert(message, type = 'error', showDebug = false) {
-    const alertEl = document.getElementById('registerAlert');
+function showAlert(message, type = 'error') {
+    const alertEl = document.getElementById('loginAlert');
     if (alertEl) {
         alertEl.textContent = message;
         alertEl.className = `alert alert-${type}`;
         alertEl.style.display = 'block';
     }
-    
-    if (showDebug) {
-        const debugEl = document.getElementById('debugInfo');
-        if (debugEl) {
-            debugEl.textContent = message;
-            debugEl.style.display = 'block';
-        }
-    }
 }
 
-// Função principal de cadastro - SIMPLIFICADA
-async function registerUser() {
-    // Limpar alertas
-    document.getElementById('registerAlert').style.display = 'none';
-    document.getElementById('debugInfo').style.display = 'none';
+// Função de login
+async function loginUser() {
+    console.log('=== INICIANDO LOGIN ===');
     
-    // Obter valores
-    const username = document.getElementById('username').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const btn = document.getElementById('registerBtn');
+    const btn = document.getElementById('loginBtn');
     
     // Validações
-    if (!username || !email || !password) {
+    if (!email || !password) {
         showAlert('Preencha todos os campos.', 'error');
         return;
     }
 
-    if (password.length < 6) {
-        showAlert('A senha deve ter no mínimo 6 caracteres.', 'error');
-        return;
-    }
-
-    // Validar email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        showAlert('Digite um email válido.', 'error');
-        return;
-    }
-
     try {
-        // Desabilitar botão
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando conta...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
         
-        showAlert('Criando sua conta...', 'success');
+        showAlert('Entrando...', 'success');
         
-        // 1️⃣ CRIAR USUÁRIO NO AUTH APENAS
-        const { data, error } = await window.supabase.auth.signUp({
+        const { data, error } = await window.supabase.auth.signInWithPassword({
             email: email,
-            password: password,
-            options: {
-                data: {
-                    username: username
-                }
-            }
+            password: password
         });
 
         if (error) {
-            // Tratamento de erros específicos
-            if (error.message.includes('already registered') || error.message.includes('User already registered')) {
-                throw new Error('Este email já está cadastrado. Tente fazer login.');
-            } else if (error.message.includes('Invalid email')) {
-                throw new Error('Email inválido. Verifique o formato.');
+            console.error('❌ Erro no login:', error);
+            
+            if (error.message.includes('Invalid login credentials')) {
+                throw new Error('Email ou senha incorretos.');
+            } else if (error.message.includes('Email not confirmed')) {
+                throw new Error('Confirme seu email antes de fazer login.');
             } else {
-                throw error;
+                throw new Error('Erro: ' + error.message);
             }
         }
 
-        if (!data.user) {
-            throw new Error('Falha ao criar usuário. Tente novamente.');
-        }
-
-        console.log('Usuário criado no Auth:', data.user.id);
-        
-        // 2️⃣ AGUARDAR trigger criar o perfil (NÃO TENTAR CRIAR MANUALMENTE)
-        showAlert('Gerando seu ID de aventureiro...', 'success');
-        
-        // Aguardar alguns segundos para o trigger processar
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // 3️⃣ BUSCAR o perfil que o trigger criou
-        let userId = '0000000';
-        let profileData = null;
-        
-        // Tentar buscar o perfil várias vezes
-        for (let attempt = 1; attempt <= 5; attempt++) {
-            console.log(`Tentativa ${attempt} de buscar perfil...`);
+        if (data.user) {
+            console.log('✅ Login bem-sucedido. ID:', data.user.id);
             
-            const { data: profile, error: profileError } = await window.supabase
+            // Buscar dados do perfil
+            const { data: profile } = await window.supabase
                 .from('profiles')
-                .select('user_id, username')
+                .select('username, user_id')
                 .eq('id', data.user.id)
                 .maybeSingle();
             
-            if (!profileError && profile) {
-                profileData = profile;
-                userId = profile.user_id.toString().padStart(7, '0');
-                console.log('Perfil encontrado:', profile);
-                break;
-            }
-            
-            // Aguardar antes de tentar novamente
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        
-        if (!profileData) {
-            console.warn('Perfil não encontrado após 5 tentativas. O trigger pode ter falhado.');
-            showAlert('Conta criada, mas houve um problema ao gerar seu ID. Faça login para verificar.', 'error', true);
-        } else {
-            // 4️⃣ ATUALIZAR username se necessário
-            if (profileData.username === 'Aventureiro' && username !== 'Aventureiro') {
-                const { error: updateError } = await window.supabase
-                    .from('profiles')
-                    .update({ username: username })
-                    .eq('id', data.user.id);
-                
-                if (!updateError) {
-                    console.log('Username atualizado com sucesso');
-                }
-            }
-            
-            // Sucesso completo
             showAlert(
-                `✅ Cadastro concluído com sucesso!<br><br>
-                <strong>Nome:</strong> ${username}<br>
-                <strong>ID de Aventureiro:</strong> ${userId}<br><br>
-                Você será redirecionado para login em 5 segundos...`,
+                `✅ Bem-vindo de volta, ${profile?.username || 'Aventureiro'}!<br>
+                Redirecionando...`,
                 'success'
             );
+            
+            // Redirecionar para dashboard/home
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
         }
-
-        // 5️⃣ Redirecionar para login após 5 segundos
-        setTimeout(() => {
-            window.location.href = 'login.html?newUser=true&username=' + encodeURIComponent(username);
-        }, 5000);
 
     } catch (err) {
-        console.error('Erro no cadastro:', err);
-        showAlert('Erro: ' + err.message, 'error', true);
-        
-        // Mostrar mais detalhes no console para debug
-        if (err.message.includes('Database error')) {
-            console.error('Possível problema com o trigger SQL. Verifique:');
-            console.error('1. O trigger "on_auth_user_created" existe?');
-            console.error('2. A função "handle_new_user" está funcionando?');
-            console.error('3. A tabela "profiles" tem a estrutura correta?');
-        }
+        console.error('💥 ERRO NO LOGIN:', err);
+        showAlert(err.message, 'error');
     } finally {
-        // Reabilitar botão
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-scroll"></i> Criar Conta';
+        btn.innerHTML = '<i class="fas fa-door-open"></i> Entrar';
     }
 }
 
-// Permitir cadastro com Enter
+// Permitir login com Enter
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 Página de login carregada');
+    
+    // Verificar parâmetros de novo usuário
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('newUser') === 'true') {
+        const username = urlParams.get('username');
+        showAlert(
+            `✅ Bem-vindo, ${username || 'Aventureiro'}!<br>
+            Faça login com o email e senha cadastrados.`,
+            'success'
+        );
+    }
+    
+    // Enter no campo de senha
     document.getElementById('password').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            registerUser();
+            loginUser();
         }
     });
 });
