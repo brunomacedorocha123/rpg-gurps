@@ -160,14 +160,54 @@
         </div>
     </div>
 
-    <!-- IMPORTANTE: Carregar nesta ordem -->
+    <!-- APENAS Supabase CDN, NADA MAIS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="auth.js"></script>
     
     <script>
-        // Código específico para cadastro.html
+        // TODO O CÓDIGO AQUI - NADA DE ARQUIVOS EXTERNOS
+        console.log('=== INICIANDO CADASTRO ===');
+        
+        // Configurações
+        const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
+        
+        // Inicializar Supabase UMA VEZ
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('✅ Supabase inicializado!');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar Supabase:', error);
+        }
+        
+        // Função para gerar ID de 7 dígitos
+        function gerarIDUsuario() {
+            const min = 1000000;
+            const max = 9999999;
+            const id = Math.floor(Math.random() * (max - min + 1)) + min;
+            console.log('ID gerado:', id);
+            return id.toString();
+        }
+        
+        // Função para mostrar mensagens
+        function mostrarMensagem(texto, tipo = 'info') {
+            const elemento = document.getElementById('message');
+            elemento.textContent = texto;
+            elemento.className = `message ${tipo}`;
+            elemento.style.display = 'block';
+            
+            // Scroll para mensagem
+            elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Auto-esconder
+            setTimeout(() => {
+                elemento.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Quando a página carregar
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Cadastro.html carregado');
+            console.log('Página carregada!');
             
             const form = document.getElementById('registerForm');
             const submitBtn = document.getElementById('submitBtn');
@@ -179,22 +219,29 @@
             
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                console.log('Formulário enviado');
+                console.log('=== TENTANDO CADASTRO ===');
                 
                 // Pegar valores
-                const nome = document.getElementById('nome').value;
-                const email = document.getElementById('email').value;
+                const nome = document.getElementById('nome').value.trim();
+                const email = document.getElementById('email').value.trim();
                 const senha = document.getElementById('senha').value;
                 const confirmarSenha = document.getElementById('confirmarSenha').value;
                 
-                // Validações básicas
+                console.log('Dados:', { nome, email });
+                
+                // Validações
+                if (!nome || !email || !senha || !confirmarSenha) {
+                    mostrarMensagem('❌ Preencha todos os campos!', 'error');
+                    return;
+                }
+                
                 if (senha !== confirmarSenha) {
-                    Auth.mostrarMensagem('message', '❌ As senhas não coincidem!', 'error');
+                    mostrarMensagem('❌ As senhas não coincidem!', 'error');
                     return;
                 }
                 
                 if (senha.length < 6) {
-                    Auth.mostrarMensagem('message', '❌ A senha deve ter pelo menos 6 caracteres!', 'error');
+                    mostrarMensagem('❌ A senha deve ter pelo menos 6 caracteres!', 'error');
                     return;
                 }
                 
@@ -202,34 +249,66 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Criando conta...';
                 
-                // Registrar usuário
-                const resultado = await Auth.registrarUsuario(nome, email, senha);
-                
-                if (resultado.success) {
-                    // Sucesso
-                    Auth.mostrarMensagem('message', 
-                        '✅ Conta criada com sucesso! Verifique seu e-mail para ativar.', 
-                        'success');
+                try {
+                    console.log('Gerando ID...');
+                    const userId = gerarIDUsuario();
+                    
+                    console.log('Registrando no Supabase...');
+                    
+                    // Registrar no Supabase
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: senha,
+                        options: {
+                            data: {
+                                nome: nome,
+                                user_id: userId
+                            }
+                        }
+                    });
+                    
+                    console.log('Resposta do Supabase:', { data, error });
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    // SUCESSO!
+                    console.log('✅ Conta criada com sucesso!');
+                    mostrarMensagem('✅ Conta criada! Verifique seu e-mail para ativar.', 'success');
                     
                     // Mostrar ID
-                    document.getElementById('userId').textContent = resultado.userId;
+                    document.getElementById('userId').textContent = userId;
                     document.getElementById('idDisplay').style.display = 'block';
                     
                     // Limpar formulário
                     form.reset();
                     
-                    // Salvar dados localmente
-                    localStorage.setItem('user_id', resultado.userId);
-                    localStorage.setItem('user_email', email);
+                    // Salvar localmente
+                    localStorage.setItem('temp_user_id', userId);
+                    localStorage.setItem('temp_user_email', email);
                     
-                } else {
-                    // Erro
-                    Auth.mostrarMensagem('message', '❌ Erro: ' + resultado.error, 'error');
+                } catch (error) {
+                    console.error('❌ ERRO COMPLETO:', error);
+                    
+                    let mensagem = 'Erro ao criar conta: ' + error.message;
+                    
+                    // Erros comuns
+                    if (error.message.includes('User already registered')) {
+                        mensagem = '❌ Este e-mail já está cadastrado!';
+                    } else if (error.message.includes('Invalid email')) {
+                        mensagem = '❌ E-mail inválido!';
+                    } else if (error.message.includes('Password should')) {
+                        mensagem = '❌ Senha muito fraca! Use pelo menos 6 caracteres.';
+                    }
+                    
+                    mostrarMensagem(mensagem, 'error');
+                    
+                } finally {
+                    // Reabilitar botão
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Criar Conta';
                 }
-                
-                // Reabilitar botão
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Criar Conta';
             });
         });
     </script>

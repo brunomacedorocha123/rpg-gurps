@@ -139,14 +139,41 @@
         </div>
     </div>
 
-    <!-- IMPORTANTE: Mesma ordem -->
+    <!-- APENAS Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="auth.js"></script>
     
     <script>
-        // Código específico para login.html
+        // TODO CÓDIGO AQUI MESMO
+        console.log('=== INICIANDO LOGIN ===');
+        
+        // Configurações
+        const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
+        
+        // Inicializar Supabase
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('✅ Supabase inicializado!');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar Supabase:', error);
+        }
+        
+        // Função para mostrar mensagens
+        function mostrarMensagem(texto, tipo = 'info') {
+            const elemento = document.getElementById('message');
+            elemento.textContent = texto;
+            elemento.className = `message ${tipo}`;
+            elemento.style.display = 'block';
+            
+            setTimeout(() => {
+                elemento.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Quando a página carregar
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Login.html carregado');
+            console.log('Página de login carregada!');
             
             const form = document.getElementById('loginForm');
             const submitBtn = document.getElementById('submitBtn');
@@ -158,40 +185,67 @@
             
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                console.log('Tentando login...');
+                console.log('=== TENTANDO LOGIN ===');
                 
                 // Pegar valores
-                const email = document.getElementById('email').value;
+                const email = document.getElementById('email').value.trim();
                 const senha = document.getElementById('senha').value;
+                
+                console.log('Tentando login com:', email);
+                
+                if (!email || !senha) {
+                    mostrarMensagem('❌ Preencha todos os campos!', 'error');
+                    return;
+                }
                 
                 // Desabilitar botão
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Entrando...';
                 
-                // Fazer login
-                const resultado = await Auth.fazerLogin(email, senha);
-                
-                if (resultado.success) {
-                    // Sucesso
-                    Auth.mostrarMensagem('message', '✅ Login realizado! Redirecionando...', 'success');
+                try {
+                    // Tentar login
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: senha
+                    });
                     
-                    // Redirecionar após 1 segundo
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
+                    console.log('Resposta do login:', { data, error });
                     
-                } else {
-                    // Erro
-                    let mensagemErro = resultado.error;
-                    
-                    // Traduzir erros comuns
-                    if (mensagemErro.includes('Email not confirmed')) {
-                        mensagemErro = '❌ E-mail não verificado! Verifique sua caixa de entrada.';
-                    } else if (mensagemErro.includes('Invalid login credentials')) {
-                        mensagemErro = '❌ E-mail ou senha incorretos.';
+                    if (error) {
+                        throw error;
                     }
                     
-                    Auth.mostrarMensagem('message', mensagemErro, 'error');
+                    // Verificar se e-mail foi confirmado
+                    if (!data.user.email_confirmed_at) {
+                        // Forçar logout se não confirmado
+                        await supabase.auth.signOut();
+                        throw new Error('EMAIL_NOT_CONFIRMED');
+                    }
+                    
+                    // SUCESSO!
+                    console.log('✅ Login bem-sucedido!');
+                    mostrarMensagem('✅ Login realizado! Redirecionando...', 'success');
+                    
+                    // Redirecionar para dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('❌ ERRO NO LOGIN:', error);
+                    
+                    let mensagem = 'Erro ao fazer login: ' + error.message;
+                    
+                    // Tratar erros específicos
+                    if (error.message === 'EMAIL_NOT_CONFIRMED') {
+                        mensagem = '❌ E-mail não verificado! Verifique sua caixa de entrada.';
+                    } else if (error.message.includes('Invalid login credentials')) {
+                        mensagem = '❌ E-mail ou senha incorretos.';
+                    } else if (error.message.includes('Email not confirmed')) {
+                        mensagem = '❌ Verifique seu e-mail antes de fazer login!';
+                    }
+                    
+                    mostrarMensagem(mensagem, 'error');
                     
                     // Reabilitar botão
                     submitBtn.disabled = false;
