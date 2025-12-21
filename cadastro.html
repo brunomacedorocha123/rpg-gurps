@@ -1,159 +1,132 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro - GURPS Tool</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro - GURPS Tool</title>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
 
   <style>
     body {
       font-family: 'Cinzel', serif;
-      background: #1a1200;
-      color: #f5f5dc;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+      background:#1a1200;
+      color:#f5f5dc;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
     }
 
-    .register-container {
-      width: 100%;
-      max-width: 480px;
-      background: #2c2008;
-      border: 3px solid #d4af37;
-      border-radius: 15px;
-      padding: 35px;
+    .container {
+      width:100%;
+      max-width:500px;
+      background:#2c2008;
+      border:3px solid #2e5c3a;
+      border-radius:15px;
+      padding:40px;
     }
 
     h1 {
-      font-family: 'Uncial Antiqua', cursive;
-      text-align: center;
-      color: #ffd700;
-      margin-bottom: 10px;
+      font-family:'Uncial Antiqua', cursive;
+      text-align:center;
+      color:#ffd700;
+      margin-bottom:10px;
     }
 
     p {
-      text-align: center;
-      margin-bottom: 25px;
-      opacity: 0.8;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 2px solid #8d6e63;
-      background: rgba(255,255,255,0.1);
-      color: #f5f5dc;
-      font-family: 'Cinzel', serif;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #d4af37;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      font-weight: bold;
-      background: linear-gradient(145deg, #d4af37, #b8941f);
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      opacity: 0.9;
+      text-align:center;
+      margin-bottom:25px;
     }
 
     .alert {
-      display: none;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-
-    .alert-error {
-      background: rgba(139,0,0,0.3);
-      color: #ff6b6b;
+      display:none;
+      padding:12px;
+      border-radius:8px;
+      margin-bottom:15px;
+      text-align:center;
     }
 
     .alert-success {
-      background: rgba(46,92,58,0.3);
-      color: #90ee90;
+      background:#2e5c3a;
+      color:#90ee90;
     }
 
-    .alert-info {
-      background: rgba(212,175,55,0.3);
-      color: #ffd700;
+    .alert-error {
+      background:#8b0000;
+      color:#ffb3b3;
     }
 
-    .form-toggle {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 0.9rem;
+    label {
+      display:block;
+      margin-bottom:6px;
     }
 
-    .form-toggle a {
-      color: #f4d03f;
-      text-decoration: none;
+    input {
+      width:100%;
+      padding:12px;
+      margin-bottom:18px;
+      border-radius:8px;
+      border:2px solid #8d6e63;
+      background:rgba(255,255,255,0.1);
+      color:#fff;
+      font-family:'Cinzel', serif;
+    }
+
+    button {
+      width:100%;
+      padding:14px;
+      font-size:1rem;
+      font-weight:bold;
+      background:#2e5c3a;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    button:hover {
+      background:#3a7c4a;
+    }
+
+    .link {
+      text-align:center;
+      margin-top:20px;
+    }
+
+    .link a {
+      color:#f4d03f;
+      text-decoration:none;
     }
   </style>
 </head>
 <body>
 
-  <div class="register-container">
+  <div class="container">
     <h1>GURPS TOOL</h1>
-    <p>Registro de Aventureiro</p>
+    <p>Junte-se à Guilda</p>
 
     <div class="alert" id="registerAlert"></div>
 
-    <form id="registerForm">
-      <div class="form-group">
-        <label>Nome do Herói</label>
-        <input type="text" id="username" required>
-      </div>
+    <label>Nome do Aventureiro</label>
+    <input type="text" id="username" placeholder="Ex: Arkan, o Bravo">
 
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" required>
-      </div>
+    <label>Email</label>
+    <input type="email" id="email" placeholder="seu@email.com">
 
-      <div class="form-group">
-        <label>Senha</label>
-        <input type="password" id="password" required>
-      </div>
+    <label>Senha</label>
+    <input type="password" id="password" placeholder="Mínimo 6 caracteres">
 
-      <div class="form-group">
-        <label>Confirmar Senha</label>
-        <input type="password" id="confirmPassword" required>
-      </div>
+    <button onclick="registerUser()">
+      <i class="fas fa-scroll"></i> Criar Conta
+    </button>
 
-      <button type="button" class="btn" onclick="registerUser()">
-        Registrar
-      </button>
-    </form>
-
-    <div class="form-toggle">
+    <div class="link">
       Já possui conta? <a href="login.html">Entrar</a>
     </div>
   </div>
@@ -165,48 +138,58 @@ async function registerUser() {
   const username = document.getElementById('username').value.trim();
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
 
-  if (!username || !email || !password || !confirmPassword) {
-    return showAlert('registerAlert', 'Preencha todos os campos.', 'error');
+  if (!username || !email || !password) {
+    showAlert('registerAlert', 'Preencha todos os campos.', 'error');
+    return;
   }
 
-  if (password !== confirmPassword) {
-    return showAlert('registerAlert', 'As senhas não coincidem.', 'error');
+  if (password.length < 6) {
+    showAlert('registerAlert', 'A senha deve ter no mínimo 6 caracteres.', 'error');
+    return;
   }
 
-  showAlert('registerAlert', 'Criando aventureiro...', 'info');
+  try {
+    showAlert('registerAlert', 'Criando sua conta...', 'success');
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { username }
-    }
-  });
-
-  if (error) {
-    return showAlert('registerAlert', error.message, 'error');
-  }
-
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .insert({
-      id: data.user.id,
-      username
+    // 1️⃣ Criar usuário no AUTH
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password
     });
 
-  if (profileError) {
-    return showAlert('registerAlert', 'Erro ao criar perfil.', 'error');
+    if (error) throw error;
+
+    const user = data.user;
+    if (!user) throw new Error('Usuário não criado.');
+
+    // 2️⃣ Criar perfil (SEM user_id, SEM email)
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.id,
+        username: username
+      });
+
+    if (profileError) throw profileError;
+
+    showAlert(
+      'registerAlert',
+      'Cadastro concluído! Agora faça login.',
+      'success'
+    );
+
+    setTimeout(() => {
+      window.location.href = 'login.html?newUser=true';
+    }, 2000);
+
+  } catch (err) {
+    console.error(err);
+    showAlert('registerAlert', err.message, 'error');
   }
-
-  showAlert('registerAlert', 'Conta criada com sucesso!', 'success');
-
-  setTimeout(() => {
-    window.location.href = 'login.html';
-  }, 2000);
 }
 </script>
+
 
 </body>
 </html>
