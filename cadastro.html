@@ -484,7 +484,7 @@
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('password');
         
-        // Toggle password visibility
+        // Toggle senha visível
         togglePassword.addEventListener('click', function() {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
@@ -492,7 +492,7 @@
             this.classList.toggle('fa-eye-slash');
         });
         
-        // Form submission
+        // Submit form
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -501,10 +501,11 @@
             }
         });
         
-        // Check if email confirmation modal should be shown
+        // Verificar se email foi confirmado
         checkEmailConfirmation();
     });
     
+    // =============== VALIDAÇÃO ===============
     function validateForm() {
         const name = document.getElementById('fullName').value.trim();
         const email = document.getElementById('email').value.trim();
@@ -512,55 +513,57 @@
         const confirmPassword = document.getElementById('confirmPassword').value;
         
         let isValid = true;
+        resetErrors();
         
-        // Validate name
+        // Nome (mínimo 3 caracteres)
         if (name.length < 3) {
-            document.getElementById('nameError').textContent = 'O nome deve ter pelo menos 3 caracteres';
-            document.getElementById('nameError').style.display = 'block';
-            document.getElementById('fullName').classList.add('error');
+            showError('nameError', 'O nome deve ter pelo menos 3 caracteres', 'fullName');
             isValid = false;
-        } else {
-            document.getElementById('nameError').style.display = 'none';
-            document.getElementById('fullName').classList.remove('error');
         }
         
-        // Validate email
+        // Email válido
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            document.getElementById('emailError').textContent = 'Por favor, insira um e-mail válido';
-            document.getElementById('emailError').style.display = 'block';
-            document.getElementById('email').classList.add('error');
+            showError('emailError', 'Por favor, insira um e-mail válido', 'email');
             isValid = false;
-        } else {
-            document.getElementById('emailError').style.display = 'none';
-            document.getElementById('email').classList.remove('error');
         }
         
-        // Validate password
+        // Senha (mínimo 6 caracteres)
         if (password.length < 6) {
-            document.getElementById('passwordError').textContent = 'A senha deve ter pelo menos 6 caracteres';
-            document.getElementById('passwordError').style.display = 'block';
-            document.getElementById('password').classList.add('error');
+            showError('passwordError', 'A senha deve ter pelo menos 6 caracteres', 'password');
             isValid = false;
-        } else {
-            document.getElementById('passwordError').style.display = 'none';
-            document.getElementById('password').classList.remove('error');
         }
         
-        // Validate confirm password
+        // Confirmar senha
         if (password !== confirmPassword) {
-            document.getElementById('confirmPasswordError').textContent = 'As senhas não coincidem';
-            document.getElementById('confirmPasswordError').style.display = 'block';
-            document.getElementById('confirmPassword').classList.add('error');
+            showError('confirmPasswordError', 'As senhas não coincidem', 'confirmPassword');
             isValid = false;
-        } else {
-            document.getElementById('confirmPasswordError').style.display = 'none';
-            document.getElementById('confirmPassword').classList.remove('error');
         }
         
         return isValid;
     }
     
+    function showError(elementId, message, inputId) {
+        document.getElementById(elementId).textContent = message;
+        document.getElementById(elementId).style.display = 'block';
+        document.getElementById(inputId).classList.add('error');
+    }
+    
+    function resetErrors() {
+        // Limpar todas as mensagens de erro
+        const errors = ['nameError', 'emailError', 'passwordError', 'confirmPasswordError'];
+        errors.forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+        
+        // Remover classe error de todos os inputs
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => {
+            input.classList.remove('error');
+        });
+    }
+    
+    // =============== REGISTRO ===============
     async function registerUser() {
         const submitBtn = document.getElementById('submitBtn');
         const formLoader = document.getElementById('formLoader');
@@ -568,116 +571,130 @@
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         
-        // Show loading state
+        // Mostrar loading
         submitBtn.style.display = 'none';
         formLoader.style.display = 'block';
+        resetErrors();
         
         try {
-            // Check if supabaseAuth is available
+            console.log('🔄 Iniciando registro...');
+            
+            // Verificar se supabaseAuth está disponível
             if (!window.supabaseAuth || !window.supabaseAuth.registerUser) {
-                throw new Error('Sistema de autenticação não disponível');
+                throw new Error('Sistema de autenticação não está disponível');
             }
             
-            // Register user
+            // Chamar função de registro
             const result = await window.supabaseAuth.registerUser(email, password, fullName);
             
-            // DEBUG: Mostrar resultado no console
-            console.log('Resultado do registro:', result);
+            console.log('📊 Resultado:', result);
             
             if (result.success) {
-                // Show success modal
-                document.getElementById('successModal').style.display = 'flex';
-                console.log('Cadastro realizado com sucesso!');
+                // Cadastro bem-sucedido
+                if (result.requiresConfirmation) {
+                    // Mostrar modal de sucesso
+                    document.getElementById('successModal').style.display = 'flex';
+                    console.log('✅ Email de confirmação enviado!');
+                    
+                    // Limpar formulário após 2 segundos
+                    setTimeout(() => {
+                        document.getElementById('registerForm').reset();
+                    }, 2000);
+                } else {
+                    // Se não precisa de confirmação (raro)
+                    alert('Cadastro realizado com sucesso!');
+                    window.location.href = 'login.html';
+                }
             } else {
-                // Verificar se o erro é um objeto e extrair a mensagem
-                let errorMessage = 'Erro desconhecido no cadastro';
+                // Tratar erros específicos
+                let errorMessage = result.error || 'Erro desconhecido no cadastro';
                 
-                if (result.error) {
-                    if (typeof result.error === 'object') {
-                        errorMessage = result.error.message || JSON.stringify(result.error);
-                    } else {
-                        errorMessage = result.error.toString();
-                    }
+                // Mapear erros comuns para mensagens amigáveis
+                if (errorMessage.includes('User already registered') || 
+                    errorMessage.includes('already exists')) {
+                    errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.';
+                } else if (errorMessage.includes('Password should')) {
+                    errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+                } else if (errorMessage.includes('Invalid email')) {
+                    errorMessage = 'Por favor, insira um e-mail válido.';
+                } else if (errorMessage.includes('Email rate limit exceeded')) {
+                    errorMessage = 'Muitas tentativas. Aguarde alguns minutos.';
                 }
                 
                 throw new Error(errorMessage);
             }
             
         } catch (error) {
-            // Show error modal
-            console.error('Erro no cadastro:', error);
+            console.error('❌ Erro no cadastro:', error);
             
-            let errorMessage = error.message || 'Erro desconhecido';
-            
-            // Tratar erros específicos do Supabase
-            if (errorMessage.includes('User already registered')) {
-                errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.';
-            } else if (errorMessage.includes('Password should')) {
-                errorMessage = 'A senha não atende aos requisitos de segurança.';
-            } else if (errorMessage.includes('Invalid email')) {
-                errorMessage = 'Por favor, insira um e-mail válido.';
-            }
-            
-            document.getElementById('errorMessage').textContent = errorMessage;
+            // Mostrar erro no modal
+            document.getElementById('errorMessage').textContent = error.message;
             document.getElementById('errorModal').style.display = 'flex';
+            
         } finally {
-            // Restore button state
+            // Restaurar botão
             submitBtn.style.display = 'flex';
             formLoader.style.display = 'none';
         }
     }
     
+    // =============== CONFIRMAÇÃO DE EMAIL ===============
     function checkEmailConfirmation() {
         const urlParams = new URLSearchParams(window.location.search);
         const confirmed = urlParams.get('confirmed');
         
-        console.log('Verificando confirmação de email:', confirmed);
+        console.log('🔍 Verificando confirmação:', confirmed);
         
         if (confirmed === 'true') {
-            // User confirmed email, show modal with player code
-            showEmailConfirmedModal();
+            // Email confirmado, mostrar código
+            setTimeout(() => {
+                showEmailConfirmedModal();
+            }, 1000);
         }
     }
     
     async function showEmailConfirmedModal() {
         try {
-            console.log('Tentando mostrar modal de email confirmado...');
+            console.log('🎉 Email confirmado! Buscando perfil...');
             
             if (window.supabaseAuth && window.supabaseAuth.getCurrentUserProfile) {
+                // Tentar obter perfil
                 const result = await window.supabaseAuth.getCurrentUserProfile();
                 
-                console.log('Resultado do perfil:', result);
+                console.log('📋 Resultado perfil:', result);
                 
                 if (result.success && result.profile) {
+                    // Mostrar código do jogador
                     document.getElementById('playerCodeDisplay').textContent = result.profile.player_code;
                     document.getElementById('emailConfirmedModal').style.display = 'flex';
-                    console.log('Código do jogador:', result.profile.player_code);
+                    
+                    // Salvar código no localStorage para usar depois
+                    localStorage.setItem('player_code', result.profile.player_code);
+                    localStorage.setItem('user_name', result.profile.full_name);
+                    
                 } else {
-                    console.error('Erro ao obter perfil:', result.error);
-                    // Tenta gerar um código localmente como fallback
-                    if (window.supabaseAuth.generatePlayerCode) {
-                        const fallbackCode = window.supabaseAuth.generatePlayerCode();
-                        document.getElementById('playerCodeDisplay').textContent = fallbackCode;
-                        document.getElementById('emailConfirmedModal').style.display = 'flex';
-                    }
+                    // Se não conseguir perfil, gerar código local
+                    console.warn('Perfil não encontrado, gerando código local...');
+                    const fallbackCode = window.supabaseAuth.generatePlayerCode 
+                        ? window.supabaseAuth.generatePlayerCode() 
+                        : Math.floor(1000000 + Math.random() * 9000000).toString();
+                    
+                    document.getElementById('playerCodeDisplay').textContent = fallbackCode;
+                    document.getElementById('emailConfirmedModal').style.display = 'flex';
+                    
+                    localStorage.setItem('player_code', fallbackCode);
                 }
             } else {
                 console.error('supabaseAuth não disponível');
             }
         } catch (error) {
-            console.error('Error showing confirmation modal:', error);
+            console.error('Erro ao mostrar confirmação:', error);
         }
     }
     
+    // =============== FUNÇÕES MODAIS ===============
     function closeSuccessModal() {
         document.getElementById('successModal').style.display = 'none';
-        // Clear form
-        document.getElementById('registerForm').reset();
-        // Remove validation classes
-        const inputs = document.querySelectorAll('.form-input');
-        inputs.forEach(input => {
-            input.classList.remove('success', 'error');
-        });
     }
     
     function closeErrorModal() {
@@ -685,7 +702,8 @@
     }
     
     function goToLogin() {
-        window.location.href = 'login.html';
+        // Redirecionar para login
+        window.location.href = 'login.html?registered=true';
     }
 </script>
 </body>
