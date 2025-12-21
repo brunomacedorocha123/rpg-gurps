@@ -1,23 +1,40 @@
-// supabase-config.js
-// ================== CONFIGURAÇÃO SUPABASE ==================
+// =====================================================
+// SUPABASE CONFIG – GURPS TOOL (FRONTEND)
+// =====================================================
+
+// ⚠️ IMPORTANTE:
+// Este arquivo DEVE ser carregado DEPOIS do script:
+// https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
+
+// =====================================================
+// DADOS DO PROJETO
+// =====================================================
 
 const SUPABASE_URL = 'https://ozhoccdcvcksodnyvlug.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA_ANON_PUBLIC_KEY_AQUI'; // começa com eyJ...
 
-// Criar cliente Supabase global
+const SUPABASE_ANON_KEY =
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96aG9jY2RjdmNrc29kbnl2bHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMjY0MDEsImV4cCI6MjA4MTkwMjQwMX0.Xa29T0YVnIeGZDdAPivOU21C3HSlflWpVp8McAJwqSQ';
+
+// =====================================================
+// CRIAÇÃO DO CLIENTE SUPABASE GLOBAL
+// =====================================================
+
 window.supabase = supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_ANON_KEY
+  SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
 );
 
-// ================== FUNÇÕES GLOBAIS ==================
+// =====================================================
+// ALERTAS GLOBAIS
+// =====================================================
 
-// Gerar ID único de 7 dígitos
-window.generateUserId = function () {
-  return Math.floor(1000000 + Math.random() * 9000000).toString();
-};
-
-// Mostrar alertas
 window.showAlert = function (id, message, type = 'error') {
   const el = document.getElementById(id);
   if (!el) return;
@@ -33,33 +50,73 @@ window.showAlert = function (id, message, type = 'error') {
   }
 };
 
-// Limpar alerta
 window.clearAlert = function (id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.style.display = 'none';
 };
 
-// ================== FUNÇÃO UTILITÁRIA ==================
+// =====================================================
+// GERAÇÃO DE ID DE USUÁRIO (7 DÍGITOS)
+// =====================================================
 
-// Gera um ID de 7 dígitos GARANTIDO (verifica no banco)
+window.generateUserId = function () {
+  return Math.floor(1000000 + Math.random() * 9000000).toString();
+};
+
+// =====================================================
+// GERAÇÃO DE ID ÚNICO VALIDADO NO BANCO
+// =====================================================
+
 window.generateUniqueUserId = async function () {
-  let unique = false;
-  let userId = null;
+  let userId;
+  let exists = true;
 
-  while (!unique) {
+  while (exists) {
     userId = generateUserId();
 
-    const { data, error } = await supabase
+    const { data, error } = await window.supabase
       .from('profiles')
       .select('user_id')
       .eq('user_id', userId)
       .maybeSingle();
 
     if (!data && !error) {
-      unique = true;
+      exists = false;
     }
   }
 
   return userId;
+};
+
+// =====================================================
+// AUTENTICAÇÃO – FUNÇÕES UTILITÁRIAS
+// =====================================================
+
+window.getCurrentSession = async function () {
+  const { data, error } = await window.supabase.auth.getSession();
+  if (error) return null;
+  return data.session;
+};
+
+window.getCurrentUser = async function () {
+  const { data, error } = await window.supabase.auth.getUser();
+  if (error) return null;
+  return data.user;
+};
+
+window.logoutUser = async function () {
+  await window.supabase.auth.signOut();
+  window.location.href = 'login.html';
+};
+
+// =====================================================
+// PROTEÇÃO DE PÁGINAS (USAR EM HOME / DASHBOARD)
+// =====================================================
+
+window.requireAuth = async function () {
+  const session = await getCurrentSession();
+  if (!session) {
+    window.location.href = 'login.html';
+  }
 };
