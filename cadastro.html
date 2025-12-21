@@ -127,7 +127,13 @@
     <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
     
-    <script>
+    <!-- NO FINAL do cadastro.html, ANTES do </body> -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔍 Página de cadastro carregada');
+        console.log('Supabase disponível?', typeof window.supabaseClient);
+        console.log('Funções auth disponíveis?', typeof window.authFunctions);
+        
         document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -135,32 +141,49 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
+            console.log('📝 Dados do formulário:', { username, email, password });
+            
             const messageDiv = document.getElementById('message');
-            messageDiv.innerHTML = '<div class="message">Criando sua conta...</div>';
+            messageDiv.innerHTML = '<div class="message">🎲 Criando sua conta...</div>';
             
-            const result = await window.authFunctions.cadastrarUsuario(email, password, username);
-            
-            if (result.success) {
-                messageDiv.innerHTML = `
-                    <div class="message success">
-                        <i class="fas fa-check-circle"></i> ${result.message}
-                        <p>Seu ID de aventureiro será gerado após a verificação do e-mail!</p>
-                    </div>
-                `;
-                document.getElementById('cadastroForm').reset();
+            try {
+                // Verifica se as funções estão disponíveis
+                if (!window.authFunctions || !window.authFunctions.cadastrarUsuario) {
+                    throw new Error('Funções de autenticação não carregadas!');
+                }
                 
-                // Redireciona para verificação após 3 segundos
-                setTimeout(() => {
-                    window.location.href = 'verify.html';
-                }, 3000);
-            } else {
+                const result = await window.authFunctions.cadastrarUsuario(email, password, username);
+                console.log('📤 Resultado do cadastro:', result);
+                
+                if (result.success) {
+                    messageDiv.innerHTML = `
+                        <div class="message success">
+                            <i class="fas fa-check-circle"></i> ${result.message}
+                            <p>📨 Verifique seu e-mail para ativar a conta!</p>
+                        </div>
+                    `;
+                    document.getElementById('cadastroForm').reset();
+                    
+                    setTimeout(() => {
+                        window.location.href = 'verify.html';
+                    }, 3000);
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="message error">
+                            <i class="fas fa-exclamation-circle"></i> ${result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('💥 Erro no formulário:', error);
                 messageDiv.innerHTML = `
                     <div class="message error">
-                        <i class="fas fa-exclamation-circle"></i> ${result.message}
+                        <i class="fas fa-exclamation-circle"></i> Erro: ${error.message}
                     </div>
                 `;
             }
         });
-    </script>
+    });
+</script>
 </body>
 </html>

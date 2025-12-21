@@ -1,58 +1,86 @@
+// auth.js - ARQUIVO ATUALIZADO E SIMPLIFICADO
+
 // Função para gerar ID único de 7 dígitos
 function gerarIdUnico() {
-    // Gera número aleatório de 7 dígitos (entre 1000000 e 9999999)
-    const id = Math.floor(1000000 + Math.random() * 9000000);
-    return id.toString();
+    return Math.floor(1000000 + Math.random() * 9000000).toString();
 }
 
-// CADASTRO DE USUÁRIO
+// CADASTRO - FUNÇÃO CORRIGIDA
 async function cadastrarUsuario(email, senha, username) {
     try {
-        // 1. Cadastra no Supabase (envia e-mail de verificação)
-        const { data, error } = await supabase.auth.signUp({
+        console.log('🔧 Tentando cadastrar:', email);
+        
+        // Usa window.supabaseClient que foi configurado no supabase-config.js
+        if (!window.supabaseClient) {
+            throw new Error('Supabase não está configurado!');
+        }
+
+        // 1. Cadastra no Auth do Supabase
+        const { data, error } = await window.supabaseClient.auth.signUp({
             email: email,
             password: senha,
             options: {
                 data: {
                     username: username,
-                    user_id: gerarIdUnico(), // Gera ID único
+                    user_code: gerarIdUnico(),
                     created_at: new Date().toISOString()
-                }
+                },
+                emailRedirectTo: window.location.origin + '/verify.html'
             }
         });
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Erro no signUp:', error);
+            throw error;
+        }
 
-        // 2. Salva dados adicionais na tabela 'profiles'
+        console.log('✅ Usuário criado:', data.user);
+
+        // 2. Cria o perfil na tabela 'profiles'
         if (data.user) {
-            const { error: profileError } = await supabase
+            const userCode = gerarIdUnico();
+            
+            const { error: profileError } = await window.supabaseClient
                 .from('profiles')
                 .insert([
                     {
                         id: data.user.id,
                         email: email,
                         username: username,
-                        user_code: data.user.user_metadata.user_id, // ID de 7 dígitos
+                        user_code: userCode,
                         verified: false,
                         created_at: new Date().toISOString()
                     }
                 ]);
 
             if (profileError) {
-                console.error('Erro ao criar perfil:', profileError);
+                console.warn('⚠️ Erro ao criar perfil (mas o usuário foi criado):', profileError);
+                // Não falha o cadastro por causa disso
             }
+
+            // Atualiza o metadata com o código
+            await window.supabaseClient.auth.updateUser({
+                data: { user_code: userCode }
+            });
         }
 
-        return { success: true, message: 'Cadastro realizado! Verifique seu e-mail.' };
+        return { 
+            success: true, 
+            message: '✅ Cadastro realizado! Verifique seu e-mail para ativar a conta.' 
+        };
     } catch (error) {
-        return { success: false, message: error.message };
+        console.error('❌ Erro completo:', error);
+        return { 
+            success: false, 
+            message: '❌ Erro: ' + error.message 
+        };
     }
 }
 
-// LOGIN DE USUÁRIO
+// LOGIN - FUNÇÃO CORRIGIDA
 async function loginUsuario(email, senha) {
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
             email: email,
             password: senha
         });
@@ -61,40 +89,49 @@ async function loginUsuario(email, senha) {
 
         // Verifica se o e-mail foi confirmado
         if (!data.user.email_confirmed_at) {
-            await supabase.auth.signOut();
+            await window.supabaseClient.auth.signOut();
             return { 
                 success: false, 
-                message: 'E-mail não verificado! Verifique sua caixa de entrada.' 
+                message: '❌ E-mail não verificado! Verifique sua caixa de entrada.' 
             };
         }
 
         return { success: true, user: data.user };
     } catch (error) {
-        return { success: false, message: error.message };
+        return { success: false, message: '❌ Erro: ' + error.message };
     }
 }
 
-// VERIFICA SE USUÁRIO ESTÁ LOGADO
+// VERIFICA SESSÃO
 async function verificarSessao() {
-    const { data, error } = await supabase.auth.getSession();
-    
-    if (error || !data.session) {
+    try {
+        const { data, error } = await window.supabaseClient.auth.getSession();
+        
+        if (error || !data.session) {
+            return null;
+        }
+        
+        // Busca dados do perfil
+        const { data: profile } = await window.supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', data.session.user.id)
+            .single();
+        
+        return { 
+            session: data.session, 
+            profile: profile || { 
+                user_code: data.session.user.user_metadata?.user_code || gerarIdUnico() 
+            } 
+        };
+    } catch (error) {
         return null;
     }
-    
-    // Busca dados do perfil
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.session.user.id)
-        .single();
-    
-    return { session: data.session, profile };
 }
 
 // LOGOUT
 async function logoutUsuario() {
-    await supabase.auth.signOut();
+    await window.supabaseClient.auth.signOut();
     window.location.href = 'index.html';
 }
 
@@ -106,3 +143,5 @@ window.authFunctions = {
     logoutUsuario,
     gerarIdUnico
 };
+
+console.log('✅ auth.js carregado com sucesso!');
