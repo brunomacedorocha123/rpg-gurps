@@ -1,189 +1,30 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GURPS Tool - Cadastro</title>
-    <style>
-        /* USE O MESMO ESTILO DA SUA PÁGINA PRINCIPAL */
-        body {
-            font-family: 'Cinzel', serif;
-            background-color: #1a1200;
-            color: #f5f5dc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .auth-container {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
-            padding: 40px;
-            border-radius: 15px;
-            border: 3px solid #d4af37;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        
-        .auth-container h2 {
-            color: #ffd700;
-            text-align: center;
-            margin-bottom: 30px;
-            font-family: 'Uncial Antiqua', cursive;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #d4af37;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #8b0000;
-            border-radius: 5px;
-            color: white;
-            font-family: 'Cinzel', serif;
-        }
-        
-        .btn-submit {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(145deg, #d4af37, #b8941f);
-            color: #1a1200;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s;
-        }
-        
-        .btn-submit:hover {
-            background: linear-gradient(145deg, #e6c158, #d4af37);
-        }
-        
-        .message {
-            padding: 10px;
-            margin: 15px 0;
-            border-radius: 5px;
-            text-align: center;
-        }
-        
-        .success { background: rgba(46, 92, 58, 0.3); color: #90ee90; }
-        .error { background: rgba(139, 0, 0, 0.3); color: #ff6b6b; }
-        
-        .link {
-            color: #d4af37;
-            text-align: center;
-            margin-top: 20px;
-            display: block;
-        }
-    </style>
-</head>
+<html>
 <body>
-    <div class="auth-container">
-        <h2><i class="fas fa-scroll"></i> Registrar-se no GURPS Tool</h2>
-        
-        <div id="message"></div>
-        
-        <form id="cadastroForm">
-            <div class="form-group">
-                <label for="username">Nome de Aventureiro</label>
-                <input type="text" id="username" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="email">E-mail do Bardo</label>
-                <input type="email" id="email" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Senha Secreta</label>
-                <input type="password" id="password" minlength="6" required>
-            </div>
-            
-            <button type="submit" class="btn-submit">
-                <i class="fas fa-user-plus"></i> Criar Conta
-            </button>
-        </form>
-        
-        <a href="login.html" class="link">Já tem uma conta? Faça login</a>
-        <a href="index.html" class="link">← Voltar para o início</a>
-    </div>
-
-    <!-- IMPORTANTE: Adicione estas tags no final do body -->
+    <input id="nome" placeholder="Nome">
+    <input id="email" placeholder="E-mail">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="cadastrar()">Cadastrar</button>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
     
-    <!-- NO FINAL do cadastro.html, ANTES do </body> -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🔍 Página de cadastro carregada');
-        console.log('Supabase disponível?', typeof window.supabaseClient);
-        console.log('Funções auth disponíveis?', typeof window.authFunctions);
-        
-        document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
+    <script>
+        async function cadastrar() {
+            const nome = document.getElementById('nome').value;
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const senha = document.getElementById('senha').value;
             
-            console.log('📝 Dados do formulário:', { username, email, password });
+            const resultado = await window.AuthSistema.cadastrar(email, senha, nome);
             
-            const messageDiv = document.getElementById('message');
-            messageDiv.innerHTML = '<div class="message">🎲 Criando sua conta...</div>';
-            
-            try {
-                // Verifica se as funções estão disponíveis
-                if (!window.authFunctions || !window.authFunctions.cadastrarUsuario) {
-                    throw new Error('Funções de autenticação não carregadas!');
-                }
-                
-                const result = await window.authFunctions.cadastrarUsuario(email, password, username);
-                console.log('📤 Resultado do cadastro:', result);
-                
-                if (result.success) {
-                    messageDiv.innerHTML = `
-                        <div class="message success">
-                            <i class="fas fa-check-circle"></i> ${result.message}
-                            <p>📨 Verifique seu e-mail para ativar a conta!</p>
-                        </div>
-                    `;
-                    document.getElementById('cadastroForm').reset();
-                    
-                    setTimeout(() => {
-                        window.location.href = 'verify.html';
-                    }, 3000);
-                } else {
-                    messageDiv.innerHTML = `
-                        <div class="message error">
-                            <i class="fas fa-exclamation-circle"></i> ${result.message}
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('💥 Erro no formulário:', error);
-                messageDiv.innerHTML = `
-                    <div class="message error">
-                        <i class="fas fa-exclamation-circle"></i> Erro: ${error.message}
-                    </div>
-                `;
+            if (resultado.sucesso) {
+                alert('✅ Cadastrado! ID: ' + resultado.id7digitos);
+                // Vai para verificação
+                window.location.href = 'verificar.html';
+            } else {
+                alert('❌ Erro: ' + resultado.mensagem);
             }
-        });
-    });
-</script>
+        }
+    </script>
 </body>
 </html>
