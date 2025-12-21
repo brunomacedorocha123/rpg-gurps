@@ -9,362 +9,46 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-dark: #1a1200;
-            --secondary-dark: #2c2008;
-            --primary-gold: #d4af37;
-            --secondary-gold: #f4d03f;
-            --accent-red: #8b0000;
-            --accent-green: #2e5c3a;
-            --text-light: #f5f5dc;
-            --text-gold: #ffd700;
-            --parchment: #f7f3e9;
-            --wood-dark: #5d4037;
-            --wood-light: #8d6e63;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            --success: #2e5c3a;
-            --error: #8b0000;
-        }
-
-        body {
-            font-family: 'Cinzel', serif;
-            background-color: var(--primary-dark);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
-            color: var(--text-light);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="%232c2008" stroke-width="0.5"/></svg>'),
-                linear-gradient(0deg, transparent 24%, rgba(139, 0, 0, 0.05) 25%, rgba(139, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(139, 0, 0, 0.05) 75%, rgba(139, 0, 0, 0.05) 76%, transparent 77%, transparent);
-            background-size: 50px 50px, 10px 10px;
-            opacity: 0.3;
-            z-index: -1;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .back-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-        }
-
-        .back-home a {
-            color: var(--primary-gold);
-            text-decoration: none;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .back-home a:hover {
-            color: var(--secondary-gold);
-            transform: translateX(-5px);
-        }
-
-        .register-container {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
-            border: 3px solid var(--wood-dark);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 
-                0 0 30px rgba(212, 175, 55, 0.3),
-                inset 0 0 20px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .register-container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, 
-                var(--primary-gold), 
-                transparent, 
-                var(--accent-red), 
-                transparent, 
-                var(--primary-gold));
-            border-radius: 22px;
-            z-index: -1;
-            animation: borderGlow 3s linear infinite;
-        }
-
-        @keyframes borderGlow {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        .logo {
+        /* Seu CSS existente... */
+        /* Adicione apenas este novo estilo */
+        .resend-container {
             text-align: center;
-            margin-bottom: 30px;
+            margin-top: 15px;
         }
-
-        .logo h1 {
-            font-family: 'Uncial Antiqua', cursive;
-            color: var(--text-gold);
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            margin-bottom: 5px;
-        }
-
-        .logo p {
-            color: var(--wood-light);
-            font-style: italic;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-gold);
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 15px 20px;
-            background: rgba(26, 18, 0, 0.8);
-            border: 2px solid var(--wood-light);
-            border-radius: 10px;
-            color: var(--text-light);
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-gold);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-            background: rgba(44, 32, 8, 0.9);
-        }
-
-        .form-input.error {
-            border-color: var(--error);
-            background: rgba(139, 0, 0, 0.1);
-        }
-
-        .form-input.success {
-            border-color: var(--success);
-            background: rgba(46, 92, 58, 0.1);
-        }
-
-        .input-icon {
-            position: absolute;
-            right: 20px;
-            top: 45px;
-            color: var(--wood-light);
-            cursor: pointer;
-        }
-
-        .error-message {
-            color: #ff6b6b;
+        
+        .btn-secondary {
+            background: linear-gradient(145deg, var(--accent-green), #1e3a27);
+            color: white;
+            border: 2px solid #3a7d4f;
+            padding: 10px 20px;
             font-size: 0.9rem;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 18px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
-
-        .btn-primary {
-            background: linear-gradient(145deg, var(--primary-gold), #b8941f);
-            color: var(--primary-dark);
-            border: 2px solid var(--secondary-gold);
-            box-shadow: 0 4px 0 #b8941f;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: linear-gradient(145deg, #e6c158, #b8941f);
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: linear-gradient(145deg, #3a7d4f, #1e3a27);
             transform: translateY(-2px);
-            box-shadow: 0 6px 0 #b8941f;
         }
-
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #b8941f;
-        }
-
-        .btn-primary:disabled {
+        
+        .btn-secondary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-
-        .login-link {
-            text-align: center;
-            margin-top: 25px;
-            color: var(--wood-light);
-        }
-
-        .login-link a {
-            color: var(--primary-gold);
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-
-        .login-link a:hover {
-            color: var(--secondary-gold);
-            text-decoration: underline;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
-            border: 3px solid var(--primary-gold);
-            border-radius: 15px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-            animation: modalFadeIn 0.3s;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal-icon {
-            font-size: 4rem;
-            color: var(--primary-gold);
-            margin-bottom: 20px;
-        }
-
-        .modal h2 {
-            color: var(--text-gold);
-            margin-bottom: 15px;
-            font-family: 'Uncial Antiqua', cursive;
-        }
-
-        .modal p {
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-
-        .player-code-display {
-            background: rgba(26, 18, 0, 0.8);
-            border: 2px solid var(--primary-gold);
+        
+        .info-box {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--primary-gold);
             border-radius: 10px;
             padding: 15px;
-            margin: 20px 0;
-            font-size: 2rem;
-            font-weight: bold;
-            letter-spacing: 3px;
-            color: var(--text-gold);
-            font-family: monospace;
+            margin: 15px 0;
+            text-align: center;
         }
-
-        .btn-close {
-            background: var(--accent-red);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-
-        .btn-close:hover {
-            background: #a30000;
-        }
-
-        .loader {
-            display: none;
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--wood-light);
-            border-top: 4px solid var(--primary-gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 600px) {
-            .register-container {
-                padding: 30px 20px;
-            }
-            
-            .logo h1 {
-                font-size: 2rem;
-            }
-            
-            .form-input {
-                padding: 12px 15px;
-            }
+        
+        .info-box i {
+            color: var(--primary-gold);
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -380,6 +64,13 @@
             <div class="logo">
                 <h1>Cadastro</h1>
                 <p>Junte-se à nossa aventura</p>
+            </div>
+
+            <!-- Caixa informativa -->
+            <div class="info-box" id="infoBox" style="display: none;">
+                <p><i class="fas fa-info-circle"></i> 
+                    <span id="infoMessage"></span>
+                </p>
             </div>
 
             <form id="registerForm">
@@ -428,6 +119,13 @@
                 </div>
             </form>
 
+            <!-- Botão para reenviar confirmação -->
+            <div class="resend-container" style="display: none;" id="resendContainer">
+                <button class="btn btn-secondary" id="resendBtn">
+                    <i class="fas fa-paper-plane"></i> Reenviar Email de Confirmação
+                </button>
+            </div>
+
             <div class="login-link">
                 <p>Já tem uma conta? <a href="login.html">Faça login aqui</a></p>
             </div>
@@ -441,11 +139,15 @@
                 <i class="fas fa-envelope-circle-check"></i>
             </div>
             <h2>Cadastro Realizado!</h2>
-            <p>Enviamos um e-mail de confirmação para sua caixa de entrada. 
-               Por favor, verifique seu e-mail e clique no link de confirmação 
-               para ativar sua conta.</p>
-            <p><strong>Importante:</strong> Após confirmar o e-mail, você será 
-               redirecionado automaticamente para esta página.</p>
+            <p>Enviamos um e-mail de confirmação para <strong id="registeredEmail"></strong>.</p>
+            <p><strong>Importante:</strong> Verifique sua caixa de entrada (e spam) e clique no link de confirmação para ativar sua conta.</p>
+            <p>Seu código de jogador será gerado após a confirmação.</p>
+            <div class="player-code-display" style="font-size: 1.2rem; margin: 20px 0;">
+                Código: <strong id="tempPlayerCode"></strong>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--wood-light);">
+                <i class="fas fa-exclamation-triangle"></i> Anote este código temporário!
+            </p>
             <button class="btn-close" onclick="closeSuccessModal()">Entendido</button>
         </div>
     </div>
@@ -457,7 +159,8 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             <h2>E-mail Confirmado!</h2>
-            <p>Sua conta foi ativada com sucesso! Seu código de jogador é:</p>
+            <p>✅ Sua conta foi ativada com sucesso!</p>
+            <p>Seu código de jogador é:</p>
             <div class="player-code-display" id="playerCodeDisplay"></div>
             <p>Guarde este código, ele será seu identificador único no sistema.</p>
             <button class="btn-close" onclick="goToLogin()">Ir para Login</button>
@@ -476,11 +179,24 @@
         </div>
     </div>
 
-   <script>
+    <!-- Modal de Reenvio de Email -->
+    <div class="modal" id="resendModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <h2>Email Reenviado!</h2>
+            <p id="resendMessage"></p>
+            <button class="btn-close" onclick="closeResendModal()">OK</button>
+        </div>
+    </div>
+
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('registerForm');
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
+    const resendBtn = document.getElementById('resendBtn');
     
     // Toggle senha visível
     togglePassword.addEventListener('click', function() {
@@ -499,8 +215,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Botão para reenviar confirmação
+    resendBtn.addEventListener('click', async function() {
+        await resendConfirmationEmail();
+    });
+    
     // Verificar se email foi confirmado
     checkEmailConfirmation();
+    
+    // Verificar se há cadastro pendente
+    checkPendingRegistration();
 });
 
 // =============== VALIDAÇÃO ===============
@@ -542,15 +266,19 @@ function validateForm() {
 }
 
 function showError(elementId, message, inputId) {
-    document.getElementById(elementId).textContent = message;
-    document.getElementById(elementId).style.display = 'block';
-    document.getElementById(inputId).classList.add('error');
+    const errorElement = document.getElementById(elementId);
+    const inputElement = document.getElementById(inputId);
+    
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+    inputElement.classList.add('error');
 }
 
 function resetErrors() {
     const errors = ['nameError', 'emailError', 'passwordError', 'confirmPasswordError'];
     errors.forEach(id => {
-        document.getElementById(id).style.display = 'none';
+        const element = document.getElementById(id);
+        if (element) element.style.display = 'none';
     });
     
     const inputs = document.querySelectorAll('.form-input');
@@ -573,45 +301,68 @@ async function registerUser() {
     resetErrors();
     
     try {
-        console.log('🔄 Iniciando registro...');
+        console.log('🔄 Iniciando registro para:', email);
         
-        // USAR A FUNÇÃO DO SUPABASE.JS QUE VOCÊ CRIOU
+        // Verificar se supabaseAuth está disponível
         if (!window.supabaseAuth || !window.supabaseAuth.registerUser) {
             throw new Error('Erro: Função de registro não encontrada. Verifique o supabase.js');
         }
         
+        // Chamar função de registro do supabase.js
         const result = await window.supabaseAuth.registerUser(email, password, fullName);
         
-        console.log('📊 Resultado:', result);
+        console.log('📊 Resultado do registro:', result);
         
         if (result.success) {
             // Mostrar modal de sucesso
+            document.getElementById('registeredEmail').textContent = email;
+            document.getElementById('tempPlayerCode').textContent = result.playerCode || 'Gerando...';
             document.getElementById('successModal').style.display = 'flex';
-            console.log('✅ Email de confirmação enviado!');
             
-            // Salvar código temporariamente
-            if (result.playerCode) {
-                localStorage.setItem('temp_player_code', result.playerCode);
-            }
+            // Salvar dados localmente
+            localStorage.setItem('pending_registration', 'true');
+            localStorage.setItem('pending_email', email);
+            localStorage.setItem('pending_name', fullName);
+            localStorage.setItem('pending_code', result.playerCode);
+            
+            // Mostrar botão para reenviar confirmação
+            document.getElementById('resendContainer').style.display = 'block';
+            document.getElementById('resendBtn').disabled = false;
+            
+            // Mostrar caixa informativa
+            document.getElementById('infoBox').style.display = 'block';
+            document.getElementById('infoMessage').textContent = 
+                'Aguardando confirmação do email. Verifique sua caixa de entrada e spam.';
             
             // Limpar formulário
             setTimeout(() => {
                 document.getElementById('registerForm').reset();
-            }, 2000);
+            }, 1000);
+            
+            console.log('✅ Registro iniciado com sucesso. Código:', result.playerCode);
+            
         } else {
             // Tratar erros específicos
             let errorMessage = result.error || 'Erro desconhecido no cadastro';
             
             // Mapear erros comuns
             if (errorMessage.includes('User already registered') || 
-                errorMessage.includes('already exists')) {
+                errorMessage.includes('already exists') ||
+                errorMessage.includes('duplicate key')) {
                 errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.';
+                // Mostrar botão de login
+                document.getElementById('infoBox').style.display = 'block';
+                document.getElementById('infoMessage').innerHTML = 
+                    'Este email já está cadastrado. <a href="login.html" style="color: var(--primary-gold);">Clique aqui para fazer login</a>';
             } else if (errorMessage.includes('Password should')) {
                 errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
             } else if (errorMessage.includes('Invalid email')) {
                 errorMessage = 'Por favor, insira um e-mail válido.';
             } else if (errorMessage.includes('Email rate limit exceeded')) {
                 errorMessage = 'Muitas tentativas. Aguarde alguns minutos.';
+            } else if (errorMessage.includes('email not confirmed')) {
+                errorMessage = 'Este email ainda não foi confirmado. Verifique sua caixa de entrada.';
+                document.getElementById('resendContainer').style.display = 'block';
             }
             
             throw new Error(errorMessage);
@@ -631,65 +382,187 @@ async function registerUser() {
     }
 }
 
-// =============== CONFIRMAÇÃO DE EMAIL ===============
-function checkEmailConfirmation() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const confirmed = urlParams.get('confirmed');
+// =============== REENVIAR EMAIL DE CONFIRMAÇÃO ===============
+async function resendConfirmationEmail() {
+    const email = document.getElementById('email').value.trim() || localStorage.getItem('pending_email');
     
-    console.log('🔍 Verificando confirmação:', confirmed);
-    
-    if (confirmed === 'true') {
-        // Email confirmado, mostrar código
-        setTimeout(() => {
-            showEmailConfirmedModal();
-        }, 1000);
+    if (!email) {
+        alert('Por favor, digite seu email primeiro');
+        return;
     }
-}
-
-async function showEmailConfirmedModal() {
+    
+    const resendBtn = document.getElementById('resendBtn');
+    const originalText = resendBtn.innerHTML;
+    
     try {
-        console.log('🎉 Email confirmado! Buscando perfil...');
+        resendBtn.disabled = true;
+        resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
         
-        // USAR A FUNÇÃO DO SUPABASE.JS
-        if (window.supabaseAuth && window.supabaseAuth.getCurrentUserProfile) {
-            const result = await window.supabaseAuth.getCurrentUserProfile();
+        console.log('🔄 Reenviando confirmação para:', email);
+        
+        // Verificar se supabaseAuth está disponível
+        if (!window.supabaseAuth || !window.supabaseAuth.resendConfirmationEmail) {
+            throw new Error('Função de reenvio não disponível');
+        }
+        
+        const result = await window.supabaseAuth.resendConfirmationEmail(email);
+        
+        if (result.success) {
+            // Mostrar modal de sucesso
+            document.getElementById('resendMessage').textContent = 
+                `Email de confirmação reenviado para ${email}. Verifique sua caixa de entrada e pasta de spam.`;
+            document.getElementById('resendModal').style.display = 'flex';
             
-            console.log('📋 Resultado perfil:', result);
+            // Agendar próximo reenvio (2 minutos)
+            setTimeout(() => {
+                resendBtn.disabled = false;
+            }, 120000);
             
-            if (result.success && result.profile) {
-                // Mostrar código do jogador
-                document.getElementById('playerCodeDisplay').textContent = result.profile.player_code;
-                document.getElementById('emailConfirmedModal').style.display = 'flex';
-                
-                // Salvar dados
-                localStorage.setItem('player_code', result.profile.player_code);
-                localStorage.setItem('user_name', result.profile.full_name);
-                
-            } else {
-                // Tentar pegar código temporário
-                const tempCode = localStorage.getItem('temp_player_code');
-                const fallbackCode = tempCode || Math.floor(1000000 + Math.random() * 9000000).toString();
-                
-                document.getElementById('playerCodeDisplay').textContent = fallbackCode;
-                document.getElementById('emailConfirmedModal').style.display = 'flex';
-                
-                localStorage.setItem('player_code', fallbackCode);
-            }
+            console.log('✅ Email reenviado com sucesso');
         } else {
-            // Fallback básico
-            const fallbackCode = Math.floor(1000000 + Math.random() * 9000000).toString();
-            document.getElementById('playerCodeDisplay').textContent = fallbackCode;
-            document.getElementById('emailConfirmedModal').style.display = 'flex';
-            localStorage.setItem('player_code', fallbackCode);
+            throw new Error(result.error || 'Erro ao reenviar email');
         }
         
     } catch (error) {
-        console.error('Erro ao mostrar confirmação:', error);
-        const fallbackCode = Math.floor(1000000 + Math.random() * 9000000).toString();
-        document.getElementById('playerCodeDisplay').textContent = fallbackCode;
-        document.getElementById('emailConfirmedModal').style.display = 'flex';
-        localStorage.setItem('player_code', fallbackCode);
+        console.error('❌ Erro ao reenviar email:', error);
+        alert('Erro ao reenviar email: ' + error.message);
+    } finally {
+        resendBtn.innerHTML = originalText;
     }
+}
+
+// =============== CONFIRMAÇÃO DE EMAIL ===============
+async function checkEmailConfirmation() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const confirmed = urlParams.get('confirmed');
+    const codeFromUrl = urlParams.get('code');
+    
+    console.log('🔍 Verificando confirmação:', { confirmed, codeFromUrl });
+    
+    if (confirmed === 'true') {
+        // Email confirmado via URL
+        console.log('🎉 Email confirmado via link!');
+        
+        // Obter código do URL ou localStorage
+        const playerCode = codeFromUrl || localStorage.getItem('pending_code');
+        
+        if (playerCode) {
+            // Mostrar código imediatamente
+            showEmailConfirmedModal(playerCode);
+            
+            // Tentar completar registro no supabase
+            try {
+                if (window.supabaseAuth && window.supabaseAuth.checkAndCompleteRegistration) {
+                    const result = await window.supabaseAuth.checkAndCompleteRegistration();
+                    console.log('📋 Resultado do registro completo:', result);
+                    
+                    if (result.success && result.playerCode) {
+                        // Atualizar código se diferente
+                        if (result.playerCode !== playerCode) {
+                            document.getElementById('playerCodeDisplay').textContent = result.playerCode;
+                            localStorage.setItem('player_code', result.playerCode);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao completar registro:', error);
+                // Continuar com o código que temos
+            }
+            
+            // Limpar dados pendentes
+            localStorage.removeItem('pending_registration');
+            localStorage.removeItem('pending_email');
+            localStorage.removeItem('pending_name');
+            localStorage.removeItem('pending_code');
+            
+            // Esconder botão de reenvio
+            document.getElementById('resendContainer').style.display = 'none';
+            document.getElementById('infoBox').style.display = 'none';
+        }
+    } else {
+        // Verificar se há sessão ativa (usuário já confirmou)
+        checkExistingSession();
+    }
+}
+
+// =============== VERIFICAR SESSÃO EXISTENTE ===============
+async function checkExistingSession() {
+    try {
+        if (window.supabaseAuth && window.supabaseAuth.checkAuthStatus) {
+            const authStatus = await window.supabaseAuth.checkAuthStatus();
+            
+            if (authStatus.isAuthenticated && authStatus.emailConfirmed) {
+                console.log('✅ Usuário já está autenticado e confirmado');
+                
+                // Buscar perfil do usuário
+                const profileResult = await window.supabaseAuth.getCurrentUserProfile();
+                
+                if (profileResult.success && profileResult.profile) {
+                    // Mostrar código se já tiver perfil
+                    showEmailConfirmedModal(profileResult.profile.player_code);
+                }
+            }
+        }
+    } catch (error) {
+        console.log('ℹ️ Nenhuma sessão ativa encontrada');
+    }
+}
+
+// =============== VERIFICAR CADASTRO PENDENTE ===============
+function checkPendingRegistration() {
+    const hasPending = localStorage.getItem('pending_registration');
+    const pendingEmail = localStorage.getItem('pending_email');
+    
+    if (hasPending === 'true' && pendingEmail) {
+        console.log('📋 Cadastro pendente encontrado para:', pendingEmail);
+        
+        // Preencher email no formulário
+        document.getElementById('email').value = pendingEmail;
+        
+        // Mostrar botão de reenvio
+        document.getElementById('resendContainer').style.display = 'block';
+        
+        // Mostrar caixa informativa
+        document.getElementById('infoBox').style.display = 'block';
+        document.getElementById('infoMessage').textContent = 
+            `Aguardando confirmação do email ${pendingEmail}. Clique no link enviado ou reenvie o email.`;
+    }
+}
+
+// =============== MOSTRAR MODAL DE EMAIL CONFIRMADO ===============
+function showEmailConfirmedModal(playerCode) {
+    if (!playerCode) {
+        // Gerar código fallback
+        playerCode = Math.floor(1000000 + Math.random() * 9000000).toString();
+        console.log('⚠️ Usando código fallback:', playerCode);
+    }
+    
+    console.log('🎯 Mostrando código confirmado:', playerCode);
+    
+    // Mostrar código
+    document.getElementById('playerCodeDisplay').textContent = playerCode;
+    document.getElementById('emailConfirmedModal').style.display = 'flex';
+    
+    // Salvar dados permanentemente
+    localStorage.setItem('player_code', playerCode);
+    localStorage.setItem('registration_complete', 'true');
+    
+    // Limpar dados temporários
+    localStorage.removeItem('temp_player_code');
+    localStorage.removeItem('pending_registration');
+    localStorage.removeItem('pending_email');
+    localStorage.removeItem('pending_name');
+    localStorage.removeItem('pending_code');
+    
+    // Obter nome do usuário
+    const userName = localStorage.getItem('pending_name') || 
+                     document.getElementById('fullName')?.value || 
+                     'Jogador';
+    localStorage.setItem('user_name', userName);
+    
+    // Esconder elementos desnecessários
+    document.getElementById('resendContainer').style.display = 'none';
+    document.getElementById('infoBox').style.display = 'none';
 }
 
 // =============== FUNÇÕES MODAIS ===============
@@ -701,9 +574,21 @@ function closeErrorModal() {
     document.getElementById('errorModal').style.display = 'none';
 }
 
-function goToLogin() {
-    window.location.href = 'login.html?registered=true';
+function closeResendModal() {
+    document.getElementById('resendModal').style.display = 'none';
 }
+
+function goToLogin() {
+    window.location.href = 'login.html?registered=true&code=' + 
+                          localStorage.getItem('player_code');
+}
+
+// =============== FUNÇÕES AUXILIARES GLOBAIS ===============
+// Disponibilizar funções importantes globalmente
+window.showEmailConfirmedModal = showEmailConfirmedModal;
+window.closeSuccessModal = closeSuccessModal;
+window.closeErrorModal = closeErrorModal;
+window.goToLogin = goToLogin;
 </script>
 </body>
 </html>
