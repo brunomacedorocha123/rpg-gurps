@@ -356,6 +356,80 @@
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
         });
+        // Função alternativa para gerar código se o trigger falhar
+async function generateUserCodeFallback(userId) {
+    try {
+        const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const numbers = '23456789';
+        
+        // Tenta 5 códigos diferentes
+        for (let attempt = 0; attempt < 5; attempt++) {
+            let code = '';
+            // 3 letras
+            for (let i = 0; i < 3; i++) {
+                code += letters.charAt(Math.floor(Math.random() * letters.length));
+            }
+            // 4 números
+            for (let i = 0; i < 4; i++) {
+                code += numbers.charAt(Math.floor(Math.random() * numbers.length));
+            }
+            
+            // Verifica no Supabase se o código já existe
+            const { data: existing } = await window.supabaseClient
+                .from('profiles')
+                .select('user_code')
+                .eq('user_code', code)
+                .single();
+            
+            if (!existing) {
+                // Se não existe, insere
+                const { error } = await window.supabaseClient
+                    .from('profiles')
+                    .insert([{ 
+                        id: userId, 
+                        user_code: code 
+                    }]);
+                
+                if (!error) {
+                    console.log('Código gerado via fallback:', code);
+                    return code;
+                }
+            }
+        }
+        
+        // Fallback final: usa parte do UUID
+        const fallbackCode = userId.substr(0, 7).toUpperCase();
+        const { error } = await window.supabaseClient
+            .from('profiles')
+            .insert([{ 
+                id: userId, 
+                user_code: fallbackCode 
+            }]);
+        
+        return fallbackCode;
+    } catch (error) {
+        console.error('Erro ao gerar código fallback:', error);
+        return 'USER' + Math.floor(1000 + Math.random() * 9000);
+    }
+}
+
+// MODIFIQUE a parte do cadastro que lida com sucesso:
+// No cadastro.html, procure onde tem "// SUCESSO" e substitua por:
+
+// SUCESSO
+showMessage(`✅ Conta criada com sucesso! Verifique seu e-mail (${email}) e clique no link de confirmação.`, 'success');
+
+// Tenta gerar código imediatamente (fallback)
+if (data.user) {
+    setTimeout(async () => {
+        try {
+            const code = await generateUserCodeFallback(data.user.id);
+            console.log('Código do usuário:', code);
+        } catch (e) {
+            console.log('Código será gerado após confirmação do email');
+        }
+    }, 1000);
+}
     </script>
 </body>
 </html>
