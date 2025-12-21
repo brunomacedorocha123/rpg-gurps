@@ -6,8 +6,6 @@
     <title>GURPS Tool - Registrar-se</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
     <style>
         * {
             margin: 0;
@@ -300,9 +298,15 @@
         </div>
     </div>
 
+    <!-- SUPABASE SCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuração
-        const supabase = window.supabaseClient;
+        // Configuração do Supabase DIRETO (sem arquivo externo)
+        const SUPABASE_URL = 'https://mdyohqtvswunkhefbrkr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1keW9ocXR2c3d1bmtoZWZicmtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODA4NzYsImV4cCI6MjA4MTg1Njg3Nn0.bfc4sh8kDNhAXf9b1eRAlDuB0lGTfQIWNl6Sju1LViE';
+        
+        // Cria cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         // Elementos DOM
         const registerForm = document.getElementById('registerForm');
@@ -355,24 +359,60 @@
             showMessage('Criando sua conta...', 'info');
             
             try {
-                // 1. Cadastra o usuário
+                // 1. Cadastra o usuário (SEM verificação de email por enquanto)
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
-                        emailRedirectTo: window.location.origin + '/verify-email.html'
+                        // Desativa verificação de email TEMPORARIAMENTE
+                        emailRedirectTo: window.location.origin + '/home.html'
                     }
                 });
                 
-                if (authError) throw authError;
+                if (authError) {
+                    // Se for erro de "user already registered", tenta login
+                    if (authError.message.includes('already registered')) {
+                        showMessage('Usuário já cadastrado. Fazendo login automático...', 'info');
+                        
+                        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                            email,
+                            password
+                        });
+                        
+                        if (loginError) throw loginError;
+                        
+                        // Login bem-sucedido
+                        showMessage('✅ Login automático realizado! Redirecionando...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'home.html';
+                        }, 2000);
+                        return;
+                    }
+                    throw authError;
+                }
                 
                 // 2. Mostra mensagem de sucesso
-                showMessage('✅ Conta criada com sucesso! Verifique seu e-mail para confirmar.', 'success');
+                showMessage('✅ Conta criada com sucesso!', 'success');
                 
-                // 3. Busca o código do usuário após um pequeno delay
-                setTimeout(async () => {
-                    await fetchUserCode(authData.user.id);
-                }, 1000);
+                // 3. FAZ LOGIN AUTOMATICAMENTE (sem esperar email)
+                const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (loginError) {
+                    console.log('Aguardando confirmação de email...');
+                    showMessage('📧 Verifique seu email para confirmar o cadastro. Após confirmação, faça login.', 'info');
+                } else {
+                    // Login bem-sucedido - busca código
+                    await fetchUserCode(loginData.user.id);
+                    showMessage('✅ Login realizado! Redirecionando...', 'success');
+                    
+                    // Redireciona após 2 segundos
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 2000);
+                }
                 
                 // 4. Limpa o formulário
                 registerForm.reset();
@@ -388,7 +428,7 @@
         async function fetchUserCode(userId) {
             try {
                 // Aguarda um momento para o trigger criar o profile
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 const { data, error } = await supabase
                     .from('profiles')
@@ -401,12 +441,15 @@
                 if (data && data.user_code) {
                     userCodeSpan.textContent = data.user_code;
                     codeDisplay.style.display = 'block';
-                    showMessage(`🎉 Seu código único é: ${data.user_code}`, 'info');
+                    console.log('Código do usuário:', data.user_code);
+                    
+                    // Salva no localStorage para usar na home
+                    localStorage.setItem('user_code', data.user_code);
                 }
             } catch (error) {
                 console.log('Aguardando geração do código...');
-                // Tenta novamente após 3 segundos
-                setTimeout(() => fetchUserCode(userId), 3000);
+                // Tenta novamente após 2 segundos
+                setTimeout(() => fetchUserCode(userId), 2000);
             }
         }
         
