@@ -1,20 +1,33 @@
-// supabase.js - VERSÃO COMPLETA E DEFINITIVA
+// supabase.js - VERSÃO COMPLETA E FUNCIONAL
+// Coloque isso em um arquivo chamado supabase.js
+
 const SUPABASE_URL = 'https://czysizvvnzxwsxqheogx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6eXNpenZ2bnp4d3N4cWhlb2d4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNjQ5NjcsImV4cCI6MjA4MTg0MDk2N30.SdT-vsY-XSNwxRTxKHQD-zpeojgQSOFdhSSLet8cpyo';
 
-// Verificar se biblioteca carregou
+// 1. VERIFICAR SE A BIBLIOTECA CARREGOU
 if (typeof supabase === 'undefined') {
-    console.error('ERRO: Biblioteca Supabase não carregada');
-    throw new Error('Biblioteca Supabase não está disponível');
+    console.error('❌ ERRO: Biblioteca Supabase não carregada!');
+    console.error('Adicione no HTML:');
+    console.error('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>');
+    throw new Error('Biblioteca Supabase não encontrada');
 }
 
-// Inicializar cliente Supabase
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 2. INICIALIZAR O CLIENTE
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        storage: localStorage
+    }
+});
 
-// ==================== FUNÇÕES AUXILIARES ====================
+console.log('✅ Supabase inicializado com sucesso');
+
+// 3. FUNÇÕES AUXILIARES
 
 /**
- * Gera um código de jogador de 7 dígitos
+ * Gera um código de 7 dígitos
  * @returns {string} Código de 7 dígitos
  */
 function generatePlayerCode() {
@@ -22,7 +35,7 @@ function generatePlayerCode() {
 }
 
 /**
- * Verifica se um código de jogador já existe no banco
+ * Verifica se um código já existe no banco
  * @param {string} code - Código a verificar
  * @returns {Promise<boolean>} True se for único
  */
@@ -32,89 +45,61 @@ async function isPlayerCodeUnique(code) {
             .from('profiles')
             .select('player_code')
             .eq('player_code', code)
-            .single();
+            .maybeSingle();
         
-        // Se não encontrou dados, o código é único
-        return !data;
+        if (error) {
+            console.warn('⚠️ Erro ao verificar código:', error.message);
+            return true; // Assume único se houver erro
+        }
+        
+        return !data; // True se não encontrar (código único)
     } catch (error) {
-        // Se erro é "nenhuma linha retornada", código é único
+        console.error('❌ Erro inesperado:', error);
         return true;
     }
 }
 
 /**
- * Gera um código de jogador único
- * @returns {Promise<string>} Código único de 7 dígitos
+ * Gera um código único de 7 dígitos
+ * @returns {Promise<string>} Código único
  */
 async function generateUniquePlayerCode() {
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 5;
     
     while (attempts < maxAttempts) {
         const code = generatePlayerCode();
         const isUnique = await isPlayerCodeUnique(code);
         
         if (isUnique) {
+            console.log(`✅ Código único gerado: ${code}`);
             return code;
         }
         
         attempts++;
+        console.log(`🔄 Tentativa ${attempts}: código ${code} já existe`);
     }
     
-    // Fallback: usa timestamp
-    return Date.now().toString().slice(-7);
+    // Fallback: timestamp
+    const fallbackCode = Date.now().toString().slice(-7);
+    console.log(`⚠️ Usando fallback: ${fallbackCode}`);
+    return fallbackCode;
 }
 
-/**
- * Cria perfil do usuário na tabela profiles
- * @param {string} userId - ID do usuário do Auth
- * @param {string} fullName - Nome completo do usuário
- * @returns {Promise<Object>} Resultado da operação
- */
-async function createUserProfile(userId, fullName) {
-    try {
-        const playerCode = await generateUniquePlayerCode();
-        
-        const { data, error } = await supabaseClient
-            .from('profiles')
-            .insert({
-                user_id: userId,
-                player_code: playerCode,
-                full_name: fullName
-            })
-            .select();
-        
-        if (error) {
-            throw new Error(`Erro ao criar perfil: ${error.message}`);
-        }
-        
-        return {
-            success: true,
-            playerCode: playerCode,
-            profile: data[0]
-        };
-    } catch (error) {
-        return {
-            success: false,
-            error: error.message
-        };
-    }
-}
-
-// ==================== FUNÇÕES PRINCIPAIS ====================
+// 4. FUNÇÕES PRINCIPAIS
 
 /**
- * Registra um novo usuário no sistema
+ * Registra um novo usuário
  * @param {string} email - Email do usuário
- * @param {string} password - Senha do usuário
- * @param {string} fullName - Nome completo do usuário
+ * @param {string} password - Senha
+ * @param {string} fullName - Nome completo
  * @returns {Promise<Object>} Resultado do registro
  */
 async function registerUser(email, password, fullName) {
     try {
-        const baseUrl = window.location.origin;
+        console.log('🔄 Iniciando registro para:', email);
         
-        // Registrar no Supabase Auth
+        // 1. Registrar no Auth do Supabase
         const { data: authData, error: authError } = await supabaseClient.auth.signUp({
             email: email,
             password: password,
@@ -122,39 +107,62 @@ async function registerUser(email, password, fullName) {
                 data: {
                     full_name: fullName
                 },
-                emailRedirectTo: `${baseUrl}/cadastro.html?confirmed=true`
+                emailRedirectTo: `${window.location.origin}/cadastro.html?confirmed=true`
             }
         });
-        
+
         if (authError) {
-            throw new Error(`Erro no cadastro: ${authError.message}`);
+            console.error('❌ Erro no Auth:', authError);
+            throw new Error(authError.message);
         }
+
+        console.log('✅ Usuário criado no Auth, ID:', authData.user?.id);
         
-        // Se usuário foi criado, criar perfil
-        if (authData.user) {
-            const profileResult = await createUserProfile(authData.user.id, fullName);
-            
-            if (!profileResult.success) {
-                throw new Error(profileResult.error);
+        // 2. Gerar código único
+        const playerCode = await generateUniquePlayerCode();
+        console.log('🎯 Código gerado:', playerCode);
+        
+        // 3. Criar perfil do usuário
+        if (authData.user?.id) {
+            const { error: profileError } = await supabaseClient
+                .from('profiles')
+                .insert({
+                    user_id: authData.user.id,
+                    player_code: playerCode,
+                    full_name: fullName
+                });
+
+            if (profileError) {
+                console.error('❌ Erro ao criar perfil:', profileError);
+                
+                // Tentar sem user_id (algumas políticas permitem)
+                const { error: fallbackError } = await supabaseClient
+                    .from('profiles')
+                    .insert({
+                        player_code: playerCode,
+                        full_name: fullName
+                    });
+                    
+                if (fallbackError) {
+                    console.warn('⚠️ Não foi possível criar perfil automaticamente');
+                    console.warn('O perfil precisará ser criado manualmente após confirmação do email');
+                }
+            } else {
+                console.log('✅ Perfil criado com sucesso');
             }
-            
-            return {
-                success: true,
-                message: 'Cadastro realizado com sucesso! Verifique seu email para confirmar.',
-                user: authData.user,
-                playerCode: profileResult.playerCode,
-                requiresConfirmation: true
-            };
+        } else {
+            console.warn('⚠️ Usuário criado mas sem ID disponível');
         }
-        
-        // Email de confirmação enviado
+
         return {
             success: true,
-            message: 'Email de confirmação enviado! Verifique sua caixa de entrada.',
-            requiresConfirmation: true
+            message: 'Cadastro realizado! Verifique seu email para confirmar.',
+            requiresConfirmation: true,
+            playerCode: playerCode
         };
         
     } catch (error) {
+        console.error('❌ Erro geral no registro:', error);
         return {
             success: false,
             error: error.message
@@ -163,9 +171,9 @@ async function registerUser(email, password, fullName) {
 }
 
 /**
- * Faz login do usuário
- * @param {string} email - Email do usuário
- * @param {string} password - Senha do usuário
+ * Faz login de um usuário
+ * @param {string} email - Email
+ * @param {string} password - Senha
  * @returns {Promise<Object>} Resultado do login
  */
 async function loginUser(email, password) {
@@ -175,9 +183,7 @@ async function loginUser(email, password) {
             password: password
         });
         
-        if (error) {
-            throw new Error(error.message);
-        }
+        if (error) throw error;
         
         return {
             success: true,
@@ -210,10 +216,35 @@ async function getCurrentUserProfile() {
             .from('profiles')
             .select('*')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
         
         if (profileError) {
-            throw new Error('Perfil não encontrado');
+            console.error('❌ Erro ao buscar perfil:', profileError);
+            throw profileError;
+        }
+        
+        if (!profile) {
+            console.warn('⚠️ Perfil não encontrado para usuário:', user.id);
+            
+            // Criar perfil se não existir
+            const playerCode = await generateUniquePlayerCode();
+            const { data: newProfile, error: createError } = await supabaseClient
+                .from('profiles')
+                .insert({
+                    user_id: user.id,
+                    player_code: playerCode,
+                    full_name: user.user_metadata?.full_name || 'Jogador'
+                })
+                .select()
+                .single();
+            
+            if (createError) throw createError;
+            
+            return {
+                success: true,
+                profile: newProfile,
+                user: user
+            };
         }
         
         return {
@@ -222,6 +253,7 @@ async function getCurrentUserProfile() {
             user: user
         };
     } catch (error) {
+        console.error('❌ Erro ao obter perfil:', error);
         return {
             success: false,
             error: error.message
@@ -240,7 +272,7 @@ async function checkAuth() {
         return {
             isAuthenticated: !!user && !error,
             user: user,
-            error: error
+            error: error?.message
         };
     } catch (error) {
         return {
@@ -260,7 +292,7 @@ async function logoutUser() {
         
         return {
             success: !error,
-            error: error
+            error: error?.message
         };
     } catch (error) {
         return {
@@ -283,7 +315,7 @@ async function resetPassword(email) {
         
         return {
             success: !error,
-            error: error
+            error: error?.message
         };
     } catch (error) {
         return {
@@ -294,8 +326,8 @@ async function resetPassword(email) {
 }
 
 /**
- * Atualiza perfil do usuário
- * @param {Object} updates - Dados para atualizar
+ * Atualiza o perfil do usuário
+ * @param {Object} updates - Campos para atualizar
  * @returns {Promise<Object>} Resultado da atualização
  */
 async function updateUserProfile(updates) {
@@ -312,9 +344,7 @@ async function updateUserProfile(updates) {
             .eq('user_id', user.id)
             .select();
         
-        if (error) {
-            throw new Error(error.message);
-        }
+        if (error) throw error;
         
         return {
             success: true,
@@ -328,8 +358,7 @@ async function updateUserProfile(updates) {
     }
 }
 
-// ==================== EXPORTAÇÃO ====================
-
+// 5. EXPORTAR PARA USO GLOBAL
 window.supabaseClient = supabaseClient;
 window.supabaseAuth = {
     // Autenticação
@@ -342,7 +371,6 @@ window.supabaseAuth = {
     // Perfil
     getCurrentUserProfile,
     updateUserProfile,
-    createUserProfile,
     
     // Utilitários
     generatePlayerCode,
@@ -350,5 +378,4 @@ window.supabaseAuth = {
     isPlayerCodeUnique
 };
 
-// Inicialização completa
-console.log('Supabase configurado com sucesso');
+console.log('🔥 Supabase configurado e pronto para uso!');
