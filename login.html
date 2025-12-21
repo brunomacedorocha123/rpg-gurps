@@ -3,85 +3,432 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GURPS Tool - Entrar na Taverna</title>
-    <!-- (Mesmos estilos e links da página de cadastro) -->
+    <title>GURPS Tool - Entrar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Estilos idênticos à página de cadastro - para manter consistência */
-        :root { --primary-dark: #1a1200; --secondary-dark: #2c2008; --primary-gold: #d4af37; /* ... */ }
-        body { font-family: 'Cinzel', serif; background-color: var(--primary-dark); color: var(--text-light); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .auth-container { background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95)); padding: 40px; border-radius: 15px; border: 3px solid var(--wood-dark); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); width: 100%; max-width: 450px; text-align: center; }
-        .auth-title { font-family: 'Uncial Antiqua', cursive; color: var(--primary-gold); font-size: 2.5rem; margin-bottom: 10px; }
-        /* ... (copiar todos os estilos do cadastro.html) ... */
+        :root {
+            --primary-dark: #1a1200;
+            --secondary-dark: #2c2008;
+            --primary-gold: #d4af37;
+            --secondary-gold: #f4d03f;
+            --accent-red: #8b0000;
+            --accent-green: #2e5c3a;
+            --text-light: #f5f5dc;
+            --parchment: #f7f3e9;
+            --wood-dark: #5d4037;
+        }
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: var(--primary-dark);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
+        }
+        .auth-container {
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
+            padding: 40px;
+            border-radius: 15px;
+            border: 3px solid var(--wood-dark);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-gold), var(--accent-red), var(--primary-gold));
+        }
+        .auth-title {
+            font-family: 'Uncial Antiqua', cursive;
+            color: var(--primary-gold);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        .auth-subtitle {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--secondary-gold);
+            font-weight: bold;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(245, 245, 220, 0.1);
+            border: 2px solid var(--wood-dark);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            background-color: rgba(245, 245, 220, 0.15);
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s;
+        }
+        .btn:hover::before {
+            left: 100%;
+        }
+        .btn-login {
+            background: linear-gradient(145deg, var(--accent-green), #1e4028);
+            color: var(--text-light);
+            border: 2px solid #4a7c59;
+            box-shadow: 0 4px 0 #1e4028;
+        }
+        .btn-login:hover {
+            background: linear-gradient(145deg, #3a7c4a, #1e4028);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0 #1e4028;
+        }
+        .btn-login:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #1e4028;
+        }
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 0 #1e4028;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+            text-align: left;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.success {
+            background-color: rgba(46, 92, 58, 0.3);
+            border: 1px solid var(--accent-green);
+            color: #a3d9b1;
+        }
+        .message.error {
+            background-color: rgba(139, 0, 0, 0.3);
+            border: 1px solid var(--accent-red);
+            color: #ff9e9e;
+        }
+        .message.info {
+            background-color: rgba(44, 32, 8, 0.5);
+            border: 1px solid var(--primary-gold);
+            color: var(--secondary-gold);
+        }
+        .auth-links {
+            margin-top: 25px;
+            font-size: 0.9rem;
+        }
+        .auth-links a {
+            color: var(--secondary-gold);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .auth-links a:hover {
+            color: var(--primary-gold);
+            text-decoration: underline;
+        }
+        .player-code-display {
+            font-size: 2.5rem;
+            color: var(--secondary-gold);
+            font-weight: bold;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(212, 175, 55, 0.7); }
+            to { text-shadow: 0 0 20px rgba(212, 175, 55, 0.9), 0 0 30px rgba(212, 175, 55, 0.5); }
+        }
+        .password-toggle {
+            position: relative;
+        }
+        .password-toggle .toggle-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--secondary-gold);
+        }
     </style>
 </head>
 <body>
     <div class="auth-container">
         <h1 class="auth-title">Entrar na Taverna</h1>
-        <p class="auth-subtitle">Acesse sua conta para continuar sua aventura</p>
+        <p class="auth-subtitle">Acesse sua conta de aventureiro GURPS</p>
         
         <form id="loginForm">
             <div class="form-group">
                 <label for="email"><i class="fas fa-envelope"></i> E-mail do Aventureiro</label>
-                <input type="email" id="email" class="form-control" required placeholder="seu@email.com">
-            </div>
-            <div class="form-group">
-                <label for="password"><i class="fas fa-lock"></i> Senha Secreta</label>
-                <input type="password" id="password" class="form-control" required placeholder="Digite sua senha">
+                <input type="email" id="email" class="form-control" required placeholder="seu@email.com" autocomplete="email">
             </div>
             
-            <button type="submit" class="btn btn-primary">
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Senha Secreta</label>
+                <div class="password-toggle">
+                    <input type="password" id="password" class="form-control" required placeholder="Sua senha" autocomplete="current-password">
+                    <span class="toggle-icon" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-login" id="submitBtn">
                 <i class="fas fa-dungeon"></i> Entrar na Taverna
             </button>
             
             <div id="message" class="message"></div>
+            
+            <!-- Mostrar código do jogador após login -->
+            <div id="codeDisplay" style="display: none;">
+                <div class="player-code-display" id="playerCodeDisplay">0000000</div>
+                <p style="color: var(--text-light); font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Este é seu código único no mundo GURPS.
+                </p>
+            </div>
         </form>
         
         <div class="auth-links">
-            <p>Novo por aqui? <a href="cadastro.html">Forje sua Lenda</a></p>
+            <p>Novo aventureiro? <a href="cadastro.html">Crie sua conta</a></p>
             <p><a href="index.html"><i class="fas fa-arrow-left"></i> Voltar ao Início</a></p>
         </div>
     </div>
 
     <script>
-        // Configuração do Supabase (mesma do cadastro)
-        const supabaseUrl = 'https://jpskjtrdezdurwufxeco.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impwc2tqdHJkZXpkdXJ3dWZ4ZWNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNDA0MjIsImV4cCI6MjA4MTkxNjQyMn0.L35uibFfjLEhgbq_VPXmy9nUNQbjd4aMsgAyPn3zBhU';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        // Manipular o login
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        // CONFIGURAÇÃO SUPABASE
+        const SUPABASE_URL = 'https://jpskjtrdezdurwufxeco.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impwc2tqdHJkZXpkdXJ3dWZ4ZWNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNDA0MjIsImV4cCI6MjA4MTkxNjQyMn0.L35uibFfjLEhgbq_VPXmy9nUNQbjd4aMsgAyPn3zBhU';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // FUNÇÕES AUXILIARES
+        function showMessage(text, type = 'info') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (messageEl.textContent === text) {
+                        messageEl.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        }
+        
+        function setLoading(isLoading) {
+            const btn = document.getElementById('submitBtn');
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-dungeon"></i> Entrar na Taverna';
+            }
+        }
+        
+        function showPlayerCode(code) {
+            document.getElementById('playerCodeDisplay').textContent = code;
+            document.getElementById('codeDisplay').style.display = 'block';
+        }
+        
+        // LOGIN PRINCIPAL
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const messageEl = document.getElementById('message');
             
-            messageEl.style.display = 'none';
+            // Validação
+            if (!email || !email.includes('@')) {
+                showMessage('Por favor, insira um e-mail válido.', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('A senha deve ter pelo menos 6 caracteres.', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            showMessage('Verificando suas credenciais...', 'info');
             
             try {
-                // Fazer login com e-mail e senha[citation:3]
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password
+                // 1. FAZER LOGIN
+                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
                 });
                 
-                if (error) throw error;
+                if (authError) {
+                    console.error('Erro do Supabase:', authError);
+                    
+                    if (authError.message.includes('Invalid') || authError.message.includes('credentials')) {
+                        throw new Error('E-mail ou senha incorretos.');
+                    } else if (authError.message.includes('Email not confirmed')) {
+                        throw new Error('E-mail não confirmado. Verifique sua caixa de entrada.');
+                    } else if (authError.message.includes('rate limit')) {
+                        throw new Error('Muitas tentativas. Aguarde 1 minuto.');
+                    } else {
+                        throw new Error('Erro ao fazer login: ' + authError.message);
+                    }
+                }
                 
-                // Sucesso - redirecionar para home
-                messageEl.textContent = 'Login realizado! Redirecionando para sua aventura...';
-                messageEl.className = 'message success';
-                messageEl.style.display = 'block';
+                console.log('Login bem-sucedido:', authData.user);
                 
-                setTimeout(() => {
-                    window.location.href = 'home.html';
-                }, 1500);
+                // 2. OBTER CÓDIGO DO JOGADOR
+                if (authData.user && authData.user.id) {
+                    try {
+                        // Buscar perfil do jogador
+                        const { data: profile, error: profileError } = await supabase
+                            .from('player_profiles')
+                            .select('player_code')
+                            .eq('user_id', authData.user.id)
+                            .single();
+                        
+                        if (profileError) {
+                            console.warn('Perfil não encontrado, criando...');
+                            
+                            // Criar perfil se não existir
+                            const { data: newProfile } = await supabase
+                                .from('player_profiles')
+                                .insert([{
+                                    user_id: authData.user.id,
+                                    character_name: email.split('@')[0]
+                                }])
+                                .select('player_code')
+                                .single();
+                            
+                            if (newProfile) {
+                                showPlayerCode(newProfile.player_code);
+                                showMessage('✅ Login realizado! Novo código gerado.', 'success');
+                            }
+                        } else {
+                            showPlayerCode(profile.player_code);
+                            showMessage('✅ Login realizado com sucesso!', 'success');
+                        }
+                        
+                        // Redirecionar após mostrar o código
+                        setTimeout(() => {
+                            window.location.href = 'home.html';
+                        }, 3000);
+                        
+                    } catch (dbError) {
+                        console.warn('Erro ao buscar perfil:', dbError);
+                        showMessage('✅ Login realizado! Redirecionando...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'home.html';
+                        }, 2000);
+                    }
+                }
                 
             } catch (error) {
-                messageEl.textContent = `Erro: ${error.message}`;
-                messageEl.className = 'message error';
-                messageEl.style.display = 'block';
-                console.error('Erro no login:', error);
+                console.error('Erro completo:', error);
+                showMessage(`❌ ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
             }
+        });
+        
+        // TOGGLE VISIBILIDADE DA SENHA
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+        
+        // INICIALIZAÇÃO
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de login carregada');
+            
+            // Verificar se já está logado
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    showMessage('Você já está logado! Redirecionando...', 'info');
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 2000);
+                }
+            });
+            
+            // Foco no campo de email
+            document.getElementById('email').focus();
+            
+            // Enter para enviar formulário
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                }
+            });
         });
     </script>
 </body>
