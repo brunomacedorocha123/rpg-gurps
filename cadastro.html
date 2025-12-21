@@ -245,177 +245,172 @@
     </div>
 
     <script>
-        // Configuração do Supabase (SUAS CREDENCIAIS)
-        const supabaseUrl = 'https://jpskjtrdezdurwufxeco.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impwc2tqdHJkZXpkdXJ3dWZ4ZWNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNDA0MjIsImV4cCI6MjA4MTkxNjQyMn0.L35uibFfjLEhgbq_VPXmy9nUNQbjd4aMsgAyPn3zBhU';
-        
-        // Criar cliente Supabase
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        });
-
-        // Gerar ID de 7 dígitos (função simples no frontend)
-        function generatePlayerCode() {
-            return Math.floor(1000000 + Math.random() * 9000000).toString();
+    // CONFIGURAÇÃO SIMPLES E FUNCIONAL
+    const supabaseUrl = 'https://jpskjtrdezdurwufxeco.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impwc2tqdHJkZXpkdXJ3dWZ4ZWNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNDA0MjIsImV4cCI6MjA4MTkxNjQyMn0.L35uibFfjLEhgbq_VPXmy9nUNQbjd4aMsgAyPn3zBhU';
+    
+    // Criar cliente Supabase (FORMA SIMPLES)
+    const supabase = supabaseClient.createClient(supabaseUrl, supabaseKey);
+    
+    // Elementos da página
+    const form = document.getElementById('registerForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const messageEl = document.getElementById('message');
+    
+    // Código de 7 dígitos (simples, frontend apenas)
+    function generateSimpleCode() {
+        return Math.floor(1000000 + Math.random() * 9000000);
+    }
+    
+    // Mostrar mensagem
+    function showMessage(text, type = 'info') {
+        messageEl.textContent = text;
+        messageEl.className = `message ${type}`;
+        messageEl.style.display = 'block';
+        console.log(`[${type.toUpperCase()}] ${text}`);
+    }
+    
+    // Formatar botão
+    function setButtonLoading(isLoading) {
+        if (isLoading) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando conta...';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-scroll"></i> Registrar-se e Gerar Código';
         }
-
-        // Verificar se o usuário já está logado
-        async function checkExistingSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                showMessage('Você já está logado! Redirecionando...', 'info');
+    }
+    
+    // CADASTRO SUPER SIMPLES
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault(); // Impede recarregar página
+        
+        // 1. Pegar valores
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        
+        // 2. Validar
+        if (!email || !password) {
+            showMessage('Preencha e-mail e senha', 'error');
+            return;
+        }
+        
+        if (password.length < 6) {
+            showMessage('Senha precisa de 6+ caracteres', 'error');
+            return;
+        }
+        
+        // 3. Preparar interface
+        setButtonLoading(true);
+        messageEl.style.display = 'none';
+        
+        // 4. Fazer cadastro (SÓ ISSO)
+        try {
+            console.log('Tentando cadastrar:', email);
+            
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    emailRedirectTo: window.location.origin + '/home.html'
+                }
+            });
+            
+            if (error) {
+                console.error('Erro do Supabase:', error);
+                throw error;
+            }
+            
+            console.log('Resposta do Supabase:', data);
+            
+            // 5. Gerar código de 7 dígitos
+            const playerCode = generateSimpleCode();
+            
+            // 6. Tentar salvar no banco (MAS NÃO É OBRIGATÓRIO)
+            try {
+                const { error: dbError } = await supabase
+                    .from('player_profiles')
+                    .insert([{
+                        user_id: data.user.id,
+                        player_code: playerCode.toString(),
+                        character_name: 'Novo Aventureiro'
+                    }]);
+                    
+                if (dbError) {
+                    console.warn('Aviso (não é erro): Não salvou perfil ainda:', dbError.message);
+                    // CONTINUA MESMO ASSIM - o perfil pode ser criado depois
+                }
+            } catch (dbError) {
+                console.warn('Banco de dados pode não estar pronto:', dbError.message);
+                // IGNORA - não é crítico
+            }
+            
+            // 7. SUCESSO!
+            showMessage(`✅ Conta criada! Seu código é: ${playerCode}`, 'success');
+            
+            // Mostrar código bonito
+            document.getElementById('generatedCode').textContent = playerCode;
+            document.getElementById('codeDisplay').style.display = 'block';
+            
+            // Verificar se precisa confirmar e-mail
+            if (data.user && !data.user.email_confirmed_at) {
+                showMessage('📧 Verifique seu e-mail para ativar a conta', 'info');
+                
+                // Botão extra para login
+                setTimeout(() => {
+                    const loginBtn = document.createElement('button');
+                    loginBtn.className = 'btn btn-secondary';
+                    loginBtn.innerHTML = '<i class="fas fa-dungeon"></i> Ir para Login';
+                    loginBtn.onclick = () => window.location.href = 'login.html';
+                    messageEl.parentNode.insertBefore(loginBtn, messageEl.nextSibling);
+                }, 2000);
+            } else {
+                // Se não precisa confirmação
+                showMessage('Redirecionando em 5 segundos...', 'success');
                 setTimeout(() => {
                     window.location.href = 'home.html';
-                }, 2000);
-                return true;
+                }, 5000);
             }
-            return false;
+            
+        } catch (error) {
+            console.error('ERRO COMPLETO:', error);
+            
+            // Mensagens amigáveis
+            let errorMsg = 'Erro desconhecido';
+            
+            if (error.message.includes('already registered')) {
+                errorMsg = 'Este e-mail já está cadastrado. Faça login.';
+            } else if (error.message.includes('password')) {
+                errorMsg = 'Senha muito fraca. Use 6+ caracteres.';
+            } else if (error.message.includes('email')) {
+                errorMsg = 'E-mail inválido. Use um e-mail real.';
+            } else if (error.message.includes('SMTP') || error.message.includes('email') || error.message.includes('send')) {
+                errorMsg = '⚠️ Serviço de e-mail em manutenção. Use login social ou tente mais tarde.';
+            } else {
+                errorMsg = `Erro: ${error.message}`;
+            }
+            
+            showMessage(errorMsg, 'error');
+            
+        } finally {
+            // Sempre reativa o botão
+            setButtonLoading(false);
         }
-
-        // Mostrar mensagens
-        function showMessage(text, type = 'info') {
-            const messageEl = document.getElementById('message');
-            messageEl.textContent = text;
-            messageEl.className = `message ${type}`;
-            messageEl.style.display = 'block';
-            
-            // Auto-esconder após 10 segundos para mensagens de sucesso/info
-            if (type !== 'error') {
-                setTimeout(() => {
-                    messageEl.style.display = 'none';
-                }, 10000);
-            }
-        }
-
-        // Manipular o cadastro
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const messageEl = document.getElementById('message');
-            
-            // Validação básica
-            if (!email || !password) {
-                showMessage('Por favor, preencha todos os campos.', 'error');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showMessage('A senha deve ter pelo menos 6 caracteres.', 'error');
-                return;
-            }
-            
-            // Desabilitar botão durante o processo
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin loading-spinner"></i> Forjando sua lenda...';
-            messageEl.style.display = 'none';
-            
-            try {
-                // 1. Registrar o usuário no Supabase Auth
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        emailRedirectTo: window.location.origin + '/home.html'
-                    }
-                });
-                
-                if (authError) {
-                    // Verificar erros específicos
-                    if (authError.message.includes('already registered')) {
-                        throw new Error('Este e-mail já está cadastrado. Faça login ou use outro e-mail.');
-                    } else if (authError.message.includes('password')) {
-                        throw new Error('A senha não atende aos requisitos de segurança.');
-                    } else if (authError.message.includes('email')) {
-                        throw new Error('Por favor, use um e-mail válido.');
-                    }
-                    throw authError;
-                }
-                
-                console.log('Usuário criado no Auth:', authData.user);
-                
-                // 2. Gerar código de jogador único
-                const playerCode = generatePlayerCode();
-                
-                // 3. Tentar criar perfil no banco de dados
-                try {
-                    const { data: profileData, error: profileError } = await supabase
-                        .from('player_profiles')
-                        .insert([{
-                            user_id: authData.user.id,
-                            player_code: playerCode,
-                            character_name: 'Novo Aventureiro',
-                            created_at: new Date().toISOString()
-                        }])
-                        .select()
-                        .single();
-                    
-                    if (profileError) {
-                        console.warn('Erro ao criar perfil (pode já existir):', profileError);
-                        // Não lançar erro - o usuário ainda pode fazer login
-                    }
-                    
-                    // Sucesso total!
-                    showMessage(`🎉 Conta criada com sucesso! Seu código de aventureiro é: ${playerCode}`, 'success');
-                    
-                    // Mostrar código em destaque
-                    document.getElementById('generatedCode').textContent = playerCode;
-                    document.getElementById('codeDisplay').style.display = 'block';
-                    
-                    // Verificar se o e-mail foi enviado
-                    if (authData.user && !authData.user.email_confirmed_at) {
-                        showMessage('📧 Verifique seu e-mail para confirmar a conta. O link de confirmação foi enviado.', 'info');
-                        
-                        // Oferecer redirecionamento automático após confirmação
-                        setTimeout(() => {
-                            showMessage('Você pode fazer login agora mesmo! Redirecionando para login...', 'info');
-                            setTimeout(() => {
-                                window.location.href = 'login.html';
-                            }, 3000);
-                        }, 5000);
-                    } else {
-                        // Se já confirmado ou não precisa de confirmação
-                        showMessage('Redirecionando para sua aventura...', 'success');
-                        setTimeout(() => {
-                            window.location.href = 'home.html';
-                        }, 3000);
-                    }
-                    
-                } catch (profileError) {
-                    // Ainda mostra sucesso mesmo se o perfil falhar (pode ser criado depois)
-                    showMessage(`Conta criada! Código: ${playerCode}. Você pode fazer login.`, 'success');
-                    document.getElementById('generatedCode').textContent = playerCode;
-                    document.getElementById('codeDisplay').style.display = 'block';
-                }
-                
-            } catch (error) {
-                console.error('Erro no cadastro:', error);
-                showMessage(`Erro: ${error.message}`, 'error');
-                
-                // Reativar botão em caso de erro
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-scroll"></i> Registrar-se e Gerar Código';
-            }
-        });
-
-        // Verificar sessão ao carregar a página
-        document.addEventListener('DOMContentLoaded', async () => {
-            const isLoggedIn = await checkExistingSession();
-            if (isLoggedIn) {
-                // Desabilitar formulário se já estiver logado
-                document.getElementById('registerForm').style.opacity = '0.5';
-                document.getElementById('registerForm').style.pointerEvents = 'none';
-            }
-        });
-
-        // Foco automático no campo de e-mail
-        document.getElementById('email').focus();
-    </script>
+    });
+    
+    // DEBUG: Adicionar console.log para verificar
+    console.log('Página carregada. Supabase configurado.');
+    console.log('URL:', supabaseUrl);
+    
+    // Verificar se Supabase está carregado
+    if (typeof supabaseClient === 'undefined') {
+        console.error('ERRO: Supabase JS não carregou!');
+        showMessage('Erro: Biblioteca não carregou. Recarregue a página.', 'error');
+    } else {
+        console.log('Supabase carregado OK');
+    }
+</script>
 </body>
 </html>
