@@ -316,16 +316,41 @@
     </div>
 
     <script>
-    // ============ CONFIGURAÇÃO DO SUPABASE ============
+    // ============ ESPERAR SUPABASE CARREGAR ============
+    document.addEventListener('DOMContentLoaded', function() {
+        // Botão de registro
+        document.querySelector('.btn-register').addEventListener('click', register);
+        
+        // Enter para registrar
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') register();
+        });
+    });
+
+    // ============ CONFIGURAÇÃO ============
     const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
     
-    // Inicializar Supabase UMA VEZ
     let supabase;
-    if (!window.supabase) {
-        supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } else {
-        supabase = window.supabase;
+
+    // ============ INICIALIZAR SUPABASE ============
+    function initSupabase() {
+        if (window.supabase && window.supabase.auth) {
+            supabase = window.supabase;
+            console.log('Supabase já carregado');
+            return true;
+        }
+        
+        // Tentar criar cliente
+        try {
+            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            window.supabase = supabase;
+            console.log('Supabase inicializado');
+            return true;
+        } catch (error) {
+            console.error('Erro ao inicializar Supabase:', error);
+            return false;
+        }
     }
 
     // ============ FUNÇÕES AUXILIARES ============
@@ -335,24 +360,35 @@
     
     function showMessage(text, type) {
         const messageDiv = document.getElementById('message');
+        if (!messageDiv) return;
+        
         messageDiv.innerHTML = text;
         messageDiv.className = `message ${type}`;
         messageDiv.style.display = 'block';
         messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // ============ FUNÇÃO PRINCIPAL DE CADASTRO ============
+    // ============ FUNÇÃO PRINCIPAL ============
     async function register() {
-        // Pegar valores dos campos
+        console.log('Iniciando cadastro...');
+        
+        // 1. Inicializar Supabase se necessário
+        if (!supabase || !supabase.auth) {
+            if (!initSupabase()) {
+                showMessage('Erro: Sistema não carregado. Recarregue a página.', 'error');
+                return;
+            }
+        }
+        
+        // 2. Pegar valores
         const nome = document.getElementById('nome').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         
-        const messageDiv = document.getElementById('message');
         const loadingDiv = document.getElementById('loading');
 
-        // VALIDAÇÕES
+        // 3. Validações
         if (!nome || !email || !password || !confirmPassword) {
             showMessage('Por favor, preencha todos os campos.', 'error');
             return;
@@ -373,16 +409,16 @@
             return;
         }
 
-        // MOSTRAR LOADING
-        loadingDiv.style.display = 'block';
-        messageDiv.style.display = 'none';
+        // 4. Mostrar loading
+        if (loadingDiv) loadingDiv.style.display = 'block';
+        showMessage('', '');
 
         try {
-            // GERAR ID DO USUÁRIO
+            // 5. Gerar ID
             const userId = generateUserId();
             console.log('ID gerado:', userId);
 
-            // 1. CRIAR USUÁRIO NO SUPABASE AUTH
+            // 6. Criar usuário no Supabase Auth
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: email,
                 password: password,
@@ -395,120 +431,77 @@
                 }
             });
 
-            if (authError) {
-                console.error('Erro no auth:', authError);
-                throw authError;
-            }
+            if (authError) throw authError;
+            console.log('Auth OK:', authData);
 
-            console.log('Usuário criado no auth:', authData);
-
-            // 2. CRIAR PERFIL NA TABELA 'usuarios'
-            const { data: profileData, error: profileError } = await supabase
+            // 7. Criar na tabela usuarios
+            const { error: profileError } = await supabase
                 .from('usuarios')
                 .insert([{
                     user_id: userId,
                     email: email,
                     nome: nome,
                     data_criacao: new Date().toISOString()
-                }])
-                .select();
+                }]);
 
-            if (profileError) {
-                console.error('Erro ao criar perfil:', profileError);
-                
-                // Tentar deletar usuário do auth se falhou no perfil
-                if (authData?.user?.id) {
-                    try {
-                        await supabase.auth.admin.deleteUser(authData.user.id);
-                    } catch (deleteError) {
-                        console.error('Erro ao deletar usuário:', deleteError);
-                    }
-                }
-                
-                throw profileError;
-            }
+            if (profileError) throw profileError;
+            console.log('Perfil criado');
 
-            console.log('Perfil criado:', profileData);
-
-            // SUCESSO - MOSTRAR MENSAGEM
+            // 8. SUCESSO
             showMessage(
-                `✅ <strong>Conta criada com sucesso!</strong><br><br>
-                 Seu ID de aventureiro é: <span style="font-size: 24px; color: gold;">${userId}</span><br>
-                 <strong>ANOTE ESTE NÚMERO!</strong><br><br>
-                 Verifique seu email (${email}) para confirmar o cadastro.<br>
-                 Após confirmar, você poderá fazer login com seu email ou ID.`,
+                `✅ <strong>CADASTRO REALIZADO!</strong><br><br>
+                 <span style="font-size: 18px;">Seu ID de aventureiro:</span><br>
+                 <span style="font-size: 32px; color: gold; font-weight: bold;">${userId}</span><br><br>
+                 <strong>IMPORTANTE:</strong><br>
+                 1. ANOTE ou PRINT este número!<br>
+                 2. Verifique seu email: <strong>${email}</strong><br>
+                 3. Clique no link de confirmação<br>
+                 4. Após confirmar, faça login`,
                 'success'
             );
             
-            // LIMPAR FORMULÁRIO
+            // 9. Limpar formulário
             document.getElementById('nome').value = '';
             document.getElementById('email').value = '';
             document.getElementById('password').value = '';
             document.getElementById('confirmPassword').value = '';
 
-            // Salvar ID localmente (para conveniência)
-            localStorage.setItem('temp_user_id', userId);
+            // 10. Salvar ID
+            localStorage.setItem('gurps_user_id', userId);
 
         } catch (error) {
             console.error('Erro completo:', error);
             
-            // MENSAGENS DE ERRO AMIGÁVEIS
-            if (error.message.includes('already registered') || error.message.includes('User already registered')) {
-                showMessage('Este email já está cadastrado. Tente fazer login ou use outro email.', 'error');
+            // Mensagens amigáveis
+            let mensagem = 'Erro ao criar conta. ';
+            
+            if (error.message.includes('already registered') || 
+                error.message.includes('User already registered')) {
+                mensagem = 'Este email já está cadastrado. Faça login ou use outro email.';
             } else if (error.message.includes('Invalid email')) {
-                showMessage('Por favor, insira um email válido.', 'error');
+                mensagem = 'Email inválido. Verifique e tente novamente.';
             } else if (error.message.includes('password')) {
-                showMessage('A senha deve ter pelo menos 6 caracteres.', 'error');
+                mensagem = 'A senha precisa ter pelo menos 6 caracteres.';
             } else if (error.message.includes('duplicate key')) {
-                showMessage('Erro: ID duplicado. Tente novamente.', 'error');
+                mensagem = 'ID duplicado gerado. Clique em Registrar-se novamente.';
+            } else if (error.message.includes('fetch') || error.message.includes('network')) {
+                mensagem = 'Erro de conexão. Verifique sua internet.';
             } else {
-                showMessage('Erro ao criar conta: ' + error.message, 'error');
+                mensagem += error.message;
             }
             
+            showMessage(mensagem, 'error');
+            
         } finally {
-            // ESCONDER LOADING
-            loadingDiv.style.display = 'none';
+            // 11. Esconder loading
+            if (loadingDiv) loadingDiv.style.display = 'none';
         }
     }
 
-    // ============ EVENT LISTENERS ============
-    document.addEventListener('DOMContentLoaded', function() {
-        // Enter no formulário
-        document.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                register();
-            }
-        });
-
-        // Verificar se já tem ID salvo
-        const savedId = localStorage.getItem('temp_user_id');
-        if (savedId) {
-            console.log('ID salvo encontrado:', savedId);
-        }
-
-        // Botão de voltar
-        document.querySelector('.btn-back').addEventListener('click', function() {
-            window.location.href = 'index.html';
-        });
-    });
-
-    // ============ FUNÇÃO DE TESTE (OPCIONAL) ============
-    async function testConnection() {
-        try {
-            const { data, error } = await supabase.from('usuarios').select('count');
-            if (error) throw error;
-            console.log('Conexão com Supabase OK');
-            return true;
-        } catch (error) {
-            console.error('Erro na conexão:', error);
-            return false;
-        }
-    }
-
-    // Testar ao carregar (opcional)
+    // ============ INICIAR AO CARREGAR ============
     window.addEventListener('load', function() {
-        setTimeout(testConnection, 1000);
+        console.log('Página carregada, inicializando...');
+        initSupabase();
     });
 </script>
 </body>
