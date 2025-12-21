@@ -3,530 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GURPS Tool - Entrar</title>
+    <title>GURPS - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-dark: #1a1200;
-            --secondary-dark: #2c2008;
-            --primary-gold: #d4af37;
-            --secondary-gold: #f4d03f;
-            --accent-red: #8b0000;
-            --accent-green: #2e5c3a;
-            --text-light: #f5f5dc;
-            --text-gold: #ffd700;
-            --parchment: #f7f3e9;
-            --wood-dark: #5d4037;
-            --wood-light: #8d6e63;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cinzel', serif;
-            background-color: var(--primary-dark);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
-            color: var(--text-light);
+            background: #1a1200;
+            color: #f5f5dc;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            position: relative;
-        }
-
-        .header-border {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 120%;
-            border: 3px solid var(--primary-gold);
-            border-image: linear-gradient(45deg, var(--primary-gold), var(--secondary-gold), var(--primary-gold)) 1;
-            border-radius: 10px;
-            z-index: -1;
-        }
-
+        .container { max-width: 500px; width: 100%; }
         h1 {
             font-family: 'Uncial Antiqua', cursive;
             font-size: 2.5rem;
-            color: var(--text-gold);
-            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.8);
+            color: gold;
+            text-align: center;
             margin-bottom: 10px;
-            letter-spacing: 2px;
         }
-
-        .subtitle {
-            font-family: 'MedievalSharp', cursive;
-            color: var(--text-light);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-            margin-bottom: 20px;
-        }
-
         .login-options {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            justify-content: center;
         }
-
         .login-tab {
-            padding: 10px 20px;
-            background: rgba(44, 32, 8, 0.7);
-            border: 2px solid var(--wood-dark);
+            flex: 1;
+            padding: 10px;
+            background: #2c2008;
+            border: 2px solid #5d4037;
             border-radius: 8px;
-            color: var(--text-light);
+            color: white;
             cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Cinzel', serif;
+            text-align: center;
+            font-family: 'Cinzel';
         }
-
         .login-tab.active {
-            background: var(--primary-gold);
-            color: var(--primary-dark);
-            border-color: var(--secondary-gold);
+            background: gold;
+            color: #1a1200;
+            border-color: gold;
             font-weight: bold;
         }
-
         .form-container {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
-            padding: 40px 30px;
+            background: rgba(44, 32, 8, 0.9);
+            padding: 30px;
             border-radius: 15px;
-            border: 2px solid var(--wood-light);
-            box-shadow: 
-                0 10px 30px rgba(0, 0, 0, 0.5),
-                inset 0 0 20px rgba(0, 0, 0, 0.3);
-            position: relative;
+            border: 2px solid #8d6e63;
         }
-
-        .form-container::before {
-            content: '';
-            position: absolute;
-            top: -5px;
-            left: -5px;
-            right: -5px;
-            bottom: -5px;
-            background: linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-            border-radius: 20px;
-            z-index: -1;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
+        .form-group { 
+            margin-bottom: 20px;
             display: none;
         }
-
-        .form-group.active {
-            display: block;
-        }
-
+        .form-group.active { display: block; }
         label {
             display: block;
-            margin-bottom: 8px;
-            color: var(--secondary-gold);
+            color: #f4d03f;
+            margin-bottom: 5px;
             font-weight: bold;
-            font-size: 1.1rem;
         }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-with-icon i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary-gold);
-            font-size: 1.2rem;
-        }
-
         input {
             width: 100%;
-            padding: 15px 15px 15px 50px;
+            padding: 12px 15px;
             background: rgba(26, 18, 0, 0.7);
-            border: 2px solid var(--wood-dark);
+            border: 2px solid #5d4037;
             border-radius: 8px;
-            color: var(--text-light);
-            font-family: 'Cinzel', serif;
-            font-size: 1rem;
-            transition: all 0.3s;
+            color: white;
+            font-family: 'Cinzel';
         }
-
         input:focus {
             outline: none;
-            border-color: var(--primary-gold);
-            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
+            border-color: gold;
         }
-
         .btn {
             width: 100%;
-            padding: 16px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.2rem;
+            padding: 15px;
+            font-family: 'Cinzel';
             font-weight: bold;
-            text-decoration: none;
-            border-radius: 8px;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
-
-        .btn-login {
-            background: linear-gradient(145deg, var(--accent-green), #1e4028);
-            color: var(--text-light);
+        .btn-primary {
+            background: linear-gradient(145deg, #2e5c3a, #1e4028);
+            color: white;
             border: 2px solid #4a7c59;
-            box-shadow: 0 4px 0 #1e4028;
         }
-
-        .btn-login:hover {
-            background: linear-gradient(145deg, #3a7c4a, #1e4028);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 0 #1e4028;
+        .btn-secondary {
+            background: #2c2008;
+            color: white;
+            border: 2px solid #5d4037;
         }
-
-        .btn-login:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 0 #1e4028;
-        }
-
-        .btn-back {
-            background: linear-gradient(145deg, var(--secondary-dark), #1a1200);
-            color: var(--text-light);
-            border: 2px solid var(--wood-dark);
-            margin-top: 15px;
-        }
-
-        .btn-back:hover {
-            background: linear-gradient(145deg, #3a2e08, #1a1200);
-        }
-
         .message {
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
-            text-align: center;
             display: none;
+            text-align: center;
         }
-
         .success {
             background: rgba(46, 92, 58, 0.3);
-            border: 1px solid var(--accent-green);
+            border: 1px solid #2e5c3a;
             color: #90ee90;
         }
-
         .error {
             background: rgba(139, 0, 0, 0.3);
-            border: 1px solid var(--accent-red);
+            border: 1px solid #8b0000;
             color: #ff6b6b;
         }
-
         .loading {
             display: none;
             text-align: center;
             margin: 10px 0;
         }
-
         .loading i {
-            color: var(--primary-gold);
-            font-size: 1.5rem;
+            color: gold;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         .register-link {
             text-align: center;
-            margin-top: 25px;
-            color: var(--wood-light);
+            margin-top: 20px;
+            color: #8d6e63;
         }
-
         .register-link a {
-            color: var(--secondary-gold);
+            color: gold;
             text-decoration: none;
             font-weight: bold;
-        }
-
-        .register-link a:hover {
-            text-decoration: underline;
-        }
-
-        .forgot-password {
-            text-align: right;
-            margin-top: 10px;
-        }
-
-        .forgot-password a {
-            color: var(--wood-light);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .forgot-password a:hover {
-            color: var(--secondary-gold);
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="header-border"></div>
-            <h1>ENTRAR</h1>
-            <p class="subtitle">Bem-vindo de volta, aventureiro!</p>
-        </div>
-
+        <h1>ENTRAR</h1>
+        <p style="text-align: center; margin-bottom: 20px; color: #8d6e63;">
+            Retorne à taverna, aventureiro
+        </p>
+        
         <div class="login-options">
-            <button class="login-tab active" onclick="switchTab('email')">Email</button>
-            <button class="login-tab" onclick="switchTab('id')">ID do Usuário</button>
+            <button class="login-tab active" onclick="trocarModo('email')">Email</button>
+            <button class="login-tab" onclick="trocarModo('id')">ID do Jogador</button>
         </div>
-
+        
         <div class="form-container">
             <div id="message" class="message"></div>
             
             <!-- Login por Email -->
             <div id="email-form" class="form-group active">
-                <div class="form-group">
+                <div class="form-group active">
                     <label for="email">Email</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" id="email" placeholder="seu@email.com" required>
-                    </div>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
                 </div>
-
-                <div class="form-group">
+                <div class="form-group active">
                     <label for="password">Senha</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="password" placeholder="Sua senha" required>
-                    </div>
+                    <input type="password" id="password" placeholder="Sua senha" required>
                 </div>
-
-                <div class="forgot-password">
-                    <a href="#" onclick="forgotPassword()">Esqueceu a senha?</a>
-                </div>
+                <p style="text-align: right; margin-top: -10px; margin-bottom: 20px;">
+                    <a href="#" onclick="esqueciSenha()" style="color: #8d6e63; font-size: 0.9em;">Esqueceu a senha?</a>
+                </p>
             </div>
-
+            
             <!-- Login por ID -->
             <div id="id-form" class="form-group">
-                <div class="form-group">
-                    <label for="userId">ID do Usuário (7 dígitos)</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" id="userId" placeholder="Ex: 1234567" pattern="\d{7}" maxlength="7" required>
-                    </div>
+                <div class="form-group active">
+                    <label for="playerId">ID do Jogador (7 dígitos)</label>
+                    <input type="text" id="playerId" placeholder="Ex: 1234567" pattern="[0-9]{7}" maxlength="7" required>
                 </div>
-
-                <div class="form-group">
+                <div class="form-group active">
                     <label for="passwordId">Senha</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="passwordId" placeholder="Sua senha" required>
-                    </div>
+                    <input type="password" id="passwordId" placeholder="Sua senha" required>
                 </div>
             </div>
-
+            
             <div class="loading" id="loading">
                 <i class="fas fa-spinner"></i>
                 <p>Entrando na taverna...</p>
             </div>
-
-            <button class="btn btn-login" onclick="login()">
+            
+            <button class="btn btn-primary" id="btnLogin">
                 <i class="fas fa-dungeon"></i> Entrar
             </button>
-
-            <button class="btn btn-back" onclick="window.location.href='index.html'">
+            
+            <button class="btn btn-secondary" id="btnVoltar">
                 <i class="fas fa-arrow-left"></i> Voltar
             </button>
-
+            
             <div class="register-link">
-                Não tem uma conta? <a href="cadastro.html">Registre-se aqui</a>
+                Não tem conta? <a href="cadastro.html">Registre-se aqui</a>
             </div>
         </div>
     </div>
 
+    <!-- SCRIPT SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
+    
     <script>
-        let currentTab = 'email';
-
-        function switchTab(tab) {
-            currentTab = tab;
+        // CONFIGURAÇÃO
+        const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
+        
+        // INICIALIZAR
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // VARIÁVEIS
+        let modoLogin = 'email';
+        
+        // FUNÇÕES
+        function trocarModo(modo) {
+            modoLogin = modo;
             
             // Atualizar tabs
-            document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.login-tab[onclick*="${tab}"]`).classList.add('active');
+            document.querySelectorAll('.login-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
             
             // Mostrar formulário correto
             document.getElementById('email-form').classList.remove('active');
             document.getElementById('id-form').classList.remove('active');
-            document.getElementById(`${tab}-form`).classList.add('active');
+            document.getElementById(modo + '-form').classList.add('active');
         }
-
-        async function login() {
-            const messageDiv = document.getElementById('message');
-            const loadingDiv = document.getElementById('loading');
+        
+        function mostrarMsg(texto, tipo) {
+            const msg = document.getElementById('message');
+            msg.innerHTML = texto;
+            msg.className = `message ${tipo}`;
+            msg.style.display = 'block';
+        }
+        
+        async function fazerLogin() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            mostrarMsg('', '');
             
-            messageDiv.style.display = 'none';
-            loadingDiv.style.display = 'block';
-
             try {
-                if (currentTab === 'email') {
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-
-                    if (!email || !password) {
-                        throw new Error('Por favor, preencha todos os campos.');
+                if (modoLogin === 'email') {
+                    // LOGIN POR EMAIL
+                    const email = document.getElementById('email').value.trim();
+                    const senha = document.getElementById('password').value;
+                    
+                    if (!email || !senha) {
+                        throw new Error('Preencha email e senha');
                     }
-
-                    // Login por email
+                    
                     const { data, error } = await supabase.auth.signInWithPassword({
                         email: email,
-                        password: password
+                        password: senha
                     });
-
+                    
                     if (error) throw error;
-
+                    
+                    // ATUALIZAR ÚLTIMO LOGIN
                     if (data.user) {
-                        // Atualizar último login
                         await supabase
                             .from('usuarios')
-                            .update({ ultimo_login: new Date() })
+                            .update({ ultimo_login: new Date().toISOString() })
                             .eq('email', email);
                         
-                        showMessage('Login realizado com sucesso! Redirecionando...', 'success');
+                        // REDIRECIONAR PARA DASHBOARD
+                        mostrarMsg('✅ Login realizado! Redirecionando...', 'success');
                         setTimeout(() => {
                             window.location.href = 'dashboard.html';
-                        }, 1500);
+                        }, 1000);
                     }
-
+                    
                 } else {
-                    // Login por ID do usuário
-                    const userId = document.getElementById('userId').value;
-                    const password = document.getElementById('passwordId').value;
-
-                    if (!userId || !password) {
-                        throw new Error('Por favor, preencha todos os campos.');
+                    // LOGIN POR ID DO JOGADOR
+                    const playerId = document.getElementById('playerId').value.trim();
+                    const senha = document.getElementById('passwordId').value;
+                    
+                    if (!playerId || !senha) {
+                        throw new Error('Preencha ID e senha');
                     }
-
-                    if (!/^\d{7}$/.test(userId)) {
-                        throw new Error('O ID deve conter exatamente 7 dígitos.');
+                    
+                    if (!/^\d{7}$/.test(playerId)) {
+                        throw new Error('ID deve ter 7 dígitos');
                     }
-
-                    // Primeiro buscar o email pelo user_id
-                    const { data: userData, error: userError } = await supabase
+                    
+                    // 1. BUSCAR EMAIL PELO ID
+                    const { data: usuario, error: userError } = await supabase
                         .from('usuarios')
                         .select('email')
-                        .eq('user_id', userId)
+                        .eq('user_id', playerId)
                         .single();
-
-                    if (userError || !userData) {
-                        throw new Error('ID de usuário não encontrado.');
+                    
+                    if (userError || !usuario) {
+                        throw new Error('ID não encontrado');
                     }
-
-                    // Fazer login com o email encontrado
+                    
+                    // 2. FAZER LOGIN COM O EMAIL
                     const { data, error } = await supabase.auth.signInWithPassword({
-                        email: userData.email,
-                        password: password
+                        email: usuario.email,
+                        password: senha
                     });
-
+                    
                     if (error) throw error;
-
+                    
+                    // 3. ATUALIZAR ÚLTIMO LOGIN
                     if (data.user) {
-                        // Atualizar último login
                         await supabase
                             .from('usuarios')
-                            .update({ ultimo_login: new Date() })
-                            .eq('user_id', userId);
+                            .update({ ultimo_login: new Date().toISOString() })
+                            .eq('user_id', playerId);
                         
-                        showMessage('Login realizado com sucesso! Redirecionando...', 'success');
+                        // REDIRECIONAR
+                        mostrarMsg('✅ Login realizado! Redirecionando...', 'success');
                         setTimeout(() => {
                             window.location.href = 'dashboard.html';
-                        }, 1500);
+                        }, 1000);
                     }
                 }
-
-            } catch (error) {
-                console.error('Erro no login:', error);
                 
-                if (error.message.includes('Invalid login credentials')) {
-                    showMessage('Email/ID ou senha incorretos.', 'error');
+            } catch (error) {
+                console.error('Erro login:', error);
+                
+                if (error.message.includes('Invalid login')) {
+                    mostrarMsg('Email/ID ou senha incorretos', 'error');
                 } else if (error.message.includes('Email not confirmed')) {
-                    showMessage('Por favor, confirme seu email antes de fazer login.', 'error');
+                    mostrarMsg('Confirme seu email antes de fazer login', 'error');
                 } else {
-                    showMessage('Erro: ' + error.message, 'error');
+                    mostrarMsg('Erro: ' + error.message, 'error');
                 }
+                
             } finally {
-                loadingDiv.style.display = 'none';
+                loading.style.display = 'none';
             }
         }
-
-        async function forgotPassword() {
-            const email = prompt('Digite seu email para redefinir a senha:');
-            if (!email) return;
-
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/reset-password.html'
+        
+        function esqueciSenha() {
+            const email = prompt('Digite seu email para redefinir senha:');
+            if (email) {
+                supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/reset-password.html'
+                }).then(() => {
+                    alert('Email de recuperação enviado!');
+                });
+            }
+        }
+        
+        // EVENTOS
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('btnLogin').onclick = fazerLogin;
+            document.getElementById('btnVoltar').onclick = function() {
+                window.location.href = 'index.html';
+            };
+            
+            // ENTER PARA LOGIN
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') fazerLogin();
             });
-
-            if (error) {
-                alert('Erro ao enviar email de recuperação: ' + error.message);
-            } else {
-                alert('Email de recuperação enviado! Verifique sua caixa de entrada.');
-            }
-        }
-
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.innerHTML = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-        }
-
-        // Permitir login com Enter
-        document.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                login();
-            }
-        });
-
-        // Verificar se há sessão ativa
-        window.addEventListener('load', async () => {
-            const { session } = await checkAuth();
-            if (session) {
-                window.location.href = 'dashboard.html';
-            }
+            
+            // VERIFICAR SE JÁ ESTÁ LOGADO
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    window.location.href = 'dashboard.html';
+                }
+            });
         });
     </script>
 </body>
