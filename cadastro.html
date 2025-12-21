@@ -4,385 +4,271 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - GURPS Tool</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-dark: #1a1200;
-            --secondary-dark: #2c2008;
-            --primary-gold: #d4af37;
-            --secondary-gold: #f4d03f;
-            --accent-red: #8b0000;
-            --accent-green: #2e5c3a;
-            --text-light: #f5f5dc;
-            --text-gold: #ffd700;
-            --parchment: #f7f3e9;
-            --wood-dark: #5d4037;
-            --wood-light: #8d6e63;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        body {
-            font-family: 'Cinzel', serif;
-            background-color: var(--primary-dark);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
-            color: var(--text-light);
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background: #1a1200; 
+            color: #f5f5dc;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="%232c2008" stroke-width="0.5"/></svg>'),
-                linear-gradient(0deg, transparent 24%, rgba(139, 0, 0, 0.05) 25%, rgba(139, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(139, 0, 0, 0.05) 75%, rgba(139, 0, 0, 0.05) 76%, transparent 77%, transparent);
-            background-size: 50px 50px, 10px 10px;
-            opacity: 0.3;
-            z-index: -1;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
             padding: 20px;
         }
-
+        
+        .container { 
+            width: 100%;
+            max-width: 400px;
+        }
+        
         .login-box {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.95));
-            border: 3px solid var(--primary-gold);
-            border-radius: 15px;
-            padding: 40px 30px;
-            box-shadow: 
-                0 0 30px rgba(212, 175, 55, 0.3),
-                inset 0 0 20px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
+            background: #2c2008;
+            border: 2px solid #d4af37;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
         }
-
-        .login-box::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, var(--primary-gold), var(--accent-red), var(--primary-gold));
-            z-index: -1;
-            border-radius: 17px;
-            opacity: 0.5;
-        }
-
-        .header {
+        
+        h1 { 
+            color: #d4af37; 
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
-
-        .header h1 {
-            font-family: 'Uncial Antiqua', cursive;
-            color: var(--text-gold);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        
+        .form-group { margin-bottom: 20px; }
+        
+        label { 
+            display: block; 
+            color: #f4d03f; 
+            margin-bottom: 5px;
         }
-
-        .header p {
-            color: var(--text-light);
-            opacity: 0.9;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            color: var(--secondary-gold);
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-        }
-
+        
         input {
             width: 100%;
-            padding: 15px;
-            background: rgba(26, 18, 0, 0.8);
-            border: 2px solid var(--wood-light);
-            border-radius: 8px;
-            color: var(--text-light);
-            font-family: 'Cinzel', serif;
-            font-size: 1rem;
-            transition: all 0.3s;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #8d6e63;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
         }
-
+        
         input:focus {
             outline: none;
-            border-color: var(--primary-gold);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            border-color: #d4af37;
         }
-
+        
         .btn {
             width: 100%;
-            padding: 18px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.2rem;
+            padding: 15px;
+            background: #d4af37;
+            color: #1a1200;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
             font-weight: bold;
-            background: linear-gradient(145deg, var(--primary-gold), #b8941f);
-            color: var(--primary-dark);
-            border: 2px solid var(--secondary-gold);
-            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
             margin-top: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
-
-        .btn:hover {
-            background: linear-gradient(145deg, #e6c158, #b8941f);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-back {
-            background: linear-gradient(145deg, var(--accent-green), #1e4028);
-            color: var(--text-light);
-            border-color: #4a7c59;
-            margin-top: 20px;
-        }
-
-        .btn-back:hover {
-            background: linear-gradient(145deg, #3a7c4a, #1e4028);
-        }
-
+        
+        .btn:hover { background: #f4d03f; }
+        
         .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            display: none;
-        }
-
-        .message.success {
-            background: rgba(46, 125, 50, 0.2);
-            border: 1px solid #2e7d32;
-            color: #a5d6a7;
-        }
-
-        .message.error {
-            background: rgba(198, 40, 40, 0.2);
-            border: 1px solid #c62828;
-            color: #ffabab;
-        }
-
-        .message.info {
-            background: rgba(33, 150, 243, 0.2);
-            border: 1px solid #2196f3;
-            color: #90caf9;
-        }
-
-        .id-display {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid var(--primary-gold);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            text-align: center;
-            display: none;
-        }
-
-        .id-display h3 {
-            color: var(--text-gold);
-            margin-bottom: 10px;
-        }
-
-        .user-id {
-            font-family: monospace;
-            font-size: 2rem;
-            color: var(--secondary-gold);
-            font-weight: bold;
-            letter-spacing: 3px;
-            background: rgba(0, 0, 0, 0.3);
             padding: 10px;
             border-radius: 5px;
-            display: inline-block;
-        }
-
-        .links {
+            margin: 10px 0;
             text-align: center;
-            margin-top: 20px;
+            display: none;
         }
-
-        .links a {
-            color: var(--secondary-gold);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .links a:hover {
-            color: var(--text-gold);
-            text-decoration: underline;
-        }
-
-        .character-note {
-            font-style: italic;
-            color: var(--wood-light);
-            font-size: 0.9rem;
-            margin-top: 5px;
-            text-align: center;
-        }
+        
+        .success { background: rgba(46, 125, 50, 0.3); border: 1px solid #2e7d32; }
+        .error { background: rgba(198, 40, 40, 0.3); border: 1px solid #c62828; }
+        .info { background: rgba(33, 150, 243, 0.3); border: 1px solid #2196f3; }
+        
+        .links { text-align: center; margin-top: 20px; }
+        .links a { color: #d4af37; text-decoration: none; }
+        .links a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="login-box">
-            <div class="header">
-                <h1><i class="fas fa-scroll"></i> Registrar-se</h1>
-                <p>Junte-se à nossa guilda de aventureiros</p>
-            </div>
-
+            <h1>Cadastro</h1>
+            
             <div id="message" class="message"></div>
-
+            
             <form id="registerForm">
                 <div class="form-group">
-                    <label for="nome"><i class="fas fa-user"></i> Nome Completo</label>
-                    <input type="text" id="nome" name="nome" required placeholder="Digite seu nome">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" required>
                 </div>
-
+                
                 <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> E-mail</label>
-                    <input type="email" id="email" name="email" required placeholder="seu@email.com">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" required>
                 </div>
-
+                
                 <div class="form-group">
-                    <label for="senha"><i class="fas fa-key"></i> Senha</label>
-                    <input type="password" id="senha" name="senha" required placeholder="Mínimo 6 caracteres" minlength="6">
+                    <label for="senha">Senha (mínimo 6 caracteres)</label>
+                    <input type="password" id="senha" minlength="6" required>
                 </div>
-
+                
                 <div class="form-group">
-                    <label for="confirmarSenha"><i class="fas fa-shield-alt"></i> Confirmar Senha</label>
-                    <input type="password" id="confirmarSenha" name="confirmarSenha" required placeholder="Digite a senha novamente">
+                    <label for="confirmarSenha">Confirmar Senha</label>
+                    <input type="password" id="confirmarSenha" required>
                 </div>
-
-                <button type="submit" class="btn">
-                    <i class="fas fa-user-plus"></i> Criar Conta
+                
+                <button type="submit" class="btn" id="submitBtn">
+                    Criar Conta
                 </button>
             </form>
-
-            <div id="idDisplay" class="id-display">
-                <h3>Seu ID de Aventureiro</h3>
-                <div class="user-id" id="userIdDisplay"></div>
-                <p class="character-note">Guarde este ID! Ele será usado para identificar seu personagem nas campanhas.</p>
+            
+            <div id="idDisplay" style="display: none; margin-top: 20px; padding: 15px; background: rgba(212, 175, 55, 0.1); border: 1px solid #d4af37; border-radius: 5px; text-align: center;">
+                <h3 style="color: #d4af37;">Seu ID de Aventureiro:</h3>
+                <div id="userIdDisplay" style="font-size: 24px; font-weight: bold; color: #f4d03f; margin: 10px 0;"></div>
+                <p style="color: #8d6e63; font-size: 14px;">Guarde este ID para suas campanhas!</p>
             </div>
-
+            
             <div class="links">
-                <p>Já tem uma conta? <a href="login.html">Entre aqui</a></p>
-                <p><a href="index.html"><i class="fas fa-home"></i> Voltar ao Início</a></p>
+                <p><a href="login.html">Já tem conta? Faça login</a></p>
+                <p><a href="index.html">Voltar ao início</a></p>
             </div>
-
-            <button onclick="window.location.href='index.html'" class="btn btn-back">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </button>
         </div>
     </div>
 
+    <!-- IMPORTANTE: Carregar Supabase ANTES do nosso script -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
     <script>
+        // Configuração direta no HTML para debug
+        const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
+        
+        // Criar cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        console.log('Supabase inicializado:', supabase);
+        
+        // Função para gerar ID
+        function gerarIDUnico() {
+            return Math.floor(1000000 + Math.random() * 9000000);
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página carregada');
+            
             const form = document.getElementById('registerForm');
             const messageDiv = document.getElementById('message');
             const idDisplay = document.getElementById('idDisplay');
             const userIdDisplay = document.getElementById('userIdDisplay');
-
+            const submitBtn = document.getElementById('submitBtn');
+            
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('Formulário enviado');
                 
+                // Pegar valores
                 const nome = document.getElementById('nome').value;
                 const email = document.getElementById('email').value;
                 const senha = document.getElementById('senha').value;
                 const confirmarSenha = document.getElementById('confirmarSenha').value;
-
+                
+                console.log('Dados:', { nome, email });
+                
                 // Validações
                 if (senha !== confirmarSenha) {
                     showMessage('As senhas não coincidem!', 'error');
                     return;
                 }
-
+                
                 if (senha.length < 6) {
                     showMessage('A senha deve ter pelo menos 6 caracteres!', 'error');
                     return;
                 }
-
-                // Gerar ID único
+                
+                // Gerar ID
                 const userId = gerarIDUnico();
-
+                console.log('ID gerado:', userId);
+                
+                // Desabilitar botão para evitar múltiplos cliques
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Criando conta...';
+                
                 try {
-                    // Registrar usuário no Supabase
+                    console.log('Tentando registrar...');
+                    
+                    // Registrar no Supabase
                     const { data, error } = await supabase.auth.signUp({
                         email: email,
                         password: senha,
                         options: {
                             data: {
                                 nome: nome,
-                                user_id: userId.toString(),
-                                email_verified: false
+                                user_id: userId.toString()
                             }
                         }
                     });
-
-                    if (error) throw error;
-
-                    // Mostrar mensagem de sucesso
-                    showMessage('Conta criada com sucesso! Verifique seu e-mail para ativar sua conta.', 'success');
                     
-                    // Mostrar ID do usuário
+                    console.log('Resposta do Supabase:', { data, error });
+                    
+                    if (error) {
+                        console.error('Erro do Supabase:', error);
+                        throw error;
+                    }
+                    
+                    // Sucesso
+                    showMessage('✅ Conta criada! Verifique seu e-mail para ativar.', 'success');
+                    
+                    // Mostrar ID
                     userIdDisplay.textContent = userId;
                     idDisplay.style.display = 'block';
                     
                     // Limpar formulário
                     form.reset();
                     
-                    // Salvar ID localmente (para referência)
+                    // Salvar ID localmente
                     localStorage.setItem('temp_user_id', userId);
-
+                    localStorage.setItem('temp_user_email', email);
+                    
                 } catch (error) {
-                    showMessage('Erro ao criar conta: ' + error.message, 'error');
+                    console.error('Erro completo:', error);
+                    showMessage('❌ Erro: ' + error.message, 'error');
+                } finally {
+                    // Reabilitar botão
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Criar Conta';
                 }
             });
-
+            
             function showMessage(text, type) {
                 messageDiv.textContent = text;
                 messageDiv.className = 'message ' + type;
                 messageDiv.style.display = 'block';
                 
-                // Auto-esconder após 5 segundos
+                // Scroll para mensagem
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Auto-esconder após 8 segundos
                 setTimeout(() => {
                     messageDiv.style.display = 'none';
-                }, 5000);
+                }, 8000);
             }
+            
+            // Debug: testar conexão com Supabase
+            async function testarConexao() {
+                try {
+                    const { data, error } = await supabase.auth.getSession();
+                    console.log('Teste de conexão:', { data, error });
+                    if (error) throw error;
+                    showMessage('✅ Conexão com Supabase OK!', 'info');
+                } catch (error) {
+                    console.error('Erro na conexão:', error);
+                    showMessage('⚠️ Erro de conexão: ' + error.message, 'error');
+                }
+            }
+            
+            // Testar conexão ao carregar
+            setTimeout(testarConexao, 1000);
         });
     </script>
 </body>
