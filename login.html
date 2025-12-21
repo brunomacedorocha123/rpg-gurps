@@ -3,373 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GURPS - Login</title>
+    <title>Login - GURPS Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js" defer></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Cinzel', serif;
             background: #1a1200;
             color: #f5f5dc;
-            min-height: 100vh;
+            font-family: 'Cinzel', serif;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
         }
-        .container { max-width: 500px; width: 100%; }
-        h1 {
-            font-family: 'Uncial Antiqua', cursive;
-            font-size: 2.5rem;
-            color: gold;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .login-options {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .login-tab {
-            flex: 1;
-            padding: 10px;
-            background: #2c2008;
-            border: 2px solid #5d4037;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            text-align: center;
-            font-family: 'Cinzel';
-        }
-        .login-tab.active {
-            background: gold;
-            color: #1a1200;
-            border-color: gold;
-            font-weight: bold;
-        }
         .form-container {
-            background: rgba(44, 32, 8, 0.9);
+            background: #2c2008;
             padding: 30px;
-            border-radius: 15px;
-            border: 2px solid #8d6e63;
+            border-radius: 10px;
+            border: 2px solid #d4af37;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        .form-group { 
+        .form-container h2 {
+            text-align: center;
+            color: #ffd700;
             margin-bottom: 20px;
-            display: none;
         }
-        .form-group.active { display: block; }
-        label {
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
             display: block;
-            color: #f4d03f;
             margin-bottom: 5px;
-            font-weight: bold;
+            color: #f4d03f;
         }
-        input {
+        .form-group input {
             width: 100%;
-            padding: 12px 15px;
-            background: rgba(26, 18, 0, 0.7);
-            border: 2px solid #5d4037;
-            border-radius: 8px;
-            color: white;
-            font-family: 'Cinzel';
+            padding: 10px;
+            border: 1px solid #8d6e63;
+            background: #1a1200;
+            color: #f5f5dc;
+            border-radius: 5px;
         }
-        input:focus {
-            outline: none;
-            border-color: gold;
-        }
-        .btn {
+        button {
             width: 100%;
-            padding: 15px;
-            font-family: 'Cinzel';
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .btn-primary {
+            padding: 12px;
             background: linear-gradient(145deg, #2e5c3a, #1e4028);
             color: white;
-            border: 2px solid #4a7c59;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
         }
-        .btn-secondary {
-            background: #2c2008;
-            color: white;
-            border: 2px solid #5d4037;
+        button:hover {
+            background: linear-gradient(145deg, #3a7c4a, #2e5c3a);
         }
         .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
             text-align: center;
         }
-        .success {
-            background: rgba(46, 92, 58, 0.3);
-            border: 1px solid #2e5c3a;
-            color: #90ee90;
-        }
-        .error {
-            background: rgba(139, 0, 0, 0.3);
-            border: 1px solid #8b0000;
-            color: #ff6b6b;
-        }
-        .loading {
-            display: none;
+        .error { background: #8b0000; color: white; }
+        .back-link {
+            display: block;
             text-align: center;
-            margin: 10px 0;
-        }
-        .loading i {
-            color: gold;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .register-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #8d6e63;
-        }
-        .register-link a {
-            color: gold;
+            margin-top: 15px;
+            color: #d4af37;
             text-decoration: none;
-            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ENTRAR</h1>
-        <p style="text-align: center; margin-bottom: 20px; color: #8d6e63;">
-            Retorne à taverna, aventureiro
-        </p>
-        
-        <div class="login-options">
-            <button class="login-tab active" onclick="trocarModo('email')">Email</button>
-            <button class="login-tab" onclick="trocarModo('id')">ID do Jogador</button>
-        </div>
-        
-        <div class="form-container">
-            <div id="message" class="message"></div>
-            
-            <!-- Login por Email -->
-            <div id="email-form" class="form-group active">
-                <div class="form-group active">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="seu@email.com" required>
-                </div>
-                <div class="form-group active">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" placeholder="Sua senha" required>
-                </div>
-                <p style="text-align: right; margin-top: -10px; margin-bottom: 20px;">
-                    <a href="#" onclick="esqueciSenha()" style="color: #8d6e63; font-size: 0.9em;">Esqueceu a senha?</a>
-                </p>
+    <div class="form-container">
+        <h2>Entrar na Taverna</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" required>
             </div>
-            
-            <!-- Login por ID -->
-            <div id="id-form" class="form-group">
-                <div class="form-group active">
-                    <label for="playerId">ID do Jogador (7 dígitos)</label>
-                    <input type="text" id="playerId" placeholder="Ex: 1234567" pattern="[0-9]{7}" maxlength="7" required>
-                </div>
-                <div class="form-group active">
-                    <label for="passwordId">Senha</label>
-                    <input type="password" id="passwordId" placeholder="Sua senha" required>
-                </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" required>
             </div>
-            
-            <div class="loading" id="loading">
-                <i class="fas fa-spinner"></i>
-                <p>Entrando na taverna...</p>
-            </div>
-            
-            <button class="btn btn-primary" id="btnLogin">
-                <i class="fas fa-dungeon"></i> Entrar
-            </button>
-            
-            <button class="btn btn-secondary" id="btnVoltar">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </button>
-            
-            <div class="register-link">
-                Não tem conta? <a href="cadastro.html">Registre-se aqui</a>
-            </div>
-        </div>
+            <button type="submit">Entrar</button>
+        </form>
+        <div id="message"></div>
+        <a href="index.html" class="back-link">← Voltar à Página Inicial</a>
     </div>
 
-    <!-- SCRIPT SUPABASE -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script>
-        // CONFIGURAÇÃO
-        const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
-        
-        // INICIALIZAR
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // VARIÁVEIS
-        let modoLogin = 'email';
-        
-        // FUNÇÕES
-        function trocarModo(modo) {
-            modoLogin = modo;
-            
-            // Atualizar tabs
-            document.querySelectorAll('.login-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Mostrar formulário correto
-            document.getElementById('email-form').classList.remove('active');
-            document.getElementById('id-form').classList.remove('active');
-            document.getElementById(modo + '-form').classList.add('active');
-        }
-        
-        function mostrarMsg(texto, tipo) {
-            const msg = document.getElementById('message');
-            msg.innerHTML = texto;
-            msg.className = `message ${tipo}`;
-            msg.style.display = 'block';
-        }
-        
-        async function fazerLogin() {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            mostrarMsg('', '');
-            
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageEl = document.getElementById('message');
+
             try {
-                if (modoLogin === 'email') {
-                    // LOGIN POR EMAIL
-                    const email = document.getElementById('email').value.trim();
-                    const senha = document.getElementById('password').value;
-                    
-                    if (!email || !senha) {
-                        throw new Error('Preencha email e senha');
-                    }
-                    
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: senha
-                    });
-                    
-                    if (error) throw error;
-                    
-                    // ATUALIZAR ÚLTIMO LOGIN
-                    if (data.user) {
-                        await supabase
-                            .from('usuarios')
-                            .update({ ultimo_login: new Date().toISOString() })
-                            .eq('email', email);
-                        
-                        // REDIRECIONAR PARA DASHBOARD
-                        mostrarMsg('✅ Login realizado! Redirecionando...', 'success');
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html';
-                        }, 1000);
-                    }
-                    
-                } else {
-                    // LOGIN POR ID DO JOGADOR
-                    const playerId = document.getElementById('playerId').value.trim();
-                    const senha = document.getElementById('passwordId').value;
-                    
-                    if (!playerId || !senha) {
-                        throw new Error('Preencha ID e senha');
-                    }
-                    
-                    if (!/^\d{7}$/.test(playerId)) {
-                        throw new Error('ID deve ter 7 dígitos');
-                    }
-                    
-                    // 1. BUSCAR EMAIL PELO ID
-                    const { data: usuario, error: userError } = await supabase
-                        .from('usuarios')
-                        .select('email')
-                        .eq('user_id', playerId)
-                        .single();
-                    
-                    if (userError || !usuario) {
-                        throw new Error('ID não encontrado');
-                    }
-                    
-                    // 2. FAZER LOGIN COM O EMAIL
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: usuario.email,
-                        password: senha
-                    });
-                    
-                    if (error) throw error;
-                    
-                    // 3. ATUALIZAR ÚLTIMO LOGIN
-                    if (data.user) {
-                        await supabase
-                            .from('usuarios')
-                            .update({ ultimo_login: new Date().toISOString() })
-                            .eq('user_id', playerId);
-                        
-                        // REDIRECIONAR
-                        mostrarMsg('✅ Login realizado! Redirecionando...', 'success');
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html';
-                        }, 1000);
-                    }
-                }
-                
-            } catch (error) {
-                console.error('Erro login:', error);
-                
-                if (error.message.includes('Invalid login')) {
-                    mostrarMsg('Email/ID ou senha incorretos', 'error');
-                } else if (error.message.includes('Email not confirmed')) {
-                    mostrarMsg('Confirme seu email antes de fazer login', 'error');
-                } else {
-                    mostrarMsg('Erro: ' + error.message, 'error');
-                }
-                
-            } finally {
-                loading.style.display = 'none';
-            }
-        }
-        
-        function esqueciSenha() {
-            const email = prompt('Digite seu email para redefinir senha:');
-            if (email) {
-                supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/reset-password.html'
-                }).then(() => {
-                    alert('Email de recuperação enviado!');
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
                 });
-            }
-        }
-        
-        // EVENTOS
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('btnLogin').onclick = fazerLogin;
-            document.getElementById('btnVoltar').onclick = function() {
-                window.location.href = 'index.html';
-            };
-            
-            // ENTER PARA LOGIN
-            document.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') fazerLogin();
-            });
-            
-            // VERIFICAR SE JÁ ESTÁ LOGADO
-            supabase.auth.getSession().then(({ data: { session } }) => {
-                if (session) {
-                    window.location.href = 'dashboard.html';
+
+                if (error) {
+                    throw error;
                 }
-            });
+
+                if (data.user) {
+                    // Verifica se o e-mail foi confirmado
+                    if (!data.user.email_confirmed_at) {
+                        messageEl.className = 'message error';
+                        messageEl.textContent = 'E-mail não verificado! Verifique sua caixa de entrada.';
+                        return;
+                    }
+
+                    // Redireciona para home
+                    window.location.href = 'home.html';
+                }
+            } catch (err) {
+                messageEl.className = 'message error';
+                messageEl.textContent = 'Erro: ' + (err.message || 'Credenciais inválidas.');
+            }
         });
     </script>
 </body>
