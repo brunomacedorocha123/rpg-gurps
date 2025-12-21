@@ -6,10 +6,11 @@
     <title>Cadastro - GURPS Tool</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Arial', sans-serif; 
-            background: #1a1200; 
-            color: #f5f5dc;
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1200;
+            color: white;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -17,62 +18,63 @@
             padding: 20px;
         }
         
-        .container { 
+        .container {
             width: 100%;
             max-width: 400px;
         }
         
-        .login-box {
+        .card {
             background: #2c2008;
             border: 2px solid #d4af37;
             border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
         }
         
-        h1 { 
-            color: #d4af37; 
+        h1 {
+            color: #d4af37;
             text-align: center;
             margin-bottom: 20px;
         }
         
-        .form-group { margin-bottom: 20px; }
+        .form-group {
+            margin-bottom: 15px;
+        }
         
-        label { 
-            display: block; 
-            color: #f4d03f; 
+        label {
+            display: block;
+            color: #f4d03f;
             margin-bottom: 5px;
         }
         
         input {
             width: 100%;
-            padding: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #8d6e63;
+            padding: 10px;
+            border: 1px solid #5d4037;
             border-radius: 5px;
+            background: rgba(0,0,0,0.3);
             color: white;
-            font-size: 16px;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #d4af37;
         }
         
         .btn {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background: #d4af37;
             color: #1a1200;
             border: none;
             border-radius: 5px;
-            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
         }
         
-        .btn:hover { background: #f4d03f; }
+        .btn:hover {
+            background: #f4d03f;
+        }
+        
+        .btn:disabled {
+            background: #8d6e63;
+            cursor: not-allowed;
+        }
         
         .message {
             padding: 10px;
@@ -82,40 +84,61 @@
             display: none;
         }
         
-        .success { background: rgba(46, 125, 50, 0.3); border: 1px solid #2e7d32; }
-        .error { background: rgba(198, 40, 40, 0.3); border: 1px solid #c62828; }
-        .info { background: rgba(33, 150, 243, 0.3); border: 1px solid #2196f3; }
+        .success {
+            background: #2e7d32;
+            color: white;
+        }
         
-        .links { text-align: center; margin-top: 20px; }
-        .links a { color: #d4af37; text-decoration: none; }
-        .links a:hover { text-decoration: underline; }
+        .error {
+            background: #c62828;
+            color: white;
+        }
+        
+        .info {
+            background: #1565c0;
+            color: white;
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .links a {
+            color: #d4af37;
+            text-decoration: none;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="login-box">
+        <div class="card">
             <h1>Cadastro</h1>
             
             <div id="message" class="message"></div>
             
             <form id="registerForm">
                 <div class="form-group">
-                    <label for="nome">Nome</label>
+                    <label>Nome:</label>
                     <input type="text" id="nome" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="email">E-mail</label>
+                    <label>E-mail:</label>
                     <input type="email" id="email" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="senha">Senha (mínimo 6 caracteres)</label>
+                    <label>Senha (mínimo 6 caracteres):</label>
                     <input type="password" id="senha" minlength="6" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="confirmarSenha">Confirmar Senha</label>
+                    <label>Confirmar Senha:</label>
                     <input type="password" id="confirmarSenha" required>
                 </div>
                 
@@ -124,9 +147,9 @@
                 </button>
             </form>
             
-            <div id="idDisplay" style="display: none; margin-top: 20px; padding: 15px; background: rgba(212, 175, 55, 0.1); border: 1px solid #d4af37; border-radius: 5px; text-align: center;">
+            <div id="idDisplay" style="display: none; margin-top: 20px; padding: 15px; background: rgba(212,175,55,0.1); border-radius: 5px; text-align: center;">
                 <h3 style="color: #d4af37;">Seu ID de Aventureiro:</h3>
-                <div id="userIdDisplay" style="font-size: 24px; font-weight: bold; color: #f4d03f; margin: 10px 0;"></div>
+                <div id="userId" style="font-size: 24px; font-weight: bold; color: #f4d03f; margin: 10px 0;">0000000</div>
                 <p style="color: #8d6e63; font-size: 14px;">Guarde este ID para suas campanhas!</p>
             </div>
             
@@ -137,31 +160,22 @@
         </div>
     </div>
 
-    <!-- IMPORTANTE: Carregar Supabase ANTES do nosso script -->
+    <!-- IMPORTANTE: Carregar nesta ordem -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    
     <script>
-        // Configuração direta no HTML para debug
-        const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
-        
-        // Criar cliente Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        console.log('Supabase inicializado:', supabase);
-        
-        // Função para gerar ID
-        function gerarIDUnico() {
-            return Math.floor(1000000 + Math.random() * 9000000);
-        }
-        
+        // Código específico para cadastro.html
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Página carregada');
+            console.log('Cadastro.html carregado');
             
             const form = document.getElementById('registerForm');
-            const messageDiv = document.getElementById('message');
-            const idDisplay = document.getElementById('idDisplay');
-            const userIdDisplay = document.getElementById('userIdDisplay');
             const submitBtn = document.getElementById('submitBtn');
+            
+            if (!form) {
+                console.error('Formulário não encontrado!');
+                return;
+            }
             
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -173,102 +187,50 @@
                 const senha = document.getElementById('senha').value;
                 const confirmarSenha = document.getElementById('confirmarSenha').value;
                 
-                console.log('Dados:', { nome, email });
-                
-                // Validações
+                // Validações básicas
                 if (senha !== confirmarSenha) {
-                    showMessage('As senhas não coincidem!', 'error');
+                    Auth.mostrarMensagem('message', '❌ As senhas não coincidem!', 'error');
                     return;
                 }
                 
                 if (senha.length < 6) {
-                    showMessage('A senha deve ter pelo menos 6 caracteres!', 'error');
+                    Auth.mostrarMensagem('message', '❌ A senha deve ter pelo menos 6 caracteres!', 'error');
                     return;
                 }
                 
-                // Gerar ID
-                const userId = gerarIDUnico();
-                console.log('ID gerado:', userId);
-                
-                // Desabilitar botão para evitar múltiplos cliques
+                // Desabilitar botão
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Criando conta...';
                 
-                try {
-                    console.log('Tentando registrar...');
-                    
-                    // Registrar no Supabase
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: senha,
-                        options: {
-                            data: {
-                                nome: nome,
-                                user_id: userId.toString()
-                            }
-                        }
-                    });
-                    
-                    console.log('Resposta do Supabase:', { data, error });
-                    
-                    if (error) {
-                        console.error('Erro do Supabase:', error);
-                        throw error;
-                    }
-                    
+                // Registrar usuário
+                const resultado = await Auth.registrarUsuario(nome, email, senha);
+                
+                if (resultado.success) {
                     // Sucesso
-                    showMessage('✅ Conta criada! Verifique seu e-mail para ativar.', 'success');
+                    Auth.mostrarMensagem('message', 
+                        '✅ Conta criada com sucesso! Verifique seu e-mail para ativar.', 
+                        'success');
                     
                     // Mostrar ID
-                    userIdDisplay.textContent = userId;
-                    idDisplay.style.display = 'block';
+                    document.getElementById('userId').textContent = resultado.userId;
+                    document.getElementById('idDisplay').style.display = 'block';
                     
                     // Limpar formulário
                     form.reset();
                     
-                    // Salvar ID localmente
-                    localStorage.setItem('temp_user_id', userId);
-                    localStorage.setItem('temp_user_email', email);
+                    // Salvar dados localmente
+                    localStorage.setItem('user_id', resultado.userId);
+                    localStorage.setItem('user_email', email);
                     
-                } catch (error) {
-                    console.error('Erro completo:', error);
-                    showMessage('❌ Erro: ' + error.message, 'error');
-                } finally {
-                    // Reabilitar botão
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Criar Conta';
+                } else {
+                    // Erro
+                    Auth.mostrarMensagem('message', '❌ Erro: ' + resultado.error, 'error');
                 }
+                
+                // Reabilitar botão
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Criar Conta';
             });
-            
-            function showMessage(text, type) {
-                messageDiv.textContent = text;
-                messageDiv.className = 'message ' + type;
-                messageDiv.style.display = 'block';
-                
-                // Scroll para mensagem
-                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Auto-esconder após 8 segundos
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 8000);
-            }
-            
-            // Debug: testar conexão com Supabase
-            async function testarConexao() {
-                try {
-                    const { data, error } = await supabase.auth.getSession();
-                    console.log('Teste de conexão:', { data, error });
-                    if (error) throw error;
-                    showMessage('✅ Conexão com Supabase OK!', 'info');
-                } catch (error) {
-                    console.error('Erro na conexão:', error);
-                    showMessage('⚠️ Erro de conexão: ' + error.message, 'error');
-                }
-            }
-            
-            // Testar conexão ao carregar
-            setTimeout(testarConexao, 1000);
         });
     </script>
 </body>

@@ -6,10 +6,11 @@
     <title>Login - GURPS Tool</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Arial', sans-serif; 
-            background: #1a1200; 
-            color: #f5f5dc;
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1200;
+            color: white;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -17,62 +18,63 @@
             padding: 20px;
         }
         
-        .container { 
+        .container {
             width: 100%;
             max-width: 400px;
         }
         
-        .login-box {
+        .card {
             background: #2c2008;
             border: 2px solid #2e5c3a;
             border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 0 20px rgba(46, 92, 58, 0.3);
         }
         
-        h1 { 
-            color: #2e5c3a; 
+        h1 {
+            color: #2e5c3a;
             text-align: center;
             margin-bottom: 20px;
         }
         
-        .form-group { margin-bottom: 20px; }
+        .form-group {
+            margin-bottom: 15px;
+        }
         
-        label { 
-            display: block; 
-            color: #4a7c59; 
+        label {
+            display: block;
+            color: #4a7c59;
             margin-bottom: 5px;
         }
         
         input {
             width: 100%;
-            padding: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #8d6e63;
+            padding: 10px;
+            border: 1px solid #5d4037;
             border-radius: 5px;
+            background: rgba(0,0,0,0.3);
             color: white;
-            font-size: 16px;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #2e5c3a;
         }
         
         .btn {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background: #2e5c3a;
             color: white;
             border: none;
             border-radius: 5px;
-            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
         }
         
-        .btn:hover { background: #3a7c4a; }
+        .btn:hover {
+            background: #3a7c4a;
+        }
+        
+        .btn:disabled {
+            background: #8d6e63;
+            cursor: not-allowed;
+        }
         
         .message {
             padding: 10px;
@@ -82,40 +84,47 @@
             display: none;
         }
         
-        .success { background: rgba(46, 125, 50, 0.3); border: 1px solid #2e7d32; }
-        .error { background: rgba(198, 40, 40, 0.3); border: 1px solid #c62828; }
-        
-        .links { text-align: center; margin-top: 20px; }
-        .links a { color: #4a7c59; text-decoration: none; }
-        .links a:hover { text-decoration: underline; }
-        
-        .forgot-password { 
-            text-align: right; 
-            margin-top: 5px; 
-            font-size: 14px;
+        .success {
+            background: #2e7d32;
+            color: white;
         }
-        .forgot-password a { color: #8d6e63; }
+        
+        .error {
+            background: #c62828;
+            color: white;
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .links a {
+            color: #4a7c59;
+            text-decoration: none;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="login-box">
+        <div class="card">
             <h1>Login</h1>
             
             <div id="message" class="message"></div>
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="email">E-mail</label>
+                    <label>E-mail:</label>
                     <input type="email" id="email" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="senha">Senha</label>
+                    <label>Senha:</label>
                     <input type="password" id="senha" required>
-                    <div class="forgot-password">
-                        <a href="#" onclick="esqueciSenha(event)">Esqueci a senha</a>
-                    </div>
                 </div>
                 
                 <button type="submit" class="btn" id="submitBtn">
@@ -130,111 +139,66 @@
         </div>
     </div>
 
+    <!-- IMPORTANTE: Mesma ordem -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    
     <script>
-        // Configuração direta
-        const SUPABASE_URL = 'https://sjajziurzcywpzpxbxap.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqYWp6aXVyemN5d3B6cHhieGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNzYxNTksImV4cCI6MjA4MTg1MjE1OX0.OJwH1r7nNQ5Zas77oxdxkqFmZ1BkjTpoNhOrLAVZqQQ';
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('Supabase inicializado para login');
-        
+        // Código específico para login.html
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Login.html carregado');
+            
             const form = document.getElementById('loginForm');
-            const messageDiv = document.getElementById('message');
             const submitBtn = document.getElementById('submitBtn');
+            
+            if (!form) {
+                console.error('Formulário não encontrado!');
+                return;
+            }
             
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('Tentando login...');
                 
+                // Pegar valores
                 const email = document.getElementById('email').value;
                 const senha = document.getElementById('senha').value;
-                
-                console.log('Tentando login com:', email);
                 
                 // Desabilitar botão
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Entrando...';
                 
-                try {
-                    // Tentar login
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: senha
-                    });
+                // Fazer login
+                const resultado = await Auth.fazerLogin(email, senha);
+                
+                if (resultado.success) {
+                    // Sucesso
+                    Auth.mostrarMensagem('message', '✅ Login realizado! Redirecionando...', 'success');
                     
-                    console.log('Resposta login:', { data, error });
-                    
-                    if (error) {
-                        // Verificar tipo de erro
-                        if (error.message.includes('Email not confirmed') || 
-                            error.message.includes('email not verified')) {
-                            throw new Error('Por favor, verifique seu e-mail antes de fazer login. Verifique sua caixa de entrada (e spam).');
-                        } else if (error.message.includes('Invalid login credentials')) {
-                            throw new Error('E-mail ou senha incorretos.');
-                        } else {
-                            throw error;
-                        }
-                    }
-                    
-                    // Verificar se o e-mail foi confirmado
-                    const { data: userData, error: userError } = await supabase.auth.getUser();
-                    
-                    if (userError) throw userError;
-                    
-                    if (!userData.user.email_confirmed_at) {
-                        // Forçar logout se não estiver confirmado
-                        await supabase.auth.signOut();
-                        throw new Error('E-mail não verificado. Por favor, verifique seu e-mail.');
-                    }
-                    
-                    // Login bem-sucedido
-                    showMessage('✅ Login realizado! Redirecionando...', 'success');
-                    
-                    // Redirecionar para dashboard
+                    // Redirecionar após 1 segundo
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
-                    }, 1500);
+                    }, 1000);
                     
-                } catch (error) {
-                    console.error('Erro no login:', error);
-                    showMessage('❌ ' + error.message, 'error');
-                } finally {
+                } else {
+                    // Erro
+                    let mensagemErro = resultado.error;
+                    
+                    // Traduzir erros comuns
+                    if (mensagemErro.includes('Email not confirmed')) {
+                        mensagemErro = '❌ E-mail não verificado! Verifique sua caixa de entrada.';
+                    } else if (mensagemErro.includes('Invalid login credentials')) {
+                        mensagemErro = '❌ E-mail ou senha incorretos.';
+                    }
+                    
+                    Auth.mostrarMensagem('message', mensagemErro, 'error');
+                    
                     // Reabilitar botão
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Entrar';
                 }
             });
-            
-            function showMessage(text, type) {
-                messageDiv.textContent = text;
-                messageDiv.className = 'message ' + type;
-                messageDiv.style.display = 'block';
-                
-                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 5000);
-            }
         });
-        
-        async function esqueciSenha(e) {
-            e.preventDefault();
-            const email = prompt('Digite seu e-mail para redefinir a senha:');
-            if (!email) return;
-            
-            try {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/reset-password.html'
-                });
-                
-                if (error) throw error;
-                alert('📧 E-mail de redefinição enviado! Verifique sua caixa de entrada.');
-            } catch (error) {
-                alert('❌ Erro: ' + error.message);
-            }
-        }
     </script>
 </body>
 </html>
