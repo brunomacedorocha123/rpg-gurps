@@ -61,7 +61,7 @@
         }
 
         .header {
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
             border-bottom: 3px solid var(--primary-gold);
             padding: 15px 20px;
             display: flex;
@@ -121,14 +121,93 @@
             to { text-shadow: 0 0 20px rgba(212, 175, 55, 0.9), 0 0 30px rgba(212, 175, 55, 0.5); }
         }
 
-        /* WELCOME SECTION COM BACKGROUND */
+        /* MAIN NAVIGATION MENU - AGORA LOGO ABAIXO DO HEADER */
+        .main-nav {
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
+            border-bottom: 2px solid var(--wood-dark);
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-scroll-container {
+            overflow-x: auto;
+            padding: 5px 15px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-gold) var(--secondary-dark);
+        }
+
+        .nav-scroll-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .nav-scroll-container::-webkit-scrollbar-track {
+            background: var(--secondary-dark);
+            border-radius: 3px;
+        }
+
+        .nav-scroll-container::-webkit-scrollbar-thumb {
+            background: var(--primary-gold);
+            border-radius: 3px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            padding: 5px;
+            min-width: min-content;
+            justify-content: flex-start;
+        }
+
+        .nav-btn {
+            padding: 14px 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.1), rgba(44, 32, 8, 0.8));
+            color: var(--text-light);
+            border: 2px solid var(--wood-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            min-width: 140px;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
+            border-color: var(--primary-gold);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(145deg, var(--accent-red), #6b0000);
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+        }
+
+        /* WELCOME SECTION COM BACKGROUND - AGORA DEPOIS DO MENU */
         .welcome-section {
             text-align: center;
             margin: 20px;
             padding: 60px 20px;
             background: 
+                /* 1. Overlay para legibilidade do texto */
                 linear-gradient(rgba(26, 18, 0, 0.85), rgba(26, 18, 0, 0.9)),
-                url('taverna.jpg') center/cover no-repeat;
+                /* 2. SUA IMAGEM LOCAL (taverna.jpg) - PRIORIDADE */
+                url('taverna.jpg') center/cover no-repeat,
+                /* 3. FALLBACK ONLINE se local não existir */
+                url('https://images.unsplash.com/photo-1542204165-65bf26472b9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80') center/cover no-repeat,
+                /* 4. FALLBACK FINAL: Gradiente */
+                linear-gradient(145deg, #2c2008, #1a1200);
             border: 3px solid var(--wood-light);
             border-radius: 15px;
             position: relative;
@@ -180,7 +259,7 @@
             margin-bottom: 30px !important;
         }
 
-        /* MODE SELECTOR - DESTAQUE ESPECIAL */
+        /* MODE SELECTOR - DENTRO DO WELCOME CARD */
         .mode-selector {
             display: flex;
             justify-content: center;
@@ -237,73 +316,6 @@
         .mode-btn:hover:not(.active) {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        /* MAIN NAVIGATION MENU */
-        .main-nav {
-            margin: 20px;
-            position: relative;
-        }
-
-        .nav-scroll-container {
-            overflow-x: auto;
-            padding: 10px 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-gold) var(--secondary-dark);
-        }
-
-        .nav-scroll-container::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .nav-scroll-container::-webkit-scrollbar-track {
-            background: var(--secondary-dark);
-            border-radius: 3px;
-        }
-
-        .nav-scroll-container::-webkit-scrollbar-thumb {
-            background: var(--primary-gold);
-            border-radius: 3px;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 10px;
-            padding: 5px;
-            min-width: min-content;
-            justify-content: flex-start;
-        }
-
-        .nav-btn {
-            padding: 14px 20px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            font-weight: bold;
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.8), rgba(26, 18, 0, 0.8));
-            color: var(--text-light);
-            border: 2px solid var(--wood-light);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            white-space: nowrap;
-            min-width: 140px;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .nav-btn:hover {
-            background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
-            border-color: var(--primary-gold);
-            transform: translateY(-2px);
-        }
-
-        .nav-btn.active {
-            background: linear-gradient(145deg, var(--accent-red), #6b0000);
-            border-color: var(--primary-gold);
-            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
         }
 
         /* FEATURES GRID */
@@ -436,6 +448,20 @@
             background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
         }
 
+        /* NOTIFICATION BADGE */
+        .notification-badge {
+            background: var(--accent-red);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
         /* MOBILE RESPONSIVE */
         @media (max-width: 768px) {
             .header {
@@ -460,7 +486,7 @@
             }
             
             .welcome-section {
-                margin: 10px;
+                margin: 15px;
                 padding: 40px 15px;
                 min-height: 250px;
             }
@@ -488,6 +514,10 @@
             
             .player-code-big {
                 font-size: 1.3rem;
+            }
+            
+            .main-nav {
+                position: static;
             }
         }
 
@@ -540,6 +570,27 @@
         </div>
     </header>
 
+    <!-- MENU DE NAVEGAÇÃO AGORA LOGO ABAIXO DO HEADER -->
+    <nav class="main-nav">
+        <div class="nav-scroll-container">
+            <div class="nav-menu">
+                <button class="nav-btn active" onclick="openMesa()">
+                    <i class="fas fa-users"></i> Mesa
+                </button>
+                <button class="nav-btn" onclick="openGuilda()">
+                    <i class="fas fa-landmark"></i> Guilda
+                </button>
+                <button class="nav-btn" onclick="openNotificacoes()">
+                    <i class="fas fa-bell"></i> Notificações
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                <button class="nav-btn" onclick="openMinhaConta()">
+                    <i class="fas fa-user-circle"></i> Minha Conta
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <main class="main-content">
         <!-- WELCOME SECTION COM BACKGROUND -->
         <section class="welcome-section">
@@ -565,27 +616,6 @@
                 </p>
             </div>
         </section>
-
-        <!-- MAIN NAVIGATION MENU -->
-        <nav class="main-nav">
-            <div class="nav-scroll-container">
-                <div class="nav-menu">
-                    <button class="nav-btn active" onclick="openMesa()">
-                        <i class="fas fa-users"></i> Mesa
-                    </button>
-                    <button class="nav-btn" onclick="openGuilda()">
-                        <i class="fas fa-landmark"></i> Guilda
-                    </button>
-                    <button class="nav-btn" onclick="openNotificacoes()">
-                        <i class="fas fa-bell"></i> Notificações
-                        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
-                    </button>
-                    <button class="nav-btn" onclick="openMinhaConta()">
-                        <i class="fas fa-user-circle"></i> Minha Conta
-                    </button>
-                </div>
-            </div>
-        </nav>
 
         <!-- FEATURES GRID -->
         <div class="features-grid">
@@ -918,6 +948,25 @@
     }
     
     // ===========================================
+    // NOTIFICAÇÕES
+    // ===========================================
+    
+    async function checkNotifications(userId) {
+        try {
+            // Simulação - depois implementaremos notificações reais
+            const hasNotifications = Math.random() > 0.7;
+            
+            const badge = document.getElementById('notificationBadge');
+            if (hasNotifications) {
+                badge.textContent = '3';
+                badge.style.display = 'flex';
+            }
+        } catch (error) {
+            console.error('Erro ao verificar notificações:', error);
+        }
+    }
+    
+    // ===========================================
     // FUNÇÕES DOS CARDS (PLACEHOLDER)
     // ===========================================
     
@@ -936,37 +985,6 @@
     
     function openLibrary() {
         showToast('📚 Biblioteca GURPS (em breve)', 'info');
-    }
-    
-    // ===========================================
-    // NOTIFICAÇÕES
-    // ===========================================
-    
-    async function checkNotifications(userId) {
-        try {
-            // Simulação - depois implementaremos notificações reais
-            const hasNotifications = Math.random() > 0.7;
-            
-            const badge = document.getElementById('notificationBadge');
-            if (hasNotifications) {
-                badge.textContent = '3';
-                badge.style.display = 'inline-block';
-                badge.style.cssText = `
-                    background: var(--accent-red);
-                    color: white;
-                    border-radius: 50%;
-                    width: 20px;
-                    height: 20px;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 0.8rem;
-                    margin-left: 5px;
-                `;
-            }
-        } catch (error) {
-            console.error('Erro ao verificar notificações:', error);
-        }
     }
     
     // ===========================================
