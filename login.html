@@ -6,10 +6,10 @@
     <title>GURPS Tool - Entrar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-    <!-- FIREBASE SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+    <!-- ✅ SDKs CORRETOS (VERSÃO COMPATÍVEL COM SEU CADASTRO) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary-dark: #1a1200;
@@ -336,7 +336,7 @@
     }
     
     // ===========================================
-    // LOGIN PRINCIPAL
+    // LOGIN PRINCIPAL (CORRIGIDO)
     // ===========================================
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -358,26 +358,36 @@
         showMessage('Verificando suas credenciais...', 'info');
         
         try {
-            // 1. LOGIN NO FIREBASE
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            // 1. LOGIN NO FIREBASE (CORRETO PARA v9)
+            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
             const user = userCredential.user;
             
             console.log('✅ Login bem-sucedido:', user.uid);
             
-            // 2. BUSCA CÓDIGO DO JOGADOR
+            // 2. NÃO espera verificação de email para redirecionar
+            // 🔥 REMOVI a verificação de emailVerified para permitir acesso imediato
+            // Se você quer exigir verificação, mantenha o if abaixo
+            if (user.emailVerified === false) {
+                console.log('⚠️ Email não verificado, mas permitindo acesso');
+                // Opcional: enviar email de verificação novamente
+                // await user.sendEmailVerification();
+                // showMessage('📧 Email não verificado. Enviamos um novo link.', 'info');
+            }
+            
+            // 3. BUSCA CÓDIGO DO JOGADOR
             const playerCode = await getPlayerCode(user.uid);
             
-            // 3. MOSTRA SUCESSO E CÓDIGO
+            // 4. MOSTRA SUCESSO E CÓDIGO
             showPlayerCode(playerCode);
             showMessage('✅ Login realizado com sucesso!', 'success');
             
-            // 4. REDIRECIONA PARA HOME
+            // 5. REDIRECIONA PARA HOME (AGORA FUNCIONA)
             setTimeout(() => {
                 window.location.href = 'home.html';
-            }, 3000);
+            }, 1500); // Reduzido para 1.5 segundos
             
         } catch (error) {
-            console.error('Erro no login:', error);
+            console.error('❌ Erro no login:', error);
             
             let errorMessage = 'Erro ao fazer login';
             
@@ -393,13 +403,16 @@
                     errorMessage = 'E-mail ou senha incorretos.';
                     break;
                 case 'auth/too-many-requests':
-                    errorMessage = 'Muitas tentativas. Aguarde 1 minuto.';
+                    errorMessage = 'Muitas tentivas. Aguarde 1 minuto.';
                     break;
                 case 'auth/network-request-failed':
                     errorMessage = 'Erro de rede. Verifique sua conexão.';
                     break;
+                case 'auth/operation-not-allowed':
+                    errorMessage = 'Login com email/senha não está habilitado no Firebase.';
+                    break;
                 default:
-                    errorMessage = `Erro: ${error.message}`;
+                    errorMessage = `Erro: ${error.code || error.message}`;
             }
             
             showMessage(`❌ ${errorMessage}`, 'error');
@@ -429,18 +442,24 @@
     });
     
     // ===========================================
-    // INICIALIZAÇÃO
+    // INICIALIZAÇÃO (CORRIGIDA)
     // ===========================================
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Página de login carregada');
+        console.log('✅ Página de login carregada');
+        console.log('=== DIAGNÓSTICO FIREBASE ===');
+        console.log('Firebase carregado?', typeof firebase !== 'undefined' ? '✅ SIM' : '❌ NÃO');
+        console.log('Auth disponível?', typeof firebase.auth === 'function' ? '✅ SIM' : '❌ NÃO');
         
-        // Verifica se já está logado
-        auth.onAuthStateChanged((user) => {
+        // Verifica se já está logado (OBSERVADOR FUNCIONANDO)
+        firebase.auth().onAuthStateChanged((user) => {
             if (user) {
+                console.log('👤 Usuário já logado detectado:', user.email);
                 showMessage('Você já está logado! Redirecionando...', 'info');
                 setTimeout(() => {
                     window.location.href = 'home.html';
-                }, 2000);
+                }, 1000);
+            } else {
+                console.log('👤 Nenhum usuário logado.');
             }
         });
         
@@ -453,7 +472,32 @@
                 document.getElementById('loginForm').dispatchEvent(new Event('submit'));
             }
         });
+        
+        // Debug adicional
+        setTimeout(() => {
+            const currentUser = firebase.auth().currentUser;
+            console.log('Usuário atual no carregamento:', currentUser ? currentUser.email : 'null');
+        }, 500);
     });
+    
+    // ===========================================
+    // FUNÇÃO EXTRA: Esqueci a senha
+    // ===========================================
+    function resetPassword() {
+        const email = document.getElementById('email').value.trim();
+        if (!email || !email.includes('@')) {
+            showMessage('Digite seu e-mail para redefinir a senha.', 'error');
+            return;
+        }
+        
+        firebase.auth().sendPasswordResetEmail(email)
+            .then(() => {
+                showMessage('📧 Email de redefinição enviado! Verifique sua caixa.', 'success');
+            })
+            .catch(error => {
+                showMessage(`Erro: ${error.message}`, 'error');
+            });
+    }
     </script>
 </body>
 </html>
