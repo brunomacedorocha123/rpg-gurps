@@ -6,10 +6,10 @@
     <title>GURPS Tool - Registrar-se</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-    <!-- FIREBASE SDKs (VERSÃO GLOBAL) -->
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+    <!-- ✅ SDKs CORRETOS (versão compatível) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary-dark: #1a1200;
@@ -422,7 +422,7 @@
     // INICIALIZAÇÃO
     // ===========================================
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Página de cadastro carregada');
+        console.log('✅ Página de cadastro carregada');
         
         // Verifica se já está logado
         auth.onAuthStateChanged((user) => {
@@ -436,29 +436,14 @@
         
         // Foco no email
         document.getElementById('email').focus();
+        
+        // Teste de diagnóstico
+        console.log('=== DIAGNÓSTICO FIREBASE ===');
+        console.log('Firebase carregado?', typeof firebase !== 'undefined' ? '✅ SIM' : '❌ NÃO');
+        console.log('Configuração ok?', firebaseConfig?.apiKey ? '✅ SIM' : '❌ NÃO');
+        console.log('Auth disponível?', typeof auth?.createUserWithEmailAndPassword === 'function' ? '✅ SIM' : '❌ NÃO');
+        console.log('Firestore disponível?', typeof db?.collection === 'function' ? '✅ SIM' : '❌ NÃO');
     });
-
-    // ===========================================
-// TESTE RÁPIDO - ADICIONE ESTAS LINHAS
-// ===========================================
-
-console.log("=== TESTE INICIAL ===");
-console.log("1. Firebase carregado?", typeof firebase !== 'undefined' ? '✅ SIM' : '❌ NÃO');
-console.log("2. Config ok?", firebaseConfig?.apiKey ? '✅ SIM' : '❌ NÃO');
-console.log("3. Auth disponível?", typeof auth?.signInWithEmailAndPassword === 'function' ? '✅ SIM' : '❌ NÃO');
-console.log("4. Firestore disponível?", typeof db?.collection === 'function' ? '✅ SIM' : '❌ NÃO');
-
-// Testa se o botão funciona
-document.getElementById('submitBtn').addEventListener('click', function() {
-    console.log("✅ BOTÃO CLICADO!");
-});
-
-// Testa se o formulário captura
-document.getElementById('registerForm').addEventListener('submit', function(e) {
-    console.log("✅ FORMULÁRIO ENVIADO!");
-    console.log("Email:", document.getElementById('email').value);
-    console.log("Senha:", document.getElementById('password').value);
-});
     </script>
 </body>
 </html>
