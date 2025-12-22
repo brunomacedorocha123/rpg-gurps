@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modo Jogador - GURPS Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1a1200;
+            --secondary-dark: #2c2008;
+            --primary-gold: #d4af37;
+            --secondary-gold: #f4d03f;
+            --accent-red: #8b0000;
+            --accent-green: #2e5c3a;
+            --text-light: #f5f5dc;
+            --text-gold: #ffd700;
+            --parchment: #f7f3e9;
+            --wood-dark: #5d4037;
+            --wood-light: #8d6e63;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --player-blue: #1e3a8a;
+            --player-light-blue: #3b82f6;
+        }
+
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
+            color: var(--text-light);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="%232c2008" stroke-width="0.5"/></svg>'),
+                linear-gradient(0deg, transparent 24%, rgba(30, 58, 138, 0.05) 25%, rgba(30, 58, 138, 0.05) 26%, transparent 27%, transparent 74%, rgba(30, 58, 138, 0.05) 75%, rgba(30, 58, 138, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px, 10px 10px;
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
+            border-bottom: 3px solid var(--primary-gold);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo h1 {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1.8rem;
+            color: var(--text-gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .user-id {
+            background: rgba(212, 175, 55, 0.2);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--primary-gold);
+            color: var(--text-gold);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .player-code {
+            font-size: 1.1rem;
+            color: var(--secondary-gold);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* BREADCRUMB */
+        .breadcrumb {
+            background: rgba(30, 58, 138, 0.1);
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb a {
+            color: var(--player-light-blue);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--secondary-gold);
+            text-decoration: underline;
+        }
+
+        .breadcrumb .separator {
+            color: var(--primary-gold);
+        }
+
+        .breadcrumb .current {
+            color: var(--text-light);
+            font-weight: bold;
+        }
+
+        /* PAGE TITLE */
+        .page-title {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(rgba(26, 18, 0, 0.9), rgba(44, 32, 8, 0.9));
+            border-bottom: 2px solid var(--player-blue);
+            position: relative;
+        }
+
+        .page-title::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--player-light-blue), transparent);
+        }
+
+        .page-title h2 {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 2.5rem;
+            color: var(--player-light-blue);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* PLAYER ACTIONS GRID - RESPONSIVA */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .action-card {
+            background: linear-gradient(145deg, rgba(30, 58, 138, 0.15), rgba(44, 32, 8, 0.8));
+            border: 2px solid var(--player-blue);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--player-blue), var(--player-light-blue));
+        }
+
+        .action-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--player-light-blue);
+            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.3);
+        }
+
+        .action-card.large {
+            grid-column: span 2;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            color: var(--player-light-blue);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-card h3 {
+            font-family: 'MedievalSharp', cursive;
+            color: var(--text-gold);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-card p {
+            color: var(--text-light);
+            margin-bottom: 25px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            flex-grow: 1;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 12px 30px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(145deg, var(--player-blue), #152a6b);
+            color: white;
+            border: 2px solid var(--player-light-blue);
+            min-width: 200px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(145deg, var(--player-light-blue), var(--player-blue));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(139, 0, 0, 0.1));
+            color: var(--text-light);
+            border: 2px solid var(--wood-light);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.3), rgba(139, 0, 0, 0.2));
+            border-color: var(--primary-gold);
+        }
+
+        .btn-logout {
+            background: linear-gradient(145deg, var(--accent-red), #6b0000);
+            color: var(--text-light);
+            border: 2px solid #a52a2a;
+            padding: 8px 20px;
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(145deg, #9b0000, #6b0000);
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: linear-gradient(145deg, var(--wood-dark), #4a352b);
+            color: var(--text-light);
+            border: 2px solid var(--wood-light);
+            padding: 10px 25px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            background: linear-gradient(145deg, var(--wood-light), var(--wood-dark));
+        }
+
+        /* STATS OVERVIEW */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            background: rgba(30, 58, 138, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--player-light-blue);
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            opacity: 0.8;
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            padding: 25px 20px;
+            margin-top: 50px;
+            border-top: 2px solid var(--wood-dark);
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+        }
+
+        /* CHARACTER LIST */
+        .character-list {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .character-item {
+            background: linear-gradient(145deg, rgba(30, 58, 138, 0.1), rgba(44, 32, 8, 0.7));
+            border: 2px solid var(--player-blue);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .character-item:hover {
+            border-color: var(--player-light-blue);
+            transform: translateX(5px);
+        }
+
+        .character-info h4 {
+            color: var(--text-gold);
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .character-details {
+            display: flex;
+            gap: 15px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .character-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .user-id {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .logo h1 {
+                font-size: 1.6rem;
+            }
+            
+            .page-title h2 {
+                font-size: 2rem;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+                padding: 20px 15px;
+                gap: 20px;
+            }
+            
+            .action-card.large {
+                grid-column: span 1;
+            }
+            
+            .action-card {
+                min-height: 220px;
+                padding: 25px 20px;
+            }
+            
+            .card-icon {
+                font-size: 3rem;
+            }
+            
+            .action-card h3 {
+                font-size: 1.5rem;
+            }
+            
+            .btn-primary {
+                min-width: 180px;
+                padding: 10px 20px;
+            }
+            
+            .breadcrumb {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .character-item {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .character-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 15px;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title h2 {
+                font-size: 1.8rem;
+            }
+            
+            .page-title p {
+                font-size: 1rem;
+            }
+            
+            .actions-grid {
+                padding: 15px 10px;
+            }
+            
+            .action-card {
+                min-height: 200px;
+                padding: 20px 15px;
+            }
+            
+            .card-icon {
+                font-size: 2.5rem;
+            }
+            
+            .action-card h3 {
+                font-size: 1.3rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+                min-width: 160px;
+            }
+            
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .breadcrumb {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-green);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-gold);
+            box-shadow: var(--shadow);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            font-family: 'Cinzel', serif;
+            max-width: 300px;
+            word-break: break-word;
+            display: none;
+        }
+
+        .toast.error {
+            background: var(--accent-red);
+        }
+
+        .toast.info {
+            background: var(--secondary-dark);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--wood-light);
+            border-top: 5px solid var(--player-light-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p style="color: var(--text-light); font-size: 1.2rem;">Carregando...</p>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast"></div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-user" style="color: var(--player-light-blue); font-size: 1.8rem;"></i>
+            <h1>MODO JOGADOR</h1>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-id">
+                <i class="fas fa-id-card"></i>
+                <span>Código:</span>
+                <div class="player-code" id="playerCode">...</div>
+            </div>
+            <button onclick="logout()" class="btn btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </header>
+
+    <!-- BREADCRUMB -->
+    <nav class="breadcrumb">
+        <a href="index.html">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <span class="separator"><i class="fas fa-chevron-right"></i></span>
+        <span class="current">
+            <i class="fas fa-user"></i> Modo Jogador
+        </span>
+    </nav>
+
+    <!-- PAGE TITLE -->
+    <section class="page-title">
+        <h2>Seu Portal de Aventuras</h2>
+        <p>Gerencie seus personagens, entre em campanhas e viva épicas histórias!</p>
+    </section>
+
+    <!-- PLAYER ACTIONS GRID -->
+    <main class="actions-grid">
+        <div class="action-card large">
+            <div class="card-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h3>Novo Personagem</h3>
+            <p>Forje um novo herói do zero. Crie sua história, escolha atributos, vantagens, desvantagens e perícias.</p>
+            <button onclick="createNewCharacter()" class="btn btn-primary">
+                <i class="fas fa-hammer"></i> Criar Personagem
+            </button>
+        </div>
+
+        <div class="action-card">
+            <div class="card-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Meus Personagens</h3>
+            <p>Visualize, edite e gerencie todos os seus personagens criados.</p>
+            <button onclick="viewMyCharacters()" class="btn btn-primary">
+                <i class="fas fa-scroll"></i> Ver Personagens
+            </button>
+        </div>
+
+        <div class="action-card">
+            <div class="card-icon">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h3>Campanhas</h3>
+            <p>Entre em novas aventuras ou continue suas campanhas ativas.</p>
+            <button onclick="viewCampaigns()" class="btn btn-primary">
+                <i class="fas fa-dungeon"></i> Ver Campanhas
+            </button>
+        </div>
+
+        <div class="action-card">
+            <div class="card-icon">
+                <i class="fas fa-dice-d20"></i>
+            </div>
+            <h3>Rolagem Rápida</h3>
+            <p>Acesse a sala de dados virtual para rolagens durante o jogo.</p>
+            <button onclick="quickRoll()" class="btn btn-primary">
+                <i class="fas fa-dice"></i> Lançar Dados
+            </button>
+        </div>
+
+        <div class="action-card">
+            <div class="card-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <h3>Regras GURPS</h3>
+            <p>Consulte regras rápidas, tabelas e referências do sistema.</p>
+            <button onclick="openRules()" class="btn btn-primary">
+                <i class="fas fa-scroll"></i> Consultar
+            </button>
+        </div>
+
+        <div class="action-card">
+            <div class="card-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <h3>Histórico</h3>
+            <p>Revise suas ações, rolagens e eventos recentes.</p>
+            <button onclick="viewHistory()" class="btn btn-primary">
+                <i class="fas fa-hourglass"></i> Ver Histórico
+            </button>
+        </div>
+    </main>
+
+    <!-- CHARACTER STATS OVERVIEW -->
+    <section class="stats-overview" id="characterStats" style="display: none;">
+        <!-- Será preenchido via JavaScript -->
+    </section>
+
+    <!-- CHARACTER LIST -->
+    <section class="character-list" id="characterList" style="display: none;">
+        <h3 style="text-align: center; color: var(--text-gold); margin-bottom: 20px;">Meus Personagens</h3>
+        <!-- Lista de personagens será preenchida via JavaScript -->
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>© 2024 GURPS Tool - Modo Jogador</p>
+        <p style="color: var(--wood-light); font-size: 0.9rem; margin-top: 10px;">
+            GURPS é uma marca registrada da Steve Jackson Games
+        </p>
+    </footer>
+
+    <script>
+    // ===========================================
+    // INICIALIZAÇÃO DO FIREBASE
+    // ===========================================
+    let app, auth, db;
+    
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+        app = firebase.app();
+        auth = firebase.auth();
+        db = firebase.firestore();
+    } else {
+        const firebaseConfig = {
+            apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
+            authDomain: "gurpsroll.firebaseapp.com",
+            projectId: "gurpsroll"
+        };
+        
+        app = firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+    }
+    
+    // ===========================================
+    // VARIÁVEIS GLOBAIS
+    // ===========================================
+    let currentUser = null;
+    let userCharacters = [];
+    
+    // ===========================================
+    // INICIALIZAÇÃO DA PÁGINA
+    // ===========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        initPage();
+    });
+    
+    async function initPage() {
+        showLoading();
+        
+        // Verifica autenticação
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadUserData();
+                await loadUserCharacters();
+                hideLoading();
+            } else {
+                // Não autenticado - redireciona
+                showToast('Faça login para acessar esta página', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            }
+        });
+    }
+    
+    // ===========================================
+    // CARREGAR DADOS DO USUÁRIO
+    // ===========================================
+    async function loadUserData() {
+        try {
+            const userDoc = await db.collection('player_profiles').doc(currentUser.uid).get();
+            
+            if (userDoc.exists) {
+                const data = userDoc.data();
+                document.getElementById('playerCode').textContent = data.player_code || 'N/A';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+        }
+    }
+    
+    // ===========================================
+    // CARREGAR PERSONAGENS DO USUÁRIO
+    // ===========================================
+    async function loadUserCharacters() {
+        try {
+            const charactersSnapshot = await db.collection('characters')
+                .where('player_id', '==', currentUser.uid)
+                .orderBy('created_at', 'desc')
+                .get();
+            
+            userCharacters = [];
+            charactersSnapshot.forEach(doc => {
+                userCharacters.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            
+            updateCharacterDisplay();
+        } catch (error) {
+            console.error('Erro ao carregar personagens:', error);
+            showToast('Erro ao carregar personagens', 'error');
+        }
+    }
+    
+    // ===========================================
+    // ATUALIZAR DISPLAY DE PERSONAGENS
+    // ===========================================
+    function updateCharacterDisplay() {
+        const statsSection = document.getElementById('characterStats');
+        const listSection = document.getElementById('characterList');
+        
+        if (userCharacters.length > 0) {
+            // Mostrar estatísticas
+            statsSection.style.display = 'grid';
+            statsSection.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${userCharacters.length}</div>
+                    <div class="stat-label">Personagens</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${userCharacters.filter(c => c.campaign_id).length}</div>
+                    <div class="stat-label">Em Campanhas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${userCharacters.filter(c => c.is_active).length}</div>
+                    <div class="stat-label">Ativos</div>
+                </div>
+            `;
+            
+            // Mostrar lista
+            listSection.style.display = 'block';
+            listSection.innerHTML = '<h3 style="text-align: center; color: var(--text-gold); margin-bottom: 20px;">Meus Personagens</h3>';
+            
+            userCharacters.forEach(character => {
+                const charElement = document.createElement('div');
+                charElement.className = 'character-item';
+                charElement.innerHTML = `
+                    <div class="character-info">
+                        <h4>${character.name || 'Sem nome'}</h4>
+                        <div class="character-details">
+                            <span><i class="fas fa-heart"></i> ${character.hp || 10} PV</span>
+                            <span><i class="fas fa-bolt"></i> ${character.fp || 10} PE</span>
+                            <span><i class="fas fa-shield-alt"></i> ${character.defense || 0}</span>
+                        </div>
+                    </div>
+                    <div class="character-actions">
+                        <button onclick="viewCharacter('${character.id}')" class="btn btn-secondary">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button onclick="editCharacter('${character.id}')" class="btn btn-secondary">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                `;
+                listSection.appendChild(charElement);
+            });
+        } else {
+            statsSection.style.display = 'none';
+            listSection.style.display = 'none';
+        }
+    }
+    
+    // ===========================================
+    // FUNÇÕES PRINCIPAIS
+    // ===========================================
+    function createNewCharacter() {
+        showToast('Redirecionando para criação de personagem...', 'info');
+        setTimeout(() => {
+            window.location.href = 'criar-personagem.html';
+        }, 1000);
+    }
+    
+    function viewMyCharacters() {
+        const listSection = document.getElementById('characterList');
+        if (listSection.style.display === 'none') {
+            listSection.style.display = 'block';
+        } else {
+            listSection.style.display = 'none';
+        }
+    }
+    
+    function viewCharacter(characterId) {
+        showToast('Abrindo personagem...', 'info');
+        // Futuramente: abrir página de visualização do personagem
+    }
+    
+    function editCharacter(characterId) {
+        showToast('Editando personagem...', 'info');
+        // Futuramente: abrir editor do personagem
+        window.location.href = `criar-personagem.html?edit=${characterId}`;
+    }
+    
+    function viewCampaigns() {
+        showToast('Abrindo campanhas...', 'info');
+        // Futuramente: abrir página de campanhas
+    }
+    
+    function quickRoll() {
+        const diceRoll = Math.floor(Math.random() * 20) + 1;
+        showToast(`🎲 Rolou um D20: <strong>${diceRoll}</strong>`, 'success');
+    }
+    
+    function openRules() {
+        showToast('Abrindo regras GURPS...', 'info');
+    }
+    
+    function viewHistory() {
+        showToast('Abrindo histórico...', 'info');
+    }
+    
+    // ===========================================
+    // FUNÇÕES UTILITÁRIAS
+    // ===========================================
+    async function logout() {
+        try {
+            showLoading();
+            await auth.signOut();
+            showToast('Desconectado com sucesso', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        } catch (error) {
+            hideLoading();
+            showToast('Erro ao sair', 'error');
+        }
+    }
+    
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        toast.innerHTML = message;
+        toast.className = 'toast ' + type;
+        toast.style.display = 'block';
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                toast.style.display = 'none';
+                toast.style.animation = '';
+            }, 300);
+        }, 3000);
+    }
+    
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+    
+    // ===========================================
+    // HOTKEYS
+    // ===========================================
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+N - Novo personagem
+        if (e.ctrlKey && e.key === 'n') {
+            e.preventDefault();
+            createNewCharacter();
+        }
+        // Ctrl+L - Logout
+        if (e.ctrlKey && e.key === 'l') {
+            e.preventDefault();
+            logout();
+        }
+        // Escape - Fechar modais/seções
+        if (e.key === 'Escape') {
+            document.getElementById('characterList').style.display = 'none';
+        }
+    });
+    </script>
+</body>
+</html>
