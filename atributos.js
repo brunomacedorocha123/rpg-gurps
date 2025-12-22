@@ -1,7 +1,7 @@
 // ===== SISTEMA DE ATRIBUTOS - GURPS =====
-// Versão Corrigida - Todos os cálculos funcionais
+// Versão Final - Todos os cálculos funcionais
 
-// Tabelas de referência CORRETAS
+// Tabelas de referência
 const danoTable = {
     1: { gdp: "1d-6", geb: "1d-5" },
     2: { gdp: "1d-6", geb: "1d-5" },
@@ -87,15 +87,12 @@ function alterarAtributo(atributo, valor) {
     const input = document.getElementById(atributo);
     let novoValor = parseInt(estadoAtributos[atributo]) + valor;
     
-    // Limites: 1 a 40
     if (novoValor < 1) novoValor = 1;
     if (novoValor > 40) novoValor = 40;
     
-    // Atualizar estado e input
     estadoAtributos[atributo] = novoValor;
     input.value = novoValor;
     
-    // Calcular tudo
     calcularTudo();
 }
 
@@ -103,7 +100,6 @@ function atualizarBonus(atributo, valor) {
     const chave = `bonus${atributo}`;
     estadoAtributos[chave] = parseInt(valor) || 0;
     
-    // Atualizar estilo visual
     const input = document.getElementById(`bonus${atributo}`);
     if (input) {
         input.classList.remove('positivo', 'negativo');
@@ -120,39 +116,20 @@ function atualizarBonus(atributo, valor) {
 // ===== CÁLCULOS PRINCIPAIS =====
 
 function calcularTudo() {
-    // 1. Atributos secundários base
     atualizarBases();
-    
-    // 2. Dano base
     calcularDano();
-    
-    // 3. Cargas
     calcularCarga();
-    
-    // 4. Pontos gastos
     calcularPontosGastos();
-    
-    // 5. Totais com bônus
     calcularTotais();
-    
-    // 6. Disparar evento
     dispararEventoAlteracao();
 }
 
 function atualizarBases() {
-    // PV base = ST
     document.getElementById('PVBase').textContent = estadoAtributos.ST;
-    
-    // PF base = HT
     document.getElementById('PFBase').textContent = estadoAtributos.HT;
-    
-    // Vontade base = IQ
     document.getElementById('VontadeBase').textContent = estadoAtributos.IQ;
-    
-    // Percepção base = IQ
     document.getElementById('PercepcaoBase').textContent = estadoAtributos.IQ;
     
-    // Deslocamento base = (HT + DX) / 4
     const deslocamentoBase = (estadoAtributos.HT + estadoAtributos.DX) / 4;
     document.getElementById('DeslocamentoBase').textContent = deslocamentoBase.toFixed(2);
 }
@@ -183,7 +160,6 @@ function calcularCarga() {
 }
 
 function calcularPontosGastos() {
-    // Custo por nível: ST=10, DX=20, IQ=20, HT=10
     const custoST = (estadoAtributos.ST - 10) * 10;
     const custoDX = (estadoAtributos.DX - 10) * 20;
     const custoIQ = (estadoAtributos.IQ - 10) * 20;
@@ -191,10 +167,11 @@ function calcularPontosGastos() {
     
     const totalGastos = custoST + custoDX + custoIQ + custoHT;
     
-    // Atualizar pontos gastos
-    document.getElementById('pontosGastos').textContent = totalGastos;
+    const pontosElement = document.getElementById('pontosGastos');
+    if (pontosElement) {
+        pontosElement.textContent = totalGastos;
+    }
     
-    // Atualizar custos individuais
     document.getElementById('custoST').textContent = custoST;
     document.getElementById('custoDX').textContent = custoDX;
     document.getElementById('custoIQ').textContent = custoIQ;
@@ -202,23 +179,18 @@ function calcularPontosGastos() {
 }
 
 function calcularTotais() {
-    // PV Total = ST + bonusPV
     const pvTotal = Math.max(estadoAtributos.ST + estadoAtributos.bonusPV, 1);
     document.getElementById('PVTotal').textContent = pvTotal;
     
-    // PF Total = HT + bonusPF
     const pfTotal = Math.max(estadoAtributos.HT + estadoAtributos.bonusPF, 1);
     document.getElementById('PFTotal').textContent = pfTotal;
     
-    // Vontade Total = IQ + bonusVontade
     const vontadeTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusVontade, 1);
     document.getElementById('VontadeTotal').textContent = vontadeTotal;
     
-    // Percepção Total = IQ + bonusPercepcao
     const percepcaoTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusPercepcao, 1);
     document.getElementById('PercepcaoTotal').textContent = percepcaoTotal;
     
-    // Deslocamento Total = Base + bonusDeslocamento
     const deslocamentoBase = parseFloat(document.getElementById('DeslocamentoBase').textContent);
     const deslocamentoTotal = Math.max(deslocamentoBase + estadoAtributos.bonusDeslocamento, 0).toFixed(2);
     document.getElementById('DeslocamentoTotal').textContent = deslocamentoTotal;
@@ -245,7 +217,6 @@ function dispararEventoAlteracao() {
 }
 
 function inicializarAtributos() {
-    // Configurar listeners dos atributos principais
     ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
         const input = document.getElementById(atributo);
         if (input) {
@@ -261,7 +232,6 @@ function inicializarAtributos() {
         }
     });
     
-    // Configurar listeners dos bônus
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById(`bonus${atributo}`);
         if (input) {
@@ -273,12 +243,10 @@ function inicializarAtributos() {
                 atualizarBonus(atributo, this.value);
             });
             
-            // Inicializar estilo
             atualizarBonus(atributo, input.value);
         }
     });
     
-    // Calcular tudo pela primeira vez
     calcularTudo();
 }
 
@@ -307,7 +275,6 @@ function obterDadosParaSalvar() {
 function carregarDados(dados) {
     if (!dados) return;
     
-    // Carregar atributos principais
     if (dados.atributos) {
         Object.keys(dados.atributos).forEach(atributo => {
             estadoAtributos[atributo] = dados.atributos[atributo];
@@ -316,7 +283,6 @@ function carregarDados(dados) {
         });
     }
     
-    // Carregar bônus
     if (dados.bonus) {
         Object.keys(dados.bonus).forEach(atributo => {
             const chave = `bonus${atributo}`;
@@ -329,7 +295,6 @@ function carregarDados(dados) {
         });
     }
     
-    // Recalcular tudo
     calcularTudo();
 }
 
