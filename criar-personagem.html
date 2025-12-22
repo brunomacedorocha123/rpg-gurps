@@ -672,6 +672,7 @@ body::before {
 }
 </style>
  <link rel="stylesheet" href="style-dashboard.css">
+ <link rel="stylesheet" href="style-atributos.css">
 </head>
 <body>
     <!-- LOADING OVERLAY -->
@@ -1100,14 +1101,298 @@ body::before {
     </div>
 </div>
             <!-- ATRIBUTOS -->
-            <div class="tab-pane" id="atributos">
-                <h3 class="tab-title">Atributos do Personagem</h3>
-                <div class="tab-placeholder">
-                    <i class="fas fa-dumbbell"></i>
-                    <p>Força (ST), Destreza (DX), Inteligência (IQ), Saúde (HT).</p>
-                    <p>Pontos secundários: Pontos de Vida (PV), Pontos de Fadiga (PF).</p>
+<div class="tab-pane" id="atributos">
+    <div class="atributos-container">
+        <!-- Controle de Pontos (Simplificado) -->
+        <div class="pontos-section">
+            <div class="ponto-card total">
+                <div class="ponto-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="ponto-info">
+                    <h5>Pontos Gastos em Atributos</h5>
+                    <div class="ponto-valor" id="pontosGastos">0</div>
                 </div>
             </div>
+        </div>
+
+        <!-- Atributos Principais -->
+        <div class="atributos-principais">
+            <div class="secao-header">
+                <i class="fas fa-crown"></i>
+                <h2>Atributos Principais</h2>
+            </div>
+            
+            <div class="cards-grid">
+                <!-- ST -->
+                <div class="atributo-card">
+                    <div class="atributo-header">
+                        <h3><i class="fas fa-fist-raised"></i> FORÇA (ST)</h3>
+                        <div class="custo-badge" id="custoST">0</div>
+                    </div>
+                    <div class="atributo-valor">
+                        <div class="controle">
+                            <button class="btn-controle" onclick="alterarAtributo('ST', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="text" id="ST" class="valor-input" value="10" readonly>
+                            <button class="btn-controle" onclick="alterarAtributo('ST', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="custo-info">
+                            <i class="fas fa-coins"></i> 10 pontos/nível
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DX -->
+                <div class="atributo-card">
+                    <div class="atributo-header">
+                        <h3><i class="fas fa-bolt"></i> DESTREZA (DX)</h3>
+                        <div class="custo-badge" id="custoDX">0</div>
+                    </div>
+                    <div class="atributo-valor">
+                        <div class="controle">
+                            <button class="btn-controle" onclick="alterarAtributo('DX', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="text" id="DX" class="valor-input" value="10" readonly>
+                            <button class="btn-controle" onclick="alterarAtributo('DX', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="custo-info">
+                            <i class="fas fa-coins"></i> 20 pontos/nível
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IQ -->
+                <div class="atributo-card">
+                    <div class="atributo-header">
+                        <h3><i class="fas fa-brain"></i> INTELIGÊNCIA (IQ)</h3>
+                        <div class="custo-badge" id="custoIQ">0</div>
+                    </div>
+                    <div class="atributo-valor">
+                        <div class="controle">
+                            <button class="btn-controle" onclick="alterarAtributo('IQ', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="text" id="IQ" class="valor-input" value="10" readonly>
+                            <button class="btn-controle" onclick="alterarAtributo('IQ', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="custo-info">
+                            <i class="fas fa-coins"></i> 20 pontos/nível
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HT -->
+                <div class="atributo-card">
+                    <div class="atributo-header">
+                        <h3><i class="fas fa-heartbeat"></i> VIGOR (HT)</h3>
+                        <div class="custo-badge" id="custoHT">0</div>
+                    </div>
+                    <div class="atributo-valor">
+                        <div class="controle">
+                            <button class="btn-controle" onclick="alterarAtributo('HT', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="text" id="HT" class="valor-input" value="10" readonly>
+                            <button class="btn-controle" onclick="alterarAtributo('HT', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="custo-info">
+                            <i class="fas fa-coins"></i> 10 pontos/nível
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Atributos Secundários -->
+        <div class="atributos-secundarios">
+            <div class="secao-header">
+                <i class="fas fa-layer-group"></i>
+                <h2>Atributos Derivados</h2>
+            </div>
+            
+            <div class="cards-grid secundarios">
+                <!-- PV -->
+                <div class="derivado-card">
+                    <div class="derivado-header">
+                        <h3><i class="fas fa-heart"></i> PONTOS DE VIDA</h3>
+                        <span class="fonte">(ST)</span>
+                    </div>
+                    <div class="derivado-valor">
+                        <div class="base">
+                            <span>Base:</span>
+                            <strong id="PVBase">10</strong>
+                        </div>
+                        <div class="modificador">
+                            <span>Modificador:</span>
+                            <input type="number" id="bonusPV" class="mod-input" value="0" min="-10" max="10">
+                        </div>
+                        <div class="total">
+                            <span>Total:</span>
+                            <strong id="PVTotal">10</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PF -->
+                <div class="derivado-card">
+                    <div class="derivado-header">
+                        <h3><i class="fas fa-wind"></i> PONTOS DE FADIGA</h3>
+                        <span class="fonte">(HT)</span>
+                    </div>
+                    <div class="derivado-valor">
+                        <div class="base">
+                            <span>Base:</span>
+                            <strong id="PFBase">10</strong>
+                        </div>
+                        <div class="modificador">
+                            <span>Modificador:</span>
+                            <input type="number" id="bonusPF" class="mod-input" value="0" min="-10" max="10">
+                        </div>
+                        <div class="total">
+                            <span>Total:</span>
+                            <strong id="PFTotal">10</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vontade -->
+                <div class="derivado-card">
+                    <div class="derivado-header">
+                        <h3><i class="fas fa-brain"></i> VONTADE</h3>
+                        <span class="fonte">(IQ)</span>
+                    </div>
+                    <div class="derivado-valor">
+                        <div class="base">
+                            <span>Base:</span>
+                            <strong id="VontadeBase">10</strong>
+                        </div>
+                        <div class="modificador">
+                            <span>Modificador:</span>
+                            <input type="number" id="bonusVontade" class="mod-input" value="0" min="-10" max="10">
+                        </div>
+                        <div class="total">
+                            <span>Total:</span>
+                            <strong id="VontadeTotal">10</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Percepção -->
+                <div class="derivado-card">
+                    <div class="derivado-header">
+                        <h3><i class="fas fa-eye"></i> PERCEPÇÃO</h3>
+                        <span class="fonte">(IQ)</span>
+                    </div>
+                    <div class="derivado-valor">
+                        <div class="base">
+                            <span>Base:</span>
+                            <strong id="PercepcaoBase">10</strong>
+                        </div>
+                        <div class="modificador">
+                            <span>Modificador:</span>
+                            <input type="number" id="bonusPercepcao" class="mod-input" value="0" min="-10" max="10">
+                        </div>
+                        <div class="total">
+                            <span>Total:</span>
+                            <strong id="PercepcaoTotal">10</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deslocamento -->
+                <div class="derivado-card">
+                    <div class="derivado-header">
+                        <h3><i class="fas fa-running"></i> DESLOCAMENTO</h3>
+                        <span class="fonte">(DX+HT)/4</span>
+                    </div>
+                    <div class="derivado-valor">
+                        <div class="base">
+                            <span>Base:</span>
+                            <strong id="DeslocamentoBase">5.00</strong>
+                        </div>
+                        <div class="modificador">
+                            <span>Modificador:</span>
+                            <input type="number" id="bonusDeslocamento" class="mod-input" value="0" min="-5" max="5" step="0.25">
+                        </div>
+                        <div class="total">
+                            <span>Total:</span>
+                            <strong id="DeslocamentoTotal">5.00</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistema de Combate -->
+        <div class="combate-section">
+            <div class="secao-header">
+                <i class="fas fa-shield-alt"></i>
+                <h2>Sistema de Combate</h2>
+            </div>
+            
+            <div class="combate-grid">
+                <!-- Dano Base -->
+                <div class="combate-card">
+                    <div class="combate-header">
+                        <h3><i class="fas fa-dagger"></i> DANO BÁSICO</h3>
+                        <span class="fonte">(ST)</span>
+                    </div>
+                    <div class="dano-container">
+                        <div class="dano-item">
+                            <span class="dano-tipo">Golpe Despreparado (GDP)</span>
+                            <span class="dano-valor" id="danoGDP">1d-2</span>
+                        </div>
+                        <div class="dano-item">
+                            <span class="dano-tipo">Golpe Estático Básico (GEB)</span>
+                            <span class="dano-valor" id="danoGEB">1d</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carga -->
+                <div class="combate-card">
+                    <div class="combate-header">
+                        <h3><i class="fas fa-weight-hanging"></i> NÍVEIS DE CARGA</h3>
+                        <span class="fonte">(ST)</span>
+                    </div>
+                    <div class="carga-container">
+                        <div class="carga-item">
+                            <span class="carga-tipo">Nenhuma:</span>
+                            <span class="carga-valor" id="cargaNenhuma">10.0</span>
+                        </div>
+                        <div class="carga-item">
+                            <span class="carga-tipo">Leve:</span>
+                            <span class="carga-valor" id="cargaLeve">20.0</span>
+                        </div>
+                        <div class="carga-item">
+                            <span class="carga-tipo">Média:</span>
+                            <span class="carga-valor" id="cargaMedia">30.0</span>
+                        </div>
+                        <div class="carga-item">
+                            <span class="carga-tipo">Pesada:</span>
+                            <span class="carga-valor" id="cargaPesada">60.0</span>
+                        </div>
+                        <div class="carga-item">
+                            <span class="carga-tipo">Muito Pesada:</span>
+                            <span class="carga-valor" id="cargaMuitoPesada">100.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- CARACTERÍSTICAS -->
             <div class="tab-pane" id="caracteristicas">
@@ -1210,6 +1495,7 @@ body::before {
         </p>
     </footer>
      <script src="dashboard.js"></script>
+     <script src="atributos.js"></script>
 
     <script>
     // ===========================================
