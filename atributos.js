@@ -167,12 +167,19 @@ function calcularPontosGastos() {
     
     const totalGastos = custoST + custoDX + custoIQ + custoHT;
     
+    // Atualizar o elemento principal
     const pontosElement = document.getElementById('pontosGastos');
     if (pontosElement) {
         pontosElement.textContent = totalGastos;
-        pontosElement.innerHTML = totalGastos;
     }
     
+    // Atualizar também o card (se existir com ID diferente)
+    const cardElement = document.getElementById('pontosGastosCard');
+    if (cardElement) {
+        cardElement.textContent = totalGastos;
+    }
+    
+    // Atualizar custos individuais
     document.getElementById('custoST').textContent = custoST;
     document.getElementById('custoDX').textContent = custoDX;
     document.getElementById('custoIQ').textContent = custoIQ;
@@ -218,6 +225,7 @@ function dispararEventoAlteracao() {
 }
 
 function inicializarAtributos() {
+    // Inicializar inputs dos atributos principais
     ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
         const input = document.getElementById(atributo);
         if (input) {
@@ -233,6 +241,7 @@ function inicializarAtributos() {
         }
     });
     
+    // Inicializar inputs dos bônus
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById(`bonus${atributo}`);
         if (input) {
@@ -244,10 +253,12 @@ function inicializarAtributos() {
                 atualizarBonus(atributo, this.value);
             });
             
+            // Aplicar formatação inicial
             atualizarBonus(atributo, input.value);
         }
     });
     
+    // Calcular tudo pela primeira vez
     calcularTudo();
 }
 
@@ -276,6 +287,7 @@ function obterDadosParaSalvar() {
 function carregarDados(dados) {
     if (!dados) return;
     
+    // Carregar atributos principais
     if (dados.atributos) {
         Object.keys(dados.atributos).forEach(atributo => {
             estadoAtributos[atributo] = dados.atributos[atributo];
@@ -284,6 +296,7 @@ function carregarDados(dados) {
         });
     }
     
+    // Carregar bônus
     if (dados.bonus) {
         Object.keys(dados.bonus).forEach(atributo => {
             const chave = `bonus${atributo}`;
@@ -296,6 +309,7 @@ function carregarDados(dados) {
         });
     }
     
+    // Recalcular tudo
     calcularTudo();
 }
 
@@ -310,6 +324,7 @@ window.carregarDados = carregarDados;
 // ===== INICIALIZAÇÃO AUTOMÁTICA =====
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Aguardar um pouco para garantir que o DOM está completamente carregado
     setTimeout(() => {
         if (document.getElementById('ST')) {
             inicializarAtributos();
@@ -317,27 +332,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-// ===== GARANTIA DE FUNCIONAMENTO DO CARD =====
+// ===== COMPATIBILIDADE COM O CARD DE PONTOS =====
 
-function garantirCardPontos() {
-    const card = document.querySelector('.ponto-card.total');
-    const pontosElement = document.getElementById('pontosGastos');
+// Esta função garante que o card de pontos será atualizado
+// mesmo se o elemento tiver ID diferente
+function verificarEAtualizarCardPontos() {
+    const totalGastos = (estadoAtributos.ST - 10) * 10 +
+                       (estadoAtributos.DX - 10) * 20 +
+                       (estadoAtributos.IQ - 10) * 20 +
+                       (estadoAtributos.HT - 10) * 10;
     
-    if (card && pontosElement) {
-        const observer = new MutationObserver(function() {
-            const custoST = (estadoAtributos.ST - 10) * 10;
-            const custoDX = (estadoAtributos.DX - 10) * 20;
-            const custoIQ = (estadoAtributos.IQ - 10) * 20;
-            const custoHT = (estadoAtributos.HT - 10) * 10;
-            const totalGastos = custoST + custoDX + custoIQ + custoHT;
-            
-            pontosElement.textContent = totalGastos;
-        });
-        
-        observer.observe(card, { childList: true, subtree: true, attributes: true });
-    }
+    // Tentar atualizar vários possíveis IDs
+    const possiveisIds = ['pontosGastosCard', 'pontosGastos', 'displayPontosGastos'];
+    
+    possiveisIds.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.textContent = totalGastos;
+        }
+    });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(garantirCardPontos, 200);
-});
+// Sobrescrever a função calcularTudo para incluir a verificação do card
+const calcularTudoOriginal = calcularTudo;
+calcularTudo = function() {
+    calcularTudoOriginal();
+    verificarEAtualizarCardPontos();
+};
+
+// Executar uma vez quando a página carregar
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(verificarEAtualizarCardPontos, 200);
+    });
+} else {
+    setTimeout(verificarEAtualizarCardPontos, 200);
+}
