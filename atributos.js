@@ -1,5 +1,5 @@
 // ===== SISTEMA DE ATRIBUTOS - GURPS =====
-// Versão Final - Todos os cálculos funcionais
+// Versão Completa - Todos os cálculos funcionais
 
 // Tabelas de referência
 const danoTable = {
@@ -170,6 +170,7 @@ function calcularPontosGastos() {
     const pontosElement = document.getElementById('pontosGastos');
     if (pontosElement) {
         pontosElement.textContent = totalGastos;
+        pontosElement.innerHTML = totalGastos;
     }
     
     document.getElementById('custoST').textContent = custoST;
@@ -314,4 +315,29 @@ document.addEventListener('DOMContentLoaded', function() {
             inicializarAtributos();
         }
     }, 100);
+});
+
+// ===== GARANTIA DE FUNCIONAMENTO DO CARD =====
+
+function garantirCardPontos() {
+    const card = document.querySelector('.ponto-card.total');
+    const pontosElement = document.getElementById('pontosGastos');
+    
+    if (card && pontosElement) {
+        const observer = new MutationObserver(function() {
+            const custoST = (estadoAtributos.ST - 10) * 10;
+            const custoDX = (estadoAtributos.DX - 10) * 20;
+            const custoIQ = (estadoAtributos.IQ - 10) * 20;
+            const custoHT = (estadoAtributos.HT - 10) * 10;
+            const totalGastos = custoST + custoDX + custoIQ + custoHT;
+            
+            pontosElement.textContent = totalGastos;
+        });
+        
+        observer.observe(card, { childList: true, subtree: true, attributes: true });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(garantirCardPontos, 200);
 });
