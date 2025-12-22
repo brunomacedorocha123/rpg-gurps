@@ -1,0 +1,1287 @@
+/* =========================================== */
+/* CARACTERÍSTICAS - style-caracteristicas.css */
+/* =========================================== */
+
+/* CONTAINER PRINCIPAL */
+.caracteristicas-completo {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 15px 5px;
+    width: 100%;
+}
+
+/* BADGES DE PONTOS */
+.pontos-badge {
+    background: linear-gradient(145deg, var(--primary-gold), var(--secondary-gold));
+    color: var(--text-dark);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    white-space: nowrap;
+}
+
+.section-pontos {
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--text-gold);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 1px solid var(--primary-gold);
+    margin-left: auto;
+}
+
+.status-badge {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+/* ==================== */
+/* SEÇÃO 1: APARÊNCIA E RIQUEZA */
+/* ==================== */
+.aparencia-riqueza-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.caracteristica-card {
+    background: linear-gradient(145deg, 
+        rgba(26, 18, 0, 0.8), 
+        rgba(44, 32, 8, 0.9));
+    border: 2px solid var(--wood-dark);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.caracteristica-card:hover {
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2);
+}
+
+.caracteristica-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 18px;
+    background: linear-gradient(90deg, 
+        rgba(44, 32, 8, 0.9), 
+        rgba(26, 18, 0, 0.95));
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.caracteristica-header i {
+    color: var(--secondary-gold);
+    font-size: 1.2rem;
+    min-width: 24px;
+}
+
+.caracteristica-header h5 {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    font-weight: bold;
+    flex: 1;
+    margin: 0;
+}
+
+.caracteristica-content {
+    padding: 18px;
+}
+
+.select-group {
+    margin-bottom: 15px;
+}
+
+.select-group label {
+    display: block;
+    color: var(--text-gold);
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.dashboard-select {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--wood-light);
+    border-radius: 6px;
+    color: var(--text-light);
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.dashboard-select:focus {
+    outline: none;
+    border-color: var(--primary-gold);
+    background: rgba(212, 175, 55, 0.15);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+/* Estilo para options */
+.dashboard-select option {
+    background: var(--wood-dark);
+    color: var(--text-light);
+    padding: 10px;
+}
+
+.info-display {
+    background: rgba(212, 175, 55, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-left: 3px solid var(--primary-gold);
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-top: 10px;
+}
+
+.info-display strong {
+    color: var(--text-gold);
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.info-display small {
+    color: var(--wood-light);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.renda-info {
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.renda-info small {
+    color: var(--accent-green);
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* ==================== */
+/* SEÇÃO 2: IDIOMAS */
+/* ==================== */
+.idiomas-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.alfabetizacao-section h5,
+.idioma-materno-section h5,
+.add-idioma-section h5,
+.lista-idiomas-section h5 {
+    color: var(--text-gold);
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alfabetizacao-section h5::before,
+.idioma-materno-section h5::before,
+.add-idioma-section h5::before,
+.lista-idiomas-section h5::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: var(--primary-gold);
+    border-radius: 2px;
+}
+
+/* ALFABETIZAÇÃO */
+.alfabetizacao-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    background: rgba(26, 18, 0, 0.6);
+    border: 1px solid var(--wood-dark);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.option-label:hover {
+    border-color: var(--primary-gold);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.option-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-gold);
+    flex-shrink: 0;
+}
+
+.option-content {
+    flex: 1;
+}
+
+.option-content strong {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.option-content small {
+    color: var(--wood-light);
+    font-size: 0.85rem;
+}
+
+/* IDIOMA MATERNO */
+.idioma-materno {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.idioma-materno .dashboard-input {
+    flex: 1;
+}
+
+.nivel-badge {
+    background: rgba(52, 152, 219, 0.15);
+    color: #3498db;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    white-space: nowrap;
+}
+
+/* ADICIONAR IDIOMA */
+.add-idioma-form {
+    background: rgba(26, 18, 0, 0.6);
+    border: 1px solid var(--wood-dark);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.form-row {
+    margin-bottom: 15px;
+}
+
+.form-row:last-child {
+    margin-bottom: 0;
+}
+
+.dois-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.campo-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campo-group label {
+    color: var(--text-gold);
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.acoes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.custo-preview {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.custo-preview span {
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.btn-medieval {
+    background: linear-gradient(145deg, 
+        var(--primary-gold), 
+        var(--secondary-gold));
+    color: var(--text-dark);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-medieval:hover {
+    background: linear-gradient(145deg, 
+        var(--secondary-gold), 
+        var(--primary-gold));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+/* LISTA DE IDIOMAS */
+.idiomas-lista {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--wood-dark);
+    border-radius: 8px;
+    background: rgba(26, 18, 0, 0.4);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--wood-light);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: rgba(212, 175, 55, 0.3);
+    margin-bottom: 15px;
+    display: block;
+}
+
+.empty-state p {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+}
+
+.empty-state small {
+    font-size: 0.85rem;
+}
+
+/* ITEM DE IDIOMA */
+.idioma-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    transition: all 0.3s ease;
+}
+
+.idioma-item:last-child {
+    border-bottom: none;
+}
+
+.idioma-item:hover {
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.idioma-info {
+    flex: 1;
+}
+
+.idioma-nome {
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.idioma-niveis {
+    color: var(--wood-light);
+    font-size: 0.85rem;
+}
+
+.idioma-niveis span {
+    margin-right: 15px;
+}
+
+.idioma-niveis span i {
+    margin-right: 4px;
+}
+
+.idioma-acoes {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.idioma-custo {
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-width: 60px;
+    text-align: right;
+}
+
+.btn-remover {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-remover:hover {
+    background: rgba(231, 76, 60, 0.2);
+    transform: scale(1.1);
+}
+
+/* ==================== */
+/* SEÇÃO 3: CARACTERÍSTICAS FÍSICAS */
+/* ==================== */
+.caracteristicas-escolha-container {
+    padding: 10px 0;
+}
+
+.caracteristicas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.caracteristica-opcao {
+    background: linear-gradient(145deg, 
+        rgba(26, 18, 0, 0.8), 
+        rgba(44, 32, 8, 0.9));
+    border: 2px solid var(--wood-dark);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.caracteristica-opcao:hover {
+    border-color: var(--primary-gold);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2);
+}
+
+.caracteristica-opcao.adicionado {
+    border-color: var(--accent-green);
+    background: linear-gradient(145deg, 
+        rgba(39, 174, 96, 0.1), 
+        rgba(44, 32, 8, 0.9));
+}
+
+.opcao-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 15px;
+    background: linear-gradient(90deg, 
+        rgba(44, 32, 8, 0.9), 
+        rgba(26, 18, 0, 0.95));
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.opcao-header i {
+    color: var(--secondary-gold);
+    font-size: 1rem;
+}
+
+.opcao-header h6 {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    font-weight: bold;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.opcao-content {
+    padding: 15px;
+    text-align: center;
+}
+
+.opcao-pontos {
+    display: block;
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.caracteristica-opcao small {
+    display: block;
+    color: var(--wood-light);
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+    min-height: 32px;
+}
+
+.btn-opcao {
+    width: 100%;
+    padding: 8px 12px;
+    background: linear-gradient(145deg, 
+        var(--primary-gold), 
+        var(--secondary-gold));
+    color: var(--text-dark);
+    border: none;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-opcao:hover {
+    background: linear-gradient(145deg, 
+        var(--secondary-gold), 
+        var(--primary-gold));
+    transform: translateY(-1px);
+}
+
+.caracteristica-opcao.adicionado .btn-opcao {
+    background: linear-gradient(145deg, 
+        var(--accent-red), 
+        #c0392b);
+    color: white;
+}
+
+.caracteristica-opcao.adicionado .btn-opcao:hover {
+    background: linear-gradient(145deg, 
+        #c0392b, 
+        var(--accent-red));
+}
+
+/* ==================== */
+/* SEÇÃO 4: CARACTERÍSTICAS SELECIONADAS */
+/* ==================== */
+.selecionadas-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.caracteristica-selecionada-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(39, 174, 96, 0.1);
+    border: 1px solid rgba(39, 174, 96, 0.3);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.caracteristica-selecionada-item:hover {
+    background: rgba(39, 174, 96, 0.15);
+    border-color: rgba(39, 174, 96, 0.5);
+}
+
+.selecionada-info {
+    flex: 1;
+}
+
+.selecionada-nome {
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.selecionada-detalhes {
+    color: var(--wood-light);
+    font-size: 0.85rem;
+}
+
+.selecionada-detalhes span {
+    color: var(--accent-green);
+    font-weight: bold;
+}
+
+.selecionada-acoes {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.selecionada-pontos {
+    color: var(--accent-green);
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-width: 60px;
+    text-align: right;
+}
+
+/* ==================== */
+/* SEÇÃO 5: ALTURA, PESO E DESVANTAGENS */
+/* ==================== */
+.altura-peso-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.altura-peso-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.fisica-card {
+    background: linear-gradient(145deg, 
+        rgba(26, 18, 0, 0.8), 
+        rgba(44, 32, 8, 0.9));
+    border: 2px solid var(--wood-dark);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.fisica-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: linear-gradient(90deg, 
+        rgba(44, 32, 8, 0.9), 
+        rgba(26, 18, 0, 0.95));
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.fisica-header i {
+    color: var(--secondary-gold);
+    font-size: 1.2rem;
+}
+
+.fisica-header h5 {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.fisica-content {
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.controle-numerico {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 200px;
+}
+
+.btn-controle {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(145deg, 
+        var(--primary-gold), 
+        var(--secondary-gold));
+    color: var(--text-dark);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.btn-controle:hover {
+    background: linear-gradient(145deg, 
+        var(--secondary-gold), 
+        var(--primary-gold));
+    transform: scale(1.05);
+}
+
+.fisica-input {
+    flex: 1;
+    padding: 10px 15px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--wood-light);
+    border-radius: 6px;
+    color: var(--text-light);
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.3s ease;
+    min-width: 0;
+}
+
+.fisica-input:focus {
+    outline: none;
+    border-color: var(--primary-gold);
+    background: rgba(212, 175, 55, 0.15);
+}
+
+.status-display {
+    text-align: center;
+    width: 100%;
+}
+
+.status-text {
+    display: block;
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.status-desc {
+    color: var(--wood-light);
+    font-size: 0.85rem;
+}
+
+/* ST INFO CARD */
+.st-info-card {
+    background: linear-gradient(145deg, 
+        rgba(26, 18, 0, 0.8), 
+        rgba(44, 32, 8, 0.9));
+    border: 2px solid var(--primary-gold);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.st-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: linear-gradient(90deg, 
+        rgba(212, 175, 55, 0.1), 
+        rgba(26, 18, 0, 0.95));
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.st-header i {
+    color: var(--secondary-gold);
+    font-size: 1.2rem;
+}
+
+.st-header h5 {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.st-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.st-value {
+    text-align: center;
+}
+
+.st-value span {
+    display: block;
+    color: var(--text-gold);
+    font-size: 2.5rem;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.st-value small {
+    color: var(--wood-light);
+    font-size: 0.9rem;
+}
+
+.st-faixas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.faixa-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.faixa-item:last-child {
+    border-bottom: none;
+}
+
+.faixa-item span {
+    color: var(--wood-light);
+    font-size: 0.9rem;
+}
+
+.faixa-item strong {
+    color: var(--text-gold);
+    font-size: 1rem;
+}
+
+/* DESVANTAGENS ATIVAS */
+.desvantagens-card {
+    background: linear-gradient(145deg, 
+        rgba(26, 18, 0, 0.8), 
+        rgba(44, 32, 8, 0.9));
+    border: 2px solid var(--accent-red);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.desvantagens-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: linear-gradient(90deg, 
+        rgba(231, 76, 60, 0.1), 
+        rgba(26, 18, 0, 0.95));
+    border-bottom: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.desvantagens-header i {
+    color: #e74c3c;
+    font-size: 1.2rem;
+}
+
+.desvantagens-header h5 {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.desvantagens-lista {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.desvantagem-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.desvantagem-item:hover {
+    background: rgba(231, 76, 60, 0.15);
+    border-color: rgba(231, 76, 60, 0.4);
+}
+
+.desvantagem-icone {
+    color: #e74c3c;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.desvantagem-info {
+    flex: 1;
+}
+
+.desvantagem-info strong {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.desvantagem-info small {
+    color: var(--wood-light);
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.desvantagem-pontos {
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 1rem;
+    min-width: 50px;
+    text-align: right;
+}
+
+/* ==================== */
+/* RESUMO DE PONTOS */
+/* ==================== */
+.resumo-caracteristicas {
+    background: linear-gradient(145deg, 
+        rgba(26, 18, 0, 0.8), 
+        rgba(44, 32, 8, 0.9));
+    border: 2px solid var(--primary-gold);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.resumo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.resumo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: rgba(212, 175, 55, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    border-radius: 6px;
+}
+
+.resumo-label {
+    color: var(--wood-light);
+    font-size: 0.95rem;
+}
+
+.resumo-valor {
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.resumo-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 6px;
+    border: 1px solid var(--primary-gold);
+}
+
+.total-label {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.total-valor {
+    color: var(--text-gold);
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+/* ==================== */
+/* RESPONSIVIDADE */
+/* ==================== */
+
+/* TABLET (768px para baixo) */
+@media (max-width: 768px) {
+    .caracteristicas-completo {
+        gap: 20px;
+        padding: 10px 0;
+    }
+    
+    .aparencia-riqueza-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .dois-campos {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .caracteristicas-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    
+    .altura-peso-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .controle-numerico {
+        max-width: 100%;
+    }
+    
+    .resumo-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .acoes {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .custo-preview {
+        text-align: center;
+    }
+    
+    .btn-medieval {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .idioma-materno {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .idioma-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .idioma-acoes {
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    .caracteristica-selecionada-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .selecionada-acoes {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .resumo-total {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
+
+/* MOBILE PEQUENO (480px para baixo) */
+@media (max-width: 480px) {
+    .dashboard-section {
+        padding: 15px 12px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .section-pontos,
+    .status-badge {
+        margin: 0;
+        align-self: center;
+    }
+    
+    .caracteristicas-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .caracteristica-opcao {
+        min-height: 140px;
+    }
+    
+    .opcao-content small {
+        min-height: 40px;
+        font-size: 0.75rem;
+    }
+    
+    .fisica-input {
+        font-size: 1.1rem;
+    }
+    
+    .st-value span {
+        font-size: 2rem;
+    }
+    
+    .total-valor {
+        font-size: 1.5rem;
+    }
+}
+
+/* MOBILE MUITO PEQUENO (360px para baixo) */
+@media (max-width: 360px) {
+    .caracteristicas-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .caracteristica-card {
+        min-width: 100%;
+    }
+    
+    .dashboard-select,
+    .dashboard-input,
+    .fisica-input {
+        font-size: 16px; /* Previne zoom no iOS */
+        padding: 12px;
+    }
+    
+    .btn-controle {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .btn-medieval,
+    .btn-opcao {
+        min-height: 44px;
+        padding: 12px;
+    }
+}
+
+/* TOUCH DEVICE OPTIMIZATIONS */
+@media (hover: none) and (pointer: coarse) {
+    .caracteristica-card:hover,
+    .caracteristica-opcao:hover,
+    .btn-medieval:hover,
+    .btn-opcao:hover,
+    .btn-controle:hover {
+        transform: none;
+    }
+    
+    .caracteristica-card:active,
+    .caracteristica-opcao:active,
+    .btn-medieval:active,
+    .btn-opcao:active,
+    .btn-controle:active {
+        transform: scale(0.98);
+    }
+    
+    /* Melhorar área de toque */
+    .option-label,
+    .btn-medieval,
+    .btn-opcao,
+    .btn-controle,
+    .btn-remover {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .dashboard-select,
+    .dashboard-input,
+    .fisica-input {
+        min-height: 44px;
+    }
+}
+
+/* DARK MODE ADJUSTMENTS */
+@media (prefers-color-scheme: dark) {
+    .caracteristica-card,
+    .fisica-card,
+    .st-info-card,
+    .desvantagens-card {
+        background: linear-gradient(145deg, 
+            rgba(26, 18, 0, 0.9), 
+            rgba(44, 32, 8, 0.95));
+    }
+    
+    .info-display,
+    .add-idioma-form,
+    .idiomas-lista {
+        background: rgba(26, 18, 0, 0.7);
+    }
+}
+
+/* PRINT STYLES */
+@media print {
+    .dashboard-section {
+        break-inside: avoid;
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+    
+    .btn-medieval,
+    .btn-opcao,
+    .btn-controle,
+    .btn-remover,
+    input[type="radio"] {
+        display: none !important;
+    }
+    
+    .caracteristica-opcao,
+    .caracteristica-selecionada-item,
+    .desvantagem-item {
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+        color: #000 !important;
+    }
+    
+    .pontos-badge,
+    .section-pontos,
+    .status-badge,
+    .opcao-pontos,
+    .selecionada-pontos,
+    .desvantagem-pontos,
+    .resumo-valor,
+    .total-valor {
+        background: none !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+    }
+}
+
+/* SCROLLBAR PERSONALIZADO */
+.idiomas-lista::-webkit-scrollbar,
+.caracteristicas-lista::-webkit-scrollbar {
+    width: 6px;
+}
+
+.idiomas-lista::-webkit-scrollbar-track,
+.caracteristicas-lista::-webkit-scrollbar-track {
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 3px;
+}
+
+.idiomas-lista::-webkit-scrollbar-thumb,
+.caracteristicas-lista::-webkit-scrollbar-thumb {
+    background: var(--primary-gold);
+    border-radius: 3px;
+}
+
+.idiomas-lista::-webkit-scrollbar-thumb:hover,
+.caracteristicas-lista::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-gold);
+}
