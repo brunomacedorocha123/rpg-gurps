@@ -1,629 +1,512 @@
 // ===========================================
-// SISTEMA DE APARÊNCIA FÍSICA - 100% FUNCIONAL
+// SISTEMA DE APARÊNCIA - CARACTERÍSTICAS
+// VERSÃO SIMPLES E FUNCIONAL
 // ===========================================
 
-class SistemaAparencia {
-    constructor() {
-        // Configuração dos níveis de aparência
-        this.niveis = {
-            '-24': { 
-                nome: 'Horrendo', 
-                pontos: -24, 
-                tipo: 'desvantagem', 
-                reacao: -6,
-                descricao: 'Aparência extremamente repulsiva'
-            },
-            '-20': { 
-                nome: 'Monstruoso', 
-                pontos: -20, 
-                tipo: 'desvantagem', 
-                reacao: -5,
-                descricao: 'Aparência monstruosa'
-            },
-            '-16': { 
-                nome: 'Hediondo', 
-                pontos: -16, 
-                tipo: 'desvantagem', 
-                reacao: -4,
-                descricao: 'Aparência muito feia'
-            },
-            '-8': { 
-                nome: 'Feio', 
-                pontos: -8, 
-                tipo: 'desvantagem', 
-                reacao: -2,
-                descricao: 'Aparência abaixo da média'
-            },
-            '-4': { 
-                nome: 'Sem Atrativos', 
-                pontos: -4, 
-                tipo: 'desvantagem', 
-                reacao: -1,
-                descricao: 'Pouco atrativo'
-            },
-            '0': { 
-                nome: 'Comum', 
-                pontos: 0, 
-                tipo: 'neutro', 
-                reacao: 0,
-                descricao: 'Aparência padrão'
-            },
-            '4': { 
-                nome: 'Atraente', 
-                pontos: 4, 
-                tipo: 'vantagem', 
-                reacao: 1,
-                descricao: 'Aparência agradável'
-            },
-            '12': { 
-                nome: 'Elegante', 
-                pontos: 12, 
-                tipo: 'vantagem', 
-                reacao: { mesmo: 2, outro: 4 },
-                descricao: 'Aparência marcante'
-            },
-            '16': { 
-                nome: 'Muito Elegante', 
-                pontos: 16, 
-                tipo: 'vantagem', 
-                reacao: { mesmo: 2, outro: 6 },
-                descricao: 'Aparência impressionante'
-            },
-            '20': { 
-                nome: 'Lindo', 
-                pontos: 20, 
-                tipo: 'vantagem', 
-                reacao: { mesmo: 2, outro: 8 },
-                descricao: 'Beleza excepcional'
-            }
+(function() {
+    console.log('🎭 Iniciando Sistema de Aparência (Características)...');
+    
+    // Esperar o DOM carregar completamente
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAparencia);
+    } else {
+        setTimeout(initAparencia, 300);
+    }
+    
+    function initAparencia() {
+        console.log('🔧 Configurando aparência...');
+        
+        // Dados dos níveis de aparência
+        const niveisAparencia = {
+            '-24': { nome: 'Horrendo', pontos: -24, reacao: -6 },
+            '-20': { nome: 'Monstruoso', pontos: -20, reacao: -5 },
+            '-16': { nome: 'Hediondo', pontos: -16, reacao: -4 },
+            '-8': { nome: 'Feio', pontos: -8, reacao: -2 },
+            '-4': { nome: 'Sem Atrativos', pontos: -4, reacao: -1 },
+            '0': { nome: 'Comum', pontos: 0, reacao: 0 },
+            '4': { nome: 'Atraente', pontos: 4, reacao: 1 },
+            '12': { nome: 'Elegante', pontos: 12, reacao: { mesmo: 2, outro: 4 } },
+            '16': { nome: 'Muito Elegante', pontos: 16, reacao: { mesmo: 2, outro: 6 } },
+            '20': { nome: 'Lindo', pontos: 20, reacao: { mesmo: 2, outro: 8 } }
         };
         
-        // Estado atual
-        this.valorAtual = '0';
-        this.dadosAtuais = this.niveis['0'];
+        // Elementos
+        const selectAparencia = document.getElementById('nivelAparencia');
+        const badgePontos = document.getElementById('pontosAparencia');
+        const displayInfo = document.getElementById('displayAparencia');
+        const resumoAparencia = document.getElementById('resumoAparencia');
+        const totalSecao1 = document.getElementById('totalSecao1');
         
-        // Inicializar sistema
-        this.inicializar();
-    }
-
-    // ===========================================
-    // INICIALIZAÇÃO
-    // ===========================================
-
-    inicializar() {
-        console.log('🎭 Inicializando Sistema de Aparência...');
-        
-        // Verificar se já estamos no DOM carregado
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.configurar());
-            console.log('⏳ Aguardando DOM carregar...');
-        } else {
-            console.log('⚡ DOM já carregado, configurando...');
-            this.configurar();
-        }
-    }
-
-    configurar() {
-        console.log('🔧 Configurando elementos...');
-        
-        // 1. ENCONTRAR ELEMENTOS CRÍTICOS
-        const elementos = {
-            select: document.getElementById('nivelAparencia'),
-            badge: document.getElementById('pontosAparencia'),
-            display: document.getElementById('displayAparencia'),
-            resumo: document.getElementById('resumoAparencia'),
-            totalSecao: document.getElementById('totalSecao1')
-        };
-        
-        // Verificar se todos os elementos existem
-        let elementosFaltantes = [];
-        for (const [nome, elemento] of Object.entries(elementos)) {
-            if (!elemento) {
-                elementosFaltantes.push(nome);
-                console.error(`❌ Elemento "${nome}" não encontrado!`);
-            }
-        }
-        
-        if (elementosFaltantes.length > 0) {
-            console.error('⚠️ Alguns elementos não foram encontrados. Verifique os IDs no HTML.');
-            this.mostrarAlertaErro(elementosFaltantes);
+        // Verificar se os elementos existem
+        if (!selectAparencia || !badgePontos || !displayInfo || !resumoAparencia || !totalSecao1) {
+            console.error('❌ Elementos da aparência não encontrados!');
+            console.log('Procurando:', {
+                select: !!selectAparencia,
+                badge: !!badgePontos,
+                display: !!displayInfo,
+                resumo: !!resumoAparencia,
+                total: !!totalSecao1
+            });
             return;
         }
         
-        console.log('✅ Todos elementos encontrados:', Object.keys(elementos));
+        console.log('✅ Todos elementos encontrados!');
         
-        // 2. CONFIGURAR EVENTO NO SELECT
-        elementos.select.addEventListener('change', (e) => {
-            console.log('🔄 Select alterado para:', e.target.value);
-            this.valorAtual = e.target.value;
-            this.atualizarTudo();
-        });
+        // Função para atualizar tudo
+        function atualizarAparencia() {
+            const valor = selectAparencia.value;
+            const dados = niveisAparencia[valor];
+            
+            if (!dados) {
+                console.error('Dados não encontrados para valor:', valor);
+                return;
+            }
+            
+            console.log('📊 Atualizando para:', dados.nome, dados.pontos + 'pts');
+            
+            // 1. Atualizar badge de pontos
+            atualizarBadge(dados.pontos);
+            
+            // 2. Atualizar display de informações
+            atualizarDisplay(dados);
+            
+            // 3. Atualizar resumo
+            atualizarResumo(dados.pontos);
+            
+            // 4. Atualizar total da seção
+            atualizarTotalSecao(dados.pontos);
+            
+            // 5. Disparar evento
+            dispararEventoAtualizacao(dados);
+        }
         
-        // 3. CONFIGURAR VALOR INICIAL
-        this.valorAtual = elementos.select.value;
-        console.log('🎯 Valor inicial definido como:', this.valorAtual);
+        function atualizarBadge(pontos) {
+            const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+            badgePontos.textContent = texto;
+            
+            // Cor baseada nos pontos
+            if (pontos > 0) {
+                badgePontos.style.background = 'linear-gradient(145deg, #2e5c3a, #27ae60)';
+                badgePontos.style.color = 'white';
+                badgePontos.style.border = '1px solid #27ae60';
+            } else if (pontos < 0) {
+                badgePontos.style.background = 'linear-gradient(145deg, #8b0000, #e74c3c)';
+                badgePontos.style.color = 'white';
+                badgePontos.style.border = '1px solid #e74c3c';
+            } else {
+                badgePontos.style.background = 'linear-gradient(145deg, #D4AF37, #FFD700)';
+                badgePontos.style.color = '#1a1200';
+                badgePontos.style.border = '1px solid #D4AF37';
+            }
+        }
         
-        // 4. FORÇAR ATUALIZAÇÃO INICIAL
+        function atualizarDisplay(dados) {
+            // Formatar texto da reação
+            let textoReacao = '';
+            if (typeof dados.reacao === 'object') {
+                textoReacao = `Reação: +${dados.reacao.mesmo} (mesmo sexo), +${dados.reacao.outro} (outro sexo)`;
+            } else {
+                const sinal = dados.reacao >= 0 ? '+' : '';
+                textoReacao = `Reação: ${sinal}${dados.reacao}`;
+            }
+            
+            // Criar HTML do display
+            displayInfo.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="
+                        background: ${dados.pontos > 0 ? '#27ae60' : dados.pontos < 0 ? '#e74c3c' : '#D4AF37'};
+                        color: ${dados.pontos === 0 ? '#1a1200' : 'white'};
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 0.9rem;
+                        flex-shrink: 0;
+                    ">
+                        ${dados.pontos >= 0 ? '+' : ''}${dados.pontos}
+                    </div>
+                    <div>
+                        <strong style="
+                            color: ${dados.pontos > 0 ? '#27ae60' : dados.pontos < 0 ? '#e74c3c' : '#D4AF37'};
+                            font-size: 1.1rem;
+                            display: block;
+                            margin-bottom: 2px;
+                        ">
+                            ${dados.nome}
+                        </strong>
+                        <small style="color: white; opacity: 0.9; font-size: 0.9rem;">
+                            ${textoReacao}
+                        </small>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function atualizarResumo(pontos) {
+            const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+            resumoAparencia.textContent = texto;
+            
+            if (pontos > 0) {
+                resumoAparencia.style.color = '#27ae60';
+                resumoAparencia.style.fontWeight = 'bold';
+            } else if (pontos < 0) {
+                resumoAparencia.style.color = '#e74c3c';
+                resumoAparencia.style.fontWeight = 'bold';
+            } else {
+                resumoAparencia.style.color = '#D4AF37';
+                resumoAparencia.style.fontWeight = 'normal';
+            }
+        }
+        
+        function atualizarTotalSecao(pontos) {
+            const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+            totalSecao1.textContent = texto;
+            
+            if (pontos > 0) {
+                totalSecao1.style.background = 'rgba(46, 92, 58, 0.8)';
+                totalSecao1.style.color = 'white';
+                totalSecao1.style.border = '1px solid #27ae60';
+            } else if (pontos < 0) {
+                totalSecao1.style.background = 'rgba(139, 0, 0, 0.8)';
+                totalSecao1.style.color = 'white';
+                totalSecao1.style.border = '1px solid #e74c3c';
+            } else {
+                totalSecao1.style.background = 'rgba(212, 175, 55, 0.1)';
+                totalSecao1.style.color = '#D4AF37';
+                totalSecao1.style.border = '1px solid rgba(212, 175, 55, 0.3)';
+            }
+        }
+        
+        function dispararEventoAtualizacao(dados) {
+            const evento = new CustomEvent('caracteristicaAparenciaAtualizada', {
+                detail: {
+                    nome: dados.nome,
+                    pontos: dados.pontos,
+                    reacao: dados.reacao
+                }
+            });
+            document.dispatchEvent(evento);
+            
+            console.log('📡 Evento disparado:', dados.nome);
+        }
+        
+        // Configurar evento no select
+        selectAparencia.addEventListener('change', atualizarAparencia);
+        
+        // Atualizar inicialmente
         setTimeout(() => {
-            console.log('🚀 Executando primeira atualização...');
-            this.atualizarTudo();
-            console.log('✅ Sistema de Aparência configurado com sucesso!');
+            console.log('🚀 Primeira atualização...');
+            atualizarAparencia();
         }, 100);
-    }
-
-    // ===========================================
-    // ATUALIZAÇÃO DA INTERFACE
-    // ===========================================
-
-    atualizarTudo() {
-        // Obter dados do nível selecionado
-        this.dadosAtuais = this.niveis[this.valorAtual];
         
-        if (!this.dadosAtuais) {
-            console.error('❌ Dados não encontrados para valor:', this.valorAtual);
+        // Expor funções para debug
+        window.aparenciaDebug = {
+            atualizar: atualizarAparencia,
+            getValor: () => selectAparencia.value,
+            getDados: () => niveisAparencia[selectAparencia.value],
+            testar: () => {
+                console.log('🧪 Testando todos os níveis...');
+                const valores = Object.keys(niveisAparencia);
+                valores.forEach(valor => {
+                    selectAparencia.value = valor;
+                    atualizarAparencia();
+                    console.log('Testado:', niveisAparencia[valor].nome);
+                });
+                // Voltar ao normal
+                selectAparencia.value = '0';
+                atualizarAparencia();
+            }
+        };
+        
+        console.log('✅ Sistema de Aparência configurado!');
+        console.log('📝 Comandos disponíveis: window.aparenciaDebug.testar()');
+    }
+    
+    // Exportar para uso global
+    window.SistemaAparenciaCaracteristicas = {
+        init: initAparencia
+    };
+})();
+
+// ===========================================
+// SISTEMA DE RIQUEZA - CARACTERÍSTICAS
+// ===========================================
+
+(function() {
+    console.log('💰 Iniciando Sistema de Riqueza (Características)...');
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRiqueza);
+    } else {
+        setTimeout(initRiqueza, 500);
+    }
+    
+    function initRiqueza() {
+        // Dados dos níveis de riqueza
+        const niveisRiqueza = {
+            '-25': { nome: 'Falido', pontos: -25, multiplicador: 0.2 },
+            '-15': { nome: 'Pobre', pontos: -15, multiplicador: 0.4 },
+            '-10': { nome: 'Batalhador', pontos: -10, multiplicador: 0.6 },
+            '0': { nome: 'Médio', pontos: 0, multiplicador: 1 },
+            '10': { nome: 'Confortável', pontos: 10, multiplicador: 2 },
+            '20': { nome: 'Rico', pontos: 20, multiplicador: 5 },
+            '30': { nome: 'Muito Rico', pontos: 30, multiplicador: 10 },
+            '50': { nome: 'Podre de Rico', pontos: 50, multiplicador: 20 }
+        };
+        
+        // Elementos
+        const selectRiqueza = document.getElementById('nivelRiqueza');
+        const badgePontos = document.getElementById('pontosRiqueza');
+        const displayInfo = document.getElementById('displayRiqueza');
+        const rendaMensal = document.getElementById('rendaMensal');
+        const resumoRiqueza = document.getElementById('resumoRiqueza');
+        
+        if (!selectRiqueza || !badgePontos || !displayInfo || !rendaMensal || !resumoRiqueza) {
+            console.error('❌ Elementos da riqueza não encontrados!');
             return;
         }
         
-        console.log('📊 Atualizando com:', this.dadosAtuais.nome, this.dadosAtuais.pontos + 'pts');
+        console.log('✅ Elementos da riqueza encontrados!');
         
-        // Atualizar cada elemento
-        this.atualizarBadgePontos();
-        this.atualizarDisplayAparencia();
-        this.atualizarResumoAparencia();
-        this.atualizarTotalSecao1();
-        
-        // Disparar evento para outros sistemas
-        this.dispararEventoAtualizacao();
-    }
-
-    atualizarBadgePontos() {
-        const badge = document.getElementById('pontosAparencia');
-        if (!badge) return;
-        
-        // Formatar texto dos pontos
-        let textoPontos;
-        if (this.dadosAtuais.pontos > 0) {
-            textoPontos = `+${this.dadosAtuais.pontos} pts`;
-        } else if (this.dadosAtuais.pontos < 0) {
-            textoPontos = `${this.dadosAtuais.pontos} pts`;
-        } else {
-            textoPontos = '0 pts';
+        function atualizarRiqueza() {
+            const valor = selectRiqueza.value;
+            const dados = niveisRiqueza[valor];
+            
+            if (!dados) return;
+            
+            console.log('💰 Atualizando riqueza:', dados.nome, dados.pontos + 'pts');
+            
+            // 1. Badge
+            atualizarBadge(dados.pontos);
+            
+            // 2. Display
+            atualizarDisplay(dados);
+            
+            // 3. Renda mensal
+            atualizarRenda(dados.multiplicador);
+            
+            // 4. Resumo
+            atualizarResumo(dados.pontos);
+            
+            // 5. Evento
+            dispararEvento(dados);
         }
         
-        // Atualizar texto
-        badge.textContent = textoPontos;
-        
-        // Aplicar estilos baseados no tipo
-        badge.classList.remove('vantagem', 'desvantagem', 'neutro');
-        
-        if (this.dadosAtuais.tipo === 'vantagem') {
-            badge.classList.add('vantagem');
-            badge.style.background = 'linear-gradient(145deg, #2e5c3a, #27ae60)';
-            badge.style.color = 'white';
-            badge.style.borderColor = '#27ae60';
-        } else if (this.dadosAtuais.tipo === 'desvantagem') {
-            badge.classList.add('desvantagem');
-            badge.style.background = 'linear-gradient(145deg, #8b0000, #e74c3c)';
-            badge.style.color = 'white';
-            badge.style.borderColor = '#e74c3c';
-        } else {
-            badge.classList.add('neutro');
-            badge.style.background = 'linear-gradient(145deg, var(--primary-gold), var(--secondary-gold))';
-            badge.style.color = 'var(--primary-dark)';
-            badge.style.borderColor = 'var(--primary-gold)';
-        }
-        
-        console.log('🏷️ Badge atualizado:', textoPontos);
-    }
-
-    atualizarDisplayAparencia() {
-        const display = document.getElementById('displayAparencia');
-        if (!display) return;
-        
-        // Preparar texto da reação
-        let textoReacao = '';
-        if (typeof this.dadosAtuais.reacao === 'object') {
-            textoReacao = `Reação: +${this.dadosAtuais.reacao.mesmo} (mesmo sexo), +${this.dadosAtuais.reacao.outro} (outro sexo)`;
-        } else if (this.dadosAtuais.reacao > 0) {
-            textoReacao = `Reação: +${this.dadosAtuais.reacao}`;
-        } else if (this.dadosAtuais.reacao < 0) {
-            textoReacao = `Reação: ${this.dadosAtuais.reacao}`;
-        } else {
-            textoReacao = 'Reação: +0';
-        }
-        
-        // Criar conteúdo HTML
-        display.innerHTML = `
-            <div class="display-content">
-                <div class="display-titulo">
-                    <span class="display-icone">
-                        ${this.dadosAtuais.tipo === 'vantagem' ? '⭐' : 
-                          this.dadosAtuais.tipo === 'desvantagem' ? '⚠️' : '👤'}
-                    </span>
-                    <strong class="display-nome">${this.dadosAtuais.nome}</strong>
-                </div>
-                <div class="display-info">
-                    <small class="display-reacao">${textoReacao}</small>
-                    <br>
-                    <small class="display-desc">${this.dadosAtuais.descricao}</small>
-                </div>
-            </div>
-        `;
-        
-        // Aplicar estilo ao nome baseado no tipo
-        const nomeElement = display.querySelector('.display-nome');
-        if (nomeElement) {
-            if (this.dadosAtuais.tipo === 'vantagem') {
-                nomeElement.style.color = '#27ae60';
-            } else if (this.dadosAtuais.tipo === 'desvantagem') {
-                nomeElement.style.color = '#e74c3c';
+        function atualizarBadge(pontos) {
+            const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+            badgePontos.textContent = texto;
+            
+            if (pontos > 0) {
+                badgePontos.style.background = 'linear-gradient(145deg, #2e5c3a, #27ae60)';
+                badgePontos.style.color = 'white';
+                badgePontos.style.border = '1px solid #27ae60';
+            } else if (pontos < 0) {
+                badgePontos.style.background = 'linear-gradient(145deg, #8b0000, #e74c3c)';
+                badgePontos.style.color = 'white';
+                badgePontos.style.border = '1px solid #e74c3c';
             } else {
-                nomeElement.style.color = 'var(--text-gold)';
+                badgePontos.style.background = 'linear-gradient(145deg, #D4AF37, #FFD700)';
+                badgePontos.style.color = '#1a1200';
+                badgePontos.style.border = '1px solid #D4AF37';
             }
         }
         
-        console.log('📱 Display atualizado:', this.dadosAtuais.nome);
-    }
-
-    atualizarResumoAparencia() {
-        const resumo = document.getElementById('resumoAparencia');
-        if (!resumo) return;
-        
-        // Formatar texto dos pontos
-        let textoPontos;
-        if (this.dadosAtuais.pontos > 0) {
-            textoPontos = `+${this.dadosAtuais.pontos} pts`;
-        } else if (this.dadosAtuais.pontos < 0) {
-            textoPontos = `${this.dadosAtuais.pontos} pts`;
-        } else {
-            textoPontos = '0 pts';
+        function atualizarDisplay(dados) {
+            const descricoes = {
+                'Falido': 'Vive de ajuda, sem recursos',
+                'Pobre': 'Luta para sobreviver',
+                'Batalhador': 'Ganha o suficiente',
+                'Médio': 'Padrão de vida comum',
+                'Confortável': 'Vida tranquila',
+                'Rico': 'Muito bem de vida',
+                'Muito Rico': 'Extremamente rico',
+                'Podre de Rico': 'Fortuna colossal'
+            };
+            
+            const descricao = descricoes[dados.nome] || '';
+            
+            displayInfo.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="
+                        background: ${dados.pontos > 0 ? '#27ae60' : dados.pontos < 0 ? '#e74c3c' : '#D4AF37'};
+                        color: ${dados.pontos === 0 ? '#1a1200' : 'white'};
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 0.9rem;
+                        flex-shrink: 0;
+                    ">
+                        ${dados.pontos >= 0 ? '+' : ''}${dados.pontos}
+                    </div>
+                    <div>
+                        <strong style="
+                            color: ${dados.pontos > 0 ? '#27ae60' : dados.pontos < 0 ? '#e74c3c' : '#D4AF37'};
+                            font-size: 1.1rem;
+                            display: block;
+                            margin-bottom: 2px;
+                        ">
+                            ${dados.nome}
+                        </strong>
+                        <small style="color: white; opacity: 0.9; font-size: 0.9rem;">
+                            Multiplicador: ${dados.multiplicador}x | ${descricao}
+                        </small>
+                    </div>
+                </div>
+            `;
         }
         
-        // Atualizar texto
-        resumo.textContent = textoPontos;
-        
-        // Aplicar cor
-        if (this.dadosAtuais.tipo === 'vantagem') {
-            resumo.style.color = '#27ae60';
-            resumo.style.fontWeight = 'bold';
-        } else if (this.dadosAtuais.tipo === 'desvantagem') {
-            resumo.style.color = '#e74c3c';
-            resumo.style.fontWeight = 'bold';
-        } else {
-            resumo.style.color = 'var(--text-gold)';
+        function atualizarRenda(multiplicador) {
+            const rendaBase = 1000;
+            const renda = rendaBase * multiplicador;
+            rendaMensal.textContent = `$${renda.toLocaleString()}`;
         }
         
-        console.log('📋 Resumo atualizado:', textoPontos);
-    }
-
-    atualizarTotalSecao1() {
-        const total = document.getElementById('totalSecao1');
-        if (!total) return;
-        
-        // Formatar texto dos pontos
-        let textoPontos;
-        if (this.dadosAtuais.pontos > 0) {
-            textoPontos = `+${this.dadosAtuais.pontos} pts`;
-        } else if (this.dadosAtuais.pontos < 0) {
-            textoPontos = `${this.dadosAtuais.pontos} pts`;
-        } else {
-            textoPontos = '0 pts';
-        }
-        
-        // Atualizar texto
-        total.textContent = textoPontos;
-        
-        // Aplicar estilos
-        if (this.dadosAtuais.tipo === 'vantagem') {
-            total.style.background = 'rgba(46, 92, 58, 0.8)';
-            total.style.color = 'white';
-            total.style.border = '1px solid #27ae60';
-        } else if (this.dadosAtuais.tipo === 'desvantagem') {
-            total.style.background = 'rgba(139, 0, 0, 0.8)';
-            total.style.color = 'white';
-            total.style.border = '1px solid #e74c3c';
-        } else {
-            total.style.background = 'rgba(212, 175, 55, 0.1)';
-            total.style.color = 'var(--text-gold)';
-            total.style.border = '1px solid rgba(212, 175, 55, 0.3)';
-        }
-        
-        console.log('📊 Total seção atualizado:', textoPontos);
-    }
-
-    // ===========================================
-    // EVENTOS E COMUNICAÇÃO
-    // ===========================================
-
-    dispararEventoAtualizacao() {
-        const evento = new CustomEvent('aparenciaAtualizada', {
-            detail: {
-                valor: this.valorAtual,
-                pontos: this.dadosAtuais.pontos,
-                tipo: this.dadosAtuais.tipo,
-                nome: this.dadosAtuais.nome,
-                reacao: this.dadosAtuais.reacao,
-                descricao: this.dadosAtuais.descricao
+        function atualizarResumo(pontos) {
+            const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+            resumoRiqueza.textContent = texto;
+            
+            if (pontos > 0) {
+                resumoRiqueza.style.color = '#27ae60';
+                resumoRiqueza.style.fontWeight = 'bold';
+            } else if (pontos < 0) {
+                resumoRiqueza.style.color = '#e74c3c';
+                resumoRiqueza.style.fontWeight = 'bold';
+            } else {
+                resumoRiqueza.style.color = '#D4AF37';
+                resumoRiqueza.style.fontWeight = 'normal';
             }
-        });
-        
-        document.dispatchEvent(evento);
-        console.log('📡 Evento disparado: aparenciaAtualizada');
-    }
-
-    // ===========================================
-    // MÉTODOS PÚBLICOS
-    // ===========================================
-
-    getPontos() {
-        return this.dadosAtuais.pontos;
-    }
-
-    getTipo() {
-        return this.dadosAtuais.tipo;
-    }
-
-    getNome() {
-        return this.dadosAtuais.nome;
-    }
-
-    getReacao() {
-        return this.dadosAtuais.reacao;
-    }
-
-    getDados() {
-        return {
-            valor: this.valorAtual,
-            pontos: this.dadosAtuais.pontos,
-            tipo: this.dadosAtuais.tipo,
-            nome: this.dadosAtuais.nome,
-            reacao: this.dadosAtuais.reacao,
-            descricao: this.dadosAtuais.descricao
-        };
-    }
-
-    carregarDados(dados) {
-        if (!dados || !dados.valor) {
-            console.warn('⚠️ Dados inválidos para carregar');
-            return false;
         }
         
-        const select = document.getElementById('nivelAparencia');
-        if (!select) return false;
-        
-        // Verificar se o valor existe nas opções
-        if (!this.niveis[dados.valor]) {
-            console.warn('⚠️ Valor inválido para carregar:', dados.valor);
-            return false;
+        function dispararEvento(dados) {
+            const evento = new CustomEvent('caracteristicaRiquezaAtualizada', {
+                detail: {
+                    nome: dados.nome,
+                    pontos: dados.pontos,
+                    multiplicador: dados.multiplicador
+                }
+            });
+            document.dispatchEvent(evento);
         }
         
-        // Atualizar select
-        select.value = dados.valor;
-        this.valorAtual = dados.valor;
+        // Configurar eventos
+        selectRiqueza.addEventListener('change', atualizarRiqueza);
         
-        // Atualizar interface
-        this.atualizarTudo();
-        
-        console.log('💾 Dados carregados:', dados.nome);
-        return true;
-    }
-
-    // ===========================================
-    // UTILIDADES E DEBUG
-    // ===========================================
-
-    mostrarAlertaErro(elementosFaltantes) {
-        console.error('🚨 ERRO CRÍTICO - Elementos faltando:', elementosFaltantes);
-        
-        // Criar alerta visual
-        const alerta = document.createElement('div');
-        alerta.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(145deg, #8b0000, #e74c3c);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            border-left: 5px solid #ffcc00;
-            z-index: 9999;
-            font-family: Arial, sans-serif;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        `;
-        
-        alerta.innerHTML = `
-            <strong>⚠️ ERRO NO SISTEMA DE APARÊNCIA</strong>
-            <p style="margin: 8px 0; font-size: 14px;">
-                Elementos não encontrados: ${elementosFaltantes.join(', ')}
-            </p>
-            <small style="opacity: 0.8;">
-                Verifique os IDs no HTML: nivelAparencia, pontosAparencia, displayAparencia, etc.
-            </small>
-        `;
-        
-        document.body.appendChild(alerta);
-        
-        // Remover após 10 segundos
+        // Atualizar inicialmente
         setTimeout(() => {
-            if (alerta.parentNode) {
-                alerta.parentNode.removeChild(alerta);
+            atualizarRiqueza();
+        }, 100);
+        
+        window.riquezaDebug = {
+            atualizar: atualizarRiqueza,
+            testar: () => {
+                console.log('🧪 Testando riqueza...');
+                Object.keys(niveisRiqueza).forEach(valor => {
+                    selectRiqueza.value = valor;
+                    atualizarRiqueza();
+                });
+                selectRiqueza.value = '0';
+                atualizarRiqueza();
             }
-        }, 10000);
-    }
-
-    testarSistema() {
-        console.group('🧪 TESTE DO SISTEMA DE APARÊNCIA');
-        
-        // Testar cada nível
-        const valores = Object.keys(this.niveis);
-        let testePassou = true;
-        
-        valores.forEach(valor => {
-            console.log(`\n🔍 Testando: ${this.niveis[valor].nome}`);
-            
-            // Simular mudança
-            this.valorAtual = valor;
-            this.atualizarTudo();
-            
-            // Verificar se elementos foram atualizados
-            const badge = document.getElementById('pontosAparencia');
-            const display = document.getElementById('displayAparencia');
-            
-            if (!badge || !badge.textContent.includes(this.niveis[valor].pontos.toString())) {
-                console.error(`❌ Badge não atualizado para ${this.niveis[valor].nome}`);
-                testePassou = false;
-            }
-            
-            if (!display || !display.textContent.includes(this.niveis[valor].nome)) {
-                console.error(`❌ Display não atualizado para ${this.niveis[valor].nome}`);
-                testePassou = false;
-            }
-        });
-        
-        // Voltar ao normal
-        this.valorAtual = '0';
-        this.atualizarTudo();
-        
-        if (testePassou) {
-            console.log('\n✅ TODOS TESTES PASSARAM! Sistema funcionando perfeitamente.');
-        } else {
-            console.log('\n❌ ALGUNS TESTES FALHARAM! Verifique o sistema.');
-        }
-        
-        console.groupEnd();
-        return testePassou;
-    }
-
-    // Método rápido para verificar configuração
-    verificarConfiguracao() {
-        console.group('🔍 VERIFICAÇÃO DE CONFIGURAÇÃO');
-        
-        const elementos = {
-            'nivelAparencia': document.getElementById('nivelAparencia'),
-            'pontosAparencia': document.getElementById('pontosAparencia'),
-            'displayAparencia': document.getElementById('displayAparencia'),
-            'resumoAparencia': document.getElementById('resumoAparencia'),
-            'totalSecao1': document.getElementById('totalSecao1')
         };
         
-        for (const [id, elemento] of Object.entries(elementos)) {
-            if (elemento) {
-                console.log(`✅ ${id}: ENCONTRADO`, elemento);
+        console.log('✅ Sistema de Riqueza configurado!');
+    }
+    
+    window.SistemaRiquezaCaracteristicas = {
+        init: initRiqueza
+    };
+})();
+
+// ===========================================
+// CALCULADOR DE TOTAL - CARACTERÍSTICAS
+// ===========================================
+
+(function() {
+    console.log('🧮 Iniciando Calculador de Total...');
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCalculador);
+    } else {
+        setTimeout(initCalculador, 700);
+    }
+    
+    function initCalculador() {
+        const totalElement = document.getElementById('totalCaracteristicas');
+        const resumoAparencia = document.getElementById('resumoAparencia');
+        const resumoRiqueza = document.getElementById('resumoRiqueza');
+        
+        if (!totalElement) {
+            console.error('❌ Elemento totalCaracteristicas não encontrado!');
+            return;
+        }
+        
+        function calcularTotal() {
+            let total = 0;
+            
+            // Pontos da aparência
+            if (resumoAparencia) {
+                const texto = resumoAparencia.textContent;
+                const match = texto.match(/[+-]?\d+/);
+                if (match) {
+                    total += parseInt(match[0]);
+                }
+            }
+            
+            // Pontos da riqueza
+            if (resumoRiqueza) {
+                const texto = resumoRiqueza.textContent;
+                const match = texto.match(/[+-]?\d+/);
+                if (match) {
+                    total += parseInt(match[0]);
+                }
+            }
+            
+            // Atualizar display
+            atualizarDisplayTotal(total);
+            
+            return total;
+        }
+        
+        function atualizarDisplayTotal(total) {
+            const texto = total >= 0 ? `+${total} pts` : `${total} pts`;
+            totalElement.textContent = texto;
+            
+            if (total > 0) {
+                totalElement.style.color = '#27ae60';
+            } else if (total < 0) {
+                totalElement.style.color = '#e74c3c';
             } else {
-                console.error(`❌ ${id}: NÃO ENCONTRADO`);
+                totalElement.style.color = '#D4AF37';
             }
         }
         
-        console.log('📊 Valor atual do select:', elementos.nivelAparencia ? elementos.nivelAparencia.value : 'N/A');
-        console.log('🎭 Dados atuais:', this.dadosAtuais);
+        // Configurar eventos
+        document.addEventListener('caracteristicaAparenciaAtualizada', calcularTotal);
+        document.addEventListener('caracteristicaRiquezaAtualizada', calcularTotal);
         
-        console.groupEnd();
+        // Calcular inicialmente
+        setTimeout(() => {
+            calcularTotal();
+        }, 300);
+        
+        console.log('✅ Calculador de Total configurado!');
     }
-}
+    
+    window.CalculadorTotalCaracteristicas = {
+        init: initCalculador
+    };
+})();
 
 // ===========================================
-// INICIALIZAÇÃO GLOBAL
+// INICIALIZAÇÃO COMPLETA
 // ===========================================
 
-// Criar instância global quando o DOM carregar
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🏗️ DOM Carregado - Iniciando Sistema de Aparência...');
-    
-    // Inicializar sistema
-    window.sistemaAparencia = new SistemaAparencia();
-    
-    // Expor métodos úteis para debug
-    window.debugAparencia = () => window.sistemaAparencia.verificarConfiguracao();
-    window.testarAparencia = () => window.sistemaAparencia.testarSistema();
-    window.getAparencia = () => window.sistemaAparencia.getDados();
-    
-    console.log('🎉 Sistema de Aparência inicializado!');
-    console.log('📝 Comandos disponíveis no console:');
-    console.log('   debugAparencia() - Verificar configuração');
-    console.log('   testarAparencia() - Testar todos os níveis');
-    console.log('   getAparencia() - Ver dados atuais');
-});
-
-// Fallback para caso o DOM já esteja carregado
-if (document.readyState !== 'loading') {
-    console.log('⚡ DOM já carregado - Inicializando sistema...');
-    window.sistemaAparencia = new SistemaAparencia();
-}
-
-// ===========================================
-// ESTILOS ADICIONAIS (opcional, para melhor visualização)
-// ===========================================
-
-// Adicionar alguns estilos inline para melhor visualização
-const estiloAparencia = document.createElement('style');
-estiloAparencia.textContent = `
-    /* Estilos para o badge */
-    .pontos-badge.vantagem {
-        background: linear-gradient(145deg, #2e5c3a, #27ae60) !important;
-        color: white !important;
-        border-color: #27ae60 !important;
-    }
-    
-    .pontos-badge.desvantagem {
-        background: linear-gradient(145deg, #8b0000, #e74c3c) !important;
-        color: white !important;
-        border-color: #e74c3c !important;
-    }
-    
-    .pontos-badge.neutro {
-        background: linear-gradient(145deg, var(--primary-gold), var(--secondary-gold)) !important;
-        color: var(--primary-dark) !important;
-        border-color: var(--primary-gold) !important;
-    }
-    
-    /* Estilos para o display */
-    .display-content {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .display-titulo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .display-icone {
-        font-size: 1.2rem;
-    }
-    
-    .display-nome {
-        font-size: 1.1rem;
-        font-weight: bold;
-    }
-    
-    .display-info {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-    
-    .display-reacao {
-        color: var(--text-light);
-        opacity: 0.95;
-        font-size: 0.9rem;
-    }
-    
-    .display-desc {
-        color: var(--text-light);
-        opacity: 0.8;
-        font-size: 0.85rem;
-        font-style: italic;
-    }
-    
-    /* Animação suave para mudanças */
-    .pontos-badge, .info-display, .resumo-valor, .section-pontos {
-        transition: all 0.3s ease;
-    }
-`;
-
-document.head.appendChild(estiloAparencia);
-
-console.log('🎨 Estilos de aparência carregados');
+console.log('🎯 Sistema de Características pronto para iniciar!');
+console.log('📝 Aguardando DOM...');
