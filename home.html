@@ -6,10 +6,10 @@
     <title>Home - GURPS Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-    <!-- SUBSTITUI SUPABASE POR FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+    <!-- ✅ SDKs CORRETOS (versão compatível) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -97,6 +97,20 @@
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .player-code-big {
+            font-size: 1.8rem;
+            color: var(--secondary-gold);
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(212, 175, 55, 0.7); }
+            to { text-shadow: 0 0 20px rgba(212, 175, 55, 0.9), 0 0 30px rgba(212, 175, 55, 0.5); }
         }
 
         .btn {
@@ -260,16 +274,17 @@
         </div>
         
         <div class="user-info">
-            <div class="user-id" id="userIdDisplay">
+            <div class="user-id">
                 <i class="fas fa-id-card"></i>
-                <span>Código: <span id="playerCode">0000000</span></span>
+                <span>Código do Aventureiro:</span>
+                <div class="player-code-big" id="playerCode">0000000</div>
             </div>
             <div class="user-id">
                 <i class="fas fa-user"></i>
-                <span>Email: <span id="userEmail">carregando...</span></span>
+                <span><span id="userEmail">carregando...</span></span>
             </div>
             <button onclick="logout()" class="btn btn-logout">
-                <i class="fas fa-sign-out-alt"></i> Sair da Taverna
+                <i class="fas fa-sign-out-alt"></i> Sair
             </button>
         </div>
     </header>
@@ -283,6 +298,7 @@
             <div style="margin-top: 20px; padding: 15px; background: rgba(212, 175, 55, 0.1); border-radius: 10px; border: 1px solid var(--primary-gold);">
                 <p><i class="fas fa-info-circle"></i> <strong>Status da Sessão:</strong> <span id="sessionStatus" style="color: var(--secondary-gold);">✅ Conectado</span></p>
                 <p><i class="fas fa-clock"></i> <strong>Último acesso:</strong> <span id="lastAccess">Agora mesmo</span></p>
+                <p><i class="fas fa-shield-alt"></i> <strong>Seu ID único:</strong> <span class="player-code-big" id="playerCodeDisplay">0000000</span></p>
             </div>
         </section>
 
@@ -334,14 +350,13 @@
 
     <script>
     // ===========================================
-    // 1. CONFIGURAÇÃO FIREBASE (USE AS MESMAS CREDENCIAIS!)
+    // SUAS CREDENCIAIS FIREBASE - gurpsroll
     // ===========================================
     
     const firebaseConfig = {
-        apiKey: "COLE_SUA_API_KEY_AQUI",
-        authDomain: "SEU-APP.firebaseapp.com",
-        projectId: "SEU-PROJECT-ID"
-        // Mesmas 3 linhas dos outros arquivos!
+        apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
+        authDomain: "gurpsroll.firebaseapp.com",
+        projectId: "gurpsroll"
     };
     
     // Inicializa Firebase
@@ -350,42 +365,47 @@
     const db = firebase.firestore();
     
     // ===========================================
-    // 2. VERIFICAÇÃO DE AUTENTICAÇÃO (PROTEÇÃO)
+    // VERIFICAÇÃO DE AUTENTICAÇÃO
     // ===========================================
     
-    // Monitora estado de autenticação
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            // Usuário está LOGADO
+            // Usuário LOGADO
             console.log('✅ Usuário logado:', user.email);
             await loadUserData(user);
             updateLastAccess();
         } else {
-            // Usuário NÃO está logado → REDIRECIONA
+            // Usuário NÃO logado → REDIRECIONA
             console.log('❌ Usuário não logado, redirecionando...');
             window.location.href = 'login.html';
         }
     });
     
     // ===========================================
-    // 3. CARREGAR DADOS DO USUÁRIO
+    // CARREGAR DADOS DO USUÁRIO (inclui código)
     // ===========================================
     
     async function loadUserData(user) {
         try {
-            // 1. Mostrar email básico
+            // 1. Mostra email
             document.getElementById('userEmail').textContent = user.email;
             document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
             
-            // 2. Buscar código do jogador no Firestore
+            // 2. Busca código no Firestore
             const userDoc = await db.collection('player_profiles').doc(user.uid).get();
             
             if (userDoc.exists) {
                 const data = userDoc.data();
-                document.getElementById('playerCode').textContent = data.player_code || "GERAR";
+                const playerCode = data.player_code || "SEM CÓDIGO";
+                
+                // Mostra em DOIS lugares
+                document.getElementById('playerCode').textContent = playerCode;
+                document.getElementById('playerCodeDisplay').textContent = playerCode;
+                
                 document.getElementById('sessionStatus').innerHTML = '✅ Conectado';
+                console.log('✅ Código encontrado:', playerCode);
             } else {
-                // Se não tem perfil ainda, criar um
+                // Se não tem perfil (usuário antigo)
                 document.getElementById('playerCode').textContent = "CRIANDO...";
                 await createUserProfile(user);
             }
@@ -397,13 +417,27 @@
     }
     
     // ===========================================
-    // 4. FUNÇÃO PARA CRIAR PERFIL (se não existir)
+    // CRIAR PERFIL (para usuários sem perfil)
     // ===========================================
     
     async function createUserProfile(user) {
         try {
-            const playerCode = Math.floor(1000000 + Math.random() * 9000000).toString();
+            // Gera código único (mesma lógica do cadastro)
+            let isUnique = false;
+            let playerCode = '';
             
+            while (!isUnique) {
+                playerCode = Math.floor(1000000 + Math.random() * 9000000).toString();
+                
+                const querySnapshot = await db.collection('player_profiles')
+                    .where('player_code', '==', playerCode)
+                    .limit(1)
+                    .get();
+                
+                isUnique = querySnapshot.empty;
+            }
+            
+            // Salva no Firestore
             await db.collection('player_profiles').doc(user.uid).set({
                 user_id: user.uid,
                 player_code: playerCode,
@@ -413,8 +447,12 @@
                 last_login: new Date().toISOString()
             });
             
+            // Atualiza a tela
             document.getElementById('playerCode').textContent = playerCode;
-            showToast('🎉 Perfil criado com sucesso!');
+            document.getElementById('playerCodeDisplay').textContent = playerCode;
+            
+            console.log('✅ Perfil criado com código:', playerCode);
+            showToast('🎉 Código gerado: ' + playerCode);
             
         } catch (error) {
             console.error('Erro ao criar perfil:', error);
@@ -423,7 +461,7 @@
     }
     
     // ===========================================
-    // 5. FUNÇÕES PRINCIPAIS DA HOME
+    // FUNÇÕES PRINCIPAIS
     // ===========================================
     
     // LOGOUT
@@ -453,15 +491,13 @@
         document.getElementById('lastAccess').textContent = now.toLocaleString('pt-BR', options);
     }
     
-    // FUNÇÕES DOS BOTÕES (para implementar depois)
+    // FUNÇÕES DOS BOTÕES
     function createCharacter() {
-        showToast('⚔️ Em desenvolvimento: Criar Personagem');
-        // window.location.href = 'character-create.html';
+        showToast('⚔️ Criar Personagem (em breve)');
     }
     
     function viewCampaigns() {
-        showToast('🗺️ Em desenvolvimento: Campanhas');
-        // window.location.href = 'campaigns.html';
+        showToast('🗺️ Minhas Campanhas (em breve)');
     }
     
     function rollDice() {
@@ -470,21 +506,18 @@
     }
     
     function openLibrary() {
-        showToast('📚 Em desenvolvimento: Biblioteca GURPS');
-        // window.location.href = 'library.html';
+        showToast('📚 Biblioteca GURPS (em breve)');
     }
     
     // ===========================================
-    // 6. FUNÇÕES AUXILIARES
+    // FUNÇÕES AUXILIARES
     // ===========================================
     
-    // Mostrar notificação temporária
+    // Mostrar notificação
     function showToast(message, type = 'info') {
-        // Remove toast anterior se existir
         const oldToast = document.getElementById('custom-toast');
         if (oldToast) oldToast.remove();
         
-        // Cria novo toast
         const toast = document.createElement('div');
         toast.id = 'custom-toast';
         toast.innerHTML = message;
@@ -506,7 +539,6 @@
         
         document.body.appendChild(toast);
         
-        // Remove após 3 segundos
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.style.animation = 'slideOut 0.3s ease';
@@ -530,15 +562,12 @@
     document.head.appendChild(style);
     
     // ===========================================
-    // 7. INICIALIZAÇÃO
+    // INICIALIZAÇÃO
     // ===========================================
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('🏰 Dashboard GURPS Firebase carregado');
-        
-        // Atualizar hora a cada minuto
+        console.log('🏰 Dashboard GURPS carregado');
         setInterval(updateLastAccess, 60000);
     });
-    
     </script>
 </body>
 </html>
