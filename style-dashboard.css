@@ -1062,3 +1062,247 @@
         filter: grayscale(100%);
     }
 }
+
+/* ==================== */
+/* SEÇÃO 6: DISTRIBUIÇÃO DE PONTOS */
+/* ==================== */
+.distribuicao-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.distribuicao-card {
+    background: linear-gradient(145deg, 
+        rgba(26, 18, 0, 0.8), 
+        rgba(44, 32, 8, 0.9));
+    border: 2px solid var(--wood-dark);
+    border-radius: 10px;
+    padding: 18px;
+    transition: all 0.3s ease;
+}
+
+.distribuicao-card:hover {
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
+}
+
+.distribuicao-header {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.distribuicao-header h5 {
+    color: var(--text-gold);
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.distribuicao-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.distribuicao-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.distribuicao-label {
+    color: var(--wood-light);
+    font-size: 0.9rem;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+.distribuicao-bar {
+    flex: 1;
+    height: 12px;
+    background: rgba(26, 18, 0, 0.7);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--wood-light);
+    position: relative;
+}
+
+.distribuicao-fill {
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--primary-gold), 
+        var(--secondary-gold));
+    border-radius: 6px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.distribuicao-valor {
+    color: var(--text-gold);
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: bold;
+    min-width: 45px;
+    text-align: right;
+}
+
+/* ==================== */
+/* LEGENDA DO RESUMO */
+/* ==================== */
+.resumo-legenda {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 15px;
+    background: rgba(26, 18, 0, 0.6);
+    border-radius: 8px;
+    border: 1px solid var(--wood-light);
+}
+
+.legenda-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legenda-cor {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legenda-cor.positiva {
+    background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+}
+
+.legenda-cor.negativa {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.legenda-cor.saldo {
+    background: linear-gradient(135deg, var(--accent-green), #27ae60);
+}
+
+.legenda-item span:last-child {
+    color: var(--wood-light);
+    font-size: 0.85rem;
+}
+
+/* ==================== */
+/* ESTILOS DOS CARDS ESPECÍFICOS DO RESUMO */
+/* ==================== */
+.resumo-atributos {
+    border-color: #3498db;
+}
+
+.resumo-atributos .resumo-header i {
+    color: #3498db;
+}
+
+.resumo-vantagens {
+    border-color: #2ecc71;
+}
+
+.resumo-vantagens .resumo-header i {
+    color: #2ecc71;
+}
+
+.resumo-desvantagens {
+    border-color: #9b59b6;
+}
+
+.resumo-desvantagens .resumo-header i {
+    color: #9b59b6;
+}
+
+.resumo-pericias {
+    border-color: #e74c3c;
+}
+
+.resumo-pericias .resumo-header i {
+    color: #e74c3c;
+}
+
+.resumo-magias {
+    border-color: #f39c12;
+}
+
+.resumo-magias .resumo-header i {
+    color: #f39c12;
+}
+
+.resumo-tecnicas {
+    border-color: #1abc9c;
+}
+
+.resumo-tecnicas .resumo-header i {
+    color: #1abc9c;
+}
+
+.resumo-peculiaridades {
+    border-color: #e67e22;
+}
+
+.resumo-peculiaridades .resumo-header i {
+    color: #e67e22;
+}
+
+/* ==================== */
+/* BOTÕES DE VITALIDADE */
+/* ==================== */
+.vitalidade-controls {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.vitalidade-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--wood-light);
+    border-radius: 4px;
+    color: var(--text-gold);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.vitalidade-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    transform: scale(1.1);
+}
+
+/* ==================== */
+/* AJUSTES RESPONSIVOS ADICIONAIS */
+/* ==================== */
+@media (max-width: 768px) {
+    .resumo-legenda {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .distribuicao-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .distribuicao-bar {
+        width: 100%;
+    }
+    
+    .distribuicao-label {
+        min-width: 100%;
+    }
+    
+    .distribuicao-valor {
+        align-self: flex-end;
+    }
+}

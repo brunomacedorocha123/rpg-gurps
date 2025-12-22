@@ -776,7 +776,7 @@ body::before {
 
         <!-- TABS CONTENT -->
         <div class="tabs-content">
-           <!-- DASHBOARD -->
+          <!-- DASHBOARD -->
 <div class="tab-pane active" id="dashboard">
     <h3 class="tab-title">Dashboard - Visão Geral</h3>
     
@@ -845,7 +845,7 @@ body::before {
             </div>
         </div>
         
-        <!-- SEÇÃO 2: CONTROLE DE PONTOS -->
+        <!-- SEÇÃO 2: CONTROLE DE PONTOS (SIMPLIFICADO) -->
         <div class="dashboard-section">
             <div class="section-header">
                 <i class="fas fa-calculator"></i>
@@ -853,7 +853,6 @@ body::before {
             </div>
             
             <div class="pontos-container">
-                <!-- LINHA 1: PONTOS PRINCIPAIS -->
                 <div class="pontos-principais">
                     <div class="ponto-card ponto-total">
                         <div class="ponto-icon">
@@ -869,31 +868,6 @@ body::before {
                         </div>
                     </div>
                     
-                    <div class="ponto-card ponto-gastos">
-                        <div class="ponto-icon">
-                            <i class="fas fa-coins"></i>
-                        </div>
-                        <div class="ponto-info">
-                            <h5>Pontos Gastos</h5>
-                            <div class="ponto-value" id="pontosGastos">0</div>
-                            <small>Total utilizado</small>
-                        </div>
-                    </div>
-                    
-                    <div class="ponto-card ponto-disponivel">
-                        <div class="ponto-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <div class="ponto-info">
-                            <h5>Saldo Disponível</h5>
-                            <div class="ponto-value" id="saldoDisponivel">150</div>
-                            <small>Pontos restantes</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- LINHA 2: DESVANTAGENS -->
-                <div class="pontos-secundarios">
                     <div class="ponto-card ponto-limite">
                         <div class="ponto-icon">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -908,14 +882,14 @@ body::before {
                         </div>
                     </div>
                     
-                    <div class="ponto-card ponto-desvantagens">
+                    <div class="ponto-card ponto-disponivel">
                         <div class="ponto-icon">
-                            <i class="fas fa-ban"></i>
+                            <i class="fas fa-wallet"></i>
                         </div>
                         <div class="ponto-info">
-                            <h5>Desvantagens Atuais</h5>
-                            <div class="ponto-value" id="desvantagensAtuais">0</div>
-                            <small>Total em desvantagens</small>
+                            <h5>Saldo Disponível</h5>
+                            <div class="ponto-value" id="saldoDisponivel">150</div>
+                            <small>Pontos restantes</small>
                         </div>
                     </div>
                 </div>
@@ -974,11 +948,15 @@ body::before {
                         <div class="vitalidade-header">
                             <i class="fas fa-heart"></i>
                             <h5>Pontos de Vida (PV)</h5>
+                            <div class="vitalidade-controls">
+                                <button class="vitalidade-btn" onclick="ajustarPV(-1)">-</button>
+                                <button class="vitalidade-btn" onclick="ajustarPV(1)">+</button>
+                            </div>
                         </div>
                         <div class="vitalidade-content">
                             <div class="vitalidade-value" id="valorPV">10/10</div>
                             <div class="vitalidade-bar">
-                                <div class="bar-fill" id="barraPV" style="width: 100%"></div>
+                                <div class="bar-fill" id="barraPV"></div>
                             </div>
                         </div>
                     </div>
@@ -987,11 +965,15 @@ body::before {
                         <div class="vitalidade-header">
                             <i class="fas fa-tint"></i>
                             <h5>Pontos de Fadiga (PF)</h5>
+                            <div class="vitalidade-controls">
+                                <button class="vitalidade-btn" onclick="ajustarPF(-1)">-</button>
+                                <button class="vitalidade-btn" onclick="ajustarPF(1)">+</button>
+                            </div>
                         </div>
                         <div class="vitalidade-content">
                             <div class="vitalidade-value" id="valorPF">10/10</div>
                             <div class="vitalidade-bar">
-                                <div class="bar-fill" id="barraPF" style="width: 100%"></div>
+                                <div class="bar-fill" id="barraPF"></div>
                             </div>
                         </div>
                     </div>
@@ -1028,19 +1010,31 @@ body::before {
                         <small>Capital líquido</small>
                     </div>
                 </div>
+                
+                <div class="financeiro-card">
+                    <div class="financeiro-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="financeiro-info">
+                        <h5>Aparência</h5>
+                        <div class="financeiro-value" id="nivelAparencia">Média</div>
+                        <small>Impressão visual</small>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <!-- SEÇÃO 5: RESUMO DE GASTOS -->
+        <!-- SEÇÃO 5: RESUMO DE GASTOS DETALHADO -->
         <div class="dashboard-section">
             <div class="section-header">
                 <i class="fas fa-file-invoice-dollar"></i>
-                <h4>Resumo de Gastos</h4>
+                <h4>Resumo de Gastos Detalhado</h4>
             </div>
             
             <div class="resumo-container">
                 <div class="resumo-grid">
-                    <div class="resumo-card">
+                    <!-- ATRIBUTOS -->
+                    <div class="resumo-card resumo-atributos">
                         <div class="resumo-header">
                             <i class="fas fa-dumbbell"></i>
                             <h5>Atributos</h5>
@@ -1051,7 +1045,8 @@ body::before {
                         </div>
                     </div>
                     
-                    <div class="resumo-card">
+                    <!-- VANTAGENS -->
+                    <div class="resumo-card resumo-vantagens">
                         <div class="resumo-header">
                             <i class="fas fa-star"></i>
                             <h5>Vantagens</h5>
@@ -1062,7 +1057,20 @@ body::before {
                         </div>
                     </div>
                     
-                    <div class="resumo-card">
+                    <!-- DESVANTAGENS -->
+                    <div class="resumo-card resumo-desvantagens">
+                        <div class="resumo-header">
+                            <i class="fas fa-ban"></i>
+                            <h5>Desvantagens</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosDesvantagens">0</div>
+                            <div class="resumo-label">pontos</div>
+                        </div>
+                    </div>
+                    
+                    <!-- PERÍCIAS -->
+                    <div class="resumo-card resumo-pericias">
                         <div class="resumo-header">
                             <i class="fas fa-graduation-cap"></i>
                             <h5>Perícias</h5>
@@ -1073,7 +1081,8 @@ body::before {
                         </div>
                     </div>
                     
-                    <div class="resumo-card">
+                    <!-- MAGIAS -->
+                    <div class="resumo-card resumo-magias">
                         <div class="resumo-header">
                             <i class="fas fa-hat-wizard"></i>
                             <h5>Magias</h5>
@@ -1084,14 +1093,101 @@ body::before {
                         </div>
                     </div>
                     
+                    <!-- TÉCNICAS -->
+                    <div class="resumo-card resumo-tecnicas">
+                        <div class="resumo-header">
+                            <i class="fas fa-chess-knight"></i>
+                            <h5>Técnicas</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosTecnicas">0</div>
+                            <div class="resumo-label">pontos</div>
+                        </div>
+                    </div>
+                    
+                    <!-- PECULIARIDADES -->
+                    <div class="resumo-card resumo-peculiaridades">
+                        <div class="resumo-header">
+                            <i class="fas fa-gem"></i>
+                            <h5>Peculiaridades</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosPeculiaridades">0</div>
+                            <div class="resumo-label">pontos</div>
+                        </div>
+                    </div>
+                    
+                    <!-- TOTAL LÍQUIDO -->
                     <div class="resumo-card total-card">
                         <div class="resumo-header">
                             <i class="fas fa-calculator"></i>
-                            <h5>Total Gastos</h5>
+                            <h5>Total Líquido</h5>
                         </div>
                         <div class="resumo-content">
-                            <div class="resumo-value" id="gastosTotal">0</div>
-                            <div class="resumo-label">pontos líquidos</div>
+                            <div class="resumo-value" id="totalLiquido">150</div>
+                            <div class="resumo-label">pontos gastos</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LEGENDA DOS PONTOS -->
+                <div class="resumo-legenda">
+                    <div class="legenda-item">
+                        <span class="legenda-cor positiva"></span>
+                        <span>Pontos positivos (gastos)</span>
+                    </div>
+                    <div class="legenda-item">
+                        <span class="legenda-cor negativa"></span>
+                        <span>Pontos negativos (ganhos de desvantagens)</span>
+                    </div>
+                    <div class="legenda-item">
+                        <span class="legenda-cor saldo"></span>
+                        <span>Saldo final</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SEÇÃO 6: RESUMO RÁPIDO -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <i class="fas fa-chart-pie"></i>
+                <h4>Distribuição de Pontos</h4>
+            </div>
+            
+            <div class="distribuicao-container">
+                <div class="distribuicao-card">
+                    <div class="distribuicao-header">
+                        <h5>Como os pontos foram usados</h5>
+                    </div>
+                    <div class="distribuicao-content">
+                        <div class="distribuicao-item">
+                            <span class="distribuicao-label">Atributos</span>
+                            <div class="distribuicao-bar">
+                                <div class="distribuicao-fill" id="distribAtributos"></div>
+                            </div>
+                            <span class="distribuicao-valor" id="distribAtributosValor">0%</span>
+                        </div>
+                        <div class="distribuicao-item">
+                            <span class="distribuicao-label">Vantagens</span>
+                            <div class="distribuicao-bar">
+                                <div class="distribuicao-fill" id="distribVantagens"></div>
+                            </div>
+                            <span class="distribuicao-valor" id="distribVantagensValor">0%</span>
+                        </div>
+                        <div class="distribuicao-item">
+                            <span class="distribuicao-label">Perícias/Magias</span>
+                            <div class="distribuicao-bar">
+                                <div class="distribuicao-fill" id="distribPericias"></div>
+                            </div>
+                            <span class="distribuicao-valor" id="distribPericiasValor">0%</span>
+                        </div>
+                        <div class="distribuicao-item">
+                            <span class="distribuicao-label">Outros</span>
+                            <div class="distribuicao-bar">
+                                <div class="distribuicao-fill" id="distribOutros"></div>
+                            </div>
+                            <span class="distribuicao-valor" id="distribOutrosValor">0%</span>
                         </div>
                     </div>
                 </div>
