@@ -1,23 +1,87 @@
 // ===========================================
-// SISTEMA DE APARÊNCIA COMPLETO
+// SISTEMA DE APARÊNCIA - CARACTERÍSTICAS-APARENCIA.JS
 // ===========================================
 
 class SistemaAparencia {
     constructor() {
         this.niveis = {
-            '-24': { nome: 'Horrendo', pontos: -24, tipo: 'desvantagem', reacao: -6 },
-            '-20': { nome: 'Monstruoso', pontos: -20, tipo: 'desvantagem', reacao: -5 },
-            '-16': { nome: 'Hediondo', pontos: -16, tipo: 'desvantagem', reacao: -4 },
-            '-8': { nome: 'Feio', pontos: -8, tipo: 'desvantagem', reacao: -2 },
-            '-4': { nome: 'Sem Atrativos', pontos: -4, tipo: 'desvantagem', reacao: -1 },
-            '0': { nome: 'Comum', pontos: 0, tipo: 'neutro', reacao: 0 },
-            '4': { nome: 'Atraente', pontos: 4, tipo: 'vantagem', reacao: 1 },
-            '12': { nome: 'Elegante', pontos: 12, tipo: 'vantagem', reacao: { mesmo: 2, outro: 4 } },
-            '16': { nome: 'Muito Elegante', pontos: 16, tipo: 'vantagem', reacao: { mesmo: 2, outro: 6 } },
-            '20': { nome: 'Lindo', pontos: 20, tipo: 'vantagem', reacao: { mesmo: 2, outro: 8 } }
+            '-24': { 
+                nome: 'Horrendo', 
+                pontos: -24, 
+                tipo: 'desvantagem', 
+                reacao: -6 
+            },
+            '-20': { 
+                nome: 'Monstruoso', 
+                pontos: -20, 
+                tipo: 'desvantagem', 
+                reacao: -5 
+            },
+            '-16': { 
+                nome: 'Hediondo', 
+                pontos: -16, 
+                tipo: 'desvantagem', 
+                reacao: -4 
+            },
+            '-8': { 
+                nome: 'Feio', 
+                pontos: -8, 
+                tipo: 'desvantagem', 
+                reacao: -2 
+            },
+            '-4': { 
+                nome: 'Sem Atrativos', 
+                pontos: -4, 
+                tipo: 'desvantagem', 
+                reacao: -1 
+            },
+            '0': { 
+                nome: 'Comum', 
+                pontos: 0, 
+                tipo: 'neutro', 
+                reacao: 0 
+            },
+            '4': { 
+                nome: 'Atraente', 
+                pontos: 4, 
+                tipo: 'vantagem', 
+                reacao: 1 
+            },
+            '12': { 
+                nome: 'Elegante', 
+                pontos: 12, 
+                tipo: 'vantagem', 
+                reacao: { 
+                    mesmo: 2, 
+                    outro: 4 
+                } 
+            },
+            '16': { 
+                nome: 'Muito Elegante', 
+                pontos: 16, 
+                tipo: 'vantagem', 
+                reacao: { 
+                    mesmo: 2, 
+                    outro: 6 
+                } 
+            },
+            '20': { 
+                nome: 'Lindo', 
+                pontos: 20, 
+                tipo: 'vantagem', 
+                reacao: { 
+                    mesmo: 2, 
+                    outro: 8 
+                } 
+            }
         };
         
         this.valorAtual = '0';
+        this.pontos = 0;
+        this.nomeAtual = 'Comum';
+        this.reacaoAtual = 0;
+        this.tipoAtual = 'neutro';
+        
         this.inicializar();
     }
 
@@ -30,135 +94,270 @@ class SistemaAparencia {
     }
 
     configurar() {
+        console.log('🔧 Configurando Sistema de Aparência...');
+        
         const selectAparencia = document.getElementById('nivelAparencia');
         
         if (!selectAparencia) {
+            console.error('❌ ERRO: Elemento "nivelAparencia" não encontrado!');
+            console.log('📌 Procurando elementos com ID:', {
+                nivelAparencia: document.getElementById('nivelAparencia'),
+                pontosAparencia: document.getElementById('pontosAparencia'),
+                displayAparencia: document.getElementById('displayAparencia'),
+                resumoAparencia: document.getElementById('resumoAparencia'),
+                totalSecao1: document.getElementById('totalSecao1')
+            });
             return;
         }
 
+        console.log('✅ Elemento "nivelAparencia" encontrado:', selectAparencia);
+
+        // Configurar evento de mudança
         selectAparencia.addEventListener('change', (e) => {
+            console.log('🔄 Aparência alterada para:', e.target.value);
             this.valorAtual = e.target.value;
             this.atualizarTudo();
         });
 
+        // Configurar valor inicial
         this.valorAtual = selectAparencia.value;
-        this.atualizarTudo();
+        console.log('🎯 Valor inicial:', this.valorAtual);
+
+        // Forçar atualização inicial
+        setTimeout(() => {
+            console.log('🚀 Iniciando atualização...');
+            this.atualizarTudo();
+        }, 100);
     }
 
     atualizarTudo() {
+        console.log('📊 Atualizando aparência com valor:', this.valorAtual);
+        
         const nivel = this.niveis[this.valorAtual];
-        if (!nivel) return;
+        if (!nivel) {
+            console.error('❌ Nível não encontrado para valor:', this.valorAtual);
+            return;
+        }
 
-        this.atualizarBadgePontos(nivel);
-        this.atualizarDisplayAparencia(nivel);
-        this.atualizarResumoAparencia(nivel);
-        this.atualizarTotalSecao1(nivel);
-        this.dispararEventoAtualizacao(nivel);
+        console.log('🎨 Nível encontrado:', nivel);
+
+        // Atualizar propriedades
+        this.pontos = nivel.pontos;
+        this.nomeAtual = nivel.nome;
+        this.reacaoAtual = nivel.reacao;
+        this.tipoAtual = nivel.tipo;
+
+        // Atualizar elementos da interface
+        this.atualizarBadgePontos();
+        this.atualizarDisplayAparencia();
+        this.atualizarResumoAparencia();
+        this.atualizarTotalSecao1();
+
+        // Disparar evento
+        this.dispararEventoAtualizacao();
+
+        console.log('✅ Aparência atualizada:', {
+            nome: this.nomeAtual,
+            pontos: this.pontos,
+            tipo: this.tipoAtual,
+            reacao: this.reacaoAtual
+        });
     }
 
-    atualizarBadgePontos(nivel) {
+    atualizarBadgePontos() {
         const badge = document.getElementById('pontosAparencia');
-        if (!badge) return;
+        if (!badge) {
+            console.warn('⚠️ Badge "pontosAparencia" não encontrado');
+            return;
+        }
 
-        const textoPontos = nivel.pontos >= 0 ? `+${nivel.pontos} pts` : `${nivel.pontos} pts`;
+        const textoPontos = this.pontos >= 0 ? `+${this.pontos} pts` : `${this.pontos} pts`;
+        console.log('🏷️ Atualizando badge:', textoPontos);
         badge.textContent = textoPontos;
 
-        if (nivel.tipo === 'vantagem') {
+        // Aplicar estilos baseados no tipo
+        if (this.tipoAtual === 'vantagem') {
             badge.style.background = 'linear-gradient(145deg, #2e5c3a, #27ae60)';
-            badge.style.color = 'var(--text-light)';
-        } else if (nivel.tipo === 'desvantagem') {
+            badge.style.color = 'white';
+            badge.style.border = '1px solid #27ae60';
+            console.log('🎨 Badge: Vantagem (verde)');
+        } else if (this.tipoAtual === 'desvantagem') {
             badge.style.background = 'linear-gradient(145deg, #8b0000, #e74c3c)';
-            badge.style.color = 'var(--text-light)';
+            badge.style.color = 'white';
+            badge.style.border = '1px solid #e74c3c';
+            console.log('🎨 Badge: Desvantagem (vermelho)');
         } else {
-            badge.style.background = 'linear-gradient(145deg, var(--primary-gold), var(--secondary-gold))';
-            badge.style.color = 'var(--primary-dark)';
+            badge.style.background = 'linear-gradient(145deg, #D4AF37, #FFD700)';
+            badge.style.color = '#1a1200';
+            badge.style.border = '1px solid #D4AF37';
+            console.log('🎨 Badge: Neutro (dourado)');
         }
     }
 
-    atualizarDisplayAparencia(nivel) {
+    atualizarDisplayAparencia() {
         const display = document.getElementById('displayAparencia');
-        if (!display) return;
+        if (!display) {
+            console.warn('⚠️ Display "displayAparencia" não encontrado');
+            return;
+        }
 
         let textoReacao = '';
-        if (typeof nivel.reacao === 'object') {
-            textoReacao = `Reação: +${nivel.reacao.mesmo} (mesmo sexo), +${nivel.reacao.outro} (outro sexo)`;
+        let descricaoReacao = '';
+        
+        if (typeof this.reacaoAtual === 'object') {
+            textoReacao = `Reação: +${this.reacaoAtual.mesmo} (mesmo sexo), +${this.reacaoAtual.outro} (outro sexo)`;
+            descricaoReacao = `Bônus de reação variável`;
+            console.log('🎭 Reação: Objeto (diferente por sexo)');
         } else {
-            textoReacao = `Reação: ${nivel.reacao >= 0 ? '+' : ''}${nivel.reacao}`;
+            textoReacao = `Reação: ${this.reacaoAtual >= 0 ? '+' : ''}${this.reacaoAtual}`;
+            descricaoReacao = this.reacaoAtual > 0 ? 'Bônus de reação' : 
+                            this.reacaoAtual < 0 ? 'Redutor de reação' : 'Reação normal';
+            console.log('🎭 Reação: Número único');
         }
 
         display.innerHTML = `
-            <strong style="color: var(--text-gold); font-size: 1.1rem;">${nivel.nome}</strong>
-            <br>
-            <small style="color: var(--text-light); opacity: 0.95;">${textoReacao}</small>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="
+                    background: ${this.tipoAtual === 'vantagem' ? '#27ae60' : 
+                               this.tipoAtual === 'desvantagem' ? '#e74c3c' : '#D4AF37'};
+                    color: white;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    font-size: 0.9rem;
+                ">
+                    ${this.pontos >= 0 ? '+' : ''}${this.pontos}
+                </span>
+                <div>
+                    <strong style="color: #D4AF37; font-size: 1.1rem;">${this.nomeAtual}</strong>
+                    <br>
+                    <small style="color: white; opacity: 0.95;">${textoReacao}</small>
+                </div>
+            </div>
         `;
+
+        console.log('📱 Display atualizado:', {
+            nome: this.nomeAtual,
+            reacao: textoReacao
+        });
     }
 
-    atualizarResumoAparencia(nivel) {
+    atualizarResumoAparencia() {
         const resumo = document.getElementById('resumoAparencia');
-        if (!resumo) return;
+        if (!resumo) {
+            console.warn('⚠️ Resumo "resumoAparencia" não encontrado');
+            return;
+        }
 
-        const textoPontos = nivel.pontos >= 0 ? `+${nivel.pontos} pts` : `${nivel.pontos} pts`;
+        const textoPontos = this.pontos >= 0 ? `+${this.pontos} pts` : `${this.pontos} pts`;
+        console.log('📋 Atualizando resumo:', textoPontos);
         resumo.textContent = textoPontos;
 
-        if (nivel.tipo === 'vantagem') {
+        // Aplicar cores
+        if (this.tipoAtual === 'vantagem') {
             resumo.style.color = '#27ae60';
-        } else if (nivel.tipo === 'desvantagem') {
+            resumo.style.fontWeight = 'bold';
+            console.log('🎨 Resumo: Vantagem (verde)');
+        } else if (this.tipoAtual === 'desvantagem') {
             resumo.style.color = '#e74c3c';
+            resumo.style.fontWeight = 'bold';
+            console.log('🎨 Resumo: Desvantagem (vermelho)');
         } else {
-            resumo.style.color = 'var(--wood-light)';
+            resumo.style.color = '#D4AF37';
+            console.log('🎨 Resumo: Neutro (dourado)');
         }
     }
 
-    atualizarTotalSecao1(nivel) {
+    atualizarTotalSecao1() {
         const total = document.getElementById('totalSecao1');
-        if (!total) return;
+        if (!total) {
+            console.warn('⚠️ Total "totalSecao1" não encontrado');
+            return;
+        }
 
-        const textoPontos = nivel.pontos >= 0 ? `+${nivel.pontos} pts` : `${nivel.pontos} pts`;
+        const textoPontos = this.pontos >= 0 ? `+${this.pontos} pts` : `${this.pontos} pts`;
+        console.log('📊 Atualizando total seção 1:', textoPontos);
         total.textContent = textoPontos;
 
-        if (nivel.tipo === 'vantagem') {
-            total.style.background = 'rgba(46, 92, 58, 0.8)';
-        } else if (nivel.tipo === 'desvantagem') {
-            total.style.background = 'rgba(139, 0, 0, 0.8)';
+        // Aplicar estilos
+        if (this.tipoAtual === 'vantagem') {
+            total.style.background = 'linear-gradient(145deg, #2e5c3a, #27ae60)';
+            total.style.color = 'white';
+            total.style.border = '1px solid #27ae60';
+            console.log('🎨 Total: Vantagem (verde)');
+        } else if (this.tipoAtual === 'desvantagem') {
+            total.style.background = 'linear-gradient(145deg, #8b0000, #e74c3c)';
+            total.style.color = 'white';
+            total.style.border = '1px solid #e74c3c';
+            console.log('🎨 Total: Desvantagem (vermelho)');
         } else {
             total.style.background = 'rgba(212, 175, 55, 0.1)';
+            total.style.color = '#D4AF37';
+            total.style.border = '1px solid rgba(212, 175, 55, 0.3)';
+            console.log('🎨 Total: Neutro (dourado transparente)');
         }
     }
 
-    dispararEventoAtualizacao(nivel) {
+    dispararEventoAtualizacao() {
         const evento = new CustomEvent('aparenciaAtualizada', {
             detail: {
                 valor: this.valorAtual,
-                pontos: nivel.pontos,
-                tipo: nivel.tipo,
-                nome: nivel.nome
+                pontos: this.pontos,
+                tipo: this.tipoAtual,
+                nome: this.nomeAtual,
+                reacao: this.reacaoAtual
             }
         });
         
         document.dispatchEvent(evento);
+        
+        console.log('📡 Evento disparado:', {
+            nome: 'aparenciaAtualizada',
+            detalhes: evento.detail
+        });
     }
 
-    getDados() {
-        const nivel = this.niveis[this.valorAtual];
-        return {
-            valor: this.valorAtual,
-            pontos: nivel.pontos,
-            tipo: nivel.tipo,
-            nome: nivel.nome,
-            reacao: nivel.reacao
-        };
-    }
+    // ===========================================
+    // MÉTODOS PÚBLICOS
+    // ===========================================
 
     getPontos() {
-        return this.niveis[this.valorAtual].pontos;
+        return this.pontos;
     }
 
     getTipo() {
-        return this.niveis[this.valorAtual].tipo;
+        return this.tipoAtual;
+    }
+
+    getNome() {
+        return this.nomeAtual;
+    }
+
+    getReacao() {
+        return this.reacaoAtual;
+    }
+
+    getDados() {
+        return {
+            valor: this.valorAtual,
+            pontos: this.pontos,
+            tipo: this.tipoAtual,
+            nome: this.nomeAtual,
+            reacao: this.reacaoAtual
+        };
     }
 
     carregarDados(dados) {
-        if (!dados || !dados.valor) return;
+        if (!dados || !dados.valor) {
+            console.warn('⚠️ Dados inválidos para carregar');
+            return;
+        }
+        
+        console.log('💾 Carregando dados salvos:', dados);
         
         const select = document.getElementById('nivelAparencia');
         if (select) {
@@ -167,209 +366,107 @@ class SistemaAparencia {
             this.atualizarTudo();
         }
     }
-}
 
-// ===========================================
-// INICIALIZAÇÃO
-// ===========================================
+    // ===========================================
+    // MÉTODOS DE DEBUG/HELPERS
+    // ===========================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.sistemaAparencia = new SistemaAparencia();
-});
-
-// ===========================================
-// SISTEMA DE RIQUEZA
-// ===========================================
-
-class SistemaRiqueza {
-    constructor() {
-        this.niveis = {
-            '-25': { nome: 'Falido', pontos: -25, multiplicador: 0.2 },
-            '-15': { nome: 'Pobre', pontos: -15, multiplicador: 0.4 },
-            '-10': { nome: 'Batalhador', pontos: -10, multiplicador: 0.6 },
-            '0': { nome: 'Médio', pontos: 0, multiplicador: 1 },
-            '10': { nome: 'Confortável', pontos: 10, multiplicador: 2 },
-            '20': { nome: 'Rico', pontos: 20, multiplicador: 5 },
-            '30': { nome: 'Muito Rico', pontos: 30, multiplicador: 10 },
-            '50': { nome: 'Podre de Rico', pontos: 50, multiplicador: 20 }
+    debug() {
+        console.group('🔍 DEBUG - Sistema de Aparência');
+        console.log('Valor atual:', this.valorAtual);
+        console.log('Pontos:', this.pontos);
+        console.log('Nome:', this.nomeAtual);
+        console.log('Tipo:', this.tipoAtual);
+        console.log('Reação:', this.reacaoAtual);
+        console.log('Níveis disponíveis:', Object.keys(this.niveis).length);
+        
+        // Verificar elementos
+        const elementos = {
+            select: document.getElementById('nivelAparencia'),
+            badge: document.getElementById('pontosAparencia'),
+            display: document.getElementById('displayAparencia'),
+            resumo: document.getElementById('resumoAparencia'),
+            total: document.getElementById('totalSecao1')
         };
         
-        this.valorAtual = '0';
-        this.inicializar();
-    }
-
-    inicializar() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.configurar());
-        } else {
-            this.configurar();
-        }
-    }
-
-    configurar() {
-        const selectRiqueza = document.getElementById('nivelRiqueza');
+        console.log('Elementos encontrados:');
+        Object.entries(elementos).forEach(([nome, elemento]) => {
+            console.log(`  ${nome}:`, elemento ? '✅' : '❌');
+        });
         
-        if (!selectRiqueza) {
-            return;
-        }
+        console.groupEnd();
+    }
 
-        selectRiqueza.addEventListener('change', (e) => {
-            this.valorAtual = e.target.value;
+    testarTodosNiveis() {
+        console.group('🧪 TESTANDO TODOS OS NÍVEIS');
+        const valores = Object.keys(this.niveis);
+        
+        valores.forEach((valor, index) => {
+            console.log(`\nTeste ${index + 1}/${valores.length}: ${this.niveis[valor].nome}`);
+            this.valorAtual = valor;
             this.atualizarTudo();
         });
-
-        this.valorAtual = selectRiqueza.value;
-        this.atualizarTudo();
-    }
-
-    atualizarTudo() {
-        const nivel = this.niveis[this.valorAtual];
-        if (!nivel) return;
-
-        this.atualizarBadgePontos(nivel);
-        this.atualizarDisplayRiqueza(nivel);
-        this.atualizarResumoRiqueza(nivel);
-        this.atualizarRendaMensal(nivel);
-        this.dispararEventoAtualizacao(nivel);
-    }
-
-    atualizarBadgePontos(nivel) {
-        const badge = document.getElementById('pontosRiqueza');
-        if (!badge) return;
-
-        const textoPontos = nivel.pontos >= 0 ? `+${nivel.pontos} pts` : `${nivel.pontos} pts`;
-        badge.textContent = textoPontos;
-
-        if (nivel.pontos > 0) {
-            badge.style.background = 'linear-gradient(145deg, #2e5c3a, #27ae60)';
-            badge.style.color = 'var(--text-light)';
-        } else if (nivel.pontos < 0) {
-            badge.style.background = 'linear-gradient(145deg, #8b0000, #e74c3c)';
-            badge.style.color = 'var(--text-light)';
-        } else {
-            badge.style.background = 'linear-gradient(145deg, var(--primary-gold), var(--secondary-gold))';
-            badge.style.color = 'var(--primary-dark)';
-        }
-    }
-
-    atualizarDisplayRiqueza(nivel) {
-        const display = document.getElementById('displayRiqueza');
-        if (!display) return;
-
-        display.innerHTML = `
-            <strong style="color: var(--text-gold); font-size: 1.1rem;">${nivel.nome}</strong>
-            <br>
-            <small style="color: var(--text-light); opacity: 0.95;">Multiplicador: ${nivel.multiplicador}x | ${this.getDescricaoRiqueza(nivel.nome)}</small>
-        `;
-    }
-
-    atualizarResumoRiqueza(nivel) {
-        const resumo = document.getElementById('resumoRiqueza');
-        if (!resumo) return;
-
-        const textoPontos = nivel.pontos >= 0 ? `+${nivel.pontos} pts` : `${nivel.pontos} pts`;
-        resumo.textContent = textoPontos;
-
-        if (nivel.pontos > 0) {
-            resumo.style.color = '#27ae60';
-        } else if (nivel.pontos < 0) {
-            resumo.style.color = '#e74c3c';
-        } else {
-            resumo.style.color = 'var(--wood-light)';
-        }
-    }
-
-    atualizarRendaMensal(nivel) {
-        const rendaElement = document.getElementById('rendaMensal');
-        if (!rendaElement) return;
-
-        const rendaBase = 1000;
-        const rendaCalculada = rendaBase * nivel.multiplicador;
-        rendaElement.textContent = `$${rendaCalculada.toLocaleString()}`;
-    }
-
-    getDescricaoRiqueza(nome) {
-        const descricoes = {
-            'Falido': 'Vive de ajuda, sem recursos',
-            'Pobre': 'Luta para sobreviver',
-            'Batalhador': 'Ganha o suficiente',
-            'Médio': 'Padrão de vida comum',
-            'Confortável': 'Vida tranquila',
-            'Rico': 'Muito bem de vida',
-            'Muito Rico': 'Extremamente rico',
-            'Podre de Rico': 'Fortuna colossal'
-        };
-        return descricoes[nome] || '';
-    }
-
-    dispararEventoAtualizacao(nivel) {
-        const evento = new CustomEvent('riquezaAtualizada', {
-            detail: {
-                valor: this.valorAtual,
-                pontos: nivel.pontos,
-                nome: nivel.nome,
-                multiplicador: nivel.multiplicador
-            }
-        });
         
-        document.dispatchEvent(evento);
-    }
-
-    getDados() {
-        const nivel = this.niveis[this.valorAtual];
-        return {
-            valor: this.valorAtual,
-            pontos: nivel.pontos,
-            nome: nivel.nome,
-            multiplicador: nivel.multiplicador
-        };
-    }
-
-    getPontos() {
-        return this.niveis[this.valorAtual].pontos;
+        // Voltar ao normal
+        this.valorAtual = '0';
+        this.atualizarTudo();
+        console.groupEnd();
     }
 }
 
 // ===========================================
-// INICIALIZAÇÃO COMPLETA
+// INICIALIZAÇÃO AUTOMÁTICA
 // ===========================================
 
+// Inicializar quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar sistemas
+    console.log('🏗️ DOM Carregado - Iniciando Sistema de Aparência');
+    
+    // Criar instância global
     window.sistemaAparencia = new SistemaAparencia();
-    window.sistemaRiqueza = new SistemaRiqueza();
     
-    // Configurar evento para atualizar total
-    document.addEventListener('aparenciaAtualizada', atualizarTotalCaracteristicas);
-    document.addEventListener('riquezaAtualizada', atualizarTotalCaracteristicas);
+    // Expor métodos globais para debug
+    window.debugAparencia = () => window.sistemaAparencia.debug();
+    window.testarAparencia = () => window.sistemaAparencia.testarTodosNiveis();
     
-    // Atualizar total inicial
-    setTimeout(atualizarTotalCaracteristicas, 200);
+    console.log('✅ Sistema de Aparência inicializado. Use:');
+    console.log('   window.sistemaAparencia.debug() para verificar');
+    console.log('   window.sistemaAparencia.testarTodosNiveis() para testar');
 });
 
-function atualizarTotalCaracteristicas() {
-    const totalElement = document.getElementById('totalCaracteristicas');
-    if (!totalElement) return;
+// Fallback: Se o DOM já estiver carregado
+if (document.readyState !== 'loading') {
+    console.log('⚡ DOM já carregado - Iniciando imediatamente');
+    window.sistemaAparencia = new SistemaAparencia();
+}
 
-    // Calcular total
-    let total = 0;
-    
+// ===========================================
+// FUNÇÃO PARA ATUALIZAR TOTAL GERAL (SE NECESSÁRIO)
+// ===========================================
+
+// Esta função pode ser chamada por outros sistemas para atualizar o total
+function atualizarTotalAparencia() {
     if (window.sistemaAparencia) {
-        total += window.sistemaAparencia.getPontos();
-    }
-    
-    if (window.sistemaRiqueza) {
-        total += window.sistemaRiqueza.getPontos();
-    }
-    
-    // Atualizar display
-    totalElement.textContent = total >= 0 ? `+${total} pts` : `${total} pts`;
-    
-    if (total > 0) {
-        totalElement.style.color = '#27ae60';
-    } else if (total < 0) {
-        totalElement.style.color = '#e74c3c';
-    } else {
-        totalElement.style.color = 'var(--text-light)';
+        const totalElement = document.getElementById('totalCaracteristicas');
+        if (!totalElement) return;
+        
+        const pontos = window.sistemaAparencia.getPontos();
+        const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+        
+        totalElement.textContent = texto;
+        
+        if (pontos > 0) {
+            totalElement.style.color = '#27ae60';
+        } else if (pontos < 0) {
+            totalElement.style.color = '#e74c3c';
+        } else {
+            totalElement.style.color = '#D4AF37';
+        }
     }
 }
+
+// Listener para evento de atualização
+document.addEventListener('aparenciaAtualizada', () => {
+    console.log('📣 Evento de aparência capturado - Atualizando total');
+    atualizarTotalAparencia();
+});
