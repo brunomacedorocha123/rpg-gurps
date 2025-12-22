@@ -670,6 +670,7 @@ body::before {
     }
 }
 </style>
+ <link rel="stylesheet" href="style-dashboard.css">
 </head>
 <body>
     <!-- LOADING OVERLAY -->
@@ -773,19 +774,330 @@ body::before {
 
         <!-- TABS CONTENT -->
         <div class="tabs-content">
-            <!-- DASHBOARD -->
-            <div class="tab-pane active" id="dashboard">
-                <h3 class="tab-title">Dashboard - Visão Geral</h3>
-                <div class="tab-placeholder">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <p>Visão geral do personagem com estatísticas principais.</p>
-                    <p>Pontos totais, atributos básicos e informações rápidas.</p>
-                    <p style="margin-top: 20px; color: var(--secondary-gold); font-style: italic;">
-                        Comece preenchendo o nome do personagem acima e navegue pelas abas.
-                    </p>
+           <!-- DASHBOARD -->
+<div class="tab-pane active" id="dashboard">
+    <h3 class="tab-title">Dashboard - Visão Geral</h3>
+    
+    <div class="dashboard-completo">
+        
+        <!-- SEÇÃO 1: IDENTIFICAÇÃO DO PERSONAGEM -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <i class="fas fa-user-circle"></i>
+                <h4>Identificação</h4>
+            </div>
+            
+            <div class="identificacao-container">
+                <!-- FOTO DO PERSONAGEM -->
+                <div class="foto-personagem">
+                    <div class="foto-wrapper" id="fotoWrapper">
+                        <img id="fotoPreview" class="foto-preview" src="" alt="Foto do Personagem">
+                        <div class="foto-placeholder" id="fotoPlaceholder">
+                            <i class="fas fa-user-circle fa-4x"></i>
+                            <span>Adicionar Imagem</span>
+                        </div>
+                        <input type="file" id="fotoUpload" accept="image/*" class="foto-upload">
+                    </div>
+                    <div class="foto-acoes">
+                        <button class="btn-foto" onclick="document.getElementById('fotoUpload').click()">
+                            <i class="fas fa-upload"></i> Upload
+                        </button>
+                        <button class="btn-foto btn-remover" id="btnRemoverFoto">
+                            <i class="fas fa-trash"></i> Remover
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- DADOS BÁSICOS -->
+                <div class="dados-basicos">
+                    <div class="dados-grid">
+                        <div class="dado-item">
+                            <label for="dashboardRaca">Raça/Espécie:</label>
+                            <input type="text" id="dashboardRaca" class="dashboard-input" 
+                                   placeholder="Humano, Elfo, Anão..." maxlength="30">
+                        </div>
+                        
+                        <div class="dado-item">
+                            <label for="dashboardClasse">Classe/Profissão:</label>
+                            <input type="text" id="dashboardClasse" class="dashboard-input" 
+                                   placeholder="Guerreiro, Mago, Ladino..." maxlength="30">
+                        </div>
+                        
+                        <div class="dado-item">
+                            <label for="dashboardNivel">Nível/Hierarquia:</label>
+                            <input type="text" id="dashboardNivel" class="dashboard-input" 
+                                   placeholder="Noviço, Veterano, Mestre..." maxlength="30">
+                        </div>
+                        
+                        <div class="dado-item full-width">
+                            <label for="dashboardDescricao">História do Personagem:</label>
+                            <textarea id="dashboardDescricao" class="dashboard-textarea" 
+                                      placeholder="Breve descrição do personagem, sua história, personalidade..."
+                                      rows="3" maxlength="500"></textarea>
+                            <div class="contador-caracteres">
+                                <span id="contadorDescricao">0</span>/500 caracteres
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
+        </div>
+        
+        <!-- SEÇÃO 2: CONTROLE DE PONTOS -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <i class="fas fa-calculator"></i>
+                <h4>Controle de Pontos</h4>
+            </div>
+            
+            <div class="pontos-container">
+                <!-- LINHA 1: PONTOS PRINCIPAIS -->
+                <div class="pontos-principais">
+                    <div class="ponto-card ponto-total">
+                        <div class="ponto-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="ponto-info">
+                            <h5>Pontos Totais</h5>
+                            <div class="ponto-value">
+                                <input type="number" id="pontosTotais" class="ponto-input" 
+                                       value="150" min="0" step="10">
+                            </div>
+                            <small>Definido pelo GM</small>
+                        </div>
+                    </div>
+                    
+                    <div class="ponto-card ponto-gastos">
+                        <div class="ponto-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="ponto-info">
+                            <h5>Pontos Gastos</h5>
+                            <div class="ponto-value" id="pontosGastos">0</div>
+                            <small>Total utilizado</small>
+                        </div>
+                    </div>
+                    
+                    <div class="ponto-card ponto-disponivel">
+                        <div class="ponto-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="ponto-info">
+                            <h5>Saldo Disponível</h5>
+                            <div class="ponto-value" id="saldoDisponivel">150</div>
+                            <small>Pontos restantes</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LINHA 2: DESVANTAGENS -->
+                <div class="pontos-secundarios">
+                    <div class="ponto-card ponto-limite">
+                        <div class="ponto-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="ponto-info">
+                            <h5>Limite Desvantagens</h5>
+                            <div class="ponto-value">
+                                <input type="number" id="limiteDesvantagens" class="ponto-input" 
+                                       value="-50" min="-200" max="0" step="5">
+                            </div>
+                            <small>Máximo permitido</small>
+                        </div>
+                    </div>
+                    
+                    <div class="ponto-card ponto-desvantagens">
+                        <div class="ponto-icon">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <div class="ponto-info">
+                            <h5>Desvantagens Atuais</h5>
+                            <div class="ponto-value" id="desvantagensAtuais">0</div>
+                            <small>Total em desvantagens</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SEÇÃO 3: ATRIBUTOS BÁSICOS -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <i class="fas fa-dumbbell"></i>
+                <h4>Atributos Básicos</h4>
+            </div>
+            
+            <div class="atributos-container">
+                <div class="atributo-row">
+                    <div class="atributo-card">
+                        <div class="atributo-header">
+                            <i class="fas fa-fist-raised"></i>
+                            <h5>FOR (ST)</h5>
+                        </div>
+                        <div class="atributo-value" id="atributoST">10</div>
+                        <div class="atributo-label">Força</div>
+                    </div>
+                    
+                    <div class="atributo-card">
+                        <div class="atributo-header">
+                            <i class="fas fa-running"></i>
+                            <h5>DES (DX)</h5>
+                        </div>
+                        <div class="atributo-value" id="atributoDX">10</div>
+                        <div class="atributo-label">Destreza</div>
+                    </div>
+                    
+                    <div class="atributo-card">
+                        <div class="atributo-header">
+                            <i class="fas fa-brain"></i>
+                            <h5>INT (IQ)</h5>
+                        </div>
+                        <div class="atributo-value" id="atributoIQ">10</div>
+                        <div class="atributo-label">Inteligência</div>
+                    </div>
+                    
+                    <div class="atributo-card">
+                        <div class="atributo-header">
+                            <i class="fas fa-heartbeat"></i>
+                            <h5>VIG (HT)</h5>
+                        </div>
+                        <div class="atributo-value" id="atributoHT">10</div>
+                        <div class="atributo-label">Vigor</div>
+                    </div>
+                </div>
+                
+                <!-- VITALIDADE -->
+                <div class="vitalidade-container">
+                    <div class="vitalidade-card">
+                        <div class="vitalidade-header">
+                            <i class="fas fa-heart"></i>
+                            <h5>Pontos de Vida (PV)</h5>
+                        </div>
+                        <div class="vitalidade-content">
+                            <div class="vitalidade-value" id="valorPV">10/10</div>
+                            <div class="vitalidade-bar">
+                                <div class="bar-fill" id="barraPV" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="vitalidade-card">
+                        <div class="vitalidade-header">
+                            <i class="fas fa-tint"></i>
+                            <h5>Pontos de Fadiga (PF)</h5>
+                        </div>
+                        <div class="vitalidade-content">
+                            <div class="vitalidade-value" id="valorPF">10/10</div>
+                            <div class="vitalidade-bar">
+                                <div class="bar-fill" id="barraPF" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SEÇÃO 4: CARACTERÍSTICAS FINANCEIRAS -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <i class="fas fa-coins"></i>
+                <h4>Características Financeiras</h4>
+            </div>
+            
+            <div class="financeiro-container">
+                <div class="financeiro-card">
+                    <div class="financeiro-icon">
+                        <i class="fas fa-chess-queen"></i>
+                    </div>
+                    <div class="financeiro-info">
+                        <h5>Nível de Riqueza</h5>
+                        <div class="financeiro-value" id="nivelRiqueza">Médio</div>
+                        <small>Status econômico</small>
+                    </div>
+                </div>
+                
+                <div class="financeiro-card">
+                    <div class="financeiro-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="financeiro-info">
+                        <h5>Saldo Disponível</h5>
+                        <div class="financeiro-value" id="saldoPersonagem">$2.000</div>
+                        <small>Capital líquido</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SEÇÃO 5: RESUMO DE GASTOS -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <h4>Resumo de Gastos</h4>
+            </div>
+            
+            <div class="resumo-container">
+                <div class="resumo-grid">
+                    <div class="resumo-card">
+                        <div class="resumo-header">
+                            <i class="fas fa-dumbbell"></i>
+                            <h5>Atributos</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosAtributos">0</div>
+                            <div class="resumo-label">pontos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="resumo-card">
+                        <div class="resumo-header">
+                            <i class="fas fa-star"></i>
+                            <h5>Vantagens</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosVantagens">0</div>
+                            <div class="resumo-label">pontos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="resumo-card">
+                        <div class="resumo-header">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h5>Perícias</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosPericias">0</div>
+                            <div class="resumo-label">pontos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="resumo-card">
+                        <div class="resumo-header">
+                            <i class="fas fa-hat-wizard"></i>
+                            <h5>Magias</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosMagias">0</div>
+                            <div class="resumo-label">pontos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="resumo-card total-card">
+                        <div class="resumo-header">
+                            <i class="fas fa-calculator"></i>
+                            <h5>Total Gastos</h5>
+                        </div>
+                        <div class="resumo-content">
+                            <div class="resumo-value" id="gastosTotal">0</div>
+                            <div class="resumo-label">pontos líquidos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
             <!-- ATRIBUTOS -->
             <div class="tab-pane" id="atributos">
                 <h3 class="tab-title">Atributos do Personagem</h3>
