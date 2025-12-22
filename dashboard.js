@@ -1,5 +1,5 @@
 // ===========================================
-// DASHBOARD MANAGER - VERSÃO COMPLETA INTEGRADA
+// DASHBOARD MANAGER - VERSÃO COMPLETA E FUNCIONAL
 // ===========================================
 
 class DashboardManager {
@@ -39,21 +39,15 @@ class DashboardManager {
         };
         
         this.fotoTemporaria = null;
-        this.inicializando = false;
+        this.monitorAtivo = false;
     }
 
     inicializar() {
-        if (this.inicializando) return;
-        this.inicializando = true;
-        
         this.configurarSistemaFoto();
         this.configurarEventosDashboard();
-        this.configurarEventosAtributos();
-        this.configurarMonitores();
-        this.carregarDadosIniciais();
-        this.iniciarMonitoramentoAtivo();
-        
-        this.inicializando = false;
+        this.configurarMonitorAtributos();
+        this.carregarValoresIniciais();
+        this.iniciarMonitoramento();
     }
 
     configurarSistemaFoto() {
@@ -95,168 +89,145 @@ class DashboardManager {
     }
 
     configurarEventosDashboard() {
-        // Configurar inputs da dashboard
-        const inputs = [
-            {id: 'dashboardRaca', callback: (v) => this.estado.identificacao.raca = v},
-            {id: 'dashboardClasse', callback: (v) => this.estado.identificacao.classe = v},
-            {id: 'dashboardNivel', callback: (v) => this.estado.identificacao.nivel = v},
-            {id: 'dashboardDescricao', callback: (v) => this.estado.identificacao.descricao = v},
-            {id: 'pontosTotais', callback: (v) => {
-                this.estado.pontos.total = parseInt(v) || 150;
-                this.recalcularSaldo();
-            }},
-            {id: 'limiteDesvantagens', callback: (v) => {
-                this.estado.pontos.limiteDesvantagens = parseInt(v) || -50;
-            }},
-            {id: 'nivelAparencia', callback: (v) => this.estado.financeiro.aparencia = v},
-            {id: 'nivelRiqueza', callback: (v) => {
-                this.estado.financeiro.riqueza = v;
-                this.calcularRenda();
-            }}
+        // Eventos para inputs da dashboard
+        const inputsDashboard = [
+            'dashboardRaca', 'dashboardClasse', 'dashboardNivel', 
+            'dashboardDescricao', 'pontosTotais', 'limiteDesvantagens',
+            'nivelAparencia', 'nivelRiqueza'
         ];
 
-        inputs.forEach(({id, callback}) => {
+        inputsDashboard.forEach(id => {
             const elemento = document.getElementById(id);
             if (elemento) {
-                elemento.addEventListener('input', () => callback(elemento.value));
-                elemento.addEventListener('change', () => callback(elemento.value));
+                elemento.addEventListener('input', () => this.processarInputDashboard(id, elemento.value));
+                elemento.addEventListener('change', () => this.processarInputDashboard(id, elemento.value));
             }
         });
 
-        // Contador de caracteres da descrição
-        const textarea = document.getElementById('dashboardDescricao');
-        if (textarea) {
-            textarea.addEventListener('input', () => this.atualizarContadorDescricao());
+        // Contador de caracteres para descrição
+        const textareaDescricao = document.getElementById('dashboardDescricao');
+        if (textareaDescricao) {
+            textareaDescricao.addEventListener('input', () => {
+                const contador = document.getElementById('contadorDescricao');
+                if (contador) {
+                    contador.textContent = textareaDescricao.value.length;
+                }
+                this.estado.identificacao.descricao = textareaDescricao.value;
+            });
+        }
+
+        // Evento para pontos totais (atualizar saldo imediatamente)
+        const pontosTotaisInput = document.getElementById('pontosTotais');
+        if (pontosTotaisInput) {
+            pontosTotaisInput.addEventListener('input', () => {
+                this.estado.pontos.total = parseInt(pontosTotaisInput.value) || 150;
+                this.recalcularSaldo();
+                this.atualizarDisplayPontos();
+            });
+        }
+
+        // Evento para limite de desvantagens
+        const limiteDesvantagensInput = document.getElementById('limiteDesvantagens');
+        if (limiteDesvantagensInput) {
+            limiteDesvantagensInput.addEventListener('input', () => {
+                this.estado.pontos.limiteDesvantagens = parseInt(limiteDesvantagensInput.value) || -50;
+                this.atualizarDisplayPontos();
+            });
         }
     }
 
-    configurarEventosAtributos() {
-        // Monitorar alterações diretas nos atributos
-        const atributos = ['ST', 'DX', 'IQ', 'HT'];
-        atributos.forEach(atributo => {
-            const input = document.getElementById(atributo);
-            if (input) {
-                input.addEventListener('change', () => this.atualizarAtributosDiretamente());
-                input.addEventListener('input', () => this.atualizarAtributosDiretamente());
+    configurarMonitorAtributos() {
+        // Escutar evento de atributos alterados (da aba atributos)
+        document.addEventListener('atributosAlterados', (e) => {
+            if (e.detail) {
+                this.atualizarAtributosDoEvento(e.detail);
             }
         });
 
-        // Monitorar alterações nos bônus de PV/PF
-        ['bonusPV', 'bonusPF'].forEach(id => {
+        // Monitorar alterações diretas nos atributos (backup)
+        const atributosIds = ['ST', 'DX', 'IQ', 'HT'];
+        atributosIds.forEach(id => {
             const input = document.getElementById(id);
             if (input) {
                 input.addEventListener('change', () => this.atualizarAtributosDiretamente());
-                input.addEventListener('input', () => this.atualizarAtributosDiretamente());
             }
         });
     }
 
-    configurarMonitores() {
-        // Monitorar evento de atributos alterados
-        document.addEventListener('atributosAlterados', (e) => {
-            this.processarAtributosAlterados(e.detail);
-        });
-
-        // Monitorar evento de vantagens/desvantagens
-        document.addEventListener('vantagensAlteradas', (e) => {
-            if (e.detail && typeof e.detail.total === 'number') {
-                this.atualizarVantagensDesvantagens(e.detail.total);
-            }
-        });
-
-        // Monitorar evento de perícias
-        document.addEventListener('periciasAlteradas', (e) => {
-            if (e.detail && typeof e.detail.total === 'number') {
-                this.estado.pontos.gastosPericias = e.detail.total;
-                this.recalcularSaldo();
-                this.atualizarDisplayCompleto();
-            }
-        });
-
-        // Monitorar evento de magias
-        document.addEventListener('magiasAlteradas', (e) => {
-            if (e.detail && typeof e.detail.total === 'number') {
-                this.estado.pontos.gastosMagias = e.detail.total;
-                this.recalcularSaldo();
-                this.atualizarDisplayCompleto();
-            }
-        });
-    }
-
-    carregarDadosIniciais() {
+    carregarValoresIniciais() {
+        // Carregar valores iniciais dos inputs
+        this.estado.identificacao.raca = document.getElementById('dashboardRaca')?.value || '';
+        this.estado.identificacao.classe = document.getElementById('dashboardClasse')?.value || '';
+        this.estado.identificacao.nivel = document.getElementById('dashboardNivel')?.value || '';
+        this.estado.identificacao.descricao = document.getElementById('dashboardDescricao')?.value || '';
+        
+        // Carregar valores iniciais dos pontos
+        this.estado.pontos.total = parseInt(document.getElementById('pontosTotais')?.value) || 150;
+        this.estado.pontos.limiteDesvantagens = parseInt(document.getElementById('limiteDesvantagens')?.value) || -50;
+        
+        // Carregar valores financeiros iniciais
+        this.atualizarFinanceiro();
+        
+        // Carregar atributos iniciais
         this.atualizarAtributosDiretamente();
-        this.calcularRenda();
-        this.recalcularSaldo();
-        this.atualizarDisplayCompleto();
+        
+        // Atualizar contador de descrição
         this.atualizarContadorDescricao();
-    }
-
-    iniciarMonitoramentoAtivo() {
-        // Monitorar ativamente a cada 500ms para garantir sincronização
-        setInterval(() => {
-            this.verificarAtributosAtualizados();
-        }, 500);
-    }
-
-    verificarAtributosAtualizados() {
-        // Verificar se os atributos na aba atributos foram alterados
-        const st = parseInt(document.getElementById('ST')?.value) || 10;
-        const dx = parseInt(document.getElementById('DX')?.value) || 10;
-        const iq = parseInt(document.getElementById('IQ')?.value) || 10;
-        const ht = parseInt(document.getElementById('HT')?.value) || 10;
-
-        // Se os valores forem diferentes dos atuais, atualizar
-        if (st !== this.estado.atributos.ST || 
-            dx !== this.estado.atributos.DX || 
-            iq !== this.estado.atributos.IQ || 
-            ht !== this.estado.atributos.HT) {
-            
-            this.atualizarAtributosDiretamente();
-        }
-    }
-
-    atualizarAtributosDiretamente() {
-        // Buscar valores diretamente dos inputs
-        const st = parseInt(document.getElementById('ST')?.value) || 10;
-        const dx = parseInt(document.getElementById('DX')?.value) || 10;
-        const iq = parseInt(document.getElementById('IQ')?.value) || 10;
-        const ht = parseInt(document.getElementById('HT')?.value) || 10;
         
-        // Buscar PV e PF totais
-        const pvTotal = parseInt(document.getElementById('PVTotal')?.textContent) || st;
-        const pfTotal = parseInt(document.getElementById('PFTotal')?.textContent) || ht;
-        
-        // Buscar pontos gastos em atributos
-        const pontosGastos = parseInt(document.getElementById('pontosGastos')?.textContent) || 0;
-
-        // Atualizar estado
-        this.estado.atributos.ST = st;
-        this.estado.atributos.DX = dx;
-        this.estado.atributos.IQ = iq;
-        this.estado.atributos.HT = ht;
-        this.estado.atributos.PV.max = pvTotal;
-        this.estado.atributos.PF.max = pfTotal;
-        
-        // Ajustar PV/PF atuais se necessário
-        if (this.estado.atributos.PV.atual > pvTotal) {
-            this.estado.atributos.PV.atual = pvTotal;
-        }
-        if (this.estado.atributos.PF.atual > pfTotal) {
-            this.estado.atributos.PF.atual = pfTotal;
-        }
-
-        // Atualizar pontos gastos em atributos
-        this.estado.pontos.gastosAtributos = pontosGastos;
-
-        // Recalcular tudo
-        this.recalcularSaldo();
+        // Atualizar display completo
         this.atualizarDisplayCompleto();
     }
 
-    processarAtributosAlterados(detalhes) {
+    iniciarMonitoramento() {
+        // Iniciar monitoramento ativo de outras abas
+        this.monitorAtivo = true;
+        
+        setInterval(() => {
+            if (this.monitorAtivo) {
+                this.coletarDadosOutrasAbas();
+            }
+        }, 1000);
+    }
+
+    processarInputDashboard(id, valor) {
+        switch(id) {
+            case 'dashboardRaca':
+                this.estado.identificacao.raca = valor;
+                break;
+            case 'dashboardClasse':
+                this.estado.identificacao.classe = valor;
+                break;
+            case 'dashboardNivel':
+                this.estado.identificacao.nivel = valor;
+                break;
+            case 'dashboardDescricao':
+                this.estado.identificacao.descricao = valor;
+                break;
+            case 'pontosTotais':
+                this.estado.pontos.total = parseInt(valor) || 150;
+                this.recalcularSaldo();
+                this.atualizarDisplayPontos();
+                break;
+            case 'limiteDesvantagens':
+                this.estado.pontos.limiteDesvantagens = parseInt(valor) || -50;
+                this.atualizarDisplayPontos();
+                break;
+            case 'nivelAparencia':
+                this.estado.financeiro.aparencia = valor;
+                this.atualizarDisplayFinanceiro();
+                break;
+            case 'nivelRiqueza':
+                this.estado.financeiro.riqueza = valor;
+                this.calcularRenda();
+                this.atualizarDisplayFinanceiro();
+                break;
+        }
+    }
+
+    atualizarAtributosDoEvento(detalhes) {
         if (!detalhes) return;
         
-        // Atualizar atributos do evento
+        // Atualizar atributos principais
         this.estado.atributos.ST = detalhes.ST || 10;
         this.estado.atributos.DX = detalhes.DX || 10;
         this.estado.atributos.IQ = detalhes.IQ || 10;
@@ -266,27 +237,146 @@ class DashboardManager {
         this.estado.atributos.PV.max = detalhes.PV || this.estado.atributos.ST;
         this.estado.atributos.PF.max = detalhes.PF || this.estado.atributos.HT;
         
-        // Atualizar pontos gastos
-        if (detalhes.pontosGastos !== undefined) {
-            this.estado.pontos.gastosAtributos = detalhes.pontosGastos;
+        // Ajustar valores atuais se necessário
+        if (this.estado.atributos.PV.atual > this.estado.atributos.PV.max) {
+            this.estado.atributos.PV.atual = this.estado.atributos.PV.max;
+        }
+        if (this.estado.atributos.PF.atual > this.estado.atributos.PF.max) {
+            this.estado.atributos.PF.atual = this.estado.atributos.PF.max;
         }
         
-        // Recalcular tudo
+        // Atualizar pontos gastos em atributos
+        if (detalhes.pontosGastos !== undefined) {
+            this.estado.pontos.gastosAtributos = detalhes.pontosGastos;
+        } else {
+            // Calcular pontos gastos manualmente
+            const custoST = (this.estado.atributos.ST - 10) * 10;
+            const custoDX = (this.estado.atributos.DX - 10) * 20;
+            const custoIQ = (this.estado.atributos.IQ - 10) * 20;
+            const custoHT = (this.estado.atributos.HT - 10) * 10;
+            this.estado.pontos.gastosAtributos = custoST + custoDX + custoIQ + custoHT;
+        }
+        
+        // Recalcular saldo e atualizar display
         this.recalcularSaldo();
         this.atualizarDisplayCompleto();
     }
 
-    atualizarVantagensDesvantagens(total) {
-        if (total >= 0) {
-            this.estado.pontos.gastosVantagens = total;
-            this.estado.pontos.gastosDesvantagens = 0;
-        } else {
-            this.estado.pontos.gastosVantagens = 0;
-            this.estado.pontos.gastosDesvantagens = Math.abs(total);
+    atualizarAtributosDiretamente() {
+        // Buscar valores diretamente dos inputs da aba atributos
+        const st = parseInt(document.getElementById('ST')?.value) || 10;
+        const dx = parseInt(document.getElementById('DX')?.value) || 10;
+        const iq = parseInt(document.getElementById('IQ')?.value) || 10;
+        const ht = parseInt(document.getElementById('HT')?.value) || 10;
+        
+        // Buscar PV e PF totais (se disponíveis)
+        const pvElement = document.getElementById('PVTotal');
+        const pfElement = document.getElementById('PFTotal');
+        const pvTotal = pvElement ? parseInt(pvElement.textContent) || st : st;
+        const pfTotal = pfElement ? parseInt(pfElement.textContent) || ht : ht;
+        
+        // Buscar pontos gastos em atributos
+        const pontosGastosElement = document.getElementById('pontosGastos');
+        const pontosGastos = pontosGastosElement ? parseInt(pontosGastosElement.textContent) || 0 : 0;
+        
+        // Atualizar estado
+        this.estado.atributos.ST = st;
+        this.estado.atributos.DX = dx;
+        this.estado.atributos.IQ = iq;
+        this.estado.atributos.HT = ht;
+        this.estado.atributos.PV.max = pvTotal;
+        this.estado.atributos.PF.max = pfTotal;
+        
+        // Ajustar valores atuais se necessário
+        if (this.estado.atributos.PV.atual > pvTotal) {
+            this.estado.atributos.PV.atual = pvTotal;
+        }
+        if (this.estado.atributos.PF.atual > pfTotal) {
+            this.estado.atributos.PF.atual = pfTotal;
         }
         
+        // Atualizar pontos gastos
+        this.estado.pontos.gastosAtributos = pontosGastos;
+        
+        // Recalcular e atualizar
         this.recalcularSaldo();
         this.atualizarDisplayCompleto();
+    }
+
+    coletarDadosOutrasAbas() {
+        // Coletar dados de outras abas periodicamente
+        
+        // Coletar vantagens/desvantagens
+        const vantagensElement = document.getElementById('total-vantagens');
+        if (vantagensElement) {
+            const texto = vantagensElement.textContent || '';
+            const match = texto.match(/[+-]?\d+/);
+            const total = match ? parseInt(match[0]) : 0;
+            
+            if (total >= 0) {
+                this.estado.pontos.gastosVantagens = total;
+                this.estado.pontos.gastosDesvantagens = 0;
+            } else {
+                this.estado.pontos.gastosVantagens = 0;
+                this.estado.pontos.gastosDesvantagens = Math.abs(total);
+            }
+        }
+        
+        // Coletar perícias
+        const periciasElement = document.getElementById('pontos-pericias-total');
+        if (periciasElement) {
+            const texto = periciasElement.textContent || '';
+            const match = texto.match(/\d+/);
+            this.estado.pontos.gastosPericias = match ? parseInt(match[0]) : 0;
+        }
+        
+        // Coletar magias
+        const magiasElement = document.getElementById('total-gasto-magia');
+        if (magiasElement) {
+            const texto = magiasElement.textContent || '';
+            const match = texto.match(/\d+/);
+            this.estado.pontos.gastosMagias = match ? parseInt(match[0]) : 0;
+        }
+        
+        // Coletar técnicas (se existir)
+        const tecnicasElement = document.getElementById('total-tecnicas');
+        if (tecnicasElement) {
+            const texto = tecnicasElement.textContent || '';
+            const match = texto.match(/\d+/);
+            this.estado.pontos.gastosTecnicas = match ? parseInt(match[0]) : 0;
+        }
+        
+        // Coletar peculiaridades (se existir)
+        const peculiaridadesElement = document.getElementById('total-peculiaridades');
+        if (peculiaridadesElement) {
+            const texto = peculiaridadesElement.textContent || '';
+            const match = texto.match(/\d+/);
+            this.estado.pontos.gastosPeculiaridades = match ? parseInt(match[0]) : 0;
+        }
+        
+        // Recalcular saldo
+        this.recalcularSaldo();
+        
+        // Atualizar display
+        this.atualizarDisplayCompleto();
+    }
+
+    atualizarFinanceiro() {
+        const nivelRiqueza = document.getElementById('nivelRiqueza');
+        const nivelAparencia = document.getElementById('nivelAparencia');
+        
+        if (nivelRiqueza) {
+            const texto = nivelRiqueza.options[nivelRiqueza.selectedIndex].text;
+            const nome = texto.split('[')[0].trim();
+            this.estado.financeiro.riqueza = nome;
+            this.calcularRenda();
+        }
+        
+        if (nivelAparencia) {
+            const texto = nivelAparencia.options[nivelAparencia.selectedIndex].text;
+            const nome = texto.split('[')[0].trim();
+            this.estado.financeiro.aparencia = nome;
+        }
     }
 
     calcularRenda() {
@@ -317,10 +407,10 @@ class DashboardManager {
             this.estado.pontos.gastosTecnicas +
             this.estado.pontos.gastosPeculiaridades;
         
-        // Adicionar pontos das desvantagens (são pontos ganhos, então subtraem do gasto)
+        // Adicionar pontos das desvantagens (são pontos ganhos)
         const pontosDesvantagens = this.estado.pontos.gastosDesvantagens;
         
-        // Saldo = Total - Gastos + Desvantagens
+        // Calcular saldo: Total - Gastos + Desvantagens
         const saldoDisponivel = total - gastosPositivos + pontosDesvantagens;
         
         this.estado.pontos.saldoDisponivel = saldoDisponivel;
@@ -345,7 +435,7 @@ class DashboardManager {
     atualizarDisplayAtributos() {
         const { ST, DX, IQ, HT, PV, PF } = this.estado.atributos;
         
-        // Atualizar valores dos atributos
+        // Atualizar atributos
         this.atualizarElemento('atributoST', ST);
         this.atualizarElemento('atributoDX', DX);
         this.atualizarElemento('atributoIQ', IQ);
@@ -365,13 +455,12 @@ class DashboardManager {
         const saldoDisponivel = this.estado.pontos.saldoDisponivel;
         const gastosDesvantagens = this.estado.pontos.gastosDesvantagens;
         const limiteDesvantagens = this.estado.pontos.limiteDesvantagens;
-        const gastosAtributos = this.estado.pontos.gastosAtributos;
         
-        // Atualizar cards de pontos
+        // Atualizar valores
         this.atualizarElemento('saldoDisponivel', saldoDisponivel);
         this.atualizarElemento('desvantagensAtuais', gastosDesvantagens);
         
-        // Atualizar cores baseadas nos valores
+        // Atualizar cores
         const saldoElement = document.getElementById('saldoDisponivel');
         if (saldoElement) {
             saldoElement.style.color = saldoDisponivel < 0 ? '#e74c3c' :
@@ -382,19 +471,6 @@ class DashboardManager {
         if (desvElement) {
             const excedeLimite = Math.abs(gastosDesvantagens) > Math.abs(limiteDesvantagens);
             desvElement.style.color = excedeLimite ? '#e74c3c' : '#9b59b6';
-        }
-        
-        // Atualizar total de pontos gastos (se existir)
-        const pontosGastosElement = document.getElementById('pontosGastos');
-        if (pontosGastosElement) {
-            const gastosTotais = 
-                gastosAtributos + 
-                this.estado.pontos.gastosVantagens + 
-                this.estado.pontos.gastosPericias + 
-                this.estado.pontos.gastosMagias +
-                this.estado.pontos.gastosTecnicas +
-                this.estado.pontos.gastosPeculiaridades;
-            pontosGastosElement.textContent = gastosTotais;
         }
     }
 
@@ -443,10 +519,10 @@ class DashboardManager {
         const outros = this.estado.pontos.gastosTecnicas + this.estado.pontos.gastosPeculiaridades;
         
         // Calcular percentuais
-        const distribAtributos = (gastosAtributos / total) * 100;
-        const distribVantagens = (gastosVantagens / total) * 100;
-        const distribPericias = (gastosPericiasMagias / total) * 100;
-        const distribOutros = (outros / total) * 100;
+        const distribAtributos = Math.min((gastosAtributos / total) * 100, 100);
+        const distribVantagens = Math.min((gastosVantagens / total) * 100, 100);
+        const distribPericias = Math.min((gastosPericiasMagias / total) * 100, 100);
+        const distribOutros = Math.min((outros / total) * 100, 100);
         
         // Atualizar barras
         this.atualizarBarra('distribAtributos', distribAtributos);
@@ -464,15 +540,8 @@ class DashboardManager {
     atualizarElemento(id, valor) {
         const elemento = document.getElementById(id);
         if (elemento) {
-            if (elemento.tagName === 'INPUT') {
-                if (elemento.type === 'number') {
-                    const current = parseInt(elemento.value) || 0;
-                    if (current !== valor) {
-                        elemento.value = valor;
-                    }
-                } else {
-                    elemento.value = valor;
-                }
+            if (elemento.tagName === 'INPUT' || elemento.tagName === 'SELECT') {
+                elemento.value = valor;
             } else {
                 elemento.textContent = valor;
             }
@@ -499,22 +568,22 @@ class DashboardManager {
         this.atualizarDisplayAtributos();
     }
 
-    // Funções para salvar/carregar dados
+    // Funções para salvar/carregar
     coletarDadosParaSalvar() {
         return {
             identificacao: {
-                raca: document.getElementById('dashboardRaca')?.value || '',
-                classe: document.getElementById('dashboardClasse')?.value || '',
-                nivel: document.getElementById('dashboardNivel')?.value || '',
-                descricao: document.getElementById('dashboardDescricao')?.value || ''
+                raca: this.estado.identificacao.raca,
+                classe: this.estado.identificacao.classe,
+                nivel: this.estado.identificacao.nivel,
+                descricao: this.estado.identificacao.descricao
             },
             pontos: {
                 total: this.estado.pontos.total,
-                limiteDesvantagens: this.estado.pontos.limiteDesvantagens
+                limiteDesvantagens: this.estado.pontos.limiteDesvantagens,
+                saldoDisponivel: this.estado.pontos.saldoDisponivel
             },
             atributos: { ...this.estado.atributos },
             financeiro: { ...this.estado.financeiro },
-            foto: this.fotoTemporaria,
             gastos: {
                 atributos: this.estado.pontos.gastosAtributos,
                 vantagens: this.estado.pontos.gastosVantagens,
@@ -524,6 +593,7 @@ class DashboardManager {
                 tecnicas: this.estado.pontos.gastosTecnicas,
                 peculiaridades: this.estado.pontos.gastosPeculiaridades
             },
+            foto: this.fotoTemporaria,
             atualizadoEm: new Date().toISOString()
         };
     }
@@ -533,19 +603,20 @@ class DashboardManager {
         
         // Carregar identificação
         if (dados.identificacao) {
-            this.carregarElemento('dashboardRaca', dados.identificacao.raca);
-            this.carregarElemento('dashboardClasse', dados.identificacao.classe);
-            this.carregarElemento('dashboardNivel', dados.identificacao.nivel);
-            this.carregarElemento('dashboardDescricao', dados.identificacao.descricao);
             this.estado.identificacao = { ...dados.identificacao };
+            this.atualizarElemento('dashboardRaca', dados.identificacao.raca);
+            this.atualizarElemento('dashboardClasse', dados.identificacao.classe);
+            this.atualizarElemento('dashboardNivel', dados.identificacao.nivel);
+            this.atualizarElemento('dashboardDescricao', dados.identificacao.descricao);
         }
         
         // Carregar pontos
         if (dados.pontos) {
             this.estado.pontos.total = dados.pontos.total || 150;
             this.estado.pontos.limiteDesvantagens = dados.pontos.limiteDesvantagens || -50;
-            this.carregarElemento('pontosTotais', this.estado.pontos.total);
-            this.carregarElemento('limiteDesvantagens', this.estado.pontos.limiteDesvantagens);
+            this.estado.pontos.saldoDisponivel = dados.pontos.saldoDisponivel || 150;
+            this.atualizarElemento('pontosTotais', this.estado.pontos.total);
+            this.atualizarElemento('limiteDesvantagens', this.estado.pontos.limiteDesvantagens);
         }
         
         // Carregar atributos
@@ -556,6 +627,8 @@ class DashboardManager {
         // Carregar financeiro
         if (dados.financeiro) {
             this.estado.financeiro = { ...dados.financeiro };
+            this.atualizarElemento('nivelRiqueza', this.estado.financeiro.riqueza);
+            this.atualizarElemento('nivelAparencia', this.estado.financeiro.aparencia);
         }
         
         // Carregar gastos
@@ -569,48 +642,41 @@ class DashboardManager {
             this.estado.pontos.gastosPeculiaridades = dados.gastos.peculiaridades || 0;
         }
         
-        // Recalcular e atualizar
+        // Atualizar tudo
         this.recalcularSaldo();
         this.atualizarDisplayCompleto();
         this.atualizarContadorDescricao();
     }
-
-    carregarElemento(id, valor) {
-        const elemento = document.getElementById(id);
-        if (elemento && valor !== undefined && valor !== null) {
-            if (elemento.tagName === 'INPUT' || elemento.tagName === 'TEXTAREA' || elemento.tagName === 'SELECT') {
-                elemento.value = valor;
-            } else {
-                elemento.textContent = valor;
-            }
-        }
-    }
 }
 
-// Inicialização automática
+// Inicialização automática quando a dashboard carrega
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
+        // Verificar se estamos na aba dashboard
         const dashboardTab = document.getElementById('dashboard');
         if (dashboardTab) {
+            // Inicializar dashboard manager
             window.dashboardManager = new DashboardManager();
             window.dashboardManager.inicializar();
         }
         
-        // Observer para quando a aba dashboard ficar ativa
+        // Observer para detectar quando a dashboard fica ativa
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
-                if (mutation.target.id === 'dashboard' && 
-                    mutation.target.classList.contains('active')) {
+                if (mutation.target.id === 'dashboard' && mutation.target.classList.contains('active')) {
+                    // Se ainda não existe dashboard manager, criar um
                     if (!window.dashboardManager) {
                         window.dashboardManager = new DashboardManager();
                         window.dashboardManager.inicializar();
                     } else {
+                        // Se já existe, apenas atualizar o display
                         window.dashboardManager.atualizarDisplayCompleto();
                     }
                 }
             });
         });
         
+        // Iniciar observer se a dashboard existir
         if (dashboardTab) {
             observer.observe(dashboardTab, { 
                 attributes: true, 
@@ -620,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 300);
 });
 
-// Exportar funções globais
+// Exportar funções para uso global
 window.ajustarPV = function(valor) {
     if (window.dashboardManager) {
         window.dashboardManager.ajustarPV(valor);
