@@ -1,319 +1,381 @@
-// ===========================================
-// SISTEMA DE APARÊNCIA - COMPLETO E FUNCIONAL
-// ===========================================
-
+// caracteristicas-aparencia.js
 class SistemaAparencia {
-    constructor() {
-        this.niveisAparencia = {
-            "-24": {
-                nome: "Horrendo",
-                reacao: -6,
-                desc: "Indescritivelmente monstruoso ou repugnante",
-                cor: "#e74c3c",
-                icone: "fas fa-frown",
-                tipo: "desvantagem"
-            },
-            "-20": {
-                nome: "Monstruoso",
-                reacao: -5,
-                desc: "Horrível e obviamente anormal",
-                cor: "#e67e22",
-                icone: "fas fa-ghost",
-                tipo: "desvantagem"
-            },
-            "-16": {
-                nome: "Hediondo",
-                reacao: -4,
-                desc: "Característica repugnante na aparência",
-                cor: "#f39c12",
-                icone: "fas fa-meh-rolling-eyes",
-                tipo: "desvantagem"
-            },
-            "-8": {
-                nome: "Feio",
-                reacao: -2,
-                desc: "Cabelo seboso, dentes tortos, etc.",
-                cor: "#d35400",
-                icone: "fas fa-meh",
-                tipo: "desvantagem"
-            },
-            "-4": {
-                nome: "Sem Atrativos",
-                reacao: -1,
-                desc: "Algo antipático, mas não específico",
-                cor: "#95a5a6",
-                icone: "fas fa-meh-blank",
-                tipo: "desvantagem"
-            },
-            "0": {
-                nome: "Comum",
-                reacao: 0,
-                desc: "Aparência padrão, sem modificadores",
-                cor: "#3498db",
-                icone: "fas fa-user",
-                tipo: "neutro"
-            },
-            "4": {
-                nome: "Atraente",
-                reacao: 1,
-                desc: "Boa aparência, +1 em testes de reação",
-                cor: "#2ecc71",
-                icone: "fas fa-smile",
-                tipo: "vantagem"
-            },
-            "12": {
-                nome: "Elegante",
-                reacao: { mesmoSexo: 2, outroSexo: 4 },
-                desc: "Poderia entrar em concursos de beleza",
-                cor: "#9b59b6",
-                icone: "fas fa-grin-stars",
-                tipo: "vantagem"
-            },
-            "16": {
-                nome: "Muito Elegante",
-                reacao: { mesmoSexo: 2, outroSexo: 6 },
-                desc: "Poderia vencer concursos de beleza",
-                cor: "#f1c40f",
-                icone: "fas fa-crown",
-                tipo: "vantagem"
-            },
-            "20": {
-                nome: "Lindo",
-                reacao: { mesmoSexo: 2, outroSexo: 8 },
-                desc: "Espécime ideal, aparência divina",
-                cor: "#e74c3c",
-                icone: "fas fa-star",
-                tipo: "vantagem"
-            }
-        };
+  constructor() {
+    this.niveisAparencia = {
+      "horrendo": {
+        pontos: -24,
+        reacao: -6,
+        descricao: "Indescritivelmente monstruoso ou repugnante",
+        icone: "fas fa-frown",
+        tipo: "desvantagem",
+        cor: "#e74c3c"
+      },
+      "monstruoso": {
+        pontos: -20,
+        reacao: -5,
+        descricao: "Horrível e obviamente anormal",
+        icone: "fas fa-ghost",
+        tipo: "desvantagem",
+        cor: "#c0392b"
+      },
+      "hediondo": {
+        pontos: -16,
+        reacao: -4,
+        descricao: "Característica repugnante na aparência",
+        icone: "fas fa-meh-rolling-eyes",
+        tipo: "desvantagem",
+        cor: "#d35400"
+      },
+      "feio": {
+        pontos: -8,
+        reacao: -2,
+        descricao: "Cabelo seboso, dentes tortos, etc.",
+        icone: "fas fa-meh",
+        tipo: "desvantagem",
+        cor: "#e67e22"
+      },
+      "sem-atrativos": {
+        pontos: -4,
+        reacao: -1,
+        descricao: "Algo antipático, mas não específico",
+        icone: "fas fa-meh-blank",
+        tipo: "desvantagem",
+        cor: "#f39c12"
+      },
+      "comum": {
+        pontos: 0,
+        reacao: 0,
+        descricao: "Aparência padrão, sem modificadores",
+        icone: "fas fa-user",
+        tipo: "neutro",
+        cor: "#3498db"
+      },
+      "atraente": {
+        pontos: 4,
+        reacao: 1,
+        descricao: "Boa aparência, +1 em testes de reação",
+        icone: "fas fa-smile",
+        tipo: "vantagem",
+        cor: "#2ecc71"
+      },
+      "elegante": {
+        pontos: 12,
+        reacao: { mesmoSexo: 2, outroSexo: 4 },
+        descricao: "Poderia entrar em concursos de beleza",
+        icone: "fas fa-grin-stars",
+        tipo: "vantagem",
+        cor: "#1abc9c"
+      },
+      "muito-elegante": {
+        pontos: 16,
+        reacao: { mesmoSexo: 2, outroSexo: 6 },
+        descricao: "Poderia vencer concursos de beleza",
+        icone: "fas fa-crown",
+        tipo: "vantagem",
+        cor: "#9b59b6"
+      },
+      "lindo": {
+        pontos: 20,
+        reacao: { mesmoSexo: 2, outroSexo: 8 },
+        descricao: "Espécime ideal, aparência divina",
+        icone: "fas fa-star",
+        tipo: "vantagem",
+        cor: "#f1c40f"
+      }
+    };
 
-        this.pontosAtuais = 0;
-        this.nivelAtual = 'Comum';
-        
-        this.inicializar();
-    }
+    this.nivelAtual = 'comum';
+    this.pontosAtuais = 0;
+    this.inicializado = false;
+  }
 
-    inicializar() {
-        const select = document.getElementById('nivelAparencia');
-        if (!select) {
-            console.warn('Select nivelAparencia não encontrado');
-            return;
-        }
-        
-        // Configurar evento de mudança
-        select.addEventListener('change', (e) => {
-            this.atualizarAparencia(e.target.value);
-        });
-        
-        // Inicializar com valor atual do select
-        const valorInicial = select.value;
-        if (valorInicial) {
-            this.atualizarAparencia(valorInicial);
-        } else {
-            // Se não tem valor, forçar para "Comum"
-            select.value = "0";
-            this.atualizarAparencia("0");
-        }
-    }
+  inicializar() {
+    if (this.inicializado) return;
+    
+    this.configurarEventos();
+    this.atualizarDisplayAparencia();
+    this.inicializado = true;
+    this.notificarSistemaPontos();
+    
+    console.log('SistemaAparencia inicializado com sucesso!');
+  }
 
-    atualizarAparencia(valor) {
-        const nivel = this.niveisAparencia[valor];
-        if (!nivel) {
-            console.error('Nível de aparência inválido:', valor);
-            return;
-        }
-        
-        this.pontosAtuais = parseInt(valor);
-        this.nivelAtual = nivel.nome;
-        
-        this.atualizarDisplayAparencia(valor, nivel);
-        this.atualizarBadgePontos();
-        this.notificarMudancaPontos();
-        this.atualizarResumoCaracteristicas();
-    }
-
-    atualizarDisplayAparencia(valor, nivel) {
-        const display = document.getElementById('displayAparencia');
-        if (!display) return;
-        
-        let textoReacao = '';
-        if (typeof nivel.reacao === 'object') {
-            textoReacao = `Reação: +${nivel.reacao.outroSexo} (outro sexo), +${nivel.reacao.mesmoSexo} (mesmo sexo)`;
-        } else {
-            const sinal = nivel.reacao >= 0 ? '+' : '';
-            textoReacao = `Reação: ${sinal}${nivel.reacao}`;
-        }
-        
-        display.innerHTML = `
-            <strong>${nivel.nome}</strong>
-            <br><small>${textoReacao} | ${nivel.desc}</small>
-        `;
-        
-        // Estilo baseado no tipo
-        if (nivel.tipo === 'vantagem') {
-            display.style.background = 'rgba(46, 204, 113, 0.1)';
-            display.style.border = '1px solid #2ecc71';
-        } else if (nivel.tipo === 'desvantagem') {
-            display.style.background = 'rgba(231, 76, 60, 0.1)';
-            display.style.border = '1px solid #e74c3c';
-        } else {
-            display.style.background = 'rgba(52, 152, 219, 0.1)';
-            display.style.border = '1px solid #3498db';
-        }
-        
-        display.style.padding = '10px';
-        display.style.borderRadius = '6px';
-        display.style.marginTop = '10px';
-    }
-
-    atualizarBadgePontos() {
-        const badge = document.getElementById('pontosAparencia');
-        if (!badge) return;
-        
-        const nivel = this.niveisAparencia[this.pontosAtuais.toString()];
-        if (!nivel) return;
-        
-        const pontosTexto = this.pontosAtuais >= 0 ? `+${this.pontosAtuais} pts` : `${this.pontosAtuais} pts`;
-        
-        badge.textContent = pontosTexto;
-        badge.style.background = nivel.cor;
-        badge.style.color = '#fff';
-        badge.style.padding = '4px 8px';
-        badge.style.borderRadius = '4px';
-        badge.style.fontSize = '0.9em';
-        badge.style.fontWeight = 'bold';
-    }
-
-    atualizarResumoCaracteristicas() {
-        const resumo = document.getElementById('resumoAparencia');
-        if (resumo) {
-            resumo.textContent = this.pontosAtuais >= 0 ? `+${this.pontosAtuais} pts` : `${this.pontosAtuais} pts`;
-            resumo.style.color = this.pontosAtuais >= 0 ? '#2ecc71' : '#e74c3c';
-            resumo.style.fontWeight = 'bold';
-        }
-        
-        // Atualizar total da seção 1
-        this.atualizarTotalSecao1();
-        
-        // Atualizar total geral de características
-        this.atualizarTotalCaracteristicas();
-    }
-
-    atualizarTotalSecao1() {
-        const selectRiqueza = document.getElementById('nivelRiqueza');
-        let pontosRiqueza = 0;
-        
-        if (selectRiqueza) {
-            pontosRiqueza = parseInt(selectRiqueza.value) || 0;
-        }
-        
-        const totalSecao1 = this.pontosAtuais + pontosRiqueza;
-        const elSecao1 = document.getElementById('totalSecao1');
-        
-        if (elSecao1) {
-            elSecao1.textContent = totalSecao1 >= 0 ? `+${totalSecao1} pts` : `${totalSecao1} pts`;
-        }
-    }
-
-    atualizarTotalCaracteristicas() {
-        // Calcular total considerando outras características
-        let total = this.pontosAtuais;
-        
-        // Adicionar pontos de riqueza
-        const selectRiqueza = document.getElementById('nivelRiqueza');
-        if (selectRiqueza) {
-            total += parseInt(selectRiqueza.value) || 0;
-        }
-        
-        // TODO: Adicionar pontos de idiomas e características físicas quando implementados
-        
-        const elTotal = document.getElementById('totalCaracteristicas');
-        if (elTotal) {
-            elTotal.textContent = total >= 0 ? `+${total} pts` : `${total} pts`;
-        }
-    }
-
-    notificarMudancaPontos() {
-        // Disparar evento para o dashboard
-        const evento = new CustomEvent('pontosAparenciaAtualizados', {
-            detail: {
-                pontos: this.pontosAtuais,
-                nivel: this.nivelAtual
-            }
-        });
-        document.dispatchEvent(evento);
-    }
-
-    getPontos() {
-        return this.pontosAtuais;
-    }
-
-    getNivel() {
-        return this.nivelAtual;
-    }
-
-    getDados() {
-        const nivel = this.niveisAparencia[this.pontosAtuais.toString()];
-        return {
-            pontos: this.pontosAtuais,
-            nivel: this.nivelAtual,
-            nome: nivel?.nome || 'Desconhecido',
-            reacao: nivel?.reacao || 0,
-            tipo: nivel?.tipo || 'neutro'
-        };
-    }
-}
-
-// ===========================================
-// INICIALIZAÇÃO DO SISTEMA
-// ===========================================
-
-let sistemaAparenciaInstance = null;
-
-function inicializarSistemaAparencia() {
-    // Verificar se estamos na aba de características
+  configurarEventos() {
     const selectAparencia = document.getElementById('nivelAparencia');
-    
-    if (selectAparencia && selectAparencia.tagName === 'SELECT') {
-        if (!sistemaAparenciaInstance) {
-            sistemaAparenciaInstance = new SistemaAparencia();
-            window.sistemaAparencia = sistemaAparenciaInstance;
-            
-            // Forçar atualização inicial
-            setTimeout(() => {
-                const valor = selectAparencia.value;
-                if (valor && sistemaAparenciaInstance) {
-                    sistemaAparenciaInstance.atualizarAparencia(valor);
-                }
-            }, 100);
-        }
+    if (selectAparencia) {
+      selectAparencia.addEventListener('change', (e) => {
+        this.nivelAtual = this.obterNomePorPontos(parseInt(e.target.value));
+        this.pontosAtuais = parseInt(e.target.value);
+        this.atualizarDisplayAparencia();
+        this.notificarSistemaPontos();
+        this.animarMudanca();
+      });
     }
+  }
+
+  atualizarDisplayAparencia() {
+    const select = document.getElementById('nivelAparencia');
+    const display = document.getElementById('displayAparencia');
+    const badge = document.getElementById('pontosAparencia');
+    
+    if (!select || !display || !badge) {
+      console.error('Elementos do display de aparência não encontrados!');
+      return;
+    }
+
+    const valor = parseInt(select.value) || 0;
+    const nivel = this.obterNivelPorPontos(valor);
+    
+    if (nivel) {
+      let textoReacao = '';
+      if (typeof nivel.reacao === 'object') {
+        textoReacao = `Reação: +${nivel.reacao.outroSexo} (outro sexo), +${nivel.reacao.mesmoSexo} (mesmo sexo)`;
+      } else {
+        textoReacao = `Reação: ${nivel.reacao >= 0 ? '+' : ''}${nivel.reacao}`;
+      }
+      
+      // Atualizar display com a nova estrutura HTML
+      const displayHeader = display.querySelector('.display-header');
+      const displayDesc = display.querySelector('.display-desc');
+      
+      if (displayHeader) {
+        displayHeader.innerHTML = `
+          <i class="${nivel.icone}" style="color: ${nivel.cor};"></i>
+          <div>
+            <strong>${this.obterNomePorPontos(valor)}</strong>
+            <small>${textoReacao}</small>
+          </div>
+        `;
+      }
+      
+      if (displayDesc) {
+        displayDesc.textContent = nivel.descricao;
+      }
+
+      // Atualizar badge
+      const pontosTexto = valor >= 0 ? `+${valor} pts` : `${valor} pts`;
+      badge.textContent = pontosTexto;
+      
+      // Estilizar badge conforme tipo
+      switch(nivel.tipo) {
+        case 'vantagem':
+          badge.style.background = 'linear-gradient(145deg, rgba(46, 204, 113, 0.2), rgba(39, 174, 96, 0.3))';
+          badge.style.borderColor = '#2ecc71';
+          badge.style.color = '#2ecc71';
+          break;
+        case 'desvantagem':
+          badge.style.background = 'linear-gradient(145deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.3))';
+          badge.style.borderColor = '#e74c3c';
+          badge.style.color = '#e74c3c';
+          break;
+        default:
+          badge.style.background = 'linear-gradient(145deg, rgba(52, 152, 219, 0.2), rgba(41, 128, 185, 0.3))';
+          badge.style.borderColor = '#3498db';
+          badge.style.color = '#3498db';
+      }
+    }
+  }
+
+  animarMudanca() {
+    const badge = document.getElementById('pontosAparencia');
+    if (badge) {
+      badge.style.transform = 'scale(1.2)';
+      setTimeout(() => {
+        badge.style.transform = 'scale(1)';
+      }, 300);
+    }
+  }
+
+  getPontosAparencia() {
+    const select = document.getElementById('nivelAparencia');
+    return select ? parseInt(select.value) || 0 : 0;
+  }
+
+  getTipoPontos() {
+    const pontos = this.getPontosAparencia();
+    if (pontos > 0) return 'vantagem';
+    if (pontos < 0) return 'desvantagem';
+    return 'neutro';
+  }
+
+  getInfoAparencia() {
+    const pontos = this.getPontosAparencia();
+    const nivel = this.obterNivelPorPontos(pontos);
+    const nome = this.obterNomePorPontos(pontos);
+    
+    return {
+      pontos,
+      tipo: this.getTipoPontos(),
+      nome,
+      descricao: nivel?.descricao || 'Desconhecido',
+      reacao: nivel?.reacao || 0,
+      icone: nivel?.icone || 'fas fa-user'
+    };
+  }
+
+  notificarSistemaPontos() {
+    const pontos = this.getPontosAparencia();
+    const tipo = this.getTipoPontos();
+    
+    const evento = new CustomEvent('aparenciaPontosAtualizados', {
+      detail: {
+        pontos: pontos,
+        tipo: tipo,
+        nivel: this.obterNomePorPontos(pontos),
+        info: this.getInfoAparencia(),
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+    document.dispatchEvent(evento);
+    console.log('Evento aparenciaPontosAtualizados disparado:', evento.detail);
+  }
+
+  obterNivelPorPontos(pontos) {
+    return Object.values(this.niveisAparencia).find(nivel => nivel.pontos === pontos);
+  }
+
+  obterNomePorPontos(pontos) {
+    const entry = Object.entries(this.niveisAparencia).find(([key, nivel]) => nivel.pontos === pontos);
+    return entry ? this.formatarNome(entry[0]) : 'Desconhecido';
+  }
+
+  formatarNome(key) {
+    return key.split('-')
+      .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1))
+      .join(' ');
+  }
+
+  calcularReacao(sexoPersonagem, sexoAlvo) {
+    const nivel = this.obterNivelPorPontos(this.getPontosAparencia());
+    if (!nivel) return 0;
+    
+    if (typeof nivel.reacao === 'object') {
+      return sexoPersonagem === sexoAlvo ? nivel.reacao.mesmoSexo : nivel.reacao.outroSexo;
+    }
+    
+    return nivel.reacao || 0;
+  }
+
+  exportarDados() {
+    return {
+      aparencia: {
+        pontos: this.getPontosAparencia(),
+        tipo: this.getTipoPontos(),
+        nome: this.obterNomePorPontos(this.getPontosAparencia()),
+        descricao: this.obterNivelPorPontos(this.getPontosAparencia())?.descricao,
+        nivel: this.getPontosAparencia(),
+        reacao: this.obterNivelPorPontos(this.getPontosAparencia())?.reacao
+      }
+    };
+  }
+
+  carregarDados(dados) {
+    if (dados.aparencia && dados.aparencia.nivel !== undefined) {
+      const select = document.getElementById('nivelAparencia');
+      if (select) {
+        select.value = dados.aparencia.nivel;
+        this.nivelAtual = dados.aparencia.nome;
+        this.pontosAtuais = dados.aparencia.nivel;
+        this.atualizarDisplayAparencia();
+        this.notificarSistemaPontos();
+        
+        console.log('Dados de aparência carregados:', dados.aparencia);
+      }
+    }
+  }
+
+  validarAparencia() {
+    const pontos = this.getPontosAparencia();
+    const tipo = this.getTipoPontos();
+    const nome = this.obterNomePorPontos(pontos);
+    
+    return {
+      valido: true,
+      pontos: pontos,
+      tipo: tipo,
+      nome: nome,
+      mensagem: `Aparência: ${nome} (${pontos >= 0 ? '+' : ''}${pontos} pts) - ${tipo === 'vantagem' ? 'Vantagem' : tipo === 'desvantagem' ? 'Desvantagem' : 'Neutro'}`
+    };
+  }
+
+  reset() {
+    const select = document.getElementById('nivelAparencia');
+    if (select) {
+      select.value = 0;
+      this.nivelAtual = 'comum';
+      this.pontosAtuais = 0;
+      this.atualizarDisplayAparencia();
+      this.notificarSistemaPontos();
+    }
+  }
 }
 
-// Inicializar quando a aba de características for carregada
+// Instância global
+let sistemaAparencia;
+
+// Inicialização quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar se já estiver na aba de características
-    if (document.getElementById('caracteristicas')?.classList.contains('active')) {
-        inicializarSistemaAparencia();
+  sistemaAparencia = new SistemaAparencia();
+  
+  // Verificar se a aba de características está ativa
+  const tabCaracteristicas = document.getElementById('caracteristicas');
+  if (tabCaracteristicas && tabCaracteristicas.style.display !== 'none') {
+    sistemaAparencia.inicializar();
+  }
+});
+
+// Inicializar quando a aba for mostrada
+document.addEventListener('tabAtivada', function(e) {
+  if (e.detail.tabId === 'caracteristicas') {
+    if (!sistemaAparencia) {
+      sistemaAparencia = new SistemaAparencia();
     }
-    
-    // Inicializar quando mudar para a aba de características
-    document.addEventListener('tabChanged', function(e) {
-        if (e.detail.tab === 'caracteristicas') {
-            setTimeout(inicializarSistemaAparencia, 50);
-        }
-    });
+    sistemaAparencia.inicializar();
+  }
+});
+
+// Listeners para eventos do sistema
+document.addEventListener('caracteristicasCarregadas', function() {
+  if (sistemaAparencia) {
+    sistemaAparencia.inicializar();
+  }
+});
+
+document.addEventListener('resetCaracteristicas', function() {
+  if (sistemaAparencia) {
+    sistemaAparencia.reset();
+  }
 });
 
 // Exportar para uso global
-window.SistemaAparencia = SistemaAparencia;
-window.inicializarSistemaAparencia = inicializarSistemaAparencia;
+if (typeof window !== 'undefined') {
+  window.SistemaAparencia = SistemaAparencia;
+  window.sistemaAparencia = sistemaAparencia;
+}
 
-// Função para forçar atualização se necessário
-window.atualizarAparenciaManual = function(valor) {
-    if (sistemaAparenciaInstance) {
-        sistemaAparenciaInstance.atualizarAparencia(valor);
-        return true;
+// Debug helper
+if (process.env.NODE_ENV === 'development') {
+  console.log('SistemaAparencia.js carregado');
+  
+  // Expor métodos de debug
+  window.debugAparencia = {
+    getInfo: () => sistemaAparencia?.getInfoAparencia(),
+    getPontos: () => sistemaAparencia?.getPontosAparencia(),
+    setNivel: (pontos) => {
+      const select = document.getElementById('nivelAparencia');
+      if (select && sistemaAparencia) {
+        select.value = pontos;
+        sistemaAparencia.nivelAtual = sistemaAparencia.obterNomePorPontos(pontos);
+        sistemaAparencia.pontosAtuais = pontos;
+        sistemaAparencia.atualizarDisplayAparencia();
+        sistemaAparencia.notificarSistemaPontos();
+      }
     }
-    return false;
-};
+  };
+}
+
+// Module export (se usando módulos)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SistemaAparencia;
+}
