@@ -1,5 +1,5 @@
 // ===== SISTEMA DE ATRIBUTOS - GURPS =====
-// Versão Completa - Todos os cálculos funcionais
+// Versão Completa com Comunicação com Dashboard
 
 // Tabelas de referência
 const danoTable = {
@@ -129,7 +129,7 @@ function calcularTudo() {
     calcularCarga();
     calcularPontosGastos();
     calcularTotais();
-    dispararEventoAlteracao();
+    notificarDashboard();
 }
 
 function atualizarBases() {
@@ -254,36 +254,56 @@ function calcularTotais() {
     }
 }
 
-// ===== EVENTOS E INICIALIZAÇÃO =====
+// ===== COMUNICAÇÃO COM DASHBOARD =====
 
-function dispararEventoAlteracao() {
-    // Verificar se todos os elementos necessários existem
-    const pvTotalElement = document.getElementById('PVTotal');
-    const pfTotalElement = document.getElementById('PFTotal');
-    const vontadeTotalElement = document.getElementById('VontadeTotal');
-    const percepcaoTotalElement = document.getElementById('PercepcaoTotal');
-    const deslocamentoTotalElement = document.getElementById('DeslocamentoTotal');
-    const pontosGastosElement = document.getElementById('pontosGastos');
+function notificarDashboard() {
+    // Calcular pontos gastos em atributos
+    const pontosAtributos = (estadoAtributos.ST - 10) * 10 +
+                           (estadoAtributos.DX - 10) * 20 +
+                           (estadoAtributos.IQ - 10) * 20 +
+                           (estadoAtributos.HT - 10) * 10;
     
-    // Se algum elemento crítico não existe, não disparar evento
-    if (!pvTotalElement || !pfTotalElement || !pontosGastosElement) return;
-    
-    const evento = new CustomEvent('atributosAlterados', {
+    // Criar evento para o dashboard
+    const eventoAtributos = new CustomEvent('atributosAlterados', {
         detail: {
             ST: estadoAtributos.ST,
             DX: estadoAtributos.DX,
             IQ: estadoAtributos.IQ,
             HT: estadoAtributos.HT,
-            PV: parseInt(pvTotalElement.textContent),
-            PF: parseInt(pfTotalElement.textContent),
-            Vontade: vontadeTotalElement ? parseInt(vontadeTotalElement.textContent) : estadoAtributos.IQ,
-            Percepcao: percepcaoTotalElement ? parseInt(percepcaoTotalElement.textContent) : estadoAtributos.IQ,
-            Deslocamento: deslocamentoTotalElement ? parseFloat(deslocamentoTotalElement.textContent) : 5.00,
-            pontosGastos: parseInt(pontosGastosElement.textContent)
+            PV: Math.max(estadoAtributos.ST + estadoAtributos.bonusPV, 1),
+            PF: Math.max(estadoAtributos.HT + estadoAtributos.bonusPF, 1),
+            pontosAtributos: pontosAtributos,
+            atualizadoEm: new Date().toISOString()
         }
     });
-    document.dispatchEvent(evento);
+    
+    // Disparar evento para o dashboard
+    document.dispatchEvent(eventoAtributos);
+    
+    console.log('📤 Dados enviados para Dashboard:', eventoAtributos.detail);
+    
+    // Se o dashboard manager estiver disponível, atualizar diretamente
+    if (window.dashboardManager && typeof window.dashboardManager.atualizarAtributos === 'function') {
+        window.dashboardManager.atualizarAtributos(
+            estadoAtributos.ST,
+            estadoAtributos.DX,
+            estadoAtributos.IQ,
+            estadoAtributos.HT
+        );
+    } else {
+        // Se não existir ainda, tentar função global
+        if (window.atualizarDashboardAtributos) {
+            window.atualizarDashboardAtributos(
+                estadoAtributos.ST,
+                estadoAtributos.DX,
+                estadoAtributos.IQ,
+                estadoAtributos.HT
+            );
+        }
+    }
 }
+
+// ===== EVENTOS E INICIALIZAÇÃO =====
 
 function inicializarAtributos() {
     // Verificar se estamos na aba de atributos
@@ -302,10 +322,16 @@ function inicializarAtributos() {
         }
     }
     
+    console.log('🎯 Inicializando sistema de atributos...');
+    
     // Inicializar inputs dos atributos principais
     ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
         const input = document.getElementById(atributo);
         if (input) {
+            // Salvar valor inicial
+            estadoAtributos[atributo] = parseInt(input.value) || 10;
+            
+            // Configurar eventos
             input.addEventListener('change', function() {
                 estadoAtributos[atributo] = parseInt(this.value) || 10;
                 calcularTudo();
@@ -322,6 +348,11 @@ function inicializarAtributos() {
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById(`bonus${atributo}`);
         if (input) {
+            // Salvar valor inicial
+            const chave = `bonus${atributo}`;
+            estadoAtributos[chave] = parseInt(input.value) || 0;
+            
+            // Configurar eventos
             input.addEventListener('change', function() {
                 atualizarBonus(atributo, this.value);
             });
@@ -337,6 +368,9 @@ function inicializarAtributos() {
     
     // Calcular tudo pela primeira vez
     calcularTudo();
+    
+    // Forçar notificação inicial para o dashboard
+    setTimeout(notificarDashboard, 300);
 }
 
 // ===== FUNÇÕES PARA FIREBASE =====
@@ -400,10 +434,13 @@ window.atualizarBonus = atualizarBonus;
 window.inicializarAtributos = inicializarAtributos;
 window.obterDadosParaSalvar = obterDadosParaSalvar;
 window.carregarDados = carregarDados;
+window.notificarDashboard = notificarDashboard; // Exportar para testes
 
 // ===== INICIALIZAÇÃO AUTOMÁTICA =====
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📋 DOM Carregado - Sistema de Atributos pronto');
+    
     // Aguardar um pouco e verificar se estamos na aba de atributos
     setTimeout(() => {
         const abaAtributos = document.getElementById('atributos');
@@ -416,8 +453,15 @@ document.addEventListener('DOMContentLoaded', function() {
 // Escutar quando a aba mudar para inicializar atributos
 document.addEventListener('tabChanged', function(e) {
     if (e.detail && e.detail.tab === 'atributos') {
+        console.log('🔄 Tab mudou para Atributos, inicializando...');
         setTimeout(inicializarAtributos, 100);
     }
+});
+
+// Escutar se o dashboard pedir dados
+document.addEventListener('dashboardSolicitaAtributos', function() {
+    console.log('📨 Dashboard solicitou dados de atributos');
+    notificarDashboard();
 });
 
 // ===== COMPATIBILIDADE COM O CARD DE PONTOS =====
@@ -449,3 +493,13 @@ calcularTudo = (function(original) {
 
 // Executar uma vez quando a página carregar
 setTimeout(verificarEAtualizarCardPontos, 300);
+
+// ===== TESTE AUTOMÁTICO =====
+// Testar comunicação após 1 segundo
+setTimeout(() => {
+    console.log('🔍 Testando comunicação com Dashboard...');
+    // Criar um evento de teste
+    const eventoTeste = new Event('atributosAlterados');
+    document.dispatchEvent(eventoTeste);
+    console.log('✅ Evento de teste disparado');
+}, 1000);
