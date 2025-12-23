@@ -1,12 +1,23 @@
-// dashboard.js - VERSÃO 100% FUNCIONAL
+// dashboard.js - VERSÃO CORRIGIDA (PV/PF FUNCIONANDO)
 class DashboardManager {
     constructor() {
         console.log('🔥 DashboardManager criado');
         this.estado = {
-            pontos: { total: 150, saldoDisponivel: 150 },
+            pontos: { 
+                total: 150, 
+                saldoDisponivel: 150,
+                limiteDesvantagens: -50 
+            },
             caracteristicas: { aparência: 0 },
-            atributos: { ST: 10, DX: 10, IQ: 10, HT: 10 },
-            identificacao: { raca: '', classe: '' },
+            atributos: { 
+                ST: 10, 
+                DX: 10, 
+                IQ: 10, 
+                HT: 10,
+                PV: { atual: 10, max: 10 },
+                PF: { atual: 10, max: 10 }
+            },
+            identificacao: { raca: '', classe: '', descricao: '' },
             financeiro: { riqueza: 'Médio' }
         };
         this.inicializado = false;
@@ -17,44 +28,30 @@ class DashboardManager {
         if (this.inicializado) return;
         console.log('🚀 INICIANDO DASHBOARD');
         
-        // 1. VERIFICAR SE OS ELEMENTOS EXISTEM
-        this.verificarElementos();
-        
-        // 2. CONFIGURAR EVENTOS BÁSICOS
+        // 1. CONFIGURAR EVENTOS BÁSICOS
         this.configurarEventosBasicos();
         
-        // 3. CONFIGURAR FOTO
+        // 2. CONFIGURAR FOTO
         this.configurarSistemaFoto();
         
-        // 4. INICIAR MONITORAMENTO
+        // 3. CONFIGURAR BOTÕES PV/PF
+        this.configurarBotoesVitalidade();
+        
+        // 4. CARREGAR VALORES INICIAIS
+        this.carregarValoresIniciais();
+        
+        // 5. INICIAR MONITORAMENTO
         this.iniciarMonitoramento();
         
-        // 5. ATUALIZAR TUDO
+        // 6. ATUALIZAR TUDO
         this.atualizarTudo();
         
         this.inicializado = true;
         console.log('✅ Dashboard inicializada!');
     }
 
-    // ================ VERIFICAÇÃO ================
-    verificarElementos() {
-        console.log('🔍 Verificando elementos:');
-        const elementos = [
-            'dashboardRaca', 'dashboardClasse', 'dashboardNivel',
-            'dashboardDescricao', 'pontosTotais', 'limiteDesvantagens',
-            'saldoDisponivel', 'fotoUpload', 'fotoPreview'
-        ];
-        
-        elementos.forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) console.warn(`⚠️ Elemento #${id} não encontrado!`);
-        });
-    }
-
     // ================ EVENTOS BÁSICOS ================
     configurarEventosBasicos() {
-        console.log('⚙️ Configurando eventos básicos');
-        
         // Pontos totais
         const pontosInput = document.getElementById('pontosTotais');
         if (pontosInput) {
@@ -94,6 +91,70 @@ class DashboardManager {
         }
     }
 
+    // ================ BOTÕES PV/PF ================
+    configurarBotoesVitalidade() {
+        console.log('❤️ Configurando botões PV/PF');
+        
+        // Botão PV +
+        const btnPVMais = document.getElementById('btnPVMais');
+        if (btnPVMais) {
+            btnPVMais.addEventListener('click', () => this.ajustarPV(1));
+        }
+        
+        // Botão PV -
+        const btnPVMenos = document.getElementById('btnPVMenos');
+        if (btnPVMenos) {
+            btnPVMenos.addEventListener('click', () => this.ajustarPV(-1));
+        }
+        
+        // Botão PF +
+        const btnPFMais = document.getElementById('btnPFMais');
+        if (btnPFMais) {
+            btnPFMais.addEventListener('click', () => this.ajustarPF(1));
+        }
+        
+        // Botão PF -
+        const btnPFMenos = document.getElementById('btnPFMenos');
+        if (btnPFMenos) {
+            btnPFMenos.addEventListener('click', () => this.ajustarPF(-1));
+        }
+        
+        // Barras clicáveis
+        ['barraPV', 'barraPF'].forEach(id => {
+            const barra = document.getElementById(id);
+            if (barra) {
+                barra.addEventListener('click', (e) => this.clicarBarraVitalidade(id, e));
+            }
+        });
+    }
+
+    ajustarPV(valor) {
+        const novoPV = this.estado.atributos.PV.atual + valor;
+        this.estado.atributos.PV.atual = Math.max(0, Math.min(novoPV, this.estado.atributos.PV.max));
+        this.atualizarDisplayVitalidade();
+    }
+
+    ajustarPF(valor) {
+        const novoPF = this.estado.atributos.PF.atual + valor;
+        this.estado.atributos.PF.atual = Math.max(0, Math.min(novoPF, this.estado.atributos.PF.max));
+        this.atualizarDisplayVitalidade();
+    }
+
+    clicarBarraVitalidade(tipo, e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const percentual = (e.clientX - rect.left) / rect.width;
+        
+        if (tipo === 'barraPV') {
+            const novoValor = Math.round(percentual * this.estado.atributos.PV.max);
+            this.estado.atributos.PV.atual = Math.max(0, Math.min(novoValor, this.estado.atributos.PV.max));
+        } else if (tipo === 'barraPF') {
+            const novoValor = Math.round(percentual * this.estado.atributos.PF.max);
+            this.estado.atributos.PF.atual = Math.max(0, Math.min(novoValor, this.estado.atributos.PF.max));
+        }
+        
+        this.atualizarDisplayVitalidade();
+    }
+
     // ================ SISTEMA DE FOTO ================
     configurarSistemaFoto() {
         const fotoUpload = document.getElementById('fotoUpload');
@@ -128,30 +189,6 @@ class DashboardManager {
                 fotoUpload.value = '';
             });
         }
-        
-        // Drag & drop
-        const fotoWrapper = document.getElementById('fotoWrapper');
-        if (fotoWrapper) {
-            fotoWrapper.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                fotoWrapper.style.borderColor = 'var(--primary-gold)';
-            });
-            
-            fotoWrapper.addEventListener('dragleave', () => {
-                fotoWrapper.style.borderColor = '';
-            });
-            
-            fotoWrapper.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fotoWrapper.style.borderColor = '';
-                if (e.dataTransfer.files[0]) {
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(e.dataTransfer.files[0]);
-                    fotoUpload.files = dataTransfer.files;
-                    fotoUpload.dispatchEvent(new Event('change'));
-                }
-            });
-        }
     }
 
     // ================ MONITORAMENTO ================
@@ -170,14 +207,29 @@ class DashboardManager {
                 if (this.estado.atributos[atributo] !== valor) {
                     this.estado.atributos[atributo] = valor;
                     this.atualizarSaldo();
+                    this.atualizarMaximos();
                 }
             }
         });
     }
 
-    // ================ ATUALIZAÇÕES ================
+    // ================ CÁLCULOS ================
+    atualizarMaximos() {
+        // Atualizar máximos baseados em ST e HT
+        this.estado.atributos.PV.max = this.estado.atributos.ST;
+        this.estado.atributos.PF.max = this.estado.atributos.HT;
+        
+        // Ajustar valores atuais se necessário
+        if (this.estado.atributos.PV.atual > this.estado.atributos.PV.max) {
+            this.estado.atributos.PV.atual = this.estado.atributos.PV.max;
+        }
+        if (this.estado.atributos.PF.atual > this.estado.atributos.PF.max) {
+            this.estado.atributos.PF.atual = this.estado.atributos.PF.max;
+        }
+    }
+
     atualizarSaldo() {
-        // Cálculo simples dos pontos gastos em atributos
+        // Cálculo dos pontos gastos em atributos
         const stCusto = (this.estado.atributos.ST - 10) * 10;
         const dxCusto = (this.estado.atributos.DX - 10) * 20;
         const iqCusto = (this.estado.atributos.IQ - 10) * 20;
@@ -187,11 +239,27 @@ class DashboardManager {
         const saldo = this.estado.pontos.total - gastosAtributos;
         
         this.estado.pontos.saldoDisponivel = saldo;
-        
-        // Atualizar display
         this.atualizarDisplay();
     }
 
+    // ================ CARREGAR VALORES ================
+    carregarValoresIniciais() {
+        // Carregar valores dos inputs se existirem
+        const pontosInput = document.getElementById('pontosTotais');
+        if (pontosInput) {
+            this.estado.pontos.total = parseInt(pontosInput.value) || 150;
+        }
+        
+        const limiteInput = document.getElementById('limiteDesvantagens');
+        if (limiteInput) {
+            this.estado.pontos.limiteDesvantagens = parseInt(limiteInput.value) || -50;
+        }
+        
+        // Atualizar máximos
+        this.atualizarMaximos();
+    }
+
+    // ================ ATUALIZAÇÕES DE DISPLAY ================
     atualizarDisplay() {
         // Saldo
         const saldoEl = document.getElementById('saldoDisponivel');
@@ -208,9 +276,36 @@ class DashboardManager {
         });
     }
 
+    atualizarDisplayVitalidade() {
+        // PV
+        const valorPV = document.getElementById('valorPV');
+        if (valorPV) {
+            valorPV.textContent = `${this.estado.atributos.PV.atual}/${this.estado.atributos.PV.max}`;
+        }
+        
+        const barraPV = document.getElementById('barraPV');
+        if (barraPV) {
+            const porcentagemPV = (this.estado.atributos.PV.atual / this.estado.atributos.PV.max) * 100;
+            barraPV.style.width = `${porcentagemPV}%`;
+        }
+        
+        // PF
+        const valorPF = document.getElementById('valorPF');
+        if (valorPF) {
+            valorPF.textContent = `${this.estado.atributos.PF.atual}/${this.estado.atributos.PF.max}`;
+        }
+        
+        const barraPF = document.getElementById('barraPF');
+        if (barraPF) {
+            const porcentagemPF = (this.estado.atributos.PF.atual / this.estado.atributos.PF.max) * 100;
+            barraPF.style.width = `${porcentagemPF}%`;
+        }
+    }
+
     atualizarTudo() {
         this.atualizarSaldo();
         this.atualizarDisplay();
+        this.atualizarDisplayVitalidade();
     }
 
     // ================ GETTERS ================
@@ -224,7 +319,6 @@ class DashboardManager {
 
     // ================ EVENTOS EXTERNOS ================
     configurarEventosExternos() {
-        // Quando aparência for atualizada
         document.addEventListener('aparenciaAtualizada', (e) => {
             if (e.detail && e.detail.pontos !== undefined) {
                 this.estado.caracteristicas.aparência = e.detail.pontos;
@@ -243,7 +337,6 @@ class DashboardManager {
             dashboardInstance = new DashboardManager();
             window.dashboardManager = dashboardInstance;
             
-            // Esperar um pouco antes de inicializar
             setTimeout(() => {
                 dashboardInstance.inicializar();
                 dashboardInstance.configurarEventosExternos();
@@ -252,56 +345,32 @@ class DashboardManager {
         return dashboardInstance;
     }
     
-    // Inicializar quando o DOM carregar
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', inicializarDashboard);
     } else {
         setTimeout(inicializarDashboard, 500);
     }
     
-    // Expor para uso global
     window.DashboardManager = DashboardManager;
     window.inicializarDashboard = inicializarDashboard;
 })();
 
 // ================ FUNÇÕES GLOBAIS ================
 window.ajustarPV = function(valor) {
-    console.log(`Ajustar PV: ${valor}`);
-    // Implementação básica
-    const pvEl = document.getElementById('valorPV');
-    if (pvEl) {
-        const partes = pvEl.textContent.split('/');
-        let atual = parseInt(partes[0]) || 10;
-        const max = parseInt(partes[1]) || 10;
-        atual = Math.max(0, Math.min(atual + valor, max));
-        pvEl.textContent = `${atual}/${max}`;
-        
-        // Atualizar barra
-        const barra = document.getElementById('barraPV');
-        if (barra) {
-            const porcentagem = (atual / max) * 100;
-            barra.style.width = `${porcentagem}%`;
-        }
+    const dashboard = window.dashboardManager;
+    if (dashboard) {
+        dashboard.ajustarPV(valor);
+    } else {
+        console.warn('DashboardManager não inicializado');
     }
 };
 
 window.ajustarPF = function(valor) {
-    console.log(`Ajustar PF: ${valor}`);
-    // Implementação básica
-    const pfEl = document.getElementById('valorPF');
-    if (pfEl) {
-        const partes = pfEl.textContent.split('/');
-        let atual = parseInt(partes[0]) || 10;
-        const max = parseInt(partes[1]) || 10;
-        atual = Math.max(0, Math.min(atual + valor, max));
-        pfEl.textContent = `${atual}/${max}`;
-        
-        // Atualizar barra
-        const barra = document.getElementById('barraPF');
-        if (barra) {
-            const porcentagem = (atual / max) * 100;
-            barra.style.width = `${porcentagem}%`;
-        }
+    const dashboard = window.dashboardManager;
+    if (dashboard) {
+        dashboard.ajustarPF(valor);
+    } else {
+        console.warn('DashboardManager não inicializado');
     }
 };
 
