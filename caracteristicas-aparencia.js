@@ -1,9 +1,9 @@
-// caracteristicas-aparencia.js - CÓDIGO 100% FUNCIONAL
-console.log('🎮 SISTEMA DE APARÊNCIA INICIADO');
+// caracteristicas-aparencia.js - VERSÃO SIMPLES E FUNCIONAL
+console.log('🎯 SISTEMA DE APARÊNCIA - INICIANDO');
 
-// NÃO espera o DOMContentLoaded - executa IMEDIATAMENTE
-function iniciarSistemaAparencia() {
-    console.log('⚙️ Configurando aparência física...');
+// Executar quando a aba for carregada
+function initAparencia() {
+    console.log('🔧 Configurando aparência...');
     
     // 1. Elementos CRÍTICOS
     const select = document.getElementById('nivelAparencia');
@@ -11,123 +11,116 @@ function iniciarSistemaAparencia() {
     const display = document.getElementById('displayAparencia');
     
     if (!select) {
-        console.error('❌ ERRO CRÍTICO: select "nivelAparencia" NÃO encontrado!');
-        console.log('📌 Procurando elementos com esse ID:', document.querySelectorAll('[id*="aparencia"]'));
+        console.error('❌ ERRO: Select não encontrado!');
+        // Procure manualmente no console: document.querySelector('select')
         return;
     }
     
-    console.log('✅ Elementos encontrados:');
-    console.log('   - Select:', select);
-    console.log('   - Badge:', badge);
-    console.log('   - Display:', display);
-    console.log('   - Valor atual do select:', select.value);
+    console.log('✅ Elementos encontrados!');
+    console.log('- Select valor:', select.value);
+    console.log('- Badge:', badge ? 'OK' : 'Não');
+    console.log('- Display:', display ? 'OK' : 'Não');
     
-    // 2. DADOS DAS APARÊNCIAS
-    const aparicoes = {
-        "-24": { nome: "Horrendo", reacao: "-6", desc: "Aparência que causa repulsa imediata." },
-        "-20": { nome: "Monstruoso", reacao: "-5", desc: "Aparência claramente não humana." },
-        "-16": { nome: "Hediondo", reacao: "-4", desc: "Extremamente feio e desagradável." },
-        "-8": { nome: "Feio", reacao: "-2", desc: "Claramente abaixo da média." },
-        "-4": { nome: "Sem Atrativos", reacao: "-1", desc: "Abaixo da média, mas não chocante." },
-        "0": { nome: "Comum", reacao: "+0", desc: "Aparência padrão, sem modificadores." },
-        "4": { nome: "Atraente", reacao: "+1", desc: "Acima da média. Chama atenção positiva." },
-        "12": { nome: "Elegante", reacao: "+2", desc: "Muito bonito(a). Destaque social." },
-        "16": { nome: "Muito Elegante", reacao: "+4", desc: "Excepcionalmente bonito(a)." },
-        "20": { nome: "Lindo", reacao: "+6", desc: "Beleza deslumbrante. Impacto visual." }
-    };
-    
-    // 3. FUNÇÃO para ATUALIZAR TUDO
-    function atualizarTudo(valor) {
-        console.log(`🔄 Atualizando aparência para valor: ${valor}`);
-        
+    // 2. Função para ATUALIZAR TUDO
+    function atualizarTudo() {
+        const valor = select.value;
         const pontos = parseInt(valor);
-        const dados = aparicoes[valor];
         
-        if (!dados) {
-            console.error(`❌ Dados não encontrados para valor: ${valor}`);
-            return;
-        }
+        console.log(`🔄 Atualizando: valor=${valor}, pontos=${pontos}`);
         
-        // A. Atualizar BADGE de pontos
+        // A. Atualizar BADGE (MAIS IMPORTANTE!)
         if (badge) {
-            badge.textContent = `${pontos > 0 ? '+' : ''}${pontos} pts`;
+            // Formatar texto
+            let textoPontos = pontos + ' pts';
+            if (pontos > 0) textoPontos = '+' + textoPontos;
             
-            // Cores dinâmicas
+            badge.textContent = textoPontos;
+            console.log('✅ Badge atualizado:', badge.textContent);
+            
+            // Cor dinâmica
             if (pontos > 0) {
-                badge.style.background = 'linear-gradient(145deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.3))';
+                badge.style.backgroundColor = 'rgba(39, 174, 96, 0.2)';
                 badge.style.borderColor = '#27ae60';
                 badge.style.color = '#27ae60';
             } else if (pontos < 0) {
-                badge.style.background = 'linear-gradient(145deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.3))';
+                badge.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
                 badge.style.borderColor = '#e74c3c';
                 badge.style.color = '#e74c3c';
             } else {
-                badge.style.background = 'linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.3))';
+                badge.style.backgroundColor = 'rgba(212, 175, 55, 0.2)';
                 badge.style.borderColor = '#d4af37';
                 badge.style.color = '#d4af37';
             }
-            
-            console.log(`✅ Badge atualizado: ${badge.textContent}`);
         }
         
         // B. Atualizar DISPLAY
         if (display) {
+            // Dados baseados no valor
+            const dados = {
+                "-24": { nome: "Horrendo", reacao: "-6", desc: "Aparência que causa repulsa." },
+                "-20": { nome: "Monstruoso", reacao: "-5", desc: "Aparência não humana." },
+                "-16": { nome: "Hediondo", reacao: "-4", desc: "Extremamente feio." },
+                "-8": { nome: "Feio", reacao: "-2", desc: "Abaixo da média." },
+                "-4": { nome: "Sem Atrativos", reacao: "-1", desc: "Abaixo da média." },
+                "0": { nome: "Comum", reacao: "+0", desc: "Aparência padrão." },
+                "4": { nome: "Atraente", reacao: "+1", desc: "Acima da média." },
+                "12": { nome: "Elegante", reacao: "+2", desc: "Muito bonito(a)." },
+                "16": { nome: "Muito Elegante", reacao: "+4", desc: "Excepcional." },
+                "20": { nome: "Lindo", reacao: "+6", desc: "Beleza deslumbrante." }
+            }[valor] || { nome: "Comum", reacao: "+0", desc: "Aparência padrão." };
+            
+            // Criar HTML
             display.innerHTML = `
                 <div class="display-header">
-                    <i class="fas ${pontos >= 12 ? 'fa-crown' : pontos > 0 ? 'fa-user-tie' : pontos < 0 ? 'fa-user-injured' : 'fa-user'}"></i>
+                    <i class="fas fa-user${pontos > 0 ? '-tie' : pontos < 0 ? '-injured' : ''}"></i>
                     <div>
                         <strong>${dados.nome}</strong>
                         <small>Reação: ${dados.reacao}</small>
                     </div>
                 </div>
                 <p class="display-desc">${dados.desc}</p>
-                <div class="display-details">
-                    <small><i class="fas fa-star"></i> ${pontos > 0 ? 'VANTAGEM' : pontos < 0 ? 'DESVANTAGEM' : 'NEUTRO'}</small>
-                </div>
             `;
             
-            console.log(`✅ Display atualizado para: ${dados.nome}`);
+            console.log('✅ Display atualizado:', dados.nome);
         }
         
-        // C. Disparar EVENTO para outros sistemas
+        // C. Salvar no LocalStorage
         try {
-            const evento = new CustomEvent('aparencia-alterada', { 
-                detail: { 
-                    pontos: pontos,
-                    nivel: dados.nome,
-                    reacao: dados.reacao 
-                } 
-            });
-            document.dispatchEvent(evento);
-            console.log('📢 Evento disparado para outros sistemas');
+            localStorage.setItem('aparencia', valor);
+            console.log('💾 Salvo no localStorage');
         } catch (e) {
-            console.warn('⚠️ Não foi possível disparar evento:', e);
+            console.warn('⚠️ Não salvou no localStorage:', e);
         }
-        
-        console.log('🎉 Atualização COMPLETA!');
     }
     
-    // 4. CONFIGURAR EVENTO no select
-    select.addEventListener('change', function(e) {
-        console.log('🎯 EVENTO CHANGE DETECTADO!');
-        console.log('   Valor selecionado:', this.value);
-        console.log('   Texto:', this.options[this.selectedIndex].text);
-        
-        atualizarTudo(this.value);
-    });
+    // 3. CONFIGURAR EVENTO (MÉTODO DIRETO)
+    select.onchange = function() {
+        console.log('🎯 EVENTO ONCHANGE DISPARADO!');
+        console.log('Valor selecionado:', this.value);
+        atualizarTudo();
+    };
     
-    // 5. ATUALIZAR estado inicial
+    // 4. Atualizar INICIALMENTE
     console.log('🔄 Atualizando estado inicial...');
-    atualizarTudo(select.value);
+    atualizarTudo();
     
-    console.log('✅ Sistema de aparência CONFIGURADO com SUCESSO!');
-    console.log('👉 Experimente mudar o select para ver em ação');
+    console.log('✅ Sistema pronto! Tente mudar o select.');
+    
+    // 5. EXPORTAR para debug
+    window.debugAparencia = {
+        atualizar: atualizarTudo,
+        getValor: () => select.value,
+        testar: (valor) => {
+            select.value = valor;
+            atualizarTudo();
+        }
+    };
 }
 
-// EXECUTAR IMEDIATAMENTE
-iniciarSistemaAparencia();
-
-// Fallback: também executar quando DOM estiver pronto
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', iniciarSistemaAparencia);
+// Executar IMEDIATAMENTE e quando DOM carregar
+try {
+    initAparencia();
+} catch (e) {
+    console.error('Erro inicial:', e);
+    document.addEventListener('DOMContentLoaded', initAparencia);
 }
