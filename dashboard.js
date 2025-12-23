@@ -1,5 +1,5 @@
-// dashboard.js - SISTEMA FUNCIONAL DE DASHBOARD
-// VERSÃO CORRIGIDA - REMOVIDAS SIMULAÇÕES
+// dashboard.js - SISTEMA COMPLETO DE DASHBOARD
+// VERSÃO 2.0 - Comunicação total com outras abas
 
 // ===== SISTEMA PRINCIPAL =====
 class DashboardManager {
@@ -14,10 +14,37 @@ class DashboardManager {
             gastosTecnicas: 0,
             gastosPeculiaridades: 0
         };
+        
+        this.atributos = {
+            ST: 10,
+            DX: 10,
+            IQ: 10,
+            HT: 10,
+            PV: { atual: 10, max: 10 },
+            PF: { atual: 10, max: 10 }
+        };
+        
+        this.financeiro = {
+            nivelRiqueza: 'Médio',
+            saldoPersonagem: '$2.000',
+            nivelAparencia: 'Média'
+        };
+        
+        this.identificacao = {
+            raca: '',
+            classe: '',
+            nivel: '',
+            descricao: ''
+        };
+        
         this.inicializado = false;
         this.ultimosAtributos = { ST: 10, DX: 10, IQ: 10, HT: 10 };
+        
+        // Inicializar com valores padrão
+        this.atualizarResumoCards();
     }
 
+    // ===== INICIALIZAÇÃO =====
     inicializar() {
         if (this.inicializado) return;
         console.log('🚀 Inicializando DashboardManager...');
@@ -27,192 +54,18 @@ class DashboardManager {
         this.configurarContadorDescricao();
         this.configurarPontos();
         this.configurarBotoes();
+        this.configurarIdentificacao();
+        this.configurarFinanceiro();
+        this.configurarEventos();
         
-        // Inicializar monitoramento das outras abas
-        this.iniciarMonitoramento();
+        // Carregar dados salvos
+        this.carregarDadosSalvos();
         
         // Forçar atualização inicial
         this.atualizarTudo();
         
         this.inicializado = true;
         console.log('✅ DashboardManager pronto!');
-    }
-
-    // ===== MONITORAMENTO DAS OUTRAS ABAS =====
-    iniciarMonitoramento() {
-        // Monitorar mudanças na aba de atributos
-        this.monitorarAtributos();
-        
-        // Monitorar outras abas (será implementado conforme necessário)
-        this.monitorarCaracteristicas();
-        
-        // Verificar periodicamente por mudanças
-        setInterval(() => {
-            this.verificarMudancasAtributos();
-        }, 2000);
-    }
-
-    monitorarAtributos() {
-        // Esta função será chamada pela aba de atributos quando houver mudanças
-        // Por enquanto, criamos um método público para ser chamado
-        console.log('👁️ Monitorando atributos...');
-    }
-
-    monitorarCaracteristicas() {
-        // Monitorar características (vantagens/desvantagens)
-        console.log('👁️ Monitorando características...');
-    }
-
-    verificarMudancasAtributos() {
-        // Verificar se há formulário de atributos na página
-        const formAtributos = document.querySelector('#atributos form');
-        if (!formAtributos) return;
-        
-        // Coletar valores atuais
-        const atributosAtuais = {
-            ST: this.obterValorAtributo('ST'),
-            DX: this.obterValorAtributo('DX'),
-            IQ: this.obterValorAtributo('IQ'),
-            HT: this.obterValorAtributo('HT')
-        };
-        
-        // Verificar se houve mudança
-        let mudou = false;
-        Object.keys(atributosAtuais).forEach(chave => {
-            if (atributosAtuais[chave] !== this.ultimosAtributos[chave]) {
-                mudou = true;
-            }
-        });
-        
-        // Se houve mudança, recalcular
-        if (mudou) {
-            console.log('🔄 Atributos alterados:', atributosAtuais);
-            this.ultimosAtributos = { ...atributosAtuais };
-            this.calcularPontosAtributos(atributosAtuais);
-        }
-    }
-
-    obterValorAtributo(nome) {
-        // Tentar diferentes seletores para encontrar o atributo
-        const seletores = [
-            `input[name="${nome}"], 
-             input[id*="${nome.toLowerCase()}"], 
-             input[placeholder*="${nome}"], 
-             .atributo-${nome.toLowerCase()} input`
-        ];
-        
-        let valor = 10; // Valor padrão
-        
-        // Verificar se existe um elemento específico para este atributo
-        const elemento = document.querySelector(`[data-atributo="${nome}"]`) ||
-                        document.getElementById(`atributo${nome}`) ||
-                        document.getElementById(nome);
-        
-        if (elemento) {
-            if (elemento.tagName === 'INPUT') {
-                valor = parseInt(elemento.value) || 10;
-            } else {
-                valor = parseInt(elemento.textContent) || 10;
-            }
-        }
-        
-        return valor;
-    }
-
-    calcularPontosAtributos(atributos) {
-        // Calcular pontos gastos em atributos baseado no sistema GURPS
-        // Cada atributo acima de 10 custa 10 pontos por nível
-        // Cada atributo abaixo de 10 dá -10 pontos por nível
-        
-        let totalPontos = 0;
-        
-        // Calcular custo para cada atributo
-        Object.keys(atributos).forEach(chave => {
-            const valor = atributos[chave];
-            const diferenca = valor - 10;
-            const custo = diferenca * 10; // 10 pontos por nível
-            totalPontos += custo;
-        });
-        
-        console.log(`💰 Custo total em atributos: ${totalPontos} pontos`);
-        
-        // Atualizar dashboard
-        this.atualizarAtributosNoDashboard(atributos);
-        this.atualizarCard('gastosAtributos', totalPontos);
-        this.pontos.gastosAtributos = totalPontos;
-        
-        // Recalcular totais
-        this.atualizarTotalLiquido();
-        this.atualizarSaldoDisponivel();
-    }
-
-    atualizarAtributosNoDashboard(atributos) {
-        // Atualizar valores dos atributos no dashboard
-        if (atributos.ST) document.getElementById('atributoST').textContent = atributos.ST;
-        if (atributos.DX) document.getElementById('atributoDX').textContent = atributos.DX;
-        if (atributos.IQ) document.getElementById('atributoIQ').textContent = atributos.IQ;
-        if (atributos.HT) document.getElementById('atributoHT').textContent = atributos.HT;
-        
-        // Atualizar PV (baseado em ST) e PF (baseado em HT)
-        const pvBase = Math.max(atributos.ST, 10);
-        const pfBase = Math.max(atributos.HT, 10);
-        
-        const pvElement = document.getElementById('valorPV');
-        if (pvElement) {
-            const partes = pvElement.textContent.split('/');
-            const pvAtual = parseInt(partes[0]) || pvBase;
-            pvElement.textContent = `${pvAtual}/${pvBase}`;
-            
-            // Atualizar barra de PV
-            const barraPV = document.getElementById('barraPV');
-            if (barraPV) {
-                const porcentagem = (pvAtual / pvBase) * 100;
-                barraPV.style.width = `${porcentagem}%`;
-            }
-        }
-        
-        const pfElement = document.getElementById('valorPF');
-        if (pfElement) {
-            const partes = pfElement.textContent.split('/');
-            const pfAtual = parseInt(partes[0]) || pfBase;
-            pfElement.textContent = `${pfAtual}/${pfBase}`;
-            
-            // Atualizar barra de PF
-            const barraPF = document.getElementById('barraPF');
-            if (barraPF) {
-                const porcentagem = (pfAtual / pfBase) * 100;
-                barraPF.style.width = `${porcentagem}%`;
-            }
-        }
-    }
-
-    // ===== MÉTODOS PÚBLICOS PARA OUTRAS ABAS =====
-    atualizarAtributos(st, dx, iq, ht) {
-        const atributos = { ST: st, DX: dx, IQ: iq, HT: ht };
-        this.calcularPontosAtributos(atributos);
-    }
-
-    atualizarCaracteristicas(vantagens, desvantagens) {
-        // Atualizar cards de vantagens e desvantagens
-        const totalVantagens = vantagens.reduce((sum, item) => sum + (item.pontos || 0), 0);
-        const totalDesvantagens = desvantagens.reduce((sum, item) => sum + (item.pontos || 0), 0);
-        
-        this.atualizarCard('gastosVantagens', totalVantagens);
-        this.atualizarCard('gastosDesvantagens', totalDesvantagens);
-        
-        this.pontos.gastosVantagens = totalVantagens;
-        this.pontos.gastosDesvantagens = totalDesvantagens;
-        
-        this.atualizarTotalLiquido();
-        this.atualizarSaldoDisponivel();
-    }
-
-    atualizarPericias(pericias) {
-        const totalPericias = pericias.reduce((sum, item) => sum + (item.pontos || 0), 0);
-        this.atualizarCard('gastosPericias', totalPericias);
-        this.pontos.gastosPericias = totalPericias;
-        this.atualizarTotalLiquido();
-        this.atualizarSaldoDisponivel();
     }
 
     // ===== CONFIGURAÇÕES BÁSICAS =====
@@ -232,6 +85,7 @@ class DashboardManager {
                     preview.src = event.target.result;
                     preview.style.display = 'block';
                     placeholder.style.display = 'none';
+                    this.salvarFoto(event.target.result);
                 };
                 reader.readAsDataURL(file);
             }
@@ -242,7 +96,16 @@ class DashboardManager {
             preview.style.display = 'none';
             placeholder.style.display = 'flex';
             fotoUpload.value = '';
+            this.salvarFoto('');
         });
+        
+        // Carregar foto salva
+        const fotoSalva = localStorage.getItem('dashboardFoto');
+        if (fotoSalva) {
+            preview.src = fotoSalva;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        }
     }
 
     configurarContadorDescricao() {
@@ -250,9 +113,89 @@ class DashboardManager {
         const contador = document.getElementById('contadorDescricao');
         
         if (descricao && contador) {
+            // Carregar descrição salva
+            const descricaoSalva = localStorage.getItem('dashboardDescricao');
+            if (descricaoSalva) {
+                descricao.value = descricaoSalva;
+            }
+            
             contador.textContent = descricao.value.length;
             descricao.addEventListener('input', () => {
                 contador.textContent = descricao.value.length;
+                this.identificacao.descricao = descricao.value;
+                localStorage.setItem('dashboardDescricao', descricao.value);
+            });
+        }
+    }
+
+    configurarIdentificacao() {
+        const inputs = ['dashboardRaca', 'dashboardClasse', 'dashboardNivel'];
+        
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                // Carregar valor salvo
+                const valorSalvo = localStorage.getItem(id);
+                if (valorSalvo) {
+                    input.value = valorSalvo;
+                }
+                
+                input.addEventListener('input', () => {
+                    localStorage.setItem(id, input.value);
+                    
+                    // Atualizar objeto identificacao
+                    switch(id) {
+                        case 'dashboardRaca':
+                            this.identificacao.raca = input.value;
+                            break;
+                        case 'dashboardClasse':
+                            this.identificacao.classe = input.value;
+                            break;
+                        case 'dashboardNivel':
+                            this.identificacao.nivel = input.value;
+                            break;
+                    }
+                });
+            }
+        });
+    }
+
+    configurarFinanceiro() {
+        const niveisRiqueza = ['Mendigo', 'Pobre', 'Médio', 'Confortável', 'Rico', 'Muito Rico', 'Multimilionário'];
+        const niveisAparencia = ['Horrível', 'Feia', 'Desagradável', 'Média', 'Atraente', 'Bonita', 'Lindo(a)', 'Transcendente'];
+        
+        // Configurar nível de riqueza
+        const riquezaElement = document.getElementById('nivelRiqueza');
+        if (riquezaElement) {
+            riquezaElement.addEventListener('click', () => {
+                const novoIndice = (niveisRiqueza.indexOf(this.financeiro.nivelRiqueza) + 1) % niveisRiqueza.length;
+                this.financeiro.nivelRiqueza = niveisRiqueza[novoIndice];
+                riquezaElement.textContent = this.financeiro.nivelRiqueza;
+                this.salvarDados();
+            });
+        }
+        
+        // Configurar aparência
+        const aparenciaElement = document.getElementById('nivelAparencia');
+        if (aparenciaElement) {
+            aparenciaElement.addEventListener('click', () => {
+                const novoIndice = (niveisAparencia.indexOf(this.financeiro.nivelAparencia) + 1) % niveisAparencia.length;
+                this.financeiro.nivelAparencia = niveisAparencia[novoIndice];
+                aparenciaElement.textContent = this.financeiro.nivelAparencia;
+                this.salvarDados();
+            });
+        }
+        
+        // Configurar saldo
+        const saldoElement = document.getElementById('saldoPersonagem');
+        if (saldoElement) {
+            saldoElement.addEventListener('dblclick', () => {
+                const novoSaldo = prompt('Digite o novo saldo:', this.financeiro.saldoPersonagem.replace('$', ''));
+                if (novoSaldo !== null) {
+                    this.financeiro.saldoPersonagem = '$' + parseFloat(novoSaldo).toFixed(2);
+                    saldoElement.textContent = this.financeiro.saldoPersonagem;
+                    this.salvarDados();
+                }
             });
         }
     }
@@ -262,65 +205,286 @@ class DashboardManager {
         const limiteDesvantagens = document.getElementById('limiteDesvantagens');
         
         if (pontosTotais) {
+            const pontosSalvos = localStorage.getItem('pontosTotais');
+            if (pontosSalvos) {
+                pontosTotais.value = pontosSalvos;
+            }
+            
             pontosTotais.addEventListener('input', () => {
+                localStorage.setItem('pontosTotais', pontosTotais.value);
                 this.atualizarSaldoDisponivel();
             });
         }
         
         if (limiteDesvantagens) {
+            const limiteSalvo = localStorage.getItem('limiteDesvantagens');
+            if (limiteSalvo) {
+                limiteDesvantagens.value = limiteSalvo;
+            }
+            
             limiteDesvantagens.addEventListener('input', () => {
-                // Verificar se desvantagens ultrapassaram o limite
-                if (this.pontos.gastosDesvantagens < limiteDesvantagens.value) {
-                    alert(`⚠️ Atenção: Desvantagens (${this.pontos.gastosDesvantagens}) ultrapassaram o limite (${limiteDesvantagens.value})!`);
-                }
+                localStorage.setItem('limiteDesvantagens', limiteDesvantagens.value);
+                this.verificarLimiteDesvantagens();
             });
         }
     }
 
     configurarBotoes() {
         // Botões de PV
-        const btnPVDiminuir = document.querySelectorAll('[onclick*="ajustarPV"]');
-        btnPVDiminuir.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const valor = btn.textContent === '-' ? -1 : 1;
-                this.ajustarPV(valor);
-            });
-        });
-        
-        // Botões de PF
-        const btnPFDiminuir = document.querySelectorAll('[onclick*="ajustarPF"]');
-        btnPFDiminuir.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const valor = btn.textContent === '-' ? -1 : 1;
-                this.ajustarPF(valor);
-            });
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.vitalidade-btn')) {
+                const btn = e.target.closest('.vitalidade-btn');
+                if (btn.textContent === '-' || btn.getAttribute('onclick')?.includes('ajustarPV(-1)')) {
+                    this.ajustarPV(-1);
+                } else if (btn.textContent === '+' || btn.getAttribute('onclick')?.includes('ajustarPV(1)')) {
+                    this.ajustarPV(1);
+                }
+            }
+            
+            if (e.target.closest('.vitalidade-btn')) {
+                const btn = e.target.closest('.vitalidade-btn');
+                if (btn.textContent === '-' || btn.getAttribute('onclick')?.includes('ajustarPF(-1)')) {
+                    this.ajustarPF(-1);
+                } else if (btn.textContent === '+' || btn.getAttribute('onclick')?.includes('ajustarPF(1)')) {
+                    this.ajustarPF(1);
+                }
+            }
         });
     }
 
-    // ===== ATUALIZAÇÃO DE CARDS =====
-    atualizarCard(idCard, valor) {
-        const elemento = document.getElementById(idCard);
-        if (!elemento) {
-            console.warn(`⚠️ Card não encontrado: ${idCard}`);
-            return;
+    configurarEventos() {
+        // Escutar evento de alteração de atributos
+        document.addEventListener('atributosAlterados', (event) => {
+            if (event.detail) {
+                console.log('📥 Dashboard recebeu dados dos atributos:', event.detail);
+                this.processarDadosAtributos(event.detail);
+            }
+        });
+        
+        // Escutar eventos de outras abas
+        document.addEventListener('vantagensAlteradas', (event) => {
+            if (event.detail) {
+                this.atualizarPontosVantagens(event.detail);
+            }
+        });
+        
+        document.addEventListener('desvantagensAlteradas', (event) => {
+            if (event.detail) {
+                this.atualizarPontosDesvantagens(event.detail);
+            }
+        });
+        
+        document.addEventListener('periciasAlteradas', (event) => {
+            if (event.detail) {
+                this.atualizarPontosPericias(event.detail);
+            }
+        });
+        
+        // Solicitar dados quando o dashboard for aberto
+        document.addEventListener('tabChanged', (event) => {
+            if (event.detail && event.detail.tab === 'dashboard') {
+                // Solicitar dados atuais de todas as abas
+                this.solicitarDadosTodasAbas();
+            }
+        });
+        
+        // Atualizar periodicamente
+        setInterval(() => {
+            this.verificarAtributos();
+        }, 3000);
+    }
+
+    // ===== PROCESSAMENTO DE DADOS =====
+    processarDadosAtributos(dados) {
+        // Atualizar atributos
+        this.atributos.ST = dados.ST || 10;
+        this.atributos.DX = dados.DX || 10;
+        this.atributos.IQ = dados.IQ || 10;
+        this.atributos.HT = dados.HT || 10;
+        
+        // Calcular PV e PF base
+        const pvBase = Math.max(this.atributos.ST, 10);
+        const pfBase = Math.max(this.atributos.HT, 10);
+        
+        // Manter valores atuais se existirem, senão usar máximo
+        if (this.atributos.PV.atual === 10 && this.atributos.PV.max === 10) {
+            this.atributos.PV = { atual: pvBase, max: pvBase };
+        } else {
+            this.atributos.PV.max = pvBase;
         }
         
-        elemento.textContent = valor;
-        this.aplicarEstilo(elemento, valor);
+        if (this.atributos.PF.atual === 10 && this.atributos.PF.max === 10) {
+            this.atributos.PF = { atual: pfBase, max: pfBase };
+        } else {
+            this.atributos.PF.max = pfBase;
+        }
+        
+        // Atualizar pontos gastos
+        if (dados.pontosAtributos !== undefined) {
+            this.pontos.gastosAtributos = dados.pontosAtributos;
+            this.atualizarCard('gastosAtributos', dados.pontosAtributos);
+        }
+        
+        // Atualizar display
+        this.atualizarDisplayAtributos();
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+        
+        // Salvar dados
+        this.salvarDados();
     }
 
-    aplicarEstilo(elemento, valor) {
-        if (valor > 0) {
-            elemento.style.color = '#2ecc71';
-            elemento.style.fontWeight = 'bold';
-        } else if (valor < 0) {
-            elemento.style.color = '#e74c3c';
-            elemento.style.fontWeight = 'bold';
-        } else {
-            elemento.style.color = '#95a5a6';
-            elemento.style.fontWeight = 'normal';
+    atualizarDisplayAtributos() {
+        // Atualizar valores dos atributos
+        document.getElementById('atributoST').textContent = this.atributos.ST;
+        document.getElementById('atributoDX').textContent = this.atributos.DX;
+        document.getElementById('atributoIQ').textContent = this.atributos.IQ;
+        document.getElementById('atributoHT').textContent = this.atributos.HT;
+        
+        // Atualizar PV
+        const pvElement = document.getElementById('valorPV');
+        const barraPV = document.getElementById('barraPV');
+        if (pvElement) {
+            pvElement.textContent = `${this.atributos.PV.atual}/${this.atributos.PV.max}`;
+        }
+        if (barraPV) {
+            const porcentagem = (this.atributos.PV.atual / this.atributos.PV.max) * 100;
+            barraPV.style.width = `${Math.min(100, Math.max(0, porcentagem))}%`;
+            
+            // Cor baseada na porcentagem
+            if (porcentagem < 25) {
+                barraPV.style.backgroundColor = '#e74c3c';
+            } else if (porcentagem < 50) {
+                barraPV.style.backgroundColor = '#f39c12';
+            } else {
+                barraPV.style.backgroundColor = '#2ecc71';
+            }
+        }
+        
+        // Atualizar PF
+        const pfElement = document.getElementById('valorPF');
+        const barraPF = document.getElementById('barraPF');
+        if (pfElement) {
+            pfElement.textContent = `${this.atributos.PF.atual}/${this.atributos.PF.max}`;
+        }
+        if (barraPF) {
+            const porcentagem = (this.atributos.PF.atual / this.atributos.PF.max) * 100;
+            barraPF.style.width = `${Math.min(100, Math.max(0, porcentagem))}%`;
+            
+            // Cor baseada na porcentagem
+            if (porcentagem < 25) {
+                barraPF.style.backgroundColor = '#e74c3c';
+            } else if (porcentagem < 50) {
+                barraPF.style.backgroundColor = '#f39c12';
+            } else {
+                barraPF.style.backgroundColor = '#3498db';
+            }
+        }
+    }
+
+    // ===== PONTOS DAS OUTRAS ABAS =====
+    atualizarPontosVantagens(dados) {
+        const total = dados.total || dados.pontos || 0;
+        this.pontos.gastosVantagens = total;
+        this.atualizarCard('gastosVantagens', total);
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+        this.salvarDados();
+    }
+
+    atualizarPontosDesvantagens(dados) {
+        const total = dados.total || dados.pontos || 0;
+        this.pontos.gastosDesvantagens = total;
+        this.atualizarCard('gastosDesvantagens', total);
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+        this.verificarLimiteDesvantagens();
+        this.salvarDados();
+    }
+
+    atualizarPontosPericias(dados) {
+        const total = dados.total || dados.pontos || 0;
+        this.pontos.gastosPericias = total;
+        this.atualizarCard('gastosPericias', total);
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+        this.salvarDados();
+    }
+
+    atualizarPontosMagias(dados) {
+        const total = dados.total || dados.pontos || 0;
+        this.pontos.gastosMagias = total;
+        this.atualizarCard('gastosMagias', total);
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+        this.salvarDados();
+    }
+
+    atualizarPontosTecnicas(dados) {
+        const total = dados.total || dados.pontos || 0;
+        this.pontos.gastosTecnicas = total;
+        this.atualizarCard('gastosTecnicas', total);
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+        this.salvarDados();
+    }
+
+    atualizarPontosPeculiaridades(dados) {
+        const total = dados.total || dados.pontos || 0;
+        this.pontos.gastosPeculiaridades = total;
+        this.atualizarCard('gastosPeculiaridades', total);
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+        this.salvarDados();
+    }
+
+    // ===== FUNÇÕES DE CONTROLE =====
+    ajustarPV(valor) {
+        this.atributos.PV.atual = Math.max(0, Math.min(this.atributos.PV.max, this.atributos.PV.atual + valor));
+        this.atualizarDisplayAtributos();
+        this.salvarDados();
+    }
+
+    ajustarPF(valor) {
+        this.atributos.PF.atual = Math.max(0, Math.min(this.atributos.PF.max, this.atributos.PF.atual + valor));
+        this.atualizarDisplayAtributos();
+        this.salvarDados();
+    }
+
+    verificarAtributos() {
+        // Verificar manualmente os atributos na aba de atributos
+        const atributosInputs = {
+            ST: document.querySelector('#atributos input[name="ST"], #atributos #ST'),
+            DX: document.querySelector('#atributos input[name="DX"], #atributos #DX'),
+            IQ: document.querySelector('#atributos input[name="IQ"], #atributos #IQ'),
+            HT: document.querySelector('#atributos input[name="HT"], #atributos #HT')
+        };
+        
+        let mudou = false;
+        Object.keys(atributosInputs).forEach(chave => {
+            if (atributosInputs[chave]) {
+                const valor = parseInt(atributosInputs[chave].value) || 10;
+                if (valor !== this.ultimosAtributos[chave]) {
+                    mudou = true;
+                    this.ultimosAtributos[chave] = valor;
+                }
+            }
+        });
+        
+        if (mudou) {
+            console.log('🔄 Atributos alterados manualmente:', this.ultimosAtributos);
+            const pontosAtributos = (this.ultimosAtributos.ST - 10) * 10 +
+                                   (this.ultimosAtributos.DX - 10) * 20 +
+                                   (this.ultimosAtributos.IQ - 10) * 20 +
+                                   (this.ultimosAtributos.HT - 10) * 10;
+            
+            this.processarDadosAtributos({
+                ST: this.ultimosAtributos.ST,
+                DX: this.ultimosAtributos.DX,
+                IQ: this.ultimosAtributos.IQ,
+                HT: this.ultimosAtributos.HT,
+                pontosAtributos: pontosAtributos
+            });
         }
     }
 
@@ -336,6 +500,9 @@ class DashboardManager {
         const total = this.calcularTotalGastos();
         totalLiquido.textContent = total;
         this.aplicarEstilo(totalLiquido, total);
+        
+        // Atualizar todos os cards
+        this.atualizarResumoCards();
     }
 
     atualizarSaldoDisponivel() {
@@ -353,65 +520,207 @@ class DashboardManager {
         if (saldo < 0) {
             saldoElement.style.color = '#e74c3c';
             saldoElement.style.fontWeight = 'bold';
+            saldoElement.title = 'Você está usando mais pontos do que o permitido!';
         } else if (saldo === 0) {
             saldoElement.style.color = '#f39c12';
             saldoElement.style.fontWeight = 'bold';
+            saldoElement.title = 'Você usou todos os pontos disponíveis';
         } else {
             saldoElement.style.color = '#2ecc71';
             saldoElement.style.fontWeight = 'normal';
+            saldoElement.title = 'Pontos restantes disponíveis';
         }
     }
 
-    // ===== FUNÇÕES DE CONTROLE =====
-    ajustarPV(valor) {
-        const pvElement = document.getElementById('valorPV');
-        if (!pvElement) return;
+    verificarLimiteDesvantagens() {
+        const limiteDesvantagens = document.getElementById('limiteDesvantagens');
+        if (!limiteDesvantagens) return;
         
-        const partes = pvElement.textContent.split('/');
-        let atual = parseInt(partes[0]) || 10;
-        let maximo = parseInt(partes[1]) || 10;
+        const limite = parseInt(limiteDesvantagens.value) || -50;
+        const desvantagensAtuais = this.pontos.gastosDesvantagens;
         
-        atual = Math.max(0, Math.min(maximo, atual + valor));
-        pvElement.textContent = `${atual}/${maximo}`;
-        
-        // Atualizar barra
-        const barraPV = document.getElementById('barraPV');
-        if (barraPV) {
-            const porcentagem = (atual / maximo) * 100;
-            barraPV.style.width = `${porcentagem}%`;
+        if (desvantagensAtuais < limite) {
+            const card = document.getElementById('gastosDesvantagens');
+            if (card) {
+                card.style.animation = 'pulse-alert 1s infinite';
+                card.title = `ATENÇÃO: Desvantagens (${desvantagensAtuais}) ultrapassaram o limite (${limite})!`;
+            }
+        } else {
+            const card = document.getElementById('gastosDesvantagens');
+            if (card) {
+                card.style.animation = '';
+                card.title = `Desvantagens: ${desvantagensAtuais} pontos`;
+            }
         }
     }
 
-    ajustarPF(valor) {
-        const pfElement = document.getElementById('valorPF');
-        if (!pfElement) return;
-        
-        const partes = pfElement.textContent.split('/');
-        let atual = parseInt(partes[0]) || 10;
-        let maximo = parseInt(partes[1]) || 10;
-        
-        atual = Math.max(0, Math.min(maximo, atual + valor));
-        pfElement.textContent = `${atual}/${maximo}`;
-        
-        // Atualizar barra
-        const barraPF = document.getElementById('barraPF');
-        if (barraPF) {
-            const porcentagem = (atual / maximo) * 100;
-            barraPF.style.width = `${porcentagem}%`;
+    // ===== ATUALIZAÇÃO DE CARDS =====
+    atualizarCard(idCard, valor) {
+        const elemento = document.getElementById(idCard);
+        if (!elemento) {
+            console.warn(`⚠️ Card não encontrado: ${idCard}`);
+            return;
         }
+        
+        elemento.textContent = valor;
+        this.aplicarEstilo(elemento, valor);
+        
+        // Tooltip informativo
+        elemento.title = `${idCard.replace('gastos', '')}: ${valor} pontos`;
+    }
+
+    aplicarEstilo(elemento, valor) {
+        elemento.classList.remove('positivo', 'negativo', 'neutro');
+        
+        if (valor > 0) {
+            elemento.classList.add('positivo');
+        } else if (valor < 0) {
+            elemento.classList.add('negativo');
+        } else {
+            elemento.classList.add('neutro');
+        }
+    }
+
+    atualizarResumoCards() {
+        // Atualizar cores dos cards com base nos valores
+        Object.keys(this.pontos).forEach(chave => {
+            const elemento = document.getElementById(chave);
+            if (elemento) {
+                this.aplicarEstilo(elemento, this.pontos[chave]);
+            }
+        });
+    }
+
+    // ===== SISTEMA DE SOLICITAÇÃO =====
+    solicitarDadosTodasAbas() {
+        console.log('🔍 Solicitando dados de todas as abas...');
+        
+        // Disparar eventos para solicitar dados
+        const eventos = [
+            'dashboardSolicitaAtributos',
+            'dashboardSolicitaVantagens',
+            'dashboardSolicitaDesvantagens',
+            'dashboardSolicitaPericias',
+            'dashboardSolicitaMagias',
+            'dashboardSolicitaTecnicas',
+            'dashboardSolicitaPeculiaridades'
+        ];
+        
+        eventos.forEach(evento => {
+            setTimeout(() => {
+                document.dispatchEvent(new Event(evento));
+            }, 100);
+        });
+    }
+
+    // ===== SISTEMA DE PERSISTÊNCIA =====
+    salvarDados() {
+        try {
+            const dados = {
+                pontos: this.pontos,
+                atributos: this.atributos,
+                financeiro: this.financeiro,
+                identificacao: this.identificacao,
+                ultimaAtualizacao: new Date().toISOString()
+            };
+            
+            localStorage.setItem('dashboardDados', JSON.stringify(dados));
+            console.log('💾 Dados do dashboard salvos');
+        } catch (error) {
+            console.error('Erro ao salvar dados:', error);
+        }
+    }
+
+    carregarDadosSalvos() {
+        try {
+            const dadosSalvos = localStorage.getItem('dashboardDados');
+            if (dadosSalvos) {
+                const dados = JSON.parse(dadosSalvos);
+                
+                // Carregar pontos
+                if (dados.pontos) {
+                    Object.keys(dados.pontos).forEach(chave => {
+                        if (this.pontos.hasOwnProperty(chave)) {
+                            this.pontos[chave] = dados.pontos[chave];
+                            this.atualizarCard(chave, dados.pontos[chave]);
+                        }
+                    });
+                }
+                
+                // Carregar atributos
+                if (dados.atributos) {
+                    this.atributos = { ...this.atributos, ...dados.atributos };
+                    this.atualizarDisplayAtributos();
+                }
+                
+                // Carregar financeiro
+                if (dados.financeiro) {
+                    this.financeiro = dados.financeiro;
+                    document.getElementById('nivelRiqueza').textContent = this.financeiro.nivelRiqueza;
+                    document.getElementById('saldoPersonagem').textContent = this.financeiro.saldoPersonagem;
+                    document.getElementById('nivelAparencia').textContent = this.financeiro.nivelAparencia;
+                }
+                
+                // Carregar identificação
+                if (dados.identificacao) {
+                    this.identificacao = dados.identificacao;
+                    document.getElementById('dashboardRaca').value = this.identificacao.raca || '';
+                    document.getElementById('dashboardClasse').value = this.identificacao.classe || '';
+                    document.getElementById('dashboardNivel').value = this.identificacao.nivel || '';
+                    document.getElementById('dashboardDescricao').value = this.identificacao.descricao || '';
+                }
+                
+                console.log('📂 Dados do dashboard carregados');
+                this.atualizarTotalLiquido();
+                this.atualizarSaldoDisponivel();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+        }
+    }
+
+    salvarFoto(base64) {
+        localStorage.setItem('dashboardFoto', base64);
     }
 
     // ===== FUNÇÃO PRINCIPAL =====
     atualizarTudo() {
         this.atualizarTotalLiquido();
         this.atualizarSaldoDisponivel();
+        this.atualizarDisplayAtributos();
+        this.verificarLimiteDesvantagens();
     }
 
-    // ===== FUNÇÕES PARA TESTE =====
+    // ===== FUNÇÕES PARA OUTRAS ABAS =====
+    atualizarAtributos(st, dx, iq, ht) {
+        const pontosAtributos = (st - 10) * 10 + (dx - 10) * 20 + (iq - 10) * 20 + (ht - 10) * 10;
+        
+        this.processarDadosAtributos({
+            ST: st,
+            DX: dx,
+            IQ: iq,
+            HT: ht,
+            pontosAtributos: pontosAtributos
+        });
+    }
+
+    atualizarCaracteristicas(vantagens, desvantagens) {
+        const totalVantagens = vantagens.reduce((sum, item) => sum + (item.pontos || 0), 0);
+        const totalDesvantagens = desvantagens.reduce((sum, item) => sum + (item.pontos || 0), 0);
+        
+        this.atualizarPontosVantagens({ total: totalVantagens });
+        this.atualizarPontosDesvantagens({ total: totalDesvantagens });
+    }
+
+    atualizarPericias(pericias) {
+        const totalPericias = pericias.reduce((sum, item) => sum + (item.pontos || 0), 0);
+        this.atualizarPontosPericias({ total: totalPericias });
+    }
+
+    // ===== FUNÇÕES DE TESTE =====
     testarAtributos() {
         console.log('🧪 TESTANDO ATRIBUTOS');
         
-        // Simular valores de atributos diferentes
         const atributosTeste = {
             ST: 12,
             DX: 14,
@@ -427,13 +736,47 @@ class DashboardManager {
         );
         
         console.log('Atributos atualizados:', atributosTeste);
-        console.log('Pontos gastos em atributos:', this.pontos.gastosAtributos);
+    }
+
+    testarPontos() {
+        console.log('🧪 TESTANDO PONTOS');
+        
+        // Simular pontos de várias categorias
+        this.atualizarPontosVantagens({ total: 25 });
+        this.atualizarPontosDesvantagens({ total: -15 });
+        this.atualizarPontosPericias({ total: 40 });
+        this.atualizarPontosMagias({ total: 30 });
+        this.atualizarPontosTecnicas({ total: 20 });
+        this.atualizarPontosPeculiaridades({ total: 10 });
+        
+        console.log('Pontos atualizados:', this.pontos);
     }
 }
 
 // ===== INICIALIZAÇÃO GLOBAL =====
 (function() {
     console.log('📁 Carregando DashboardManager...');
+    
+    // Adicionar CSS para animações
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse-alert {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .resumo-card.positivo { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+        .resumo-card.negativo { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .resumo-card.neutro { background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); }
+        
+        .atributo-card { cursor: pointer; transition: transform 0.2s; }
+        .atributo-card:hover { transform: translateY(-2px); }
+        
+        .vitalidade-bar { cursor: pointer; }
+        .vitalidade-bar:hover { opacity: 0.8; }
+    `;
+    document.head.appendChild(style);
     
     // Criar instância global
     window.dashboardManager = new DashboardManager();
@@ -447,6 +790,7 @@ class DashboardManager {
                     window.dashboardManager.inicializar();
                 }
                 window.dashboardManager.atualizarTudo();
+                window.dashboardManager.solicitarDadosTodasAbas();
             }, 100);
         }
     });
@@ -478,6 +822,24 @@ class DashboardManager {
         }
     };
     
+    window.atualizarDashboardMagias = function(magias) {
+        if (window.dashboardManager) {
+            window.dashboardManager.atualizarPontosMagias(magias);
+        }
+    };
+    
+    window.atualizarDashboardTecnicas = function(tecnicas) {
+        if (window.dashboardManager) {
+            window.dashboardManager.atualizarPontosTecnicas(tecnicas);
+        }
+    };
+    
+    window.atualizarDashboardPeculiaridades = function(peculiaridades) {
+        if (window.dashboardManager) {
+            window.dashboardManager.atualizarPontosPeculiaridades(peculiaridades);
+        }
+    };
+    
     // Funções de ajuste manual
     window.ajustarPV = function(valor) {
         if (window.dashboardManager) {
@@ -491,10 +853,39 @@ class DashboardManager {
         }
     };
     
-    // Função de teste
+    // Funções de teste
     window.testarDashboard = function() {
         if (window.dashboardManager) {
             window.dashboardManager.testarAtributos();
+            window.dashboardManager.testarPontos();
+        }
+    };
+    
+    // Função para exportar dados
+    window.exportarDashboard = function() {
+        if (window.dashboardManager) {
+            const dados = {
+                pontos: window.dashboardManager.pontos,
+                atributos: window.dashboardManager.atributos,
+                financeiro: window.dashboardManager.financeiro,
+                identificacao: window.dashboardManager.identificacao
+            };
+            
+            const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dashboard-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    };
+    
+    // Função para resetar dashboard
+    window.resetarDashboard = function() {
+        if (confirm('Tem certeza que deseja resetar todos os dados do dashboard?')) {
+            localStorage.clear();
+            location.reload();
         }
     };
     
