@@ -85,6 +85,8 @@ const estadoAtributos = {
 
 function alterarAtributo(atributo, valor) {
     const input = document.getElementById(atributo);
+    if (!input) return; // Se elemento não existe, não faz nada
+    
     let novoValor = parseInt(estadoAtributos[atributo]) + valor;
     
     if (novoValor < 1) novoValor = 1;
@@ -97,17 +99,17 @@ function alterarAtributo(atributo, valor) {
 }
 
 function atualizarBonus(atributo, valor) {
+    const input = document.getElementById(`bonus${atributo}`);
+    if (!input) return; // Se elemento não existe, não faz nada
+    
     const chave = `bonus${atributo}`;
     estadoAtributos[chave] = parseInt(valor) || 0;
     
-    const input = document.getElementById(`bonus${atributo}`);
-    if (input) {
-        input.classList.remove('positivo', 'negativo');
-        if (estadoAtributos[chave] > 0) {
-            input.classList.add('positivo');
-        } else if (estadoAtributos[chave] < 0) {
-            input.classList.add('negativo');
-        }
+    input.classList.remove('positivo', 'negativo');
+    if (estadoAtributos[chave] > 0) {
+        input.classList.add('positivo');
+    } else if (estadoAtributos[chave] < 0) {
+        input.classList.add('negativo');
     }
     
     calcularTudo();
@@ -116,6 +118,12 @@ function atualizarBonus(atributo, valor) {
 // ===== CÁLCULOS PRINCIPAIS =====
 
 function calcularTudo() {
+    // Verificar se estamos na aba de atributos
+    const abaAtributos = document.getElementById('atributos');
+    if (!abaAtributos || !abaAtributos.classList.contains('active')) {
+        return; // Não calcular se não estiver na aba de atributos
+    }
+    
     atualizarBases();
     calcularDano();
     calcularCarga();
@@ -125,37 +133,57 @@ function calcularTudo() {
 }
 
 function atualizarBases() {
-    document.getElementById('PVBase').textContent = estadoAtributos.ST;
-    document.getElementById('PFBase').textContent = estadoAtributos.HT;
-    document.getElementById('VontadeBase').textContent = estadoAtributos.IQ;
-    document.getElementById('PercepcaoBase').textContent = estadoAtributos.IQ;
+    const pvBase = document.getElementById('PVBase');
+    const pfBase = document.getElementById('PFBase');
+    const vontadeBase = document.getElementById('VontadeBase');
+    const percepcaoBase = document.getElementById('PercepcaoBase');
+    const deslocamentoBase = document.getElementById('DeslocamentoBase');
     
-    const deslocamentoBase = (estadoAtributos.HT + estadoAtributos.DX) / 4;
-    document.getElementById('DeslocamentoBase').textContent = deslocamentoBase.toFixed(2);
+    if (pvBase) pvBase.textContent = estadoAtributos.ST;
+    if (pfBase) pfBase.textContent = estadoAtributos.HT;
+    if (vontadeBase) vontadeBase.textContent = estadoAtributos.IQ;
+    if (percepcaoBase) percepcaoBase.textContent = estadoAtributos.IQ;
+    
+    if (deslocamentoBase) {
+        const deslocamentoBaseValor = (estadoAtributos.HT + estadoAtributos.DX) / 4;
+        deslocamentoBase.textContent = deslocamentoBaseValor.toFixed(2);
+    }
 }
 
 function calcularDano() {
+    const danoGDP = document.getElementById('danoGDP');
+    const danoGEB = document.getElementById('danoGEB');
+    if (!danoGDP || !danoGEB) return;
+    
     const ST = estadoAtributos.ST;
     const stKey = Math.max(1, Math.min(ST, 40));
     
     const dano = danoTable[stKey];
     if (dano) {
-        document.getElementById('danoGDP').textContent = dano.gdp;
-        document.getElementById('danoGEB').textContent = dano.geb;
+        danoGDP.textContent = dano.gdp;
+        danoGEB.textContent = dano.geb;
     }
 }
 
 function calcularCarga() {
+    const cargaNenhuma = document.getElementById('cargaNenhuma');
+    const cargaLeve = document.getElementById('cargaLeve');
+    const cargaMedia = document.getElementById('cargaMedia');
+    const cargaPesada = document.getElementById('cargaPesada');
+    const cargaMuitoPesada = document.getElementById('cargaMuitoPesada');
+    
+    if (!cargaNenhuma || !cargaLeve || !cargaMedia || !cargaPesada || !cargaMuitoPesada) return;
+    
     const ST = estadoAtributos.ST;
     const stKey = Math.max(1, Math.min(ST, 20));
     
     const cargas = cargasTable[stKey];
     if (cargas) {
-        document.getElementById('cargaNenhuma').textContent = cargas.nenhuma.toFixed(1);
-        document.getElementById('cargaLeve').textContent = cargas.leve.toFixed(1);
-        document.getElementById('cargaMedia').textContent = cargas.media.toFixed(1);
-        document.getElementById('cargaPesada').textContent = cargas.pesada.toFixed(1);
-        document.getElementById('cargaMuitoPesada').textContent = cargas.muitoPesada.toFixed(1);
+        cargaNenhuma.textContent = cargas.nenhuma.toFixed(1);
+        cargaLeve.textContent = cargas.leve.toFixed(1);
+        cargaMedia.textContent = cargas.media.toFixed(1);
+        cargaPesada.textContent = cargas.pesada.toFixed(1);
+        cargaMuitoPesada.textContent = cargas.muitoPesada.toFixed(1);
     }
 }
 
@@ -180,51 +208,100 @@ function calcularPontosGastos() {
     }
     
     // Atualizar custos individuais
-    document.getElementById('custoST').textContent = custoST;
-    document.getElementById('custoDX').textContent = custoDX;
-    document.getElementById('custoIQ').textContent = custoIQ;
-    document.getElementById('custoHT').textContent = custoHT;
+    const custoSTElement = document.getElementById('custoST');
+    const custoDXElement = document.getElementById('custoDX');
+    const custoIQElement = document.getElementById('custoIQ');
+    const custoHTElement = document.getElementById('custoHT');
+    
+    if (custoSTElement) custoSTElement.textContent = custoST;
+    if (custoDXElement) custoDXElement.textContent = custoDX;
+    if (custoIQElement) custoIQElement.textContent = custoIQ;
+    if (custoHTElement) custoHTElement.textContent = custoHT;
 }
 
 function calcularTotais() {
-    const pvTotal = Math.max(estadoAtributos.ST + estadoAtributos.bonusPV, 1);
-    document.getElementById('PVTotal').textContent = pvTotal;
+    const pvTotalElement = document.getElementById('PVTotal');
+    const pfTotalElement = document.getElementById('PFTotal');
+    const vontadeTotalElement = document.getElementById('VontadeTotal');
+    const percepcaoTotalElement = document.getElementById('PercepcaoTotal');
+    const deslocamentoTotalElement = document.getElementById('DeslocamentoTotal');
+    const deslocamentoBaseElement = document.getElementById('DeslocamentoBase');
     
-    const pfTotal = Math.max(estadoAtributos.HT + estadoAtributos.bonusPF, 1);
-    document.getElementById('PFTotal').textContent = pfTotal;
+    if (pvTotalElement) {
+        const pvTotal = Math.max(estadoAtributos.ST + estadoAtributos.bonusPV, 1);
+        pvTotalElement.textContent = pvTotal;
+    }
     
-    const vontadeTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusVontade, 1);
-    document.getElementById('VontadeTotal').textContent = vontadeTotal;
+    if (pfTotalElement) {
+        const pfTotal = Math.max(estadoAtributos.HT + estadoAtributos.bonusPF, 1);
+        pfTotalElement.textContent = pfTotal;
+    }
     
-    const percepcaoTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusPercepcao, 1);
-    document.getElementById('PercepcaoTotal').textContent = percepcaoTotal;
+    if (vontadeTotalElement) {
+        const vontadeTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusVontade, 1);
+        vontadeTotalElement.textContent = vontadeTotal;
+    }
     
-    const deslocamentoBase = parseFloat(document.getElementById('DeslocamentoBase').textContent);
-    const deslocamentoTotal = Math.max(deslocamentoBase + estadoAtributos.bonusDeslocamento, 0).toFixed(2);
-    document.getElementById('DeslocamentoTotal').textContent = deslocamentoTotal;
+    if (percepcaoTotalElement) {
+        const percepcaoTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusPercepcao, 1);
+        percepcaoTotalElement.textContent = percepcaoTotal;
+    }
+    
+    if (deslocamentoTotalElement && deslocamentoBaseElement) {
+        const deslocamentoBase = parseFloat(deslocamentoBaseElement.textContent) || 0;
+        const deslocamentoTotal = Math.max(deslocamentoBase + estadoAtributos.bonusDeslocamento, 0).toFixed(2);
+        deslocamentoTotalElement.textContent = deslocamentoTotal;
+    }
 }
 
 // ===== EVENTOS E INICIALIZAÇÃO =====
 
 function dispararEventoAlteracao() {
+    // Verificar se todos os elementos necessários existem
+    const pvTotalElement = document.getElementById('PVTotal');
+    const pfTotalElement = document.getElementById('PFTotal');
+    const vontadeTotalElement = document.getElementById('VontadeTotal');
+    const percepcaoTotalElement = document.getElementById('PercepcaoTotal');
+    const deslocamentoTotalElement = document.getElementById('DeslocamentoTotal');
+    const pontosGastosElement = document.getElementById('pontosGastos');
+    
+    // Se algum elemento crítico não existe, não disparar evento
+    if (!pvTotalElement || !pfTotalElement || !pontosGastosElement) return;
+    
     const evento = new CustomEvent('atributosAlterados', {
         detail: {
             ST: estadoAtributos.ST,
             DX: estadoAtributos.DX,
             IQ: estadoAtributos.IQ,
             HT: estadoAtributos.HT,
-            PV: parseInt(document.getElementById('PVTotal').textContent),
-            PF: parseInt(document.getElementById('PFTotal').textContent),
-            Vontade: parseInt(document.getElementById('VontadeTotal').textContent),
-            Percepcao: parseInt(document.getElementById('PercepcaoTotal').textContent),
-            Deslocamento: parseFloat(document.getElementById('DeslocamentoTotal').textContent),
-            pontosGastos: parseInt(document.getElementById('pontosGastos').textContent)
+            PV: parseInt(pvTotalElement.textContent),
+            PF: parseInt(pfTotalElement.textContent),
+            Vontade: vontadeTotalElement ? parseInt(vontadeTotalElement.textContent) : estadoAtributos.IQ,
+            Percepcao: percepcaoTotalElement ? parseInt(percepcaoTotalElement.textContent) : estadoAtributos.IQ,
+            Deslocamento: deslocamentoTotalElement ? parseFloat(deslocamentoTotalElement.textContent) : 5.00,
+            pontosGastos: parseInt(pontosGastosElement.textContent)
         }
     });
     document.dispatchEvent(evento);
 }
 
 function inicializarAtributos() {
+    // Verificar se estamos na aba de atributos
+    const abaAtributos = document.getElementById('atributos');
+    if (!abaAtributos || !abaAtributos.classList.contains('active')) {
+        return; // Não inicializar se não estiver na aba de atributos
+    }
+    
+    // Verificar se os elementos principais existem
+    const elementosNecessarios = ['ST', 'DX', 'IQ', 'HT'];
+    for (const id of elementosNecessarios) {
+        if (!document.getElementById(id)) {
+            // Tentar novamente depois
+            setTimeout(inicializarAtributos, 100);
+            return;
+        }
+    }
+    
     // Inicializar inputs dos atributos principais
     ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
         const input = document.getElementById(atributo);
@@ -279,7 +356,10 @@ function obterDadosParaSalvar() {
             Percepcao: estadoAtributos.bonusPercepcao,
             Deslocamento: estadoAtributos.bonusDeslocamento
         },
-        pontosGastosAtributos: parseInt(document.getElementById('pontosGastos').textContent),
+        pontosGastosAtributos: (estadoAtributos.ST - 10) * 10 +
+                              (estadoAtributos.DX - 10) * 20 +
+                              (estadoAtributos.IQ - 10) * 20 +
+                              (estadoAtributos.HT - 10) * 10,
         atualizadoEm: new Date().toISOString()
     };
 }
@@ -324,18 +404,24 @@ window.carregarDados = carregarDados;
 // ===== INICIALIZAÇÃO AUTOMÁTICA =====
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Aguardar um pouco para garantir que o DOM está completamente carregado
+    // Aguardar um pouco e verificar se estamos na aba de atributos
     setTimeout(() => {
-        if (document.getElementById('ST')) {
+        const abaAtributos = document.getElementById('atributos');
+        if (abaAtributos && abaAtributos.classList.contains('active')) {
             inicializarAtributos();
         }
-    }, 100);
+    }, 500);
+});
+
+// Escutar quando a aba mudar para inicializar atributos
+document.addEventListener('tabChanged', function(e) {
+    if (e.detail && e.detail.tab === 'atributos') {
+        setTimeout(inicializarAtributos, 100);
+    }
 });
 
 // ===== COMPATIBILIDADE COM O CARD DE PONTOS =====
 
-// Esta função garante que o card de pontos será atualizado
-// mesmo se o elemento tiver ID diferente
 function verificarEAtualizarCardPontos() {
     const totalGastos = (estadoAtributos.ST - 10) * 10 +
                        (estadoAtributos.DX - 10) * 20 +
@@ -353,18 +439,13 @@ function verificarEAtualizarCardPontos() {
     });
 }
 
-// Sobrescrever a função calcularTudo para incluir a verificação do card
-const calcularTudoOriginal = calcularTudo;
-calcularTudo = function() {
-    calcularTudoOriginal();
-    verificarEAtualizarCardPontos();
-};
+// Adicionar verificação de card quando calcular
+calcularTudo = (function(original) {
+    return function() {
+        original();
+        verificarEAtualizarCardPontos();
+    };
+})(calcularTudo);
 
 // Executar uma vez quando a página carregar
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(verificarEAtualizarCardPontos, 200);
-    });
-} else {
-    setTimeout(verificarEAtualizarCardPontos, 200);
-}
+setTimeout(verificarEAtualizarCardPontos, 300);
