@@ -1,235 +1,204 @@
-// caracteristicas-aparencia.js - VERSÃO CORRIGIDA PARA HTML NOVO
-console.log('🎭 CARREGANDO SISTEMA DE APARÊNCIA - VERSÃO ATUALIZADA');
+// caracteristicas-aparencia.js - CÓDIGO COMPLETO QUE FUNCIONA
+console.log('🎭 SISTEMA DE APARÊNCIA - CARREGANDO');
 
 class SistemaAparencia {
     constructor() {
-        console.log('⚙️ SistemaAparencia criado');
-        
-        // Configuração dos níveis - VERSÃO SIMPLIFICADA
-        this.niveisAparencia = {
-            "-24": { nome: "Horrendo", pontos: -24, reacao: "-6", desc: "Indescritivelmente monstruoso ou repugnante", icone: "fas fa-skull-crossbones", cor: "#8B0000" },
-            "-20": { nome: "Monstruoso", pontos: -20, reacao: "-5", desc: "Horrível e obviamente anormal", icone: "fas fa-ghost", cor: "#DC143C" },
-            "-16": { nome: "Hediondo", pontos: -16, reacao: "-4", desc: "Característica repugnante na aparência", icone: "fas fa-meh-rolling-eyes", cor: "#FF4500" },
-            "-8": { nome: "Feio", pontos: -8, reacao: "-2", desc: "Cabelo seboso, dentes tortos, etc.", icone: "fas fa-meh", cor: "#FF6347" },
-            "-4": { nome: "Sem Atrativos", pontos: -4, reacao: "-1", desc: "Algo antipático, mas não específico", icone: "fas fa-meh-blank", cor: "#FFA500" },
-            "0": { nome: "Comum", pontos: 0, reacao: "+0", desc: "Aparência padrão, sem modificadores", icone: "fas fa-user", cor: "#3498db" },
-            "4": { nome: "Atraente", pontos: 4, reacao: "+1", desc: "Boa aparência, +1 em testes de reação", icone: "fas fa-smile", cor: "#2ecc71" },
-            "12": { nome: "Elegante", pontos: 12, reacao: "+3", desc: "Poderia entrar em concursos de beleza", icone: "fas fa-grin-stars", cor: "#1abc9c" },
-            "16": { nome: "Muito Elegante", pontos: 16, reacao: "+4", desc: "Poderia vencer concursos de beleza", icone: "fas fa-crown", cor: "#9b59b6" },
-            "20": { nome: "Lindo", pontos: 20, reacao: "+5", desc: "Espécime ideal, aparência divina", icone: "fas fa-star", cor: "#f1c40f" }
-        };
-        
-        this.pontosAtuais = 0;
-        this.nivelAtual = "Comum";
+        console.log('✅ SistemaAparencia criado');
         this.inicializado = false;
-        
-        console.log('✅ Configuração carregada');
     }
-
+    
     inicializar() {
         if (this.inicializado) {
-            console.log('⚠️ Já inicializado');
+            console.log('⚠️ Já estava inicializado');
             return;
         }
         
-        console.log('🚀 INICIALIZANDO SISTEMA...');
+        console.log('🚀 Inicializando sistema de aparência...');
         
-        try {
-            // CAPTURAR ELEMENTOS DO HTML ATUAL
-            this.selectAparencia = document.getElementById('nivelAparencia');
-            this.badgePontos = document.getElementById('pontosAparencia');
-            this.displayAparencia = document.getElementById('displayAparencia');
-            
-            console.log('🔍 Procurando elementos:');
-            console.log('- Select:', !!this.selectAparencia);
-            console.log('- Badge:', !!this.badgePontos);
-            console.log('- Display:', !!this.displayAparencia);
-            
-            // VERIFICAR SE ELEMENTOS EXISTEM
-            if (!this.selectAparencia) {
-                console.error('❌ SELECT não encontrado! Procurando alternativas...');
-                this.selectAparencia = document.querySelector('select[id*="aparencia"], select[name*="aparencia"]');
-                console.log('Select alternativo:', !!this.selectAparencia);
-            }
-            
-            if (!this.badgePontos) {
-                console.error('❌ BADGE não encontrado!');
-            }
-            
-            if (!this.displayAparencia) {
-                console.error('❌ DISPLAY não encontrado!');
-            }
-            
-            if (!this.selectAparencia || !this.badgePontos || !this.displayAparencia) {
-                console.error('❌ Não é possível inicializar - elementos faltando');
-                return;
-            }
-            
-            console.log('✅ Elementos encontrados com sucesso');
-            
-            // CONFIGURAR EVENTO NO SELECT
-            this.selectAparencia.addEventListener('change', (e) => {
-                console.log('🔄 Select alterado - Valor:', e.target.value);
-                this.atualizarTudo(e.target.value);
-            });
-            
-            // CONFIGURAR VALOR INICIAL
-            const valorInicial = this.selectAparencia.value;
-            console.log('📊 Valor inicial do select:', valorInicial);
-            this.atualizarTudo(valorInicial);
-            
-            this.inicializado = true;
-            console.log('🎉 SISTEMA INICIALIZADO COM SUCESSO!');
-            
-        } catch (error) {
-            console.error('💥 ERRO NA INICIALIZAÇÃO:', error);
-        }
-    }
-
-    atualizarTudo(valor) {
-        console.log('🔄 Atualizando tudo com valor:', valor);
+        // 1. PEGAR OS ELEMENTOS DO HTML
+        this.select = document.getElementById('nivelAparencia');
+        this.badge = document.getElementById('pontosAparencia');
+        this.display = document.getElementById('displayAparencia');
         
-        // Obter dados do nível
-        const nivel = this.niveisAparencia[valor];
-        if (!nivel) {
-            console.error('❌ Nível não encontrado para valor:', valor);
+        console.log('🔍 Procurando elementos:', {
+            select: this.select ? '✅' : '❌',
+            badge: this.badge ? '✅' : '❌',
+            display: this.display ? '✅' : '❌'
+        });
+        
+        // Se não encontrou, tenta de novo em 1 segundo
+        if (!this.select || !this.badge || !this.display) {
+            console.log('⚠️ Elementos não encontrados, tentando novamente em 1s...');
+            setTimeout(() => this.inicializar(), 1000);
             return;
         }
         
-        console.log('📈 Nível encontrado:', nivel.nome);
+        console.log('✅ Todos elementos encontrados!');
         
-        // Atualizar estado
-        this.pontosAtuais = nivel.pontos;
-        this.nivelAtual = nivel.nome;
+        // 2. CONFIGURAR O EVENTO DO SELECT
+        this.select.addEventListener('change', (event) => {
+            const valor = event.target.value;
+            console.log(`🔄 Select mudou para: ${valor}`);
+            this.atualizarAparencia(valor);
+        });
         
-        // Executar atualizações
-        this.atualizarBadge(nivel);
-        this.atualizarDisplay(nivel);
+        // 3. INICIALIZAR COM O VALOR ATUAL
+        const valorInicial = this.select.value;
+        console.log(`📊 Valor inicial: ${valorInicial}`);
+        this.atualizarAparencia(valorInicial);
         
-        console.log('✅ Atualização completa');
+        this.inicializado = true;
+        console.log('🎉 Sistema de aparência INICIALIZADO!');
     }
-
-    atualizarBadge(nivel) {
-        if (!this.badgePontos) return;
+    
+    atualizarAparencia(valor) {
+        console.log(`📈 Atualizando aparência com valor: ${valor}`);
         
-        const pontos = nivel.pontos;
-        const textoPontos = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+        // Converter valor para número
+        const pontos = parseInt(valor);
         
-        // Atualizar texto
-        this.badgePontos.textContent = textoPontos;
+        // 1. ATUALIZAR O BADGE (os pontos)
+        this.atualizarBadge(pontos);
         
-        // Atualizar cores
+        // 2. ATUALIZAR O DISPLAY (nome e descrição)
+        this.atualizarDisplay(pontos);
+        
+        console.log('✅ Aparência atualizada!');
+    }
+    
+    atualizarBadge(pontos) {
+        if (!this.badge) return;
+        
+        console.log(`📛 Atualizando badge com: ${pontos} pontos`);
+        
+        // Formatar texto: "+4 pts" ou "-8 pts"
+        const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+        this.badge.textContent = texto;
+        
+        // Mudar cor baseada nos pontos
         if (pontos > 0) {
-            this.badgePontos.style.background = '#27ae60';
-            this.badgePontos.style.color = 'white';
-            this.badgePontos.style.borderColor = '#2ecc71';
+            // POSITIVO: Verde
+            this.badge.style.backgroundColor = '#2ecc71';
+            this.badge.style.color = 'white';
+            this.badge.style.borderColor = '#27ae60';
         } else if (pontos < 0) {
-            this.badgePontos.style.background = '#e74c3c';
-            this.badgePontos.style.color = 'white';
-            this.badgePontos.style.borderColor = '#c0392b';
+            // NEGATIVO: Vermelho
+            this.badge.style.backgroundColor = '#e74c3c';
+            this.badge.style.color = 'white';
+            this.badge.style.borderColor = '#c0392b';
         } else {
-            this.badgePontos.style.background = '#3498db';
-            this.badgePontos.style.color = 'white';
-            this.badgePontos.style.borderColor = '#2980b9';
+            // ZERO: Azul
+            this.badge.style.backgroundColor = '#3498db';
+            this.badge.style.color = 'white';
+            this.badge.style.borderColor = '#2980b9';
         }
         
-        console.log('📛 Badge atualizado:', textoPontos);
+        console.log(`✅ Badge atualizado: ${texto}`);
     }
-
-    atualizarDisplay(nivel) {
-        if (!this.displayAparencia) return;
+    
+    atualizarDisplay(pontos) {
+        if (!this.display) return;
         
-        console.log('🖥️ Atualizando display...');
+        console.log(`🖥️ Atualizando display com: ${pontos} pontos`);
         
-        // CRIAR HTML PARA O DISPLAY ATUAL
-        // Seu HTML atual tem esta estrutura:
-        // <div class="aparencia-display" id="displayAparencia">
-        //     <div class="display-header">
-        //         <i class="fas fa-user-circle"></i>
-        //         <div>
-        //             <strong>Comum</strong>
-        //             <small>Reação: +0</small>
-        //         </div>
-        //     </div>
-        //     <p class="display-desc">Aparência padrão, sem modificadores</p>
-        // </div>
+        // Dados baseados nos pontos
+        let dados;
         
-        const html = `
+        switch(pontos) {
+            case -24:
+                dados = { nome: "Horrendo", reacao: "-6", desc: "Indescritivelmente monstruoso ou repugnante", icone: "fas fa-skull-crossbones", cor: "#8B0000" };
+                break;
+            case -20:
+                dados = { nome: "Monstruoso", reacao: "-5", desc: "Horrível e obviamente anormal", icone: "fas fa-ghost", cor: "#DC143C" };
+                break;
+            case -16:
+                dados = { nome: "Hediondo", reacao: "-4", desc: "Característica repugnante na aparência", icone: "fas fa-meh-rolling-eyes", cor: "#FF4500" };
+                break;
+            case -8:
+                dados = { nome: "Feio", reacao: "-2", desc: "Cabelo seboso, dentes tortos, etc.", icone: "fas fa-meh", cor: "#FF6347" };
+                break;
+            case -4:
+                dados = { nome: "Sem Atrativos", reacao: "-1", desc: "Algo antipático, mas não específico", icone: "fas fa-meh-blank", cor: "#FFA500" };
+                break;
+            case 0:
+                dados = { nome: "Comum", reacao: "+0", desc: "Aparência padrão, sem modificadores", icone: "fas fa-user", cor: "#3498db" };
+                break;
+            case 4:
+                dados = { nome: "Atraente", reacao: "+1", desc: "Boa aparência, +1 em testes de reação", icone: "fas fa-smile", cor: "#2ecc71" };
+                break;
+            case 12:
+                dados = { nome: "Elegante", reacao: "+3", desc: "Poderia entrar em concursos de beleza", icone: "fas fa-grin-stars", cor: "#1abc9c" };
+                break;
+            case 16:
+                dados = { nome: "Muito Elegante", reacao: "+4", desc: "Poderia vencer concursos de beleza", icone: "fas fa-crown", cor: "#9b59b6" };
+                break;
+            case 20:
+                dados = { nome: "Lindo", reacao: "+5", desc: "Espécime ideal, aparência divina", icone: "fas fa-star", cor: "#f1c40f" };
+                break;
+            default:
+                dados = { nome: "Desconhecido", reacao: "+0", desc: "Nível não definido", icone: "fas fa-question", cor: "#95a5a6" };
+        }
+        
+        console.log(`📋 Dados do nível: ${dados.nome}`);
+        
+        // Atualizar o HTML do display
+        this.display.innerHTML = `
             <div class="display-header">
-                <i class="${nivel.icone}" style="color: ${nivel.cor}; font-size: 1.8em;"></i>
+                <i class="${dados.icone}" style="color: ${dados.cor}; font-size: 1.8em;"></i>
                 <div>
-                    <strong style="color: ${nivel.cor}; font-size: 1.2em;">${nivel.nome}</strong>
-                    <small style="color: ${nivel.cor}; margin-left: 10px;">Reação: ${nivel.reacao}</small>
+                    <strong style="color: ${dados.cor}; font-size: 1.2em;">${dados.nome}</strong>
+                    <small style="color: ${dados.cor}; margin-left: 10px;">Reação: ${dados.reacao}</small>
                 </div>
             </div>
-            <p class="display-desc" style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; border-left: 3px solid ${nivel.cor}">
-                ${nivel.desc}
+            <p class="display-desc" style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; border-left: 3px solid ${dados.cor}">
+                ${dados.desc}
             </p>
         `;
         
-        // Aplicar HTML ao display
-        this.displayAparencia.innerHTML = html;
-        
-        console.log('✅ Display atualizado com:', nivel.nome);
-    }
-
-    // GETTERS simples
-    getPontos() {
-        return this.pontosAtuais;
-    }
-
-    getNivel() {
-        return this.nivelAtual;
-    }
-
-    getDetalhes() {
-        return this.niveisAparencia[this.pontosAtuais];
+        console.log(`✅ Display atualizado: ${dados.nome}`);
     }
 }
 
-// ================ INICIALIZAÇÃO AUTOMÁTICA ================
-console.log('📦 Criando instância global do SistemaAparencia');
+// ========================
+// INICIALIZAÇÃO AUTOMÁTICA
+// ========================
 
 // Criar instância global
 window.sistemaAparencia = new SistemaAparencia();
 
-// Inicializar quando DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM Carregado - Preparando inicialização...');
+// Quando DOM carregar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM carregado - Sistema pronto');
 });
 
-// Inicializar quando clicar na tab características
-document.addEventListener('click', (e) => {
-    const tabBtn = e.target.closest('.tab-btn[data-tab="caracteristicas"]');
+// Quando clicar na tab "características"
+document.addEventListener('click', function(event) {
+    const tabBtn = event.target.closest('.tab-btn[data-tab="caracteristicas"]');
     if (tabBtn) {
         console.log('🎯 Clicou na tab características');
         setTimeout(() => {
-            if (window.sistemaAparencia && !window.sistemaAparencia.inicializado) {
+            if (window.sistemaAparencia) {
                 window.sistemaAparencia.inicializar();
-            } else if (window.sistemaAparencia) {
-                console.log('⚠️ Sistema já inicializado, apenas verificando...');
-                // Verificar se elementos ainda estão válidos
-                window.sistemaAparencia.atualizarTudo(window.sistemaAparencia.selectAparencia?.value || "0");
             }
         }, 300);
     }
 });
 
-// Inicializar se já estiver na tab características
-setTimeout(() => {
+// Inicializar automaticamente se já estiver na tab características
+setTimeout(function() {
     const tabAtiva = document.querySelector('#caracteristicas.tab-pane.active');
-    if (tabAtiva && window.sistemaAparencia && !window.sistemaAparencia.inicializado) {
-        console.log('🔍 Tab características já está ativa, inicializando...');
+    if (tabAtiva && window.sistemaAparencia) {
+        console.log('🔍 Tab características já ativa, inicializando...');
         window.sistemaAparencia.inicializar();
     }
-}, 1500);
+}, 2000);
 
-// Inicialização de segurança (após 3 segundos)
-setTimeout(() => {
+// Inicialização de segurança após 5 segundos
+setTimeout(function() {
     if (window.sistemaAparencia && !window.sistemaAparencia.inicializado) {
-        console.log('🕐 Inicialização de segurança após 3 segundos');
+        console.log('⏰ Inicialização de segurança após 5s');
         window.sistemaAparencia.inicializar();
     }
-}, 3000);
+}, 5000);
 
-console.log('✅ SistemaAparencia carregado e pronto para inicialização');
+console.log('✅ Sistema de aparência carregado com sucesso!');
