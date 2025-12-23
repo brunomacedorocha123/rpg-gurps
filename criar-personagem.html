@@ -2033,291 +2033,318 @@ body::before {
 <!-- DEPOIS: Dashboard e outros -->
 <script src="dashboard.js"></script>
 <script src="atributos.js"></script>
-    <script>
-    // ===========================================
-    // INICIALIZAÇÃO DO FIREBASE
-    // ===========================================
-    let app, auth, db;
+   <script>
+// ===========================================
+// INICIALIZAÇÃO DO FIREBASE
+// ===========================================
+let app, auth, db;
+
+if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+    app = firebase.app();
+    auth = firebase.auth();
+    db = firebase.firestore();
+} else {
+    const firebaseConfig = {
+        apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
+        authDomain: "gurpsroll.firebaseapp.com",
+        projectId: "gurpsroll"
+    };
     
-    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-        app = firebase.app();
-        auth = firebase.auth();
-        db = firebase.firestore();
-    } else {
-        const firebaseConfig = {
-            apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
-            authDomain: "gurpsroll.firebaseapp.com",
-            projectId: "gurpsroll"
-        };
-        
-        app = firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-    }
+    app = firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+}
+
+// ===========================================
+// VARIÁVEIS GLOBAIS
+// ===========================================
+let currentUser = null;
+let currentTabIndex = 0;
+const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias', 'magias', 'combate', 'equipamentos', 'resumo'];
+
+// ===========================================
+// INICIALIZAÇÃO DA PÁGINA
+// ===========================================
+document.addEventListener('DOMContentLoaded', function() {
+    initPage();
+    initTabs();
+});
+
+async function initPage() {
+    showLoading();
     
-    // ===========================================
-    // VARIÁVEIS GLOBAIS
-    // ===========================================
-    let currentUser = null;
-    let currentTabIndex = 0;
-    const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias', 'magias', 'combate', 'equipamentos', 'resumo'];
-    
-    // ===========================================
-    // INICIALIZAÇÃO DA PÁGINA
-    // ===========================================
-    document.addEventListener('DOMContentLoaded', function() {
-        initPage();
-        initTabs();
-    });
-    
-    async function initPage() {
-        showLoading();
-        
-        // Verifica autenticação
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadUserData();
-                hideLoading();
-                
-                // Verifica se está editando um personagem existente
-                const urlParams = new URLSearchParams(window.location.search);
-                const editCharacterId = urlParams.get('edit');
-                if (editCharacterId) {
-                    loadCharacterForEdit(editCharacterId);
-                }
-            } else {
-                // Não autenticado - redireciona
-                showToast('Faça login para criar personagens', 'error');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1500);
-            }
-        });
-    }
-    
-    // ===========================================
-    // CARREGAR DADOS DO USUÁRIO
-    // ===========================================
-    async function loadUserData() {
-        try {
-            const userDoc = await db.collection('player_profiles').doc(currentUser.uid).get();
-            
-            if (userDoc.exists) {
-                const data = userDoc.data();
-                document.getElementById('playerCode').textContent = data.player_code || 'N/A';
-            }
-        } catch (error) {
-            console.error('Erro ao carregar dados:', error);
-        }
-    }
-    
-    // ===========================================
-    // SISTEMA DE ABAS
-    // ===========================================
-    function initTabs() {
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-                switchTab(tabId);
-            });
-        });
-    }
-    
-    function switchTab(tabId) {
-        // Remove classe active de todas as abas
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        document.querySelectorAll('.tab-pane').forEach(pane => {
-            pane.classList.remove('active');
-        });
-        
-        // Adiciona classe active à aba selecionada
-        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-        
-        // Atualiza índice da aba atual
-        currentTabIndex = tabs.indexOf(tabId);
-    }
-    
-    function nextTab() {
-        if (currentTabIndex < tabs.length - 1) {
-            currentTabIndex++;
-            switchTab(tabs[currentTabIndex]);
-        }
-    }
-    
-    function previousTab() {
-        if (currentTabIndex > 0) {
-            currentTabIndex--;
-            switchTab(tabs[currentTabIndex]);
-        }
-    }
-    
-    // ===========================================
-    // CARREGAR PERSONAGEM PARA EDIÇÃO
-    // ===========================================
-    async function loadCharacterForEdit(characterId) {
-        try {
-            showLoading();
-            const characterDoc = await db.collection('characters').doc(characterId).get();
-            
-            if (characterDoc.exists) {
-                const characterData = characterDoc.data();
-                
-                // Preenche o nome do personagem
-                if (characterData.name) {
-                    document.getElementById('characterName').value = characterData.name;
-                }
-                
-                showToast('Personagem carregado para edição', 'success');
-            } else {
-                showToast('Personagem não encontrado', 'error');
-            }
-            
+    // Verifica autenticação
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            currentUser = user;
+            await loadUserData();
             hideLoading();
-        } catch (error) {
-            console.error('Erro ao carregar personagem:', error);
-            showToast('Erro ao carregar personagem', 'error');
-            hideLoading();
-        }
-    }
-    
-    // ===========================================
-    // SALVAR PERSONAGEM
-    // ===========================================
-    async function saveCharacter() {
-        const characterName = document.getElementById('characterName').value.trim();
-        
-        if (!characterName) {
-            showToast('Digite um nome para o personagem', 'error');
-            document.getElementById('characterName').focus();
-            return;
-        }
-        
-        try {
-            showLoading();
             
-            const characterData = {
-                name: characterName,
-                player_id: currentUser.uid,
-                player_code: document.getElementById('playerCode').textContent,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                is_active: true,
-                status: 'rascunho',
-                // Aqui serão adicionados os dados das abas posteriormente
-                attributes: {},
-                characteristics: {},
-                advantages: [],
-                disadvantages: [],
-                skills: [],
-                spells: [],
-                combat_stats: {},
-                equipment: []
-            };
-            
-            // Verifica se está editando ou criando novo
+            // Verifica se está editando um personagem existente
             const urlParams = new URLSearchParams(window.location.search);
             const editCharacterId = urlParams.get('edit');
-            
             if (editCharacterId) {
-                // Atualiza personagem existente
-                await db.collection('characters').doc(editCharacterId).update({
-                    ...characterData,
-                    updated_at: new Date().toISOString()
-                });
-                
-                showToast('Personagem atualizado com sucesso!', 'success');
-                setTimeout(() => {
-                    window.location.href = 'modo-personagem.html';
-                }, 1500);
-            } else {
-                // Cria novo personagem
-                await db.collection('characters').add(characterData);
-                
-                showToast('Personagem criado com sucesso!', 'success');
-                setTimeout(() => {
-                    window.location.href = 'modo-personagem.html';
-                }, 1500);
+                loadCharacterForEdit(editCharacterId);
             }
-            
-        } catch (error) {
-            console.error('Erro ao salvar personagem:', error);
-            showToast('Erro ao salvar personagem', 'error');
-            hideLoading();
-        }
-    }
-    
-    // ===========================================
-    // FUNÇÕES UTILITÁRIAS
-    // ===========================================
-    async function logout() {
-        try {
-            showLoading();
-            await auth.signOut();
-            showToast('Desconectado com sucesso', 'success');
+        } else {
+            // Não autenticado - redireciona
+            showToast('Faça login para criar personagens', 'error');
             setTimeout(() => {
                 window.location.href = 'login.html';
-            }, 1000);
-        } catch (error) {
-            hideLoading();
-            showToast('Erro ao sair', 'error');
-        }
-    }
-    
-    function showToast(message, type = 'info') {
-        const toast = document.getElementById('toast');
-        toast.innerHTML = message;
-        toast.className = 'toast ' + type;
-        toast.style.display = 'block';
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                toast.style.display = 'none';
-                toast.style.animation = '';
-            }, 300);
-        }, 3000);
-    }
-    
-    function showLoading() {
-        document.getElementById('loadingOverlay').style.display = 'flex';
-    }
-    
-    function hideLoading() {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-    
-    // ===========================================
-    // HOTKEYS
-    // ===========================================
-    document.addEventListener('keydown', function(e) {
-        // Ctrl+S - Salvar
-        if (e.ctrlKey && e.key === 's') {
-            e.preventDefault();
-            saveCharacter();
-        }
-        // Ctrl+→ - Próxima aba
-        if (e.ctrlKey && e.key === 'ArrowRight') {
-            e.preventDefault();
-            nextTab();
-        }
-        // Ctrl+← - Aba anterior
-        if (e.ctrlKey && e.key === 'ArrowLeft') {
-            e.preventDefault();
-            previousTab();
-        }
-        // Escape - Voltar
-        if (e.key === 'Escape') {
-            window.location.href = 'modo-personagem.html';
+            }, 1500);
         }
     });
-    </script>
+}
+
+// ===========================================
+// CARREGAR DADOS DO USUÁRIO
+// ===========================================
+async function loadUserData() {
+    try {
+        const userDoc = await db.collection('player_profiles').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            const data = userDoc.data();
+            document.getElementById('playerCode').textContent = data.player_code || 'N/A';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+    }
+}
+
+// ===========================================
+// SISTEMA DE ABAS COM INICIALIZAÇÃO DOS SISTEMAS
+// ===========================================
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            switchTab(tabId);
+        });
+    });
+}
+
+function switchTab(tabId) {
+    // Remove classe active de todas as abas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+    });
+    
+    // Adiciona classe active à aba selecionada
+    const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    if (tabButton) {
+        tabButton.classList.add('active');
+    }
+    
+    const tabPane = document.getElementById(tabId);
+    if (tabPane) {
+        tabPane.classList.add('active');
+    }
+    
+    // Atualiza índice da aba atual
+    currentTabIndex = tabs.indexOf(tabId);
+    
+    // INICIALIZAR SISTEMAS QUANDO ABRIR A ABA DE CARACTERÍSTICAS
+    if (tabId === 'caracteristicas') {
+        setTimeout(() => {
+            // Inicializar Sistema de Aparência
+            if (window.SistemaAparencia && !window._sistemaAparencia) {
+                window._sistemaAparencia = new SistemaAparencia();
+            }
+            
+            // Inicializar Sistema de Riqueza
+            if (window.SistemaRiqueza && !window._sistemaRiqueza) {
+                window._sistemaRiqueza = new SistemaRiqueza();
+            }
+        }, 100);
+    }
+    
+    // Disparar evento para outros sistemas
+    const event = new CustomEvent('tabChanged', {
+        detail: { tab: tabId }
+    });
+    document.dispatchEvent(event);
+}
+
+function nextTab() {
+    if (currentTabIndex < tabs.length - 1) {
+        currentTabIndex++;
+        switchTab(tabs[currentTabIndex]);
+    }
+}
+
+function previousTab() {
+    if (currentTabIndex > 0) {
+        currentTabIndex--;
+        switchTab(tabs[currentTabIndex]);
+    }
+}
+
+// ===========================================
+// CARREGAR PERSONAGEM PARA EDIÇÃO
+// ===========================================
+async function loadCharacterForEdit(characterId) {
+    try {
+        showLoading();
+        const characterDoc = await db.collection('characters').doc(characterId).get();
+        
+        if (characterDoc.exists) {
+            const characterData = characterDoc.data();
+            
+            // Preenche o nome do personagem
+            if (characterData.name) {
+                document.getElementById('characterName').value = characterData.name;
+            }
+            
+            showToast('Personagem carregado para edição', 'success');
+        } else {
+            showToast('Personagem não encontrado', 'error');
+        }
+        
+        hideLoading();
+    } catch (error) {
+        console.error('Erro ao carregar personagem:', error);
+        showToast('Erro ao carregar personagem', 'error');
+        hideLoading();
+    }
+}
+
+// ===========================================
+// SALVAR PERSONAGEM
+// ===========================================
+async function saveCharacter() {
+    const characterName = document.getElementById('characterName').value.trim();
+    
+    if (!characterName) {
+        showToast('Digite um nome para o personagem', 'error');
+        document.getElementById('characterName').focus();
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const characterData = {
+            name: characterName,
+            player_id: currentUser.uid,
+            player_code: document.getElementById('playerCode').textContent,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            is_active: true,
+            status: 'rascunho',
+            attributes: {},
+            characteristics: {},
+            advantages: [],
+            disadvantages: [],
+            skills: [],
+            spells: [],
+            combat_stats: {},
+            equipment: []
+        };
+        
+        // Verifica se está editando ou criando novo
+        const urlParams = new URLSearchParams(window.location.search);
+        const editCharacterId = urlParams.get('edit');
+        
+        if (editCharacterId) {
+            // Atualiza personagem existente
+            await db.collection('characters').doc(editCharacterId).update({
+                ...characterData,
+                updated_at: new Date().toISOString()
+            });
+            
+            showToast('Personagem atualizado com sucesso!', 'success');
+            setTimeout(() => {
+                window.location.href = 'modo-personagem.html';
+            }, 1500);
+        } else {
+            // Cria novo personagem
+            await db.collection('characters').add(characterData);
+            
+            showToast('Personagem criado com sucesso!', 'success');
+            setTimeout(() => {
+                window.location.href = 'modo-personagem.html';
+            }, 1500);
+        }
+        
+    } catch (error) {
+        console.error('Erro ao salvar personagem:', error);
+        showToast('Erro ao salvar personagem', 'error');
+        hideLoading();
+    }
+}
+
+// ===========================================
+// FUNÇÕES UTILITÁRIAS
+// ===========================================
+async function logout() {
+    try {
+        showLoading();
+        await auth.signOut();
+        showToast('Desconectado com sucesso', 'success');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1000);
+    } catch (error) {
+        hideLoading();
+        showToast('Erro ao sair', 'error');
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.innerHTML = message;
+    toast.className = 'toast ' + type;
+    toast.style.display = 'block';
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            toast.style.display = 'none';
+            toast.style.animation = '';
+        }, 300);
+    }, 3000);
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// ===========================================
+// HOTKEYS
+// ===========================================
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S - Salvar
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveCharacter();
+    }
+    // Ctrl+→ - Próxima aba
+    if (e.ctrlKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextTab();
+    }
+    // Ctrl+← - Aba anterior
+    if (e.ctrlKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        previousTab();
+    }
+    // Escape - Voltar
+    if (e.key === 'Escape') {
+        window.location.href = 'modo-personagem.html';
+    }
+});
+</script>
 
 </body>
 </html>
