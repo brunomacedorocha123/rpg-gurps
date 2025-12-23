@@ -1,4 +1,4 @@
-// caracteristicas-aparencia.js - CÓDIGO COMPLETO QUE FUNCIONA
+// caracteristicas-aparencia.js - VERSÃO CORRIGIDA
 console.log('🎭 SISTEMA DE APARÊNCIA - CARREGANDO');
 
 class SistemaAparencia {
@@ -15,7 +15,7 @@ class SistemaAparencia {
         
         console.log('🚀 Inicializando sistema de aparência...');
         
-        // 1. PEGAR OS ELEMENTOS DO HTML
+        // 1. PEGAR OS ELEMENTOS
         this.select = document.getElementById('nivelAparencia');
         this.badge = document.getElementById('pontosAparencia');
         this.display = document.getElementById('displayAparencia');
@@ -26,7 +26,6 @@ class SistemaAparencia {
             display: this.display ? '✅' : '❌'
         });
         
-        // Se não encontrou, tenta de novo em 1 segundo
         if (!this.select || !this.badge || !this.display) {
             console.log('⚠️ Elementos não encontrados, tentando novamente em 1s...');
             setTimeout(() => this.inicializar(), 1000);
@@ -35,33 +34,37 @@ class SistemaAparencia {
         
         console.log('✅ Todos elementos encontrados!');
         
-        // 2. CONFIGURAR O EVENTO DO SELECT
+        // 2. CONFIGURAR EVENTO DO SELECT
         this.select.addEventListener('change', (event) => {
-            const valor = event.target.value;
-            console.log(`🔄 Select mudou para: ${valor}`);
-            this.atualizarAparencia(valor);
+            this.atualizarTudo();
         });
         
-        // 3. INICIALIZAR COM O VALOR ATUAL
-        const valorInicial = this.select.value;
-        console.log(`📊 Valor inicial: ${valorInicial}`);
-        this.atualizarAparencia(valorInicial);
+        // 3. INICIALIZAR COM VALOR ATUAL
+        this.atualizarTudo();
         
         this.inicializado = true;
         console.log('🎉 Sistema de aparência INICIALIZADO!');
     }
     
-    atualizarAparencia(valor) {
-        console.log(`📈 Atualizando aparência com valor: ${valor}`);
+    atualizarTudo() {
+        if (!this.select) return;
         
-        // Converter valor para número
-        const pontos = parseInt(valor);
+        const valorTexto = this.select.value;
+        console.log(`📊 Valor do select: "${valorTexto}"`);
         
-        // 1. ATUALIZAR O BADGE (os pontos)
-        this.atualizarBadge(pontos);
+        // Converter para número (tratar caso de valor vazio)
+        const pontos = parseInt(valorTexto);
         
-        // 2. ATUALIZAR O DISPLAY (nome e descrição)
-        this.atualizarDisplay(pontos);
+        console.log(`📈 Pontos calculados: ${pontos} (${isNaN(pontos) ? 'NaN - Vamos usar 0' : 'OK'})`);
+        
+        // Se for NaN, usar 0
+        const pontosFinais = isNaN(pontos) ? 0 : pontos;
+        
+        // ATUALIZAR BADGE
+        this.atualizarBadge(pontosFinais);
+        
+        // ATUALIZAR DISPLAY
+        this.atualizarDisplay(pontosFinais);
         
         console.log('✅ Aparência atualizada!');
     }
@@ -71,29 +74,34 @@ class SistemaAparencia {
         
         console.log(`📛 Atualizando badge com: ${pontos} pontos`);
         
-        // Formatar texto: "+4 pts" ou "-8 pts"
-        const texto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
-        this.badge.textContent = texto;
+        // Garantir que pontos é um número
+        const pontosNum = Number(pontos);
         
-        // Mudar cor baseada nos pontos
-        if (pontos > 0) {
-            // POSITIVO: Verde
-            this.badge.style.backgroundColor = '#2ecc71';
-            this.badge.style.color = 'white';
-            this.badge.style.borderColor = '#27ae60';
-        } else if (pontos < 0) {
-            // NEGATIVO: Vermelho
-            this.badge.style.backgroundColor = '#e74c3c';
-            this.badge.style.color = 'white';
-            this.badge.style.borderColor = '#c0392b';
+        // Formatar texto
+        let texto;
+        if (pontosNum > 0) {
+            texto = `+${pontosNum} pts`;
+        } else if (pontosNum < 0) {
+            texto = `${pontosNum} pts`;
         } else {
-            // ZERO: Azul
-            this.badge.style.backgroundColor = '#3498db';
-            this.badge.style.color = 'white';
-            this.badge.style.borderColor = '#2980b9';
+            texto = `0 pts`;
         }
         
-        console.log(`✅ Badge atualizado: ${texto}`);
+        // Atualizar texto
+        this.badge.textContent = texto;
+        console.log(`✅ Badge texto: ${texto}`);
+        
+        // Mudar cores
+        if (pontosNum > 0) {
+            this.badge.style.backgroundColor = '#2ecc71';
+            this.badge.style.color = 'white';
+        } else if (pontosNum < 0) {
+            this.badge.style.backgroundColor = '#e74c3c';
+            this.badge.style.color = 'white';
+        } else {
+            this.badge.style.backgroundColor = '#3498db';
+            this.badge.style.color = 'white';
+        }
     }
     
     atualizarDisplay(pontos) {
@@ -136,12 +144,12 @@ class SistemaAparencia {
                 dados = { nome: "Lindo", reacao: "+5", desc: "Espécime ideal, aparência divina", icone: "fas fa-star", cor: "#f1c40f" };
                 break;
             default:
-                dados = { nome: "Desconhecido", reacao: "+0", desc: "Nível não definido", icone: "fas fa-question", cor: "#95a5a6" };
+                dados = { nome: "Comum", reacao: "+0", desc: "Aparência padrão", icone: "fas fa-user", cor: "#3498db" };
         }
         
         console.log(`📋 Dados do nível: ${dados.nome}`);
         
-        // Atualizar o HTML do display
+        // Atualizar HTML
         this.display.innerHTML = `
             <div class="display-header">
                 <i class="${dados.icone}" style="color: ${dados.cor}; font-size: 1.8em;"></i>
@@ -154,24 +162,21 @@ class SistemaAparencia {
                 ${dados.desc}
             </p>
         `;
-        
-        console.log(`✅ Display atualizado: ${dados.nome}`);
     }
 }
 
 // ========================
-// INICIALIZAÇÃO AUTOMÁTICA
+// INICIALIZAÇÃO
 // ========================
 
-// Criar instância global
 window.sistemaAparencia = new SistemaAparencia();
 
 // Quando DOM carregar
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM carregado - Sistema pronto');
+    console.log('📄 DOM carregado');
 });
 
-// Quando clicar na tab "características"
+// Quando clicar na tab características
 document.addEventListener('click', function(event) {
     const tabBtn = event.target.closest('.tab-btn[data-tab="caracteristicas"]');
     if (tabBtn) {
@@ -184,21 +189,13 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Inicializar automaticamente se já estiver na tab características
+// Inicializar automaticamente
 setTimeout(function() {
     const tabAtiva = document.querySelector('#caracteristicas.tab-pane.active');
     if (tabAtiva && window.sistemaAparencia) {
         console.log('🔍 Tab características já ativa, inicializando...');
         window.sistemaAparencia.inicializar();
     }
-}, 2000);
+}, 1500);
 
-// Inicialização de segurança após 5 segundos
-setTimeout(function() {
-    if (window.sistemaAparencia && !window.sistemaAparencia.inicializado) {
-        console.log('⏰ Inicialização de segurança após 5s');
-        window.sistemaAparencia.inicializar();
-    }
-}, 5000);
-
-console.log('✅ Sistema de aparência carregado com sucesso!');
+console.log('✅ Sistema de aparência pronto!');
