@@ -1,418 +1,248 @@
-// dashboard.js - VERSÃO COMPLETA E FUNCIONAL
+// ================ DASHBOARD MANAGER - COMPLETO ================
 class DashboardManager {
     constructor() {
-        console.log('📊 DashboardManager criado');
-        
+        console.log('📊 DashboardManager inicializado');
         this.estado = {
-            pontos: {
-                total: 150,
-                limiteDesvantagens: -50,
-                gastosAtributos: 0,
-                gastosVantagens: 0,
-                gastosDesvantagens: 0,
-                gastosPericias: 0,
-                gastosMagias: 0,
-                gastosTecnicas: 0,
-                gastosPeculiaridades: 0
-            },
-            atributos: {
-                ST: 10,
-                DX: 10,
-                IQ: 10,
-                HT: 10,
-                PV: 10,
-                PF: 10
-            },
-            caracteristicas: {
-                aparencia: 0,
-                riqueza: 0,
-                idiomas: 0,
-                fisicas: 0
-            },
-            identificacao: {
-                raca: '',
-                classe: '',
-                nivel: '',
-                descricao: ''
-            }
+            pontosGastosAtributos: 0,
+            pontosGastosCaracteristicas: 0,
+            pontosGastosVantagens: 0,
+            pontosGastosDesvantagens: 0,
+            pontosGastosPericias: 0,
+            pontosGastosMagias: 0,
+            pontosGastosTecnicas: 0,
+            pontosGastosPeculiaridades: 0
         };
-        
         this.inicializado = false;
     }
 
     inicializar() {
         if (this.inicializado) return;
-        console.log('🚀 Inicializando DashboardManager...');
+        console.log('🚀 DashboardManager: Inicializando...');
         
-        // 1. Configurar inputs de identificação
-        this.configurarIdentificacao();
-        
-        // 2. Configurar sistema de pontos
-        this.configurarPontos();
-        
-        // 3. Configurar sistema de foto
-        this.configurarFoto();
-        
-        // 4. Configurar ouvinte para atributos
-        this.configurarOuvinteAtributos();
-        
-        // 5. Configurar ouvinte para características
-        this.configurarOuvinteCaracteristicas();
-        
-        // 6. Calcular valores iniciais
-        this.atualizarTudo();
+        this.configurarFotoPersonagem();
+        this.configurarContadorDescricao();
+        this.configurarControlePontos();
+        this.configurarBotoesVitalidade();
+        this.configurarOuvintes();
         
         this.inicializado = true;
-        console.log('✅ DashboardManager inicializado!');
+        console.log('✅ DashboardManager: Pronto!');
     }
 
-    // ================ IDENTIFICAÇÃO ================
-    configurarIdentificacao() {
-        // Raça
-        const racaInput = document.getElementById('dashboardRaca');
-        if (racaInput) {
-            racaInput.addEventListener('input', () => {
-                this.estado.identificacao.raca = racaInput.value;
-            });
-        }
-        
-        // Classe
-        const classeInput = document.getElementById('dashboardClasse');
-        if (classeInput) {
-            classeInput.addEventListener('input', () => {
-                this.estado.identificacao.classe = classeInput.value;
-            });
-        }
-        
-        // Nível
-        const nivelInput = document.getElementById('dashboardNivel');
-        if (nivelInput) {
-            nivelInput.addEventListener('input', () => {
-                this.estado.identificacao.nivel = nivelInput.value;
-            });
-        }
-        
-        // Descrição
-        const descricaoInput = document.getElementById('dashboardDescricao');
-        if (descricaoInput) {
-            descricaoInput.addEventListener('input', () => {
-                this.estado.identificacao.descricao = descricaoInput.value;
-                
-                // Contador de caracteres
-                const contador = document.getElementById('contadorDescricao');
-                if (contador) {
-                    contador.textContent = descricaoInput.value.length;
-                }
-            });
-        }
-    }
-
-    // ================ PONTOS ================
-    configurarPontos() {
-        // Pontos totais
-        const pontosTotais = document.getElementById('pontosTotais');
-        if (pontosTotais) {
-            pontosTotais.addEventListener('change', () => {
-                this.estado.pontos.total = parseInt(pontosTotais.value) || 150;
-                this.atualizarSaldo();
-            });
-            
-            pontosTotais.addEventListener('input', () => {
-                this.estado.pontos.total = parseInt(pontosTotais.value) || 150;
-                this.atualizarSaldo();
-            });
-        }
-        
-        // Limite de desvantagens
-        const limiteDesvantagens = document.getElementById('limiteDesvantagens');
-        if (limiteDesvantagens) {
-            limiteDesvantagens.addEventListener('change', () => {
-                this.estado.pontos.limiteDesvantagens = parseInt(limiteDesvantagens.value) || -50;
-            });
-            
-            limiteDesvantagens.addEventListener('input', () => {
-                this.estado.pontos.limiteDesvantagens = parseInt(limiteDesvantagens.value) || -50;
-            });
-        }
-    }
-
-    // ================ FOTO ================
-    configurarFoto() {
+    configurarFotoPersonagem() {
         const fotoUpload = document.getElementById('fotoUpload');
         const btnRemoverFoto = document.getElementById('btnRemoverFoto');
         const fotoPreview = document.getElementById('fotoPreview');
         const fotoPlaceholder = document.getElementById('fotoPlaceholder');
         
-        if (fotoUpload) {
-            fotoUpload.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        if (fotoPreview) {
-                            fotoPreview.src = event.target.result;
-                            fotoPreview.style.display = 'block';
-                        }
-                        if (fotoPlaceholder) {
-                            fotoPlaceholder.style.display = 'none';
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+        if (!fotoUpload || !btnRemoverFoto || !fotoPreview || !fotoPlaceholder) {
+            console.warn('⚠️ Elementos de foto não encontrados');
+            return;
         }
         
-        if (btnRemoverFoto) {
-            btnRemoverFoto.addEventListener('click', () => {
-                if (fotoPreview) {
-                    fotoPreview.src = '';
-                    fotoPreview.style.display = 'none';
-                }
-                if (fotoPlaceholder) {
-                    fotoPlaceholder.style.display = 'flex';
-                }
-                if (fotoUpload) {
-                    fotoUpload.value = '';
-                }
+        fotoUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    fotoPreview.src = event.target.result;
+                    fotoPreview.style.display = 'block';
+                    fotoPlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        btnRemoverFoto.addEventListener('click', () => {
+            fotoPreview.src = '';
+            fotoPreview.style.display = 'none';
+            fotoPlaceholder.style.display = 'flex';
+            fotoUpload.value = '';
+        });
+    }
+
+    configurarContadorDescricao() {
+        const descricaoInput = document.getElementById('dashboardDescricao');
+        const contador = document.getElementById('contadorDescricao');
+        
+        if (descricaoInput && contador) {
+            contador.textContent = descricaoInput.value.length;
+            descricaoInput.addEventListener('input', () => {
+                contador.textContent = descricaoInput.value.length;
             });
         }
     }
 
-    // ================ OUVINTE PARA ATRIBUTOS ================
-    configurarOuvinteAtributos() {
-        console.log('👂 Configurando ouvinte para atributos...');
+    configurarControlePontos() {
+        const pontosTotais = document.getElementById('pontosTotais');
+        const limiteDesvantagens = document.getElementById('limiteDesvantagens');
         
+        if (pontosTotais) {
+            pontosTotais.addEventListener('change', () => {
+                this.atualizarSaldoDisponivel();
+            });
+        }
+        
+        if (limiteDesvantagens) {
+            limiteDesvantagens.addEventListener('change', () => {
+                // Apenas armazena o valor
+            });
+        }
+    }
+
+    configurarBotoesVitalidade() {
+        // PV
+        const btnPVDiminuir = document.querySelector('[onclick*="ajustarPV(-1)"]');
+        const btnPVAumentar = document.querySelector('[onclick*="ajustarPV(1)"]');
+        
+        if (btnPVDiminuir) {
+            btnPVDiminuir.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.ajustarPV(-1);
+            });
+        }
+        
+        if (btnPVAumentar) {
+            btnPVAumentar.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.ajustarPV(1);
+            });
+        }
+        
+        // PF
+        const btnPFDiminuir = document.querySelector('[onclick*="ajustarPF(-1)"]');
+        const btnPFAumentar = document.querySelector('[onclick*="ajustarPF(1)"]');
+        
+        if (btnPFDiminuir) {
+            btnPFDiminuir.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.ajustarPF(-1);
+            });
+        }
+        
+        if (btnPFAumentar) {
+            btnPFAumentar.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.ajustarPF(1);
+            });
+        }
+    }
+
+    configurarOuvintes() {
+        // Ouvir eventos de atributos
         document.addEventListener('atributosAlterados', (e) => {
-            console.log('📥 Evento de atributos recebido:', e.detail);
-            
-            if (e.detail) {
-                // Atualizar atributos no estado
-                this.estado.atributos.ST = e.detail.ST || 10;
-                this.estado.atributos.DX = e.detail.DX || 10;
-                this.estado.atributos.IQ = e.detail.IQ || 10;
-                this.estado.atributos.HT = e.detail.HT || 10;
-                this.estado.atributos.PV = e.detail.PV || 10;
-                this.estado.atributos.PF = e.detail.PF || 10;
-                
-                // Atualizar pontos gastos em atributos
-                this.estado.pontos.gastosAtributos = e.detail.pontosGastos || 0;
-                
-                console.log('💰 Pontos gastos em atributos:', this.estado.pontos.gastosAtributos);
-                
-                // Atualizar displays
-                this.atualizarDisplayAtributos();
-                this.atualizarResumoGastos();
-                this.atualizarSaldo();
-                
-                console.log('✅ Atributos atualizados no dashboard');
-            }
+            this.processarAtributosAlterados(e.detail);
         });
-    }
-
-    // ================ OUVINTE PARA CARACTERÍSTICAS ================
-    configurarOuvinteCaracteristicas() {
-        console.log('👂 Configurando ouvinte para características...');
         
+        // Ouvir eventos de características
         document.addEventListener('caracteristicasAtualizadas', (e) => {
-            console.log('📥 Evento de características recebido:', e.detail);
-            
-            if (e.detail) {
-                // Atualizar características no estado
-                this.estado.caracteristicas.aparencia = e.detail.detalhes?.aparencia || 0;
-                this.estado.caracteristicas.riqueza = e.detail.detalhes?.riqueza || 0;
-                this.estado.caracteristicas.idiomas = e.detail.detalhes?.idiomas || 0;
-                this.estado.caracteristicas.fisicas = e.detail.detalhes?.caracteristicas || 0;
-                
-                // Atualizar pontos gastos em peculiaridades (onde vão as características)
-                this.estado.pontos.gastosPeculiaridades = e.detail.total || 0;
-                
-                console.log('💰 Pontos gastos em características:', this.estado.pontos.gastosPeculiaridades);
-                
-                // Atualizar displays
-                this.atualizarFinanceiro();
-                this.atualizarResumoGastos();
-                this.atualizarSaldo();
-                
-                console.log('✅ Características atualizadas no dashboard');
-            }
+            this.processarCaracteristicasAtualizadas(e.detail);
         });
     }
 
-    // ================ ATUALIZAÇÕES DE DISPLAY ================
-    atualizarDisplayAtributos() {
-        console.log('🔄 Atualizando display de atributos...');
+    processarAtributosAlterados(detalhes) {
+        console.log('📥 Dashboard: Processando atributos alterados', detalhes);
         
-        // Atributos básicos
-        const stElement = document.getElementById('atributoST');
-        const dxElement = document.getElementById('atributoDX');
-        const iqElement = document.getElementById('atributoIQ');
-        const htElement = document.getElementById('atributoHT');
+        // Atualizar valores dos atributos
+        if (detalhes.ST) document.getElementById('atributoST').textContent = detalhes.ST;
+        if (detalhes.DX) document.getElementById('atributoDX').textContent = detalhes.DX;
+        if (detalhes.IQ) document.getElementById('atributoIQ').textContent = detalhes.IQ;
+        if (detalhes.HT) document.getElementById('atributoHT').textContent = detalhes.HT;
         
-        if (stElement) stElement.textContent = this.estado.atributos.ST;
-        if (dxElement) dxElement.textContent = this.estado.atributos.DX;
-        if (iqElement) iqElement.textContent = this.estado.atributos.IQ;
-        if (htElement) htElement.textContent = this.estado.atributos.HT;
-        
-        // Pontos de Vida
-        const valorPV = document.getElementById('valorPV');
-        const barraPV = document.getElementById('barraPV');
-        if (valorPV) {
-            valorPV.textContent = `${this.estado.atributos.PV}/${this.estado.atributos.PV}`;
-        }
-        if (barraPV) {
-            barraPV.style.width = '100%';
+        // Atualizar PV/PF
+        if (detalhes.PV) {
+            const valorPV = document.getElementById('valorPV');
+            if (valorPV) valorPV.textContent = `${detalhes.PV}/${detalhes.PV}`;
         }
         
-        // Pontos de Fadiga
-        const valorPF = document.getElementById('valorPF');
-        const barraPF = document.getElementById('barraPF');
-        if (valorPF) {
-            valorPF.textContent = `${this.estado.atributos.PF}/${this.estado.atributos.PF}`;
+        if (detalhes.PF) {
+            const valorPF = document.getElementById('valorPF');
+            if (valorPF) valorPF.textContent = `${detalhes.PF}/${detalhes.PF}`;
         }
-        if (barraPF) {
-            barraPF.style.width = '100%';
+        
+        // Atualizar pontos gastos em atributos
+        if (detalhes.pontosGastos !== undefined) {
+            this.estado.pontosGastosAtributos = detalhes.pontosGastos;
+            this.atualizarCardPontos('gastosAtributos', detalhes.pontosGastos);
+            this.atualizarTotalLiquido();
+            this.atualizarSaldoDisponivel();
         }
     }
 
-    atualizarFinanceiro() {
-        console.log('🔄 Atualizando financeiro...');
+    processarCaracteristicasAtualizadas(detalhes) {
+        console.log('📥 Dashboard: Processando características atualizadas', detalhes);
         
-        // Nível de riqueza
-        const nivelRiqueza = document.getElementById('nivelRiqueza');
-        if (nivelRiqueza) {
-            const riqueza = this.estado.caracteristicas.riqueza;
-            if (riqueza >= 50) nivelRiqueza.textContent = "Podre de Rico";
-            else if (riqueza >= 30) nivelRiqueza.textContent = "Muito Rico";
-            else if (riqueza >= 20) nivelRiqueza.textContent = "Rico";
-            else if (riqueza >= 10) nivelRiqueza.textContent = "Confortável";
-            else if (riqueza === 0) nivelRiqueza.textContent = "Médio";
-            else if (riqueza >= -10) nivelRiqueza.textContent = "Batalhador";
-            else if (riqueza >= -15) nivelRiqueza.textContent = "Pobre";
-            else nivelRiqueza.textContent = "Falido";
-        }
-        
-        // Saldo do personagem (simulação)
-        const saldoPersonagem = document.getElementById('saldoPersonagem');
-        if (saldoPersonagem) {
-            const riqueza = this.estado.caracteristicas.riqueza;
-            if (riqueza >= 50) saldoPersonagem.textContent = "$20.000";
-            else if (riqueza >= 30) saldoPersonagem.textContent = "$10.000";
-            else if (riqueza >= 20) saldoPersonagem.textContent = "$5.000";
-            else if (riqueza >= 10) saldoPersonagem.textContent = "$2.000";
-            else if (riqueza === 0) saldoPersonagem.textContent = "$1.000";
-            else if (riqueza >= -10) saldoPersonagem.textContent = "$500";
-            else if (riqueza >= -15) saldoPersonagem.textContent = "$200";
-            else saldoPersonagem.textContent = "$100";
-        }
-        
-        // Aparência
-        const nivelAparencia = document.getElementById('nivelAparencia');
-        if (nivelAparencia) {
-            const aparencia = this.estado.caracteristicas.aparencia;
-            if (aparencia >= 20) nivelAparencia.textContent = "Lindo";
-            else if (aparencia >= 16) nivelAparencia.textContent = "Muito Elegante";
-            else if (aparencia >= 12) nivelAparencia.textContent = "Elegante";
-            else if (aparencia >= 4) nivelAparencia.textContent = "Atraente";
-            else if (aparencia === 0) nivelAparencia.textContent = "Comum";
-            else if (aparencia >= -4) nivelAparencia.textContent = "Sem Atrativos";
-            else if (aparencia >= -8) nivelAparencia.textContent = "Feio";
-            else if (aparencia >= -16) nivelAparencia.textContent = "Hediondo";
-            else if (aparencia >= -20) nivelAparencia.textContent = "Monstruoso";
-            else nivelAparencia.textContent = "Horrendo";
+        if (detalhes && detalhes.total !== undefined) {
+            this.estado.pontosGastosPeculiaridades = detalhes.total;
+            this.atualizarCardPontos('gastosPeculiaridades', detalhes.total);
+            this.atualizarTotalLiquido();
+            this.atualizarSaldoDisponivel();
         }
     }
 
-    atualizarResumoGastos() {
-        console.log('💰 Atualizando resumo de gastos...');
-        console.log('Gastos Atributos:', this.estado.pontos.gastosAtributos);
-        console.log('Gastos Peculiaridades:', this.estado.pontos.gastosPeculiaridades);
-        
-        // Atributos
-        const gastosAtributos = document.getElementById('gastosAtributos');
-        if (gastosAtributos) {
-            gastosAtributos.textContent = this.estado.pontos.gastosAtributos;
-            this.aplicarEstiloPontos(gastosAtributos, this.estado.pontos.gastosAtributos);
+    atualizarCardPontos(idCard, valor) {
+        const elemento = document.getElementById(idCard);
+        if (!elemento) {
+            console.warn(`⚠️ Card não encontrado: ${idCard}`);
+            return;
         }
         
-        // Vantagens
-        const gastosVantagens = document.getElementById('gastosVantagens');
-        if (gastosVantagens) {
-            gastosVantagens.textContent = this.estado.pontos.gastosVantagens;
-            this.aplicarEstiloPontos(gastosVantagens, this.estado.pontos.gastosVantagens);
-        }
+        elemento.textContent = valor;
         
-        // Desvantagens
-        const gastosDesvantagens = document.getElementById('gastosDesvantagens');
-        if (gastosDesvantagens) {
-            gastosDesvantagens.textContent = this.estado.pontos.gastosDesvantagens;
-            this.aplicarEstiloPontos(gastosDesvantagens, this.estado.pontos.gastosDesvantagens);
+        // Aplicar estilo
+        elemento.classList.remove('positivo', 'negativo', 'neutro');
+        if (valor > 0) {
+            elemento.classList.add('positivo');
+        } else if (valor < 0) {
+            elemento.classList.add('negativo');
+        } else {
+            elemento.classList.add('neutro');
         }
-        
-        // Perícias
-        const gastosPericias = document.getElementById('gastosPericias');
-        if (gastosPericias) {
-            gastosPericias.textContent = this.estado.pontos.gastosPericias;
-            this.aplicarEstiloPontos(gastosPericias, this.estado.pontos.gastosPericias);
-        }
-        
-        // Magias
-        const gastosMagias = document.getElementById('gastosMagias');
-        if (gastosMagias) {
-            gastosMagias.textContent = this.estado.pontos.gastosMagias;
-            this.aplicarEstiloPontos(gastosMagias, this.estado.pontos.gastosMagias);
-        }
-        
-        // Técnicas
-        const gastosTecnicas = document.getElementById('gastosTecnicas');
-        if (gastosTecnicas) {
-            gastosTecnicas.textContent = this.estado.pontos.gastosTecnicas;
-            this.aplicarEstiloPontos(gastosTecnicas, this.estado.pontos.gastosTecnicas);
-        }
-        
-        // Peculiaridades (onde vão as características)
-        const gastosPeculiaridades = document.getElementById('gastosPeculiaridades');
-        if (gastosPeculiaridades) {
-            gastosPeculiaridades.textContent = this.estado.pontos.gastosPeculiaridades;
-            this.aplicarEstiloPontos(gastosPeculiaridades, this.estado.pontos.gastosPeculiaridades);
-        }
-        
-        // Total líquido
+    }
+
+    atualizarTotalLiquido() {
         const totalLiquido = document.getElementById('totalLiquido');
-        if (totalLiquido) {
-            const total = this.calcularTotalGastos();
-            totalLiquido.textContent = total;
-            this.aplicarEstiloPontos(totalLiquido, total);
-        }
+        if (!totalLiquido) return;
+        
+        const total = 
+            this.estado.pontosGastosAtributos +
+            this.estado.pontosGastosVantagens +
+            this.estado.pontosGastosDesvantagens +
+            this.estado.pontosGastosPericias +
+            this.estado.pontosGastosMagias +
+            this.estado.pontosGastosTecnicas +
+            this.estado.pontosGastosPeculiaridades;
+        
+        totalLiquido.textContent = total;
+        this.aplicarEstiloPontos(totalLiquido, total);
     }
 
-    calcularTotalGastos() {
-        return this.estado.pontos.gastosAtributos +
-               this.estado.pontos.gastosVantagens +
-               this.estado.pontos.gastosDesvantagens +
-               this.estado.pontos.gastosPericias +
-               this.estado.pontos.gastosMagias +
-               this.estado.pontos.gastosTecnicas +
-               this.estado.pontos.gastosPeculiaridades;
-    }
-
-    atualizarSaldo() {
+    atualizarSaldoDisponivel() {
         const saldoDisponivel = document.getElementById('saldoDisponivel');
-        if (saldoDisponivel) {
-            const saldo = this.estado.pontos.total - this.calcularTotalGastos();
-            saldoDisponivel.textContent = saldo;
-            
-            // Aplicar estilo baseado no saldo
-            if (saldo < 0) {
-                saldoDisponivel.style.color = '#e74c3c';
-                saldoDisponivel.style.fontWeight = 'bold';
-            } else if (saldo === 0) {
-                saldoDisponivel.style.color = '#f39c12';
-                saldoDisponivel.style.fontWeight = 'bold';
-            } else {
-                saldoDisponivel.style.color = '#2ecc71';
-                saldoDisponivel.style.fontWeight = 'normal';
-            }
+        const pontosTotais = document.getElementById('pontosTotais');
+        
+        if (!saldoDisponivel || !pontosTotais) return;
+        
+        const pontosDisponiveis = parseInt(pontosTotais.value) || 150;
+        const totalGasto = this.calcularTotalGasto();
+        const saldo = pontosDisponiveis - totalGasto;
+        
+        saldoDisponivel.textContent = saldo;
+        
+        if (saldo < 0) {
+            saldoDisponivel.style.color = '#e74c3c';
+            saldoDisponivel.style.fontWeight = 'bold';
+        } else if (saldo === 0) {
+            saldoDisponivel.style.color = '#f39c12';
+            saldoDisponivel.style.fontWeight = 'bold';
+        } else {
+            saldoDisponivel.style.color = '#2ecc71';
+            saldoDisponivel.style.fontWeight = 'normal';
         }
+    }
+
+    calcularTotalGasto() {
+        return Object.values(this.estado).reduce((total, valor) => total + valor, 0);
     }
 
     aplicarEstiloPontos(elemento, valor) {
@@ -430,175 +260,225 @@ class DashboardManager {
         }
     }
 
-    // ================ FUNÇÕES DE CONTROLE ================
     ajustarPV(valor) {
-        this.estado.atributos.PV = Math.max(1, this.estado.atributos.PV + valor);
-        this.atualizarDisplayAtributos();
+        const valorPV = document.getElementById('valorPV');
+        if (!valorPV) return;
+        
+        const partes = valorPV.textContent.split('/');
+        let atual = parseInt(partes[0]) || 10;
+        let maximo = parseInt(partes[1]) || 10;
+        
+        atual = Math.max(0, Math.min(maximo, atual + valor));
+        valorPV.textContent = `${atual}/${maximo}`;
+        
+        // Atualizar barra
+        const barraPV = document.getElementById('barraPV');
+        if (barraPV) {
+            const porcentagem = (atual / maximo) * 100;
+            barraPV.style.width = `${porcentagem}%`;
+        }
     }
 
     ajustarPF(valor) {
-        this.estado.atributos.PF = Math.max(1, this.estado.atributos.PF + valor);
-        this.atualizarDisplayAtributos();
+        const valorPF = document.getElementById('valorPF');
+        if (!valorPF) return;
+        
+        const partes = valorPF.textContent.split('/');
+        let atual = parseInt(partes[0]) || 10;
+        let maximo = parseInt(partes[1]) || 10;
+        
+        atual = Math.max(0, Math.min(maximo, atual + valor));
+        valorPF.textContent = `${atual}/${maximo}`;
+        
+        // Atualizar barra
+        const barraPF = document.getElementById('barraPF');
+        if (barraPF) {
+            const porcentagem = (atual / maximo) * 100;
+            barraPF.style.width = `${porcentagem}%`;
+        }
     }
 
-    // ================ FUNÇÃO PRINCIPAL ================
-    atualizarTudo() {
-        console.log('🔄 Atualizando tudo no dashboard...');
-        this.atualizarDisplayAtributos();
-        this.atualizarFinanceiro();
-        this.atualizarResumoGastos();
-        this.atualizarSaldo();
-    }
-
-    // ================ FUNÇÕES PARA SALVAR/CARREGAR ================
+    // ================ FUNÇÕES DE PERSISTÊNCIA ================
     coletarDadosParaSalvar() {
         return {
-            identificacao: this.estado.identificacao,
-            pontos: this.estado.pontos,
-            atributos: this.estado.atributos,
-            caracteristicas: this.estado.caracteristicas,
-            atualizadoEm: new Date().toISOString()
+            dashboard: {
+                identificacao: {
+                    raca: document.getElementById('dashboardRaca')?.value || '',
+                    classe: document.getElementById('dashboardClasse')?.value || '',
+                    nivel: document.getElementById('dashboardNivel')?.value || '',
+                    descricao: document.getElementById('dashboardDescricao')?.value || ''
+                },
+                pontos: {
+                    total: parseInt(document.getElementById('pontosTotais')?.value) || 150,
+                    limiteDesvantagens: parseInt(document.getElementById('limiteDesvantagens')?.value) || -50
+                },
+                atributos: {
+                    ST: parseInt(document.getElementById('atributoST')?.textContent) || 10,
+                    DX: parseInt(document.getElementById('atributoDX')?.textContent) || 10,
+                    IQ: parseInt(document.getElementById('atributoIQ')?.textContent) || 10,
+                    HT: parseInt(document.getElementById('atributoHT')?.textContent) || 10,
+                    PV: parseInt(document.getElementById('valorPV')?.textContent.split('/')[0]) || 10,
+                    PF: parseInt(document.getElementById('valorPF')?.textContent.split('/')[0]) || 10
+                },
+                gastos: this.estado,
+                foto: document.getElementById('fotoPreview')?.src || ''
+            }
         };
     }
 
     carregarDados(dados) {
-        if (!dados) return;
+        if (!dados?.dashboard) return;
         
-        console.log('📥 Carregando dados no dashboard:', dados);
+        console.log('📥 Dashboard: Carregando dados', dados);
         
-        // Carregar identificação
-        if (dados.identificacao) {
-            this.estado.identificacao = { ...dados.identificacao };
-            
-            // Preencher inputs
-            const racaInput = document.getElementById('dashboardRaca');
-            const classeInput = document.getElementById('dashboardClasse');
-            const nivelInput = document.getElementById('dashboardNivel');
-            const descricaoInput = document.getElementById('dashboardDescricao');
-            
-            if (racaInput && dados.identificacao.raca) racaInput.value = dados.identificacao.raca;
-            if (classeInput && dados.identificacao.classe) classeInput.value = dados.identificacao.classe;
-            if (nivelInput && dados.identificacao.nivel) nivelInput.value = dados.identificacao.nivel;
-            if (descricaoInput && dados.identificacao.descricao) {
-                descricaoInput.value = dados.identificacao.descricao;
-                
-                // Atualizar contador
+        // Identificação
+        const identificacao = dados.dashboard.identificacao;
+        if (identificacao) {
+            if (document.getElementById('dashboardRaca') && identificacao.raca) 
+                document.getElementById('dashboardRaca').value = identificacao.raca;
+            if (document.getElementById('dashboardClasse') && identificacao.classe) 
+                document.getElementById('dashboardClasse').value = identificacao.classe;
+            if (document.getElementById('dashboardNivel') && identificacao.nivel) 
+                document.getElementById('dashboardNivel').value = identificacao.nivel;
+            if (document.getElementById('dashboardDescricao') && identificacao.descricao) {
+                document.getElementById('dashboardDescricao').value = identificacao.descricao;
                 const contador = document.getElementById('contadorDescricao');
-                if (contador) {
-                    contador.textContent = descricaoInput.value.length;
-                }
+                if (contador) contador.textContent = identificacao.descricao.length;
             }
         }
         
-        // Carregar pontos
-        if (dados.pontos) {
-            this.estado.pontos = { ...dados.pontos };
+        // Pontos
+        const pontos = dados.dashboard.pontos;
+        if (pontos) {
+            if (document.getElementById('pontosTotais')) 
+                document.getElementById('pontosTotais').value = pontos.total || 150;
+            if (document.getElementById('limiteDesvantagens')) 
+                document.getElementById('limiteDesvantagens').value = pontos.limiteDesvantagens || -50;
+        }
+        
+        // Atributos
+        const atributos = dados.dashboard.atributos;
+        if (atributos) {
+            if (document.getElementById('atributoST')) 
+                document.getElementById('atributoST').textContent = atributos.ST || 10;
+            if (document.getElementById('atributoDX')) 
+                document.getElementById('atributoDX').textContent = atributos.DX || 10;
+            if (document.getElementById('atributoIQ')) 
+                document.getElementById('atributoIQ').textContent = atributos.IQ || 10;
+            if (document.getElementById('atributoHT')) 
+                document.getElementById('atributoHT').textContent = atributos.HT || 10;
+            if (document.getElementById('valorPV')) 
+                document.getElementById('valorPV').textContent = `${atributos.PV || 10}/${atributos.PV || 10}`;
+            if (document.getElementById('valorPF')) 
+                document.getElementById('valorPF').textContent = `${atributos.PF || 10}/${atributos.PF || 10}`;
+        }
+        
+        // Gastos
+        const gastos = dados.dashboard.gastos;
+        if (gastos) {
+            this.estado = { ...gastos };
             
-            // Atualizar inputs
-            const pontosTotais = document.getElementById('pontosTotais');
-            const limiteDesvantagens = document.getElementById('limiteDesvantagens');
-            
-            if (pontosTotais) pontosTotais.value = dados.pontos.total || 150;
-            if (limiteDesvantagens) limiteDesvantagens.value = dados.pontos.limiteDesvantagens || -50;
+            // Atualizar cards
+            this.atualizarCardPontos('gastosAtributos', gastos.pontosGastosAtributos || 0);
+            this.atualizarCardPontos('gastosVantagens', gastos.pontosGastosVantagens || 0);
+            this.atualizarCardPontos('gastosDesvantagens', gastos.pontosGastosDesvantagens || 0);
+            this.atualizarCardPontos('gastosPericias', gastos.pontosGastosPericias || 0);
+            this.atualizarCardPontos('gastosMagias', gastos.pontosGastosMagias || 0);
+            this.atualizarCardPontos('gastosTecnicas', gastos.pontosGastosTecnicas || 0);
+            this.atualizarCardPontos('gastosPeculiaridades', gastos.pontosGastosPeculiaridades || 0);
         }
         
-        // Carregar atributos
-        if (dados.atributos) {
-            this.estado.atributos = { ...dados.atributos };
+        // Foto
+        const foto = dados.dashboard.foto;
+        if (foto && document.getElementById('fotoPreview') && foto !== '') {
+            document.getElementById('fotoPreview').src = foto;
+            document.getElementById('fotoPreview').style.display = 'block';
+            document.getElementById('fotoPlaceholder').style.display = 'none';
         }
         
-        // Carregar características
-        if (dados.caracteristicas) {
-            this.estado.caracteristicas = { ...dados.caracteristicas };
-        }
+        // Atualizar totais
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+    }
+
+    // ================ FUNÇÃO PARA TESTE ================
+    testarDashboard() {
+        console.log('🧪 TESTANDO DASHBOARD:');
+        console.log('Estado:', this.estado);
+        console.log('Inicializado:', this.inicializado);
         
-        // Atualizar displays
-        setTimeout(() => this.atualizarTudo(), 100);
+        // Verificar elementos críticos
+        const elementos = [
+            'gastosAtributos',
+            'gastosPeculiaridades',
+            'totalLiquido',
+            'saldoDisponivel',
+            'atributoST',
+            'atributoDX'
+        ];
+        
+        elementos.forEach(id => {
+            const el = document.getElementById(id);
+            console.log(`${id}:`, el ? '✅' : '❌', el?.textContent);
+        });
+        
+        // Simular atualização de atributos
+        const eventoTeste = new CustomEvent('atributosAlterados', {
+            detail: {
+                ST: 12,
+                DX: 14,
+                IQ: 13,
+                HT: 11,
+                PV: 12,
+                PF: 11,
+                pontosGastos: 50
+            }
+        });
+        document.dispatchEvent(eventoTeste);
     }
 }
 
 // ================ INICIALIZAÇÃO GLOBAL ================
 (function() {
-    console.log('📁 Carregando DashboardManager...');
+    console.log('📁 DashboardManager: Carregando...');
     
     // Criar instância global
     window.dashboardManager = new DashboardManager();
     
-    // Inicializar quando a aba dashboard for ativada
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.attributeName === 'class') {
-                const dashboardTab = document.getElementById('dashboard');
-                if (dashboardTab && dashboardTab.classList.contains('active') && !window.dashboardManager.inicializado) {
-                    setTimeout(() => {
-                        window.dashboardManager.inicializar();
-                    }, 300);
-                }
-            }
-        });
+    // Inicializar quando a aba for aberta
+    document.addEventListener('click', function(e) {
+        const tabBtn = e.target.closest('[data-tab="dashboard"]');
+        if (tabBtn && !window.dashboardManager.inicializado) {
+            setTimeout(() => window.dashboardManager.inicializar(), 300);
+        }
     });
     
-    // Observar mudanças nas tabs
-    const dashboardTab = document.getElementById('dashboard');
-    if (dashboardTab) {
-        observer.observe(dashboardTab, { attributes: true });
-    }
-    
-    // Tentar inicializar automaticamente após 2 segundos
+    // Inicializar se já estiver na aba dashboard
     setTimeout(() => {
         const dashboardTab = document.getElementById('dashboard');
-        if (dashboardTab && dashboardTab.classList.contains('active') && !window.dashboardManager.inicializado) {
+        if (dashboardTab && dashboardTab.classList.contains('active')) {
             window.dashboardManager.inicializar();
         }
-    }, 2000);
+    }, 1000);
     
-    // Inicializar quando clicar na tab
-    document.addEventListener('click', function(e) {
-        const tabBtn = e.target.closest('.tab-btn');
-        if (tabBtn && tabBtn.getAttribute('data-tab') === 'dashboard' && !window.dashboardManager.inicializado) {
-            setTimeout(() => {
-                window.dashboardManager.inicializar();
-            }, 300);
+    // Exportar funções globais
+    window.ajustarPV = function(valor) {
+        if (window.dashboardManager) {
+            window.dashboardManager.ajustarPV(valor);
         }
-    });
+    };
+    
+    window.ajustarPF = function(valor) {
+        if (window.dashboardManager) {
+            window.dashboardManager.ajustarPF(valor);
+        }
+    };
+    
+    window.testarDashboard = function() {
+        if (window.dashboardManager) {
+            window.dashboardManager.testarDashboard();
+        }
+    };
 })();
 
-// ================ FUNÇÕES GLOBAIS PARA HTML ================
-window.ajustarPV = function(valor) {
-    if (window.dashboardManager) {
-        window.dashboardManager.ajustarPV(valor);
-    }
-};
-
-window.ajustarPF = function(valor) {
-    if (window.dashboardManager) {
-        window.dashboardManager.ajustarPF(valor);
-    }
-};
-
-// ================ DEBUG ================
-window.testarDashboard = function() {
-    console.log('=== 🧪 TESTE DO DASHBOARD ===');
-    console.log('Dashboard Manager:', window.dashboardManager ? '✅' : '❌');
-    console.log('Inicializado:', window.dashboardManager?.inicializado ? '✅' : '❌');
-    console.log('Estado atual:', window.dashboardManager?.estado);
-    
-    // Testar elementos críticos
-    const elementosCriticos = [
-        'gastosAtributos',
-        'gastosPeculiaridades',
-        'totalLiquido',
-        'saldoDisponivel',
-        'atributoST',
-        'atributoDX'
-    ];
-    
-    elementosCriticos.forEach(id => {
-        const elemento = document.getElementById(id);
-        console.log(`${id}:`, elemento ? '✅' : '❌');
-    });
-    
-    console.log('=== FIM DO TESTE ===');
-};
-
-console.log('📊 DashboardManager carregado!');
+console.log('📊 DashboardManager: Carregado com sucesso!');
