@@ -1,5 +1,5 @@
 // ===========================================
-// DASHBOARD MANAGER - VERSÃO COMPLETA E FUNCIONAL
+// DASHBOARD MANAGER - VERSÃO LIMPA
 // ===========================================
 
 class DashboardManager {
@@ -14,14 +14,12 @@ class DashboardManager {
                 gastosMagias: 0,
                 gastosTecnicas: 0,
                 gastosPeculiaridades: 0,
-                // NOVO: Pontos de Características
                 gastosCaracteristicas: 0,
                 saldoDisponivel: 150,
                 limiteDesvantagens: -50,
                 pontosGastosTotal: 0
             },
             caracteristicas: {
-                // NOVO: Para armazenar pontos de características
                 aparência: 0,
                 riqueza: 0,
                 idiomas: 0,
@@ -49,9 +47,7 @@ class DashboardManager {
                 saldo: '$2.000',
                 aparencia: 'Média'
             },
-            foto: null,
-            userId: null,
-            characterId: null
+            foto: null
         };
         
         this.fotoTemporaria = null;
@@ -60,7 +56,6 @@ class DashboardManager {
         this.ultimosAtributos = { ST: 10, DX: 10, IQ: 10, HT: 10 };
         this.ultimaAtualizacaoAtributos = 0;
         
-        // NOVO: Cache dos pontos de características
         this.pontosCaracteristicasCache = {
             aparência: 0,
             riqueza: 0,
@@ -69,7 +64,6 @@ class DashboardManager {
             total: 0
         };
         
-        // NOVO: Controle de salvamento automático
         this.autoSaveTimeout = null;
         this.autoSaveEnabled = true;
     }
@@ -79,18 +73,15 @@ class DashboardManager {
         this.configurarEventosDashboard();
         this.configurarEventosAtributos();
         this.configurarEventosExternos();
+        this.configurarMonitorCaracteristicas();
         this.configurarBotoesVitalidade();
         this.carregarValoresIniciais();
         this.iniciarMonitoramentoContinuo();
         this.forcarAtualizacaoInicial();
         
-        // NOVO: Configurar monitoramento de características
-        this.configurarMonitorCaracteristicas();
-        
         return this;
     }
 
-    // MÉTODO CRÍTICO: Cálculo automático dos pontos gastos com atributos
     calcularPontosAtributos() {
         const st = this.obterValorElemento('ST', 10);
         const dx = this.obterValorElemento('DX', 10);
@@ -104,16 +95,14 @@ class DashboardManager {
         
         const totalGastos = custoST + custoDX + custoIQ + custoHT;
         
-        // Atualizar o estado
         if (this.estado.pontos.gastosAtributos !== totalGastos) {
             this.estado.pontos.gastosAtributos = totalGastos;
-            return true; // Houve mudança
+            return true;
         }
         
-        return false; // Não houve mudança
+        return false;
     }
 
-    // MÉTODO AUXILIAR: Obter valor de elemento com segurança
     obterValorElemento(id, padrao) {
         const elemento = document.getElementById(id);
         if (!elemento) return padrao;
@@ -127,21 +116,17 @@ class DashboardManager {
         return padrao;
     }
 
-    // MÉTODO CRÍTICO: Atualizar atributos derivados (PV, PF, etc)
     atualizarAtributosDerivados() {
-        // Coletar valores dos elementos na aba de atributos
         const st = this.obterValorElemento('ST', 10);
         const dx = this.obterValorElemento('DX', 10);
         const iq = this.obterValorElemento('IQ', 10);
         const ht = this.obterValorElemento('HT', 10);
         
-        // Atualizar estado
         this.estado.atributos.ST = st;
         this.estado.atributos.DX = dx;
         this.estado.atributos.IQ = iq;
         this.estado.atributos.HT = ht;
         
-        // Tentar obter valores totais se existirem
         const pvTotal = this.obterValorElemento('PVTotal', st);
         const pfTotal = this.obterValorElemento('PFTotal', ht);
         const vontadeTotal = this.obterValorElemento('VontadeTotal', iq);
@@ -160,12 +145,10 @@ class DashboardManager {
         this.estado.atributos.Vontade = vontadeTotal;
         this.estado.atributos.Percepcao = percepcaoTotal;
         
-        // Deslocamento - precisa de cálculo especial
         const deslocamentoElement = document.getElementById('DeslocamentoTotal');
         if (deslocamentoElement) {
             this.estado.atributos.Deslocamento = parseFloat(deslocamentoElement.textContent) || 5.00;
         } else {
-            // Calcular manualmente se elemento não existe
             this.estado.atributos.Deslocamento = (ht + dx) / 4;
         }
         
@@ -348,7 +331,6 @@ class DashboardManager {
     }
 
     configurarEventosAtributos() {
-        // Monitorar inputs de atributos diretamente
         ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
             const input = document.getElementById(atributo);
             if (input) {
@@ -358,100 +340,61 @@ class DashboardManager {
         });
     }
 
-    // ===========================================
-    // NOVO MÉTODO: Configurar monitoramento de características
-    // ===========================================
     configurarMonitorCaracteristicas() {
-        console.log('Configurando monitor de características...');
-        
-        // 1. ESCUTAR EVENTOS DA APARÊNCIA
         document.addEventListener('pontosAparenciaAtualizados', (e) => {
             if (e.detail && typeof e.detail.pontos === 'number') {
-                console.log('🎭 Evento aparência recebido:', e.detail.pontos);
                 this.atualizarPontosCaracteristicas('aparência', e.detail.pontos);
             }
         });
 
-        // 2. ESCUTAR EVENTOS DA RIQUEZA
         document.addEventListener('pontosRiquezaAtualizados', (e) => {
             if (e.detail && typeof e.detail.pontos === 'number') {
-                console.log('💰 Evento riqueza recebido:', e.detail.pontos);
                 this.atualizarPontosCaracteristicas('riqueza', e.detail.pontos);
             }
         });
 
-        // 3. ESCUTAR EVENTOS DE IDIOMAS
         document.addEventListener('pontosIdiomasAtualizados', (e) => {
             if (e.detail && typeof e.detail.pontos === 'number') {
-                console.log('🌐 Evento idiomas recebido:', e.detail.pontos);
                 this.atualizarPontosCaracteristicas('idiomas', e.detail.pontos);
             }
         });
 
-        // 4. ESCUTAR EVENTOS DE CARACTERÍSTICAS FÍSICAS
         document.addEventListener('pontosFisicasAtualizados', (e) => {
             if (e.detail && typeof e.detail.pontos === 'number') {
-                console.log('💪 Evento físicas recebido:', e.detail.pontos);
                 this.atualizarPontosCaracteristicas('fisicas', e.detail.pontos);
             }
         });
     }
 
-    // ===========================================
-    // NOVO MÉTODO: Atualizar pontos de características específicas
-    // ===========================================
     atualizarPontosCaracteristicas(tipo, pontos) {
-        console.log(`📊 Atualizando ${tipo}: ${pontos} pontos`);
-        
-        // Atualizar cache
         this.pontosCaracteristicasCache[tipo] = pontos;
         
-        // Recalcular total de características
         const totalCaracteristicas = 
             this.pontosCaracteristicasCache.aparência +
             this.pontosCaracteristicasCache.riqueza +
             this.pontosCaracteristicasCache.idiomas +
             this.pontosCaracteristicasCache.fisicas;
         
-        // Atualizar estado
         this.estado.caracteristicas[tipo] = pontos;
         this.estado.pontos.gastosCaracteristicas = totalCaracteristicas;
         
-        console.log(`📊 Total características: ${totalCaracteristicas}`);
-        
-        // Recalcular saldo completo
         this.recalcularSaldoCompleto();
-        
-        // Atualizar displays
         this.atualizarDisplayPontos();
         this.atualizarDisplayResumo();
         this.atualizarDisplayDistribuicao();
-        
-        // Atualizar UI da aba de características
         this.atualizarUICaracteristicas();
-        
-        // Salvar automaticamente
         this.salvarAuto();
-        
-        // Disparar evento para UI de características
-        this.dispararEventoCaracteristicas();
     }
 
-    // ===========================================
-    // NOVO MÉTODO: Atualizar UI da aba de características
-    // ===========================================
     atualizarUICaracteristicas() {
-        // Atualizar totais nas abas de características
         const totalCaracteristicas = this.estado.pontos.gastosCaracteristicas;
         
-        // Elemento totalCaracteristicas na aba de características
         const elTotal = document.getElementById('totalCaracteristicas');
         if (elTotal) {
             elTotal.textContent = totalCaracteristicas >= 0 ? 
                 `+${totalCaracteristicas} pts` : `${totalCaracteristicas} pts`;
         }
         
-        // Atualizar cada seção individualmente
         const pontosAparencia = this.estado.caracteristicas.aparência;
         const elResumoAparencia = document.getElementById('resumoAparencia');
         if (elResumoAparencia) {
@@ -466,14 +409,12 @@ class DashboardManager {
                 `+${pontosRiqueza} pts` : `${pontosRiqueza} pts`;
         }
         
-        // Atualizar total da seção 1 (Aparência + Riqueza)
         const secao1 = pontosAparencia + pontosRiqueza;
         const elSecao1 = document.getElementById('totalSecao1');
         if (elSecao1) {
             elSecao1.textContent = secao1 >= 0 ? `+${secao1} pts` : `${secao1} pts`;
         }
         
-        // Atualizar badges individuais
         const badgeAparencia = document.getElementById('pontosAparencia');
         if (badgeAparencia) {
             badgeAparencia.textContent = pontosAparencia >= 0 ? 
@@ -487,25 +428,7 @@ class DashboardManager {
         }
     }
 
-    // ===========================================
-    // NOVO MÉTODO: Disparar evento para UI de características
-    // ===========================================
-    dispararEventoCaracteristicas() {
-        const evento = new CustomEvent('dashboardCaracteristicasAtualizadas', {
-            detail: {
-                totalCaracteristicas: this.estado.pontos.gastosCaracteristicas,
-                saldoDisponivel: this.estado.pontos.saldoDisponivel,
-                aparência: this.estado.caracteristicas.aparência,
-                riqueza: this.estado.caracteristicas.riqueza,
-                idiomas: this.estado.caracteristicas.idiomas,
-                fisicas: this.estado.caracteristicas.fisicas
-            }
-        });
-        document.dispatchEvent(evento);
-    }
-
     configurarEventosExternos() {
-        // Eventos para quando outras abas forem implementadas
         document.addEventListener('vantagensAlteradas', (e) => {
             if (e.detail && typeof e.detail.total === 'number') {
                 this.atualizarVantagensDesvantagens(e.detail.total);
@@ -624,7 +547,6 @@ class DashboardManager {
             }
         });
 
-        // Calcular pontos de atributos inicialmente
         this.calcularPontosAtributos();
         this.atualizarAtributosDerivados();
         this.calcularRendaDetalhada();
@@ -674,20 +596,16 @@ class DashboardManager {
     verificarAtualizacaoAtributos() {
         const agora = Date.now();
         
-        // Evitar atualizações muito rápidas (debounce)
         if (agora - this.ultimaAtualizacaoAtributos < 100) {
             return;
         }
         
         this.ultimaAtualizacaoAtributos = agora;
         
-        // Calcular pontos de atributos
         const atributosMudaram = this.calcularPontosAtributos();
         
-        // Atualizar atributos derivados
         this.atualizarAtributosDerivados();
         
-        // Se os pontos de atributos mudaram, recalcular tudo
         if (atributosMudaram) {
             this.recalcularSaldoCompleto();
             this.atualizarDisplayCompleto();
@@ -696,8 +614,7 @@ class DashboardManager {
     }
 
     verificarAtualizacoesPendentes() {
-        // Verificar se há mudanças nas características que não foram capturadas
-        // Pode ser usado para integração futura
+        // Verificação silenciosa
     }
 
     atualizarVantagensDesvantagens(total) {
@@ -728,14 +645,14 @@ class DashboardManager {
         const rendaBase = 1000;
         
         const multiplicadores = {
-            '-25': 0.0,   // Muito pobre
-            '-15': 0.2,   // Pobre
-            '-10': 0.5,   // Abaixo da média
-            '0': 1.0,     // Médio
-            '10': 2.0,    // Confortável
-            '20': 5.0,    // Rico
-            '30': 20.0,   // Muito rico
-            '50': 100.0   // Extremamente rico
+            '-25': 0.0,
+            '-15': 0.2,
+            '-10': 0.5,
+            '0': 1.0,
+            '10': 2.0,
+            '20': 5.0,
+            '30': 20.0,
+            '50': 100.0
         };
         
         const multiplicador = multiplicadores[valor.toString()] || 1.0;
@@ -749,13 +666,9 @@ class DashboardManager {
         }
     }
 
-    // ===========================================
-    // MÉTODO CRÍTICO: Recalcular saldo considerando TUDO
-    // ===========================================
     recalcularSaldoCompleto() {
         const total = this.estado.pontos.total;
         
-        // TODOS os gastos positivos (atributos, vantagens, características, etc.)
         const gastosPositivos = 
             this.estado.pontos.gastosAtributos + 
             this.estado.pontos.gastosVantagens + 
@@ -763,25 +676,14 @@ class DashboardManager {
             this.estado.pontos.gastosMagias +
             this.estado.pontos.gastosTecnicas +
             this.estado.pontos.gastosPeculiaridades +
-            this.estado.pontos.gastosCaracteristicas; // CARACTERÍSTICAS AQUI!
+            this.estado.pontos.gastosCaracteristicas;
         
-        // Pontos ganhos com desvantagens (valor negativo)
         const pontosDesvantagens = this.estado.pontos.gastosDesvantagens;
         
-        // CÁLCULO FINAL DO SALDO:
-        // Saldo = Total - Gastos Positivos + Pontos de Desvantagens
         const saldoDisponivel = total - gastosPositivos + pontosDesvantagens;
         
-        // Atualizar estado
         this.estado.pontos.saldoDisponivel = saldoDisponivel;
         this.estado.pontos.pontosGastosTotal = gastosPositivos - pontosDesvantagens;
-        
-        console.log(`📊 Recálculo saldo:
-          Total: ${total}
-          Gastos Positivos: ${gastosPositivos}
-          Desvantagens: ${pontosDesvantagens}
-          Saldo Final: ${saldoDisponivel}
-          Características: ${this.estado.pontos.gastosCaracteristicas}`);
     }
 
     atualizarContadorDescricao() {
@@ -820,10 +722,8 @@ class DashboardManager {
 
     atualizarDisplayPontos() {
         const saldoDisponivel = this.estado.pontos.saldoDisponivel;
-        
         this.atualizarElemento('saldoDisponivel', saldoDisponivel);
         
-        // NOVO: Atualizar o elemento de pontos totais se existir
         const pontosTotaisElement = document.getElementById('pontosTotais');
         if (pontosTotaisElement && pontosTotaisElement.value !== this.estado.pontos.total.toString()) {
             pontosTotaisElement.value = this.estado.pontos.total;
@@ -854,7 +754,6 @@ class DashboardManager {
         this.atualizarElemento('gastosDesvantagens', gastosDesvantagens);
         this.atualizarElemento('totalLiquido', saldoDisponivel);
         
-        // NOVO: Adicionar gastos de características se houver elemento
         const gastosCaracteristicasElement = document.getElementById('gastosCaracteristicas');
         if (gastosCaracteristicasElement) {
             gastosCaracteristicasElement.textContent = gastosCaracteristicas;
@@ -931,13 +830,9 @@ class DashboardManager {
         this.salvarAuto();
     }
 
-    // ===========================================
-    // NOVO MÉTODO: Salvar automaticamente
-    // ===========================================
     salvarAuto() {
         if (!this.autoSaveEnabled) return;
         
-        // Salvar no localStorage imediatamente
         try {
             const data = {
                 pontos: this.estado.pontos,
@@ -949,10 +844,9 @@ class DashboardManager {
             };
             localStorage.setItem('gurps_dashboard_data', JSON.stringify(data));
         } catch (e) {
-            console.warn('Não foi possível salvar no localStorage:', e);
+            // Silencioso
         }
         
-        // Salvar no Firebase com debounce (a cada 5 segundos no máximo)
         if (this.autoSaveTimeout) {
             clearTimeout(this.autoSaveTimeout);
         }
@@ -963,18 +857,12 @@ class DashboardManager {
         }, 2000);
     }
 
-    // ===========================================
-    // MÉTODO: Salvar no Firebase
-    // ===========================================
     async salvarNoFirebase() {
         try {
             const auth = firebase.auth();
             const user = auth.currentUser;
             
-            if (!user) {
-                console.log('Usuário não autenticado. Salvando apenas localmente.');
-                return;
-            }
+            if (!user) return;
             
             const characterData = {
                 dashboard_data: {
@@ -991,11 +879,10 @@ class DashboardManager {
             
             if (this.estado.characterId) {
                 await db.collection('characters').doc(this.estado.characterId).update(characterData);
-                console.log('Dashboard atualizado no Firebase');
             }
             
         } catch (error) {
-            console.error('Erro ao salvar no Firebase:', error);
+            // Silencioso
         }
     }
 
@@ -1098,12 +985,8 @@ class DashboardManager {
             dashboardManagerInstance = new DashboardManager();
             dashboardManagerInstance.inicializar();
             
-            // Expor no escopo global
             window.dashboardManager = dashboardManagerInstance;
             
-            console.log('✅ Dashboard Manager inicializado com sucesso!');
-            
-            // Forçar uma atualização inicial
             setTimeout(() => {
                 dashboardManagerInstance.recalcularSaldoCompleto();
                 dashboardManagerInstance.atualizarDisplayCompleto();
@@ -1111,18 +994,14 @@ class DashboardManager {
         }
     }
     
-    // Inicializar quando a página carregar
     document.addEventListener('DOMContentLoaded', function() {
-        // Aguardar um pouco para garantir que tudo esteja carregado
         setTimeout(() => {
             inicializarDashboard();
         }, 500);
     });
     
-    // Exportar para uso global
     window.DashboardManager = DashboardManager;
     
-    // Funções de utilidade global
     window.atualizarDashboard = function() {
         if (dashboardManagerInstance) {
             dashboardManagerInstance.recalcularSaldoCompleto();
