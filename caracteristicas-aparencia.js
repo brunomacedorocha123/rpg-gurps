@@ -1,75 +1,67 @@
-// caracteristicas-aparencia.js - VERSÃO SIMPLES E FUNCIONAL
+// caracteristicas-aparencia.js - VERSÃO CORRIGIDA
 console.log('🎯 SISTEMA DE APARÊNCIA - INICIANDO');
 
-// Executar quando a aba for carregada
-function initAparencia() {
-    console.log('🔧 Configurando aparência...');
+// Dados fixos
+const APARENCIA_DADOS = {
+    "-24": { nome: "Horrendo", reacao: "-6", desc: "Aparência que causa repulsa." },
+    "-20": { nome: "Monstruoso", reacao: "-5", desc: "Aparência não humana." },
+    "-16": { nome: "Hediondo", reacao: "-4", desc: "Extremamente feio." },
+    "-8": { nome: "Feio", reacao: "-2", desc: "Abaixo da média." },
+    "-4": { nome: "Sem Atrativos", reacao: "-1", desc: "Abaixo da média." },
+    "0": { nome: "Comum", reacao: "+0", desc: "Aparência padrão." },
+    "4": { nome: "Atraente", reacao: "+1", desc: "Acima da média." },
+    "12": { nome: "Elegante", reacao: "+2", desc: "Muito bonito(a)." },
+    "16": { nome: "Muito Elegante", reacao: "+4", desc: "Excepcional." },
+    "20": { nome: "Lindo", reacao: "+6", desc: "Beleza deslumbrante." }
+};
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando sistema de aparência...');
     
-    // 1. Elementos CRÍTICOS
     const select = document.getElementById('nivelAparencia');
     const badge = document.getElementById('pontosAparencia');
     const display = document.getElementById('displayAparencia');
     
+    // Verificação
     if (!select) {
-        console.error('❌ ERRO: Select não encontrado!');
-        // Procure manualmente no console: document.querySelector('select')
+        console.error('❌ ERRO: Elemento "nivelAparencia" não encontrado!');
+        console.log('Elementos disponíveis:', document.querySelectorAll('[id*="aparencia"], select'));
         return;
     }
     
-    console.log('✅ Elementos encontrados!');
-    console.log('- Select valor:', select.value);
-    console.log('- Badge:', badge ? 'OK' : 'Não');
-    console.log('- Display:', display ? 'OK' : 'Não');
+    console.log('✅ Select encontrado:', select);
+    console.log('✅ Badge encontrado:', badge);
+    console.log('✅ Display encontrado:', display);
     
-    // 2. Função para ATUALIZAR TUDO
-    function atualizarTudo() {
+    // Função principal
+    function atualizarAparencia() {
         const valor = select.value;
         const pontos = parseInt(valor);
+        const dados = APARENCIA_DADOS[valor] || APARENCIA_DADOS["0"];
         
-        console.log(`🔄 Atualizando: valor=${valor}, pontos=${pontos}`);
+        console.log(`📊 Atualizando aparência: ${dados.nome} (${pontos} pontos)`);
         
-        // A. Atualizar BADGE (MAIS IMPORTANTE!)
+        // 1. ATUALIZAR BADGE
         if (badge) {
-            // Formatar texto
-            let textoPontos = pontos + ' pts';
-            if (pontos > 0) textoPontos = '+' + textoPontos;
+            let texto = pontos + ' pts';
+            if (pontos > 0) texto = '+' + texto;
+            badge.textContent = texto;
             
-            badge.textContent = textoPontos;
-            console.log('✅ Badge atualizado:', badge.textContent);
-            
-            // Cor dinâmica
+            // Cor baseada no valor
             if (pontos > 0) {
-                badge.style.backgroundColor = 'rgba(39, 174, 96, 0.2)';
+                badge.style.background = 'linear-gradient(145deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.3))';
                 badge.style.borderColor = '#27ae60';
                 badge.style.color = '#27ae60';
             } else if (pontos < 0) {
-                badge.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
+                badge.style.background = 'linear-gradient(145deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.3))';
                 badge.style.borderColor = '#e74c3c';
                 badge.style.color = '#e74c3c';
-            } else {
-                badge.style.backgroundColor = 'rgba(212, 175, 55, 0.2)';
-                badge.style.borderColor = '#d4af37';
-                badge.style.color = '#d4af37';
             }
         }
         
-        // B. Atualizar DISPLAY
+        // 2. ATUALIZAR DISPLAY
         if (display) {
-            // Dados baseados no valor
-            const dados = {
-                "-24": { nome: "Horrendo", reacao: "-6", desc: "Aparência que causa repulsa." },
-                "-20": { nome: "Monstruoso", reacao: "-5", desc: "Aparência não humana." },
-                "-16": { nome: "Hediondo", reacao: "-4", desc: "Extremamente feio." },
-                "-8": { nome: "Feio", reacao: "-2", desc: "Abaixo da média." },
-                "-4": { nome: "Sem Atrativos", reacao: "-1", desc: "Abaixo da média." },
-                "0": { nome: "Comum", reacao: "+0", desc: "Aparência padrão." },
-                "4": { nome: "Atraente", reacao: "+1", desc: "Acima da média." },
-                "12": { nome: "Elegante", reacao: "+2", desc: "Muito bonito(a)." },
-                "16": { nome: "Muito Elegante", reacao: "+4", desc: "Excepcional." },
-                "20": { nome: "Lindo", reacao: "+6", desc: "Beleza deslumbrante." }
-            }[valor] || { nome: "Comum", reacao: "+0", desc: "Aparência padrão." };
-            
-            // Criar HTML
             display.innerHTML = `
                 <div class="display-header">
                     <i class="fas fa-user${pontos > 0 ? '-tie' : pontos < 0 ? '-injured' : ''}"></i>
@@ -80,47 +72,56 @@ function initAparencia() {
                 </div>
                 <p class="display-desc">${dados.desc}</p>
             `;
-            
-            console.log('✅ Display atualizado:', dados.nome);
         }
         
-        // C. Salvar no LocalStorage
+        // 3. SALVAR
         try {
-            localStorage.setItem('aparencia', valor);
-            console.log('💾 Salvo no localStorage');
+            localStorage.setItem('gurps_aparencia', valor);
         } catch (e) {
-            console.warn('⚠️ Não salvou no localStorage:', e);
+            console.warn('Não salvou no localStorage:', e);
         }
     }
     
-    // 3. CONFIGURAR EVENTO (MÉTODO DIRETO)
-    select.onchange = function() {
-        console.log('🎯 EVENTO ONCHANGE DISPARADO!');
-        console.log('Valor selecionado:', this.value);
-        atualizarTudo();
-    };
+    // Configurar evento
+    select.addEventListener('change', atualizarAparencia);
     
-    // 4. Atualizar INICIALMENTE
-    console.log('🔄 Atualizando estado inicial...');
-    atualizarTudo();
+    // Carregar valor salvo
+    try {
+        const salvo = localStorage.getItem('gurps_aparencia');
+        if (salvo && APARENCIA_DADOS[salvo]) {
+            select.value = salvo;
+            console.log('💾 Valor carregado:', salvo);
+        }
+    } catch (e) {
+        console.warn('Não carregou do localStorage:', e);
+    }
     
-    console.log('✅ Sistema pronto! Tente mudar o select.');
+    // Atualizar inicialmente
+    atualizarAparencia();
     
-    // 5. EXPORTAR para debug
+    console.log('✅ Sistema pronto! Teste mudando o select.');
+    
+    // Expor para debug
     window.debugAparencia = {
-        atualizar: atualizarTudo,
-        getValor: () => select.value,
+        atualizar: atualizarAparencia,
+        valorAtual: () => select.value,
         testar: (valor) => {
-            select.value = valor;
-            atualizarTudo();
+            if (APARENCIA_DADOS[valor]) {
+                select.value = valor;
+                atualizarAparencia();
+                console.log(`Teste: ${APARENCIA_DADOS[valor].nome}`);
+            }
         }
     };
-}
+});
 
-// Executar IMEDIATAMENTE e quando DOM carregar
-try {
-    initAparencia();
-} catch (e) {
-    console.error('Erro inicial:', e);
-    document.addEventListener('DOMContentLoaded', initAparencia);
+// Se já carregado, executar
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(() => {
+        if (!window.debugAparencia) {
+            console.log('Forçando inicialização...');
+            const event = new Event('DOMContentLoaded');
+            document.dispatchEvent(event);
+        }
+    }, 100);
 }
