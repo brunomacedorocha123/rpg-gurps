@@ -1,7 +1,7 @@
-// caracteristicas-aparencia.js - VERSÃO CORRIGIDA
+// caracteristicas-aparencia.js - VERSÃO CORRIGIDA (NaN FIX)
 console.log('🎯 SISTEMA DE APARÊNCIA - INICIANDO');
 
-// Dados fixos
+// Dados fixos - garantindo que são strings como chaves
 const APARENCIA_DADOS = {
     "-24": { nome: "Horrendo", reacao: "-6", desc: "Aparência que causa repulsa." },
     "-20": { nome: "Monstruoso", reacao: "-5", desc: "Aparência não humana." },
@@ -26,29 +26,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificação
     if (!select) {
         console.error('❌ ERRO: Elemento "nivelAparencia" não encontrado!');
-        console.log('Elementos disponíveis:', document.querySelectorAll('[id*="aparencia"], select'));
         return;
     }
     
-    console.log('✅ Select encontrado:', select);
-    console.log('✅ Badge encontrado:', badge);
-    console.log('✅ Display encontrado:', display);
+    console.log('✅ Select encontrado, valor:', select.value);
+    console.log('Tipo do valor:', typeof select.value);
     
-    // Função principal
+    // Função principal CORRIGIDA
     function atualizarAparencia() {
         const valor = select.value;
-        const pontos = parseInt(valor);
+        console.log('📊 Valor do select:', valor, 'Tipo:', typeof valor);
+        
+        // CONVERSÃO SEGURA para número
+        let pontos = 0;
+        if (valor !== null && valor !== undefined && valor !== '') {
+            pontos = parseInt(valor, 10);
+            if (isNaN(pontos)) {
+                console.warn('⚠️ Valor não é número, usando 0:', valor);
+                pontos = 0;
+            }
+        }
+        
+        console.log('📊 Pontos calculados:', pontos);
+        
+        // Buscar dados - usando string como chave
         const dados = APARENCIA_DADOS[valor] || APARENCIA_DADOS["0"];
+        console.log('📊 Dados encontrados:', dados.nome);
         
-        console.log(`📊 Atualizando aparência: ${dados.nome} (${pontos} pontos)`);
-        
-        // 1. ATUALIZAR BADGE
+        // 1. ATUALIZAR BADGE (CORRIGIDO)
         if (badge) {
-            let texto = pontos + ' pts';
-            if (pontos > 0) texto = '+' + texto;
-            badge.textContent = texto;
+            // Formatação segura
+            let textoPontos = '';
+            if (!isNaN(pontos)) {
+                textoPontos = pontos + ' pts';
+                if (pontos > 0) textoPontos = '+' + textoPontos;
+            } else {
+                textoPontos = '0 pts';
+            }
+            
+            badge.textContent = textoPontos;
+            console.log('✅ Badge atualizado:', textoPontos);
             
             // Cor baseada no valor
+            badge.style.cssText = ''; // Limpar estilos
+            
             if (pontos > 0) {
                 badge.style.background = 'linear-gradient(145deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.3))';
                 badge.style.borderColor = '#27ae60';
@@ -57,14 +78,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 badge.style.background = 'linear-gradient(145deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.3))';
                 badge.style.borderColor = '#e74c3c';
                 badge.style.color = '#e74c3c';
+            } else {
+                badge.style.background = 'linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.3))';
+                badge.style.borderColor = '#d4af37';
+                badge.style.color = '#d4af37';
             }
+            
+            // Estilos fixos
+            badge.style.padding = '4px 12px';
+            badge.style.borderRadius = '20px';
+            badge.style.fontWeight = 'bold';
+            badge.style.display = 'inline-block';
+            badge.style.border = '1px solid';
         }
         
         // 2. ATUALIZAR DISPLAY
         if (display) {
+            // Ícone baseado nos pontos
+            let icone = 'fa-user';
+            if (pontos > 0) icone = 'fa-user-tie';
+            if (pontos < 0) icone = 'fa-user-injured';
+            
             display.innerHTML = `
                 <div class="display-header">
-                    <i class="fas fa-user${pontos > 0 ? '-tie' : pontos < 0 ? '-injured' : ''}"></i>
+                    <i class="fas ${icone}"></i>
                     <div>
                         <strong>${dados.nome}</strong>
                         <small>Reação: ${dados.reacao}</small>
@@ -72,11 +109,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <p class="display-desc">${dados.desc}</p>
             `;
+            console.log('✅ Display atualizado para:', dados.nome);
         }
         
         // 3. SALVAR
         try {
             localStorage.setItem('gurps_aparencia', valor);
+            console.log('💾 Salvo no localStorage:', valor);
         } catch (e) {
             console.warn('Não salvou no localStorage:', e);
         }
@@ -88,18 +127,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Carregar valor salvo
     try {
         const salvo = localStorage.getItem('gurps_aparencia');
-        if (salvo && APARENCIA_DADOS[salvo]) {
+        if (salvo !== null && APARENCIA_DADOS[salvo]) {
             select.value = salvo;
-            console.log('💾 Valor carregado:', salvo);
+            console.log('💾 Valor carregado do localStorage:', salvo);
         }
     } catch (e) {
         console.warn('Não carregou do localStorage:', e);
     }
     
     // Atualizar inicialmente
-    atualizarAparencia();
-    
-    console.log('✅ Sistema pronto! Teste mudando o select.');
+    setTimeout(() => {
+        atualizarAparencia();
+        console.log('✅ Sistema pronto!');
+    }, 100);
     
     // Expor para debug
     window.debugAparencia = {
@@ -115,13 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 
-// Se já carregado, executar
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(() => {
-        if (!window.debugAparencia) {
-            console.log('Forçando inicialização...');
-            const event = new Event('DOMContentLoaded');
-            document.dispatchEvent(event);
-        }
-    }, 100);
-}
+// DEBUG NO CONSOLE - Para testar manualmente
+console.log('📝 Comandos disponíveis:');
+console.log('1. debugAparencia.testar("4")  // Testar "Atraente"');
+console.log('2. debugAparencia.testar("12") // Testar "Elegante"');
+console.log('3. debugAparencia.atualizar()  // Forçar atualização');
