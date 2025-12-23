@@ -1938,317 +1938,253 @@ body::before {
 
 <script src="dashboard.js"></script>
 <!-- O script principal (acima) já está no HTML -->
-   <script>
+  <script>
 // ===========================================
-// INICIALIZAÇÃO DO FIREBASE
+// INICIALIZAÇÃO SIMPLES DO FIREBASE
 // ===========================================
-let app, auth, db;
-
-if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-    app = firebase.app();
-    auth = firebase.auth();
-    db = firebase.firestore();
-} else {
-    const firebaseConfig = {
-        apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
-        authDomain: "gurpsroll.firebaseapp.com",
-        projectId: "gurpsroll"
-    };
-    
-    app = firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.firestore();
+// Já deve ter o SDK do Firebase carregado antes
+if (typeof firebase === 'undefined') {
+    console.error('Firebase não carregado!');
 }
 
+// Configuração básica
+const firebaseConfig = {
+    apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
+    authDomain: "gurpsroll.firebaseapp.com",
+    projectId: "gurpsroll"
+};
+
+// Inicializar se não estiver
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 // ===========================================
-// VARIÁVEIS GLOBAIS
+// VARIÁVEIS SIMPLES
 // ===========================================
 let currentUser = null;
-let currentTabIndex = 0;
-const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias', 'magias', 'combate', 'equipamentos', 'resumo'];
+let currentTab = 'dashboard';
+const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias'];
 
 // ===========================================
-// INICIALIZAÇÃO DA PÁGINA
+// QUANDO A PÁGINA CARREGAR
 // ===========================================
 document.addEventListener('DOMContentLoaded', function() {
-    initPage();
-    initTabs();
-});
-
-async function initPage() {
-    showLoading();
+    console.log('Página carregada');
     
-    // Verifica autenticação
-    auth.onAuthStateChanged(async (user) => {
+    // Verificar login
+    auth.onAuthStateChanged(function(user) {
         if (user) {
             currentUser = user;
-            await loadUserData();
-            hideLoading();
-            
-            // Verifica se está editando um personagem existente
-            const urlParams = new URLSearchParams(window.location.search);
-            const editCharacterId = urlParams.get('edit');
-            if (editCharacterId) {
-                loadCharacterForEdit(editCharacterId);
-            }
+            console.log('Usuário logado:', user.email);
+            initPage();
         } else {
-            // Não autenticado - redireciona
-            showToast('Faça login para criar personagens', 'error');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 1500);
+            // Redirecionar para login
+            window.location.href = 'login.html';
         }
     });
-}
+    
+    // Configurar abas
+    setupTabs();
+    
+    // Botão salvar
+    document.getElementById('saveBtn')?.addEventListener('click', saveCharacter);
+    
+    // Hotkeys
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            saveCharacter();
+        }
+    });
+});
 
 // ===========================================
-// CARREGAR DADOS DO USUÁRIO
+// FUNÇÕES BÁSICAS
 // ===========================================
-async function loadUserData() {
-    try {
-        const userDoc = await db.collection('player_profiles').doc(currentUser.uid).get();
-        
-        if (userDoc.exists) {
-            const data = userDoc.data();
-            document.getElementById('playerCode').textContent = data.player_code || 'N/A';
-        }
-    } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+function initPage() {
+    console.log('Inicializando página...');
+    
+    // Carregar dados do usuário se precisar
+    const playerCode = document.getElementById('playerCode');
+    if (playerCode) {
+        playerCode.textContent = 'USER-' + currentUser.uid.slice(0, 8).toUpperCase();
+    }
+    
+    // Verificar se está editando
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    
+    if (editId) {
+        console.log('Editando personagem:', editId);
+        loadCharacter(editId);
     }
 }
 
-// ===========================================
-// SISTEMA DE ABAS COM INICIALIZAÇÃO DOS SISTEMAS
-// ===========================================
-function initTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tabId = this.getAttribute('data-tab');
-            switchTab(tabId);
+function setupTabs() {
+    // Botões das abas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            showTab(tabId);
         });
     });
 }
 
-function switchTab(tabId) {
-    // Remove classe active de todas as abas
+function showTab(tabId) {
+    // Esconder todas
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+    });
+    
+    // Mostrar selecionada
+    const tab = document.getElementById(tabId);
+    if (tab) {
+        tab.style.display = 'block';
+        currentTab = tabId;
+    }
+    
+    // Atualizar botões
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    document.querySelectorAll('.tab-pane').forEach(pane => {
-        pane.classList.remove('active');
-    });
-    
-    // Adiciona classe active à aba selecionada
-    const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-    if (tabButton) {
-        tabButton.classList.add('active');
+    const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
     }
     
-    const tabPane = document.getElementById(tabId);
-    if (tabPane) {
-        tabPane.classList.add('active');
-    }
-    
-    // Atualiza índice da aba atual
-    currentTabIndex = tabs.indexOf(tabId);
-    
-    // INICIALIZAR SISTEMAS QUANDO ABRIR A ABA DE CARACTERÍSTICAS
+    // Se for a aba de características, garantir que os sistemas carreguem
     if (tabId === 'caracteristicas') {
         setTimeout(() => {
-            // Inicializar Sistema de Aparência
-            if (window.SistemaAparencia && !window._sistemaAparencia) {
-                window._sistemaAparencia = new SistemaAparencia();
-            }
-            
-            // Inicializar Sistema de Riqueza
-            if (window.SistemaRiqueza && !window._sistemaRiqueza) {
-                window._sistemaRiqueza = new SistemaRiqueza();
+            // Inicializar aparência se existir
+            if (window.SistemaAparencia && !window.sistemaAparencia) {
+                window.sistemaAparencia = new SistemaAparencia();
+                console.log('Sistema de aparência carregado');
             }
         }, 100);
     }
-    
-    // Disparar evento para outros sistemas
-    const event = new CustomEvent('tabChanged', {
-        detail: { tab: tabId }
-    });
-    document.dispatchEvent(event);
 }
 
-function nextTab() {
-    if (currentTabIndex < tabs.length - 1) {
-        currentTabIndex++;
-        switchTab(tabs[currentTabIndex]);
-    }
-}
-
-function previousTab() {
-    if (currentTabIndex > 0) {
-        currentTabIndex--;
-        switchTab(tabs[currentTabIndex]);
-    }
-}
-
-// ===========================================
-// CARREGAR PERSONAGEM PARA EDIÇÃO
-// ===========================================
-async function loadCharacterForEdit(characterId) {
+async function loadCharacter(characterId) {
     try {
-        showLoading();
-        const characterDoc = await db.collection('characters').doc(characterId).get();
+        const doc = await db.collection('characters').doc(characterId).get();
         
-        if (characterDoc.exists) {
-            const characterData = characterDoc.data();
+        if (doc.exists) {
+            const data = doc.data();
+            console.log('Personagem carregado:', data);
             
-            // Preenche o nome do personagem
-            if (characterData.name) {
-                document.getElementById('characterName').value = characterData.name;
+            // Nome
+            const nameInput = document.getElementById('characterName');
+            if (nameInput && data.name) {
+                nameInput.value = data.name;
             }
             
-            showToast('Personagem carregado para edição', 'success');
-        } else {
-            showToast('Personagem não encontrado', 'error');
+            // Aqui você carrega nos sistemas específicos
+            // Exemplo: se tiver dados de aparência
+            if (data.aparencia && window.sistemaAparencia) {
+                window.sistemaAparencia.carregarDados(data.aparencia);
+            }
+            
+            showMessage('Personagem carregado!', 'success');
         }
-        
-        hideLoading();
     } catch (error) {
-        console.error('Erro ao carregar personagem:', error);
-        showToast('Erro ao carregar personagem', 'error');
-        hideLoading();
+        console.error('Erro ao carregar:', error);
+        showMessage('Erro ao carregar personagem', 'error');
     }
 }
 
-// ===========================================
-// SALVAR PERSONAGEM
-// ===========================================
 async function saveCharacter() {
-    const characterName = document.getElementById('characterName').value.trim();
+    const name = document.getElementById('characterName')?.value.trim();
     
-    if (!characterName) {
-        showToast('Digite um nome para o personagem', 'error');
-        document.getElementById('characterName').focus();
+    if (!name) {
+        showMessage('Digite um nome para o personagem', 'error');
         return;
     }
     
     try {
-        showLoading();
-        
+        // Coletar dados básicos
         const characterData = {
-            name: characterName,
-            player_id: currentUser.uid,
-            player_code: document.getElementById('playerCode').textContent,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            is_active: true,
-            status: 'rascunho',
-            attributes: {},
-            characteristics: {},
-            advantages: [],
-            disadvantages: [],
-            skills: [],
-            spells: [],
-            combat_stats: {},
-            equipment: []
+            name: name,
+            playerId: currentUser.uid,
+            updatedAt: new Date().toISOString()
         };
         
-        // Verifica se está editando ou criando novo
-        const urlParams = new URLSearchParams(window.location.search);
-        const editCharacterId = urlParams.get('edit');
+        // Coletar dados da dashboard se existir
+        if (window.dashboardManager) {
+            characterData.dashboard = window.dashboardManager.obterDados();
+        }
         
-        if (editCharacterId) {
-            // Atualiza personagem existente
-            await db.collection('characters').doc(editCharacterId).update({
-                ...characterData,
-                updated_at: new Date().toISOString()
-            });
-            
-            showToast('Personagem atualizado com sucesso!', 'success');
-            setTimeout(() => {
-                window.location.href = 'modo-personagem.html';
-            }, 1500);
+        // Coletar aparência se existir
+        if (window.sistemaAparencia) {
+            characterData.aparencia = window.sistemaAparencia.exportarDados();
+        }
+        
+        // Verificar se é edição
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        
+        if (editId) {
+            // Atualizar
+            await db.collection('characters').doc(editId).update(characterData);
+            showMessage('Personagem atualizado!', 'success');
         } else {
-            // Cria novo personagem
+            // Criar novo
+            characterData.createdAt = new Date().toISOString();
             await db.collection('characters').add(characterData);
-            
-            showToast('Personagem criado com sucesso!', 'success');
-            setTimeout(() => {
-                window.location.href = 'modo-personagem.html';
-            }, 1500);
+            showMessage('Personagem criado!', 'success');
         }
         
     } catch (error) {
-        console.error('Erro ao salvar personagem:', error);
-        showToast('Erro ao salvar personagem', 'error');
-        hideLoading();
+        console.error('Erro ao salvar:', error);
+        showMessage('Erro ao salvar: ' + error.message, 'error');
     }
 }
 
-// ===========================================
-// FUNÇÕES UTILITÁRIAS
-// ===========================================
-async function logout() {
-    try {
-        showLoading();
-        await auth.signOut();
-        showToast('Desconectado com sucesso', 'success');
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 1000);
-    } catch (error) {
-        hideLoading();
-        showToast('Erro ao sair', 'error');
+function showMessage(text, type) {
+    // Criar ou usar um toast existente
+    let toast = document.getElementById('toast');
+    
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        document.body.appendChild(toast);
     }
-}
-
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    toast.innerHTML = message;
+    
+    toast.textContent = text;
     toast.className = 'toast ' + type;
     toast.style.display = 'block';
     
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            toast.style.display = 'none';
-            toast.style.animation = '';
-        }, 300);
+        toast.style.display = 'none';
     }, 3000);
 }
 
-function showLoading() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-}
-
-function hideLoading() {
-    document.getElementById('loadingOverlay').style.display = 'none';
-}
-
 // ===========================================
-// HOTKEYS
+// FUNÇÕES GLOBAIS ÚTEIS
 // ===========================================
-document.addEventListener('keydown', function(e) {
-    // Ctrl+S - Salvar
-    if (e.ctrlKey && e.key === 's') {
-        e.preventDefault();
-        saveCharacter();
+window.nextTab = function() {
+    const currentIndex = tabs.indexOf(currentTab);
+    if (currentIndex < tabs.length - 1) {
+        showTab(tabs[currentIndex + 1]);
     }
-    // Ctrl+→ - Próxima aba
-    if (e.ctrlKey && e.key === 'ArrowRight') {
-        e.preventDefault();
-        nextTab();
+};
+
+window.prevTab = function() {
+    const currentIndex = tabs.indexOf(currentTab);
+    if (currentIndex > 0) {
+        showTab(tabs[currentIndex - 1]);
     }
-    // Ctrl+← - Aba anterior
-    if (e.ctrlKey && e.key === 'ArrowLeft') {
-        e.preventDefault();
-        previousTab();
-    }
-    // Escape - Voltar
-    if (e.key === 'Escape') {
-        window.location.href = 'modo-personagem.html';
-    }
-});
+};
+
+window.logout = function() {
+    auth.signOut().then(() => {
+        window.location.href = 'login.html';
+    });
+};
 </script>
 
 </body>
