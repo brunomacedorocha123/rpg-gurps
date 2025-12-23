@@ -1938,23 +1938,20 @@ body::before {
 
 <script src="dashboard.js"></script>
 <!-- O script principal (acima) já está no HTML -->
-  <script>
+ <script>
 // ===========================================
-// INICIALIZAÇÃO SIMPLES DO FIREBASE
+// INICIALIZAÇÃO DO FIREBASE
 // ===========================================
-// Já deve ter o SDK do Firebase carregado antes
 if (typeof firebase === 'undefined') {
     console.error('Firebase não carregado!');
 }
 
-// Configuração básica
 const firebaseConfig = {
     apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
     authDomain: "gurpsroll.firebaseapp.com",
     projectId: "gurpsroll"
 };
 
-// Inicializar se não estiver
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -1963,7 +1960,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // ===========================================
-// VARIÁVEIS SIMPLES
+// VARIÁVEIS GLOBAIS
 // ===========================================
 let currentUser = null;
 let currentTab = 'dashboard';
@@ -1982,7 +1979,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Usuário logado:', user.email);
             initPage();
         } else {
-            // Redirecionar para login
             window.location.href = 'login.html';
         }
     });
@@ -2008,7 +2004,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function initPage() {
     console.log('Inicializando página...');
     
-    // Carregar dados do usuário se precisar
+    // Carregar dados do usuário
     const playerCode = document.getElementById('playerCode');
     if (playerCode) {
         playerCode.textContent = 'USER-' + currentUser.uid.slice(0, 8).toUpperCase();
@@ -2034,27 +2030,28 @@ function setupTabs() {
     });
 }
 
+// CORREÇÃO AQUI: VOLTAR PARA O SISTEMA COM CLASSES
 function showTab(tabId) {
-    // Esconder todas
+    // Remove active de todas as abas
     document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.style.display = 'none';
+        tab.classList.remove('active');
     });
     
-    // Mostrar selecionada
-    const tab = document.getElementById(tabId);
-    if (tab) {
-        tab.style.display = 'block';
-        currentTab = tabId;
-    }
-    
-    // Atualizar botões
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
+    // Adiciona active à aba selecionada
+    const tab = document.getElementById(tabId);
+    const tabButton = document.querySelector(`[data-tab="${tabId}"]`);
+    
+    if (tab) {
+        tab.classList.add('active');
+        currentTab = tabId;
+    }
+    
+    if (tabButton) {
+        tabButton.classList.add('active');
     }
     
     // Se for a aba de características, garantir que os sistemas carreguem
@@ -2083,8 +2080,7 @@ async function loadCharacter(characterId) {
                 nameInput.value = data.name;
             }
             
-            // Aqui você carrega nos sistemas específicos
-            // Exemplo: se tiver dados de aparência
+            // Carregar aparência
             if (data.aparencia && window.sistemaAparencia) {
                 window.sistemaAparencia.carregarDados(data.aparencia);
             }
@@ -2128,11 +2124,9 @@ async function saveCharacter() {
         const editId = urlParams.get('edit');
         
         if (editId) {
-            // Atualizar
             await db.collection('characters').doc(editId).update(characterData);
             showMessage('Personagem atualizado!', 'success');
         } else {
-            // Criar novo
             characterData.createdAt = new Date().toISOString();
             await db.collection('characters').add(characterData);
             showMessage('Personagem criado!', 'success');
@@ -2145,7 +2139,6 @@ async function saveCharacter() {
 }
 
 function showMessage(text, type) {
-    // Criar ou usar um toast existente
     let toast = document.getElementById('toast');
     
     if (!toast) {
