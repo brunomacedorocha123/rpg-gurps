@@ -4,676 +4,682 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar Personagem - GURPS Tool</title>
+    
+    <!-- Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs -->
+    
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
+    
     <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        /* RESET E VARIÁVEIS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-:root {
-    --primary-dark: #1a1200;
-    --secondary-dark: #2c2008;
-    --primary-gold: #d4af37;
-    --secondary-gold: #f4d03f;
-    --accent-red: #8b0000;
-    --accent-green: #2e5c3a;
-    --text-light: #f5f5dc;
-    --text-gold: #ffd700;
-    --parchment: #f7f3e9;
-    --wood-dark: #5d4037;
-    --wood-light: #8d6e63;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
+        :root {
+            --primary-dark: #1a1200;
+            --secondary-dark: #2c2008;
+            --primary-gold: #d4af37;
+            --secondary-gold: #f4d03f;
+            --accent-red: #8b0000;
+            --accent-green: #2e5c3a;
+            --text-light: #f5f5dc;
+            --text-gold: #ffd700;
+            --parchment: #f7f3e9;
+            --wood-dark: #5d4037;
+            --wood-light: #8d6e63;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
 
-body {
-    font-family: 'Cinzel', serif;
-    background-color: var(--primary-dark);
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
-    color: var(--text-light);
-    min-height: 100vh;
-    position: relative;
-}
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: var(--primary-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(44, 32, 8, 0.5) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(42, 21, 11, 0.5) 0%, transparent 20%);
+            color: var(--text-light);
+            min-height: 100vh;
+            position: relative;
+        }
 
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="%232c2008" stroke-width="0.5"/></svg>'),
-        linear-gradient(0deg, transparent 24%, rgba(212, 175, 55, 0.05) 25%, rgba(212, 175, 55, 0.05) 26%, transparent 27%, transparent 74%, rgba(212, 175, 55, 0.05) 75%, rgba(212, 175, 55, 0.05) 76%, transparent 77%, transparent);
-    background-size: 50px 50px, 10px 10px;
-    opacity: 0.3;
-    z-index: -1;
-}
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="%232c2008" stroke-width="0.5"/></svg>'),
+                linear-gradient(0deg, transparent 24%, rgba(212, 175, 55, 0.05) 25%, rgba(212, 175, 55, 0.05) 26%, transparent 27%, transparent 74%, rgba(212, 175, 55, 0.05) 75%, rgba(212, 175, 55, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px, 10px 10px;
+            opacity: 0.3;
+            z-index: -1;
+        }
 
-/* HEADER COM BOTÃO SALVAR */
-.header {
-    background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
-    border-bottom: 3px solid var(--primary-gold);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
+        /* HEADER */
+        .header {
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
+            border-bottom: 3px solid var(--primary-gold);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.logo h1 {
-    font-family: 'Uncial Antiqua', cursive;
-    font-size: 1.8rem;
-    color: var(--text-gold);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    white-space: nowrap;
-}
+        .logo h1 {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1.8rem;
+            color: var(--text-gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+        }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
 
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-}
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
 
-.user-id {
-    background: rgba(212, 175, 55, 0.2);
-    padding: 8px 15px;
-    border-radius: 8px;
-    border: 2px solid var(--primary-gold);
-    color: var(--text-gold);
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
+        .user-id {
+            background: rgba(212, 175, 55, 0.2);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--primary-gold);
+            color: var(--text-gold);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
 
-.player-code {
-    font-size: 1.1rem;
-    color: var(--secondary-gold);
-    font-weight: bold;
-    letter-spacing: 1px;
-}
+        .player-code {
+            font-size: 1.1rem;
+            color: var(--secondary-gold);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
 
-/* BREADCRUMB */
-.breadcrumb {
-    background: rgba(212, 175, 55, 0.1);
-    padding: 10px 20px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
+        /* BREADCRUMB */
+        .breadcrumb {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-.breadcrumb a {
-    color: var(--secondary-gold);
-    text-decoration: none;
-    transition: color 0.3s;
-}
+        .breadcrumb a {
+            color: var(--secondary-gold);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
 
-.breadcrumb a:hover {
-    color: var(--text-gold);
-    text-decoration: underline;
-}
+        .breadcrumb a:hover {
+            color: var(--text-gold);
+            text-decoration: underline;
+        }
 
-.breadcrumb .separator {
-    color: var(--primary-gold);
-}
+        .breadcrumb .separator {
+            color: var(--primary-gold);
+        }
 
-.breadcrumb .current {
-    color: var(--text-light);
-    font-weight: bold;
-}
+        .breadcrumb .current {
+            color: var(--text-light);
+            font-weight: bold;
+        }
 
-/* PAGE HEADER */
-.page-header {
-    text-align: center;
-    padding: 20px 20px;
-    background: linear-gradient(rgba(26, 18, 0, 0.9), rgba(44, 32, 8, 0.9));
-    border-bottom: 2px solid var(--primary-gold);
-    position: relative;
-}
+        /* PAGE HEADER */
+        .page-header {
+            text-align: center;
+            padding: 20px 20px;
+            background: linear-gradient(rgba(26, 18, 0, 0.9), rgba(44, 32, 8, 0.9));
+            border-bottom: 2px solid var(--primary-gold);
+            position: relative;
+        }
 
-.page-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
-}
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+        }
 
-.page-header h2 {
-    font-family: 'Uncial Antiqua', cursive;
-    font-size: 2.2rem;
-    color: var(--text-gold);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    margin-bottom: 15px;
-}
+        .page-header h2 {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 2.2rem;
+            color: var(--text-gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 15px;
+        }
 
-/* CHARACTER NAME INPUT */
-.character-name-container {
-    max-width: 800px;
-    margin: 0 auto 20px;
-    padding: 0 20px;
-}
+        /* CHARACTER NAME INPUT */
+        .character-name-container {
+            max-width: 800px;
+            margin: 0 auto 20px;
+            padding: 0 20px;
+        }
 
-.character-name-input {
-    width: 100%;
-    padding: 15px 20px;
-    font-family: 'Cinzel', serif;
-    font-size: 1.3rem;
-    background: rgba(212, 175, 55, 0.1);
-    border: 2px solid var(--primary-gold);
-    border-radius: 8px;
-    color: var(--text-gold);
-    text-align: center;
-    outline: none;
-    transition: all 0.3s ease;
-}
+        .character-name-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid var(--primary-gold);
+            border-radius: 8px;
+            color: var(--text-gold);
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
 
-.character-name-input:focus {
-    background: rgba(212, 175, 55, 0.15);
-    border-color: var(--secondary-gold);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-}
+        .character-name-input:focus {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--secondary-gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
 
-.character-name-input::placeholder {
-    color: rgba(212, 175, 55, 0.5);
-    font-style: italic;
-}
+        .character-name-input::placeholder {
+            color: rgba(212, 175, 55, 0.5);
+            font-style: italic;
+        }
 
-/* TABS CONTAINER - SEM BORDA LIMITANTE */
-.tabs-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 15px 30px;
-}
+        /* TABS CONTAINER */
+        .tabs-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px 30px;
+        }
 
-/* TABS NAVIGATION - COM MAIS ESPAÇO */
-.tabs-nav {
-    display: flex;
-    overflow-x: auto;
-    background: rgba(44, 32, 8, 0.9);
-    border: 2px solid var(--primary-gold);
-    border-radius: 10px 10px 0 0;
-    margin-bottom: 0;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary-gold) var(--secondary-dark);
-    padding: 8px 5px;
-    gap: 2px;
-}
+        /* TABS NAVIGATION */
+        .tabs-nav {
+            display: flex;
+            overflow-x: auto;
+            background: rgba(44, 32, 8, 0.9);
+            border: 2px solid var(--primary-gold);
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-gold) var(--secondary-dark);
+            padding: 8px 5px;
+            gap: 2px;
+        }
 
-.tabs-nav::-webkit-scrollbar {
-    height: 8px;
-}
+        .tabs-nav::-webkit-scrollbar {
+            height: 8px;
+        }
 
-.tabs-nav::-webkit-scrollbar-track {
-    background: var(--secondary-dark);
-    border-radius: 4px;
-}
+        .tabs-nav::-webkit-scrollbar-track {
+            background: var(--secondary-dark);
+            border-radius: 4px;
+        }
 
-.tabs-nav::-webkit-scrollbar-thumb {
-    background: var(--primary-gold);
-    border-radius: 4px;
-}
+        .tabs-nav::-webkit-scrollbar-thumb {
+            background: var(--primary-gold);
+            border-radius: 4px;
+        }
 
-.tab-btn {
-    padding: 15px 20px;
-    background: transparent;
-    border: none;
-    color: var(--text-light);
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-    min-width: 150px;
-    justify-content: center;
-    border-radius: 6px;
-    margin: 0 2px;
-}
+        .tab-btn {
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            min-width: 150px;
+            justify-content: center;
+            border-radius: 6px;
+            margin: 0 2px;
+        }
 
-.tab-btn:hover {
-    background: rgba(212, 175, 55, 0.15);
-    color: var(--secondary-gold);
-}
+        .tab-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--secondary-gold);
+        }
 
-.tab-btn.active {
-    background: rgba(212, 175, 55, 0.25);
-    color: var(--text-gold);
-    border-bottom: 3px solid var(--secondary-gold);
-}
+        .tab-btn.active {
+            background: rgba(212, 175, 55, 0.25);
+            color: var(--text-gold);
+            border-bottom: 3px solid var(--secondary-gold);
+        }
 
-/* TABS CONTENT - SEM BORDA LIMITANTE, MAIS ESPAÇO */
-.tabs-content {
-    background: rgba(44, 32, 8, 0.7);
-    padding: 30px;
-    min-height: 500px;
-    position: relative;
-    overflow-y: auto;
-    max-height: 65vh;
-    border-radius: 0 0 10px 10px;
-}
+        /* TABS CONTENT */
+        .tabs-content {
+            background: rgba(44, 32, 8, 0.7);
+            padding: 30px;
+            min-height: 500px;
+            position: relative;
+            overflow-y: auto;
+            max-height: 65vh;
+            border-radius: 0 0 10px 10px;
+        }
 
-.tab-pane {
-    display: none;
-    animation: fadeIn 0.5s ease;
-}
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
 
-.tab-pane.active {
-    display: block;
-}
+        .tab-pane.active {
+            display: block;
+        }
 
-.tab-title {
-    color: var(--text-gold);
-    font-family: 'MedievalSharp', cursive;
-    font-size: 1.8rem;
-    margin-bottom: 25px;
-    text-align: center;
-    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
-    padding-bottom: 10px;
-}
+        .tab-title {
+            color: var(--text-gold);
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+            padding-bottom: 10px;
+        }
 
-.tab-placeholder {
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--text-light);
-    opacity: 0.7;
-    font-size: 1.1rem;
-    line-height: 1.6;
-}
+        .tab-placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-light);
+            opacity: 0.7;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
 
-.tab-placeholder i {
-    font-size: 3.5rem;
-    color: var(--secondary-gold);
-    margin-bottom: 25px;
-    display: block;
-}
+        .tab-placeholder i {
+            font-size: 3.5rem;
+            color: var(--secondary-gold);
+            margin-bottom: 25px;
+            display: block;
+        }
 
-/* NAVIGATION BUTTONS - SOMENTE ANTERIOR/PRÓXIMO */
-.navigation-buttons {
-    display: flex;
-    justify-content: space-between;
-    max-width: 1400px;
-    margin: 20px auto 30px;
-    padding: 0 15px;
-    gap: 20px;
-}
+        /* NAVIGATION BUTTONS */
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 20px auto 30px;
+            padding: 0 15px;
+            gap: 20px;
+        }
 
-/* BUTTONS */
-.btn {
-    padding: 12px 30px;
-    font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    position: relative;
-    z-index: 1;
-}
+        /* BUTTONS */
+        .btn {
+            padding: 12px 30px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
 
-.btn-primary {
-    background: linear-gradient(145deg, var(--primary-gold), #b8941f);
-    color: var(--primary-dark);
-    border: 2px solid var(--secondary-gold);
-    min-width: 180px;
-}
+        .btn-primary {
+            background: linear-gradient(145deg, var(--primary-gold), #b8941f);
+            color: var(--primary-dark);
+            border: 2px solid var(--secondary-gold);
+            min-width: 180px;
+        }
 
-.btn-primary:hover {
-    background: linear-gradient(145deg, var(--secondary-gold), var(--primary-gold));
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
-}
+        .btn-primary:hover {
+            background: linear-gradient(145deg, var(--secondary-gold), var(--primary-gold));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
 
-.btn-secondary {
-    background: linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(139, 0, 0, 0.1));
-    color: var(--text-light);
-    border: 2px solid var(--wood-light);
-}
+        .btn-secondary {
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(139, 0, 0, 0.1));
+            color: var(--text-light);
+            border: 2px solid var(--wood-light);
+        }
 
-.btn-secondary:hover {
-    background: linear-gradient(145deg, rgba(212, 175, 55, 0.3), rgba(139, 0, 0, 0.2));
-    border-color: var(--primary-gold);
-}
+        .btn-secondary:hover {
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.3), rgba(139, 0, 0, 0.2));
+            border-color: var(--primary-gold);
+        }
 
-.btn-back {
-    background: linear-gradient(145deg, var(--wood-dark), #4a352b);
-    color: var(--text-light);
-    border: 2px solid var(--wood-light);
-}
+        .btn-back {
+            background: linear-gradient(145deg, var(--wood-dark), #4a352b);
+            color: var(--text-light);
+            border: 2px solid var(--wood-light);
+        }
 
-.btn-back:hover {
-    background: linear-gradient(145deg, var(--wood-light), var(--wood-dark));
-}
+        .btn-back:hover {
+            background: linear-gradient(145deg, var(--wood-light), var(--wood-dark));
+        }
 
-/* BOTÃO SALVAR NO HEADER */
-.btn-save {
-    background: linear-gradient(145deg, var(--accent-green), #1e4028);
-    color: white;
-    border: 2px solid #4a7c59;
-    min-width: 180px;
-    padding: 10px 25px;
-}
+        /* BOTÃO SALVAR NO HEADER */
+        .btn-save {
+            background: linear-gradient(145deg, var(--accent-green), #1e4028);
+            color: white;
+            border: 2px solid #4a7c59;
+            min-width: 180px;
+            padding: 10px 25px;
+        }
 
-.btn-save:hover {
-    background: linear-gradient(145deg, #3a7c4a, #1e4028);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(46, 92, 58, 0.4);
-}
+        .btn-save:hover {
+            background: linear-gradient(145deg, #3a7c4a, #1e4028);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 92, 58, 0.4);
+        }
 
-.btn-logout {
-    background: linear-gradient(145deg, var(--accent-red), #6b0000);
-    color: var(--text-light);
-    border: 2px solid #a52a2a;
-    padding: 8px 20px;
-}
+        .btn-logout {
+            background: linear-gradient(145deg, var(--accent-red), #6b0000);
+            color: var(--text-light);
+            border: 2px solid #a52a2a;
+            padding: 8px 20px;
+        }
 
-.btn-logout:hover {
-    background: linear-gradient(145deg, #9b0000, #6b0000);
-    transform: translateY(-2px);
-}
+        .btn-logout:hover {
+            background: linear-gradient(145deg, #9b0000, #6b0000);
+            transform: translateY(-2px);
+        }
 
-/* FOOTER */
-.footer {
-    text-align: center;
-    padding: 25px 20px;
-    margin-top: 30px;
-    border-top: 2px solid var(--wood-dark);
-    position: relative;
-}
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            padding: 25px 20px;
+            margin-top: 30px;
+            border-top: 2px solid var(--wood-dark);
+            position: relative;
+        }
 
-.footer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 200px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
-}
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+        }
 
-/* TOAST NOTIFICATION */
-.toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--accent-green);
-    color: white;
-    padding: 15px 25px;
-    border-radius: 8px;
-    border-left: 5px solid var(--primary-gold);
-    box-shadow: var(--shadow);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-    font-family: 'Cinzel', serif;
-    max-width: 300px;
-    word-break: break-word;
-    display: none;
-}
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-green);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-gold);
+            box-shadow: var(--shadow);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            font-family: 'Cinzel', serif;
+            max-width: 300px;
+            word-break: break-word;
+            display: none;
+        }
 
-.toast.error {
-    background: var(--accent-red);
-}
+        .toast.error {
+            background: var(--accent-red);
+        }
 
-.toast.info {
-    background: var(--secondary-dark);
-}
+        .toast.info {
+            background: var(--secondary-dark);
+        }
 
-/* LOADING OVERLAY */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 10001;
-    display: none;
-}
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            display: none;
+        }
 
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid var(--wood-light);
-    border-top: 5px solid var(--primary-gold);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 20px;
-}
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--wood-light);
+            border-top: 5px solid var(--primary-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
 
-/* ANIMATIONS */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
-@keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-}
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-/* MOBILE RESPONSIVE */
-@media (max-width: 1024px) {
-    .tabs-nav {
-        padding: 6px 3px;
-        gap: 1px;
-    }
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 1024px) {
+            .tabs-nav {
+                padding: 6px 3px;
+                gap: 1px;
+            }
+            
+            .tab-btn {
+                min-width: 140px;
+                padding: 12px 15px;
+                font-size: 0.95rem;
+                gap: 8px;
+            }
+            
+            .tabs-content {
+                padding: 25px 20px;
+                min-height: 450px;
+                max-height: 60vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .user-id {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .logo h1 {
+                font-size: 1.6rem;
+            }
+            
+            .page-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .character-name-input {
+                font-size: 1.1rem;
+                padding: 12px 15px;
+            }
+            
+            .tabs-nav {
+                padding: 5px 2px;
+                border-radius: 8px 8px 0 0;
+            }
+            
+            .tab-btn {
+                min-width: 130px;
+                padding: 10px 12px;
+                font-size: 0.9rem;
+                gap: 6px;
+            }
+            
+            .tabs-content {
+                padding: 20px 15px;
+                min-height: 400px;
+                max-height: 55vh;
+            }
+            
+            .tab-title {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            
+            .tab-placeholder {
+                padding: 60px 15px;
+                font-size: 1rem;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .btn-primary, .btn-save, .btn-back {
+                min-width: auto;
+            }
+            
+            .btn-save {
+                order: -1;
+                margin-bottom: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header h2 {
+                font-size: 1.6rem;
+            }
+            
+            .character-name-input {
+                font-size: 1rem;
+            }
+            
+            .tabs-nav {
+                padding: 4px 1px;
+            }
+            
+            .tab-btn {
+                min-width: 120px;
+                padding: 8px 10px;
+                font-size: 0.85rem;
+                gap: 5px;
+            }
+            
+            .tabs-content {
+                padding: 15px 10px;
+                min-height: 350px;
+                max-height: 50vh;
+            }
+            
+            .tab-title {
+                font-size: 1.3rem;
+            }
+            
+            .tab-placeholder i {
+                font-size: 2.8rem;
+            }
+            
+            .navigation-buttons {
+                padding: 0 10px;
+            }
+            
+            .breadcrumb {
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .header-actions {
+                gap: 10px;
+            }
+            
+            .btn-save {
+                padding: 8px 15px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
     
-    .tab-btn {
-        min-width: 140px;
-        padding: 12px 15px;
-        font-size: 0.95rem;
-        gap: 8px;
-    }
-    
-    .tabs-content {
-        padding: 25px 20px;
-        min-height: 450px;
-        max-height: 60vh;
-    }
-}
-
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-    }
-    
-    .header-actions {
-        flex-direction: column;
-        width: 100%;
-        justify-content: center;
-        gap: 15px;
-    }
-    
-    .user-info {
-        flex-direction: column;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .user-id {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .logo h1 {
-        font-size: 1.6rem;
-    }
-    
-    .page-header h2 {
-        font-size: 1.8rem;
-    }
-    
-    .character-name-input {
-        font-size: 1.1rem;
-        padding: 12px 15px;
-    }
-    
-    .tabs-nav {
-        padding: 5px 2px;
-        border-radius: 8px 8px 0 0;
-    }
-    
-    .tab-btn {
-        min-width: 130px;
-        padding: 10px 12px;
-        font-size: 0.9rem;
-        gap: 6px;
-    }
-    
-    .tabs-content {
-        padding: 20px 15px;
-        min-height: 400px;
-        max-height: 55vh;
-    }
-    
-    .tab-title {
-        font-size: 1.5rem;
-        margin-bottom: 20px;
-    }
-    
-    .tab-placeholder {
-        padding: 60px 15px;
-        font-size: 1rem;
-    }
-    
-    .navigation-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .btn {
-        width: 100%;
-        max-width: 300px;
-        padding: 10px 20px;
-        font-size: 1rem;
-    }
-    
-    .btn-primary, .btn-save, .btn-back {
-        min-width: auto;
-    }
-    
-    .btn-save {
-        order: -1;
-        margin-bottom: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .page-header h2 {
-        font-size: 1.6rem;
-    }
-    
-    .character-name-input {
-        font-size: 1rem;
-    }
-    
-    .tabs-nav {
-        padding: 4px 1px;
-    }
-    
-    .tab-btn {
-        min-width: 120px;
-        padding: 8px 10px;
-        font-size: 0.85rem;
-        gap: 5px;
-    }
-    
-    .tabs-content {
-        padding: 15px 10px;
-        min-height: 350px;
-        max-height: 50vh;
-    }
-    
-    .tab-title {
-        font-size: 1.3rem;
-    }
-    
-    .tab-placeholder i {
-        font-size: 2.8rem;
-    }
-    
-    .navigation-buttons {
-        padding: 0 10px;
-    }
-    
-    .breadcrumb {
-        padding: 10px 15px;
-        font-size: 0.85rem;
-    }
-    
-    .header-actions {
-        gap: 10px;
-    }
-    
-    .btn-save {
-        padding: 8px 15px;
-        font-size: 0.95rem;
-    }
-}
-</style>
- <link rel="stylesheet" href="style-dashboard.css">
- <link rel="stylesheet" href="style-atributos.css">
- <link rel="stylesheet" href="style-caracteristicas.css">
+    <!-- CSS Externo -->
+    <link rel="stylesheet" href="style-dashboard.css">
+    <link rel="stylesheet" href="style-atributos.css">
+    <link rel="stylesheet" href="style-caracteristicas.css">
 </head>
 <body>
     <!-- LOADING OVERLAY -->
@@ -686,34 +692,33 @@ body::before {
     <div class="toast" id="toast"></div>
 
     <!-- HEADER -->
-   <!-- HEADER COM BOTÃO SALVAR -->
-<header class="header">
-    <div class="logo">
-        <a href="modo-personagem.html" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 12px;">
-            <i class="fas fa-chevron-left" style="color: var(--secondary-gold);"></i>
-            <i class="fas fa-user" style="color: var(--secondary-gold); font-size: 1.8rem;"></i>
-            <h1>CRIAR PERSONAGEM</h1>
-        </a>
-    </div>
-    
-    <div class="header-actions">
-        <div class="user-info">
-            <div class="user-id">
-                <i class="fas fa-id-card"></i>
-                <span>Código:</span>
-                <div class="player-code" id="playerCode">...</div>
-            </div>
+    <header class="header">
+        <div class="logo">
+            <a href="modo-personagem.html" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-chevron-left" style="color: var(--secondary-gold);"></i>
+                <i class="fas fa-user" style="color: var(--secondary-gold); font-size: 1.8rem;"></i>
+                <h1>CRIAR PERSONAGEM</h1>
+            </a>
         </div>
         
-        <button onclick="saveCharacter()" class="btn btn-save">
-            <i class="fas fa-save"></i> Salvar Personagem
-        </button>
-        
-        <button onclick="logout()" class="btn btn-logout">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </button>
-    </div>
-</header>
+        <div class="header-actions">
+            <div class="user-info">
+                <div class="user-id">
+                    <i class="fas fa-id-card"></i>
+                    <span>Código:</span>
+                    <div class="player-code" id="playerCode">...</div>
+                </div>
+            </div>
+            
+            <button onclick="saveCharacter()" class="btn btn-save">
+                <i class="fas fa-save"></i> Salvar Personagem
+            </button>
+            
+            <button onclick="logout()" class="btn btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </header>
 
     <!-- BREADCRUMB -->
     <nav class="breadcrumb">
@@ -777,1070 +782,1025 @@ body::before {
 
         <!-- TABS CONTENT -->
         <div class="tabs-content">
-          <!-- DASHBOARD -->
-<div class="tab-pane active" id="dashboard">
-    <h3 class="tab-title">Dashboard - Visão Geral</h3>
-    
-    <div class="dashboard-completo">
-        
-        <!-- SEÇÃO 1: IDENTIFICAÇÃO DO PERSONAGEM -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <i class="fas fa-user-circle"></i>
-                <h4>Identificação</h4>
-            </div>
-            
-            <div class="identificacao-container">
-                <!-- FOTO DO PERSONAGEM -->
-                <div class="foto-personagem">
-                    <div class="foto-wrapper" id="fotoWrapper">
-                        <img id="fotoPreview" class="foto-preview" src="" alt="Foto do Personagem">
-                        <div class="foto-placeholder" id="fotoPlaceholder">
-                            <i class="fas fa-user-circle fa-4x"></i>
-                            <span>Adicionar Imagem</span>
-                        </div>
-                        <input type="file" id="fotoUpload" accept="image/*" class="foto-upload">
-                    </div>
-                    <div class="foto-acoes">
-                        <button class="btn-foto" onclick="document.getElementById('fotoUpload').click()">
-                            <i class="fas fa-upload"></i> Upload
-                        </button>
-                        <button class="btn-foto btn-remover" id="btnRemoverFoto">
-                            <i class="fas fa-trash"></i> Remover
-                        </button>
-                    </div>
-                </div>
+            <!-- DASHBOARD -->
+            <div class="tab-pane active" id="dashboard">
+                <h3 class="tab-title">Dashboard - Visão Geral</h3>
                 
-                <!-- DADOS BÁSICOS -->
-                <div class="dados-basicos">
-                    <div class="dados-grid">
-                        <div class="dado-item">
-                            <label for="dashboardRaca">Raça/Espécie:</label>
-                            <input type="text" id="dashboardRaca" class="dashboard-input" 
-                                   placeholder="Humano, Elfo, Anão..." maxlength="30">
+                <div class="dashboard-completo">
+                    
+                    <!-- SEÇÃO 1: IDENTIFICAÇÃO DO PERSONAGEM -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-user-circle"></i>
+                            <h4>Identificação</h4>
                         </div>
                         
-                        <div class="dado-item">
-                            <label for="dashboardClasse">Classe/Profissão:</label>
-                            <input type="text" id="dashboardClasse" class="dashboard-input" 
-                                   placeholder="Guerreiro, Mago, Ladino..." maxlength="30">
-                        </div>
-                        
-                        <div class="dado-item">
-                            <label for="dashboardNivel">Nível/Hierarquia:</label>
-                            <input type="text" id="dashboardNivel" class="dashboard-input" 
-                                   placeholder="Noviço, Veterano, Mestre..." maxlength="30">
-                        </div>
-                        
-                        <div class="dado-item full-width">
-                            <label for="dashboardDescricao">História do Personagem:</label>
-                            <textarea id="dashboardDescricao" class="dashboard-textarea" 
-                                      placeholder="Breve descrição do personagem, sua história, personalidade..."
-                                      rows="3" maxlength="500"></textarea>
-                            <div class="contador-caracteres">
-                                <span id="contadorDescricao">0</span>/500 caracteres
+                        <div class="identificacao-container">
+                            <!-- FOTO DO PERSONAGEM -->
+                            <div class="foto-personagem">
+                                <div class="foto-wrapper" id="fotoWrapper">
+                                    <img id="fotoPreview" class="foto-preview" src="" alt="Foto do Personagem">
+                                    <div class="foto-placeholder" id="fotoPlaceholder">
+                                        <i class="fas fa-user-circle fa-4x"></i>
+                                        <span>Adicionar Imagem</span>
+                                    </div>
+                                    <input type="file" id="fotoUpload" accept="image/*" class="foto-upload">
+                                </div>
+                                <div class="foto-acoes">
+                                    <button class="btn-foto" onclick="document.getElementById('fotoUpload').click()">
+                                        <i class="fas fa-upload"></i> Upload
+                                    </button>
+                                    <button class="btn-foto btn-remover" id="btnRemoverFoto">
+                                        <i class="fas fa-trash"></i> Remover
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- SEÇÃO 2: CONTROLE DE PONTOS (SIMPLIFICADO) -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <i class="fas fa-calculator"></i>
-                <h4>Controle de Pontos</h4>
-            </div>
-            
-            <div class="pontos-container">
-                <div class="pontos-principais">
-                    <div class="ponto-card ponto-total">
-                        <div class="ponto-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="ponto-info">
-                            <h5>Pontos Totais</h5>
-                            <div class="ponto-value">
-                                <input type="number" id="pontosTotais" class="ponto-input" 
-                                       value="150" min="0" step="10">
-                            </div>
-                            <small>Definido pelo GM</small>
-                        </div>
-                    </div>
-                    
-                    <div class="ponto-card ponto-limite">
-                        <div class="ponto-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="ponto-info">
-                            <h5>Limite Desvantagens</h5>
-                            <div class="ponto-value">
-                                <input type="number" id="limiteDesvantagens" class="ponto-input" 
-                                       value="-50" min="-200" max="0" step="5">
-                            </div>
-                            <small>Máximo permitido</small>
-                        </div>
-                    </div>
-                    
-                    <div class="ponto-card ponto-disponivel">
-                        <div class="ponto-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <div class="ponto-info">
-                            <h5>Saldo Disponível</h5>
-                            <div class="ponto-value" id="saldoDisponivel">150</div>
-                            <small>Pontos restantes</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- SEÇÃO 3: ATRIBUTOS BÁSICOS -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <i class="fas fa-dumbbell"></i>
-                <h4>Atributos Básicos</h4>
-            </div>
-            
-            <div class="atributos-container">
-                <div class="atributo-row">
-                    <div class="atributo-card">
-                        <div class="atributo-header">
-                            <i class="fas fa-fist-raised"></i>
-                            <h5>FOR (ST)</h5>
-                        </div>
-                        <div class="atributo-value" id="atributoST">10</div>
-                        <div class="atributo-label">Força</div>
-                    </div>
-                    
-                    <div class="atributo-card">
-                        <div class="atributo-header">
-                            <i class="fas fa-running"></i>
-                            <h5>DES (DX)</h5>
-                        </div>
-                        <div class="atributo-value" id="atributoDX">10</div>
-                        <div class="atributo-label">Destreza</div>
-                    </div>
-                    
-                    <div class="atributo-card">
-                        <div class="atributo-header">
-                            <i class="fas fa-brain"></i>
-                            <h5>INT (IQ)</h5>
-                        </div>
-                        <div class="atributo-value" id="atributoIQ">10</div>
-                        <div class="atributo-label">Inteligência</div>
-                    </div>
-                    
-                    <div class="atributo-card">
-                        <div class="atributo-header">
-                            <i class="fas fa-heartbeat"></i>
-                            <h5>VIG (HT)</h5>
-                        </div>
-                        <div class="atributo-value" id="atributoHT">10</div>
-                        <div class="atributo-label">Vigor</div>
-                    </div>
-                </div>
-                
-                <!-- VITALIDADE -->
-                <div class="vitalidade-container">
-                    <div class="vitalidade-card">
-                        <div class="vitalidade-header">
-                            <i class="fas fa-heart"></i>
-                            <h5>Pontos de Vida (PV)</h5>
-                            <div class="vitalidade-controls">
-                                <button class="vitalidade-btn" onclick="ajustarPV(-1)">-</button>
-                                <button class="vitalidade-btn" onclick="ajustarPV(1)">+</button>
-                            </div>
-                        </div>
-                        <div class="vitalidade-content">
-                            <div class="vitalidade-value" id="valorPV">10/10</div>
-                            <div class="vitalidade-bar">
-                                <div class="bar-fill" id="barraPV"></div>
+                            
+                            <!-- DADOS BÁSICOS -->
+                            <div class="dados-basicos">
+                                <div class="dados-grid">
+                                    <div class="dado-item">
+                                        <label for="dashboardRaca">Raça/Espécie:</label>
+                                        <input type="text" id="dashboardRaca" class="dashboard-input" 
+                                               placeholder="Humano, Elfo, Anão..." maxlength="30">
+                                    </div>
+                                    
+                                    <div class="dado-item">
+                                        <label for="dashboardClasse">Classe/Profissão:</label>
+                                        <input type="text" id="dashboardClasse" class="dashboard-input" 
+                                               placeholder="Guerreiro, Mago, Ladino..." maxlength="30">
+                                    </div>
+                                    
+                                    <div class="dado-item">
+                                        <label for="dashboardNivel">Nível/Hierarquia:</label>
+                                        <input type="text" id="dashboardNivel" class="dashboard-input" 
+                                               placeholder="Noviço, Veterano, Mestre..." maxlength="30">
+                                    </div>
+                                    
+                                    <div class="dado-item full-width">
+                                        <label for="dashboardDescricao">História do Personagem:</label>
+                                        <textarea id="dashboardDescricao" class="dashboard-textarea" 
+                                                  placeholder="Breve descrição do personagem, sua história, personalidade..."
+                                                  rows="3" maxlength="500"></textarea>
+                                        <div class="contador-caracteres">
+                                            <span id="contadorDescricao">0</span>/500 caracteres
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="vitalidade-card">
-                        <div class="vitalidade-header">
-                            <i class="fas fa-tint"></i>
-                            <h5>Pontos de Fadiga (PF)</h5>
-                            <div class="vitalidade-controls">
-                                <button class="vitalidade-btn" onclick="ajustarPF(-1)">-</button>
-                                <button class="vitalidade-btn" onclick="ajustarPF(1)">+</button>
-                            </div>
-                        </div>
-                        <div class="vitalidade-content">
-                            <div class="vitalidade-value" id="valorPF">10/10</div>
-                            <div class="vitalidade-bar">
-                                <div class="bar-fill" id="barraPF"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- SEÇÃO 4: CARACTERÍSTICAS FINANCEIRAS -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <i class="fas fa-coins"></i>
-                <h4>Características Financeiras</h4>
-            </div>
-            
-            <div class="financeiro-container">
-                <div class="financeiro-card">
-                    <div class="financeiro-icon">
-                        <i class="fas fa-chess-queen"></i>
-                    </div>
-                    <div class="financeiro-info">
-                        <h5>Nível de Riqueza</h5>
-                        <div class="financeiro-value" id="nivelRiqueza">Médio</div>
-                        <small>Status econômico</small>
-                    </div>
-                </div>
-                
-                <div class="financeiro-card">
-                    <div class="financeiro-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="financeiro-info">
-                        <h5>Saldo Disponível</h5>
-                        <div class="financeiro-value" id="saldoPersonagem">$2.000</div>
-                        <small>Capital líquido</small>
-                    </div>
-                </div>
-                
-                <div class="financeiro-card">
-                    <div class="financeiro-icon">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <div class="financeiro-info">
-                        <h5>Aparência</h5>
-                        <div class="financeiro-value" id="nivelAparencia">Média</div>
-                        <small>Impressão visual</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- SEÇÃO 5: RESUMO DE GASTOS DETALHADO -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <i class="fas fa-file-invoice-dollar"></i>
-                <h4>Resumo de Gastos Detalhado</h4>
-            </div>
-            
-            <div class="resumo-container">
-                <div class="resumo-grid">
-                    <!-- ATRIBUTOS -->
-                    <div class="resumo-card resumo-atributos">
-                        <div class="resumo-header">
-                            <i class="fas fa-dumbbell"></i>
-                            <h5>Atributos</h5>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="gastosAtributos">0</div>
-                            <div class="resumo-label">pontos</div>
-                        </div>
-                    </div>
-                    
-                    <!-- VANTAGENS -->
-                    <div class="resumo-card resumo-vantagens">
-                        <div class="resumo-header">
-                            <i class="fas fa-star"></i>
-                            <h5>Vantagens</h5>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="gastosVantagens">0</div>
-                            <div class="resumo-label">pontos</div>
-                        </div>
-                    </div>
-                    
-                    <!-- DESVANTAGENS -->
-                    <div class="resumo-card resumo-desvantagens">
-                        <div class="resumo-header">
-                            <i class="fas fa-ban"></i>
-                            <h5>Desvantagens</h5>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="gastosDesvantagens">0</div>
-                            <div class="resumo-label">pontos</div>
-                        </div>
-                    </div>
-                    
-                    <!-- PERÍCIAS -->
-                    <div class="resumo-card resumo-pericias">
-                        <div class="resumo-header">
-                            <i class="fas fa-graduation-cap"></i>
-                            <h5>Perícias</h5>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="gastosPericias">0</div>
-                            <div class="resumo-label">pontos</div>
-                        </div>
-                    </div>
-                    
-                    <!-- MAGIAS -->
-                    <div class="resumo-card resumo-magias">
-                        <div class="resumo-header">
-                            <i class="fas fa-hat-wizard"></i>
-                            <h5>Magias</h5>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="gastosMagias">0</div>
-                            <div class="resumo-label">pontos</div>
-                        </div>
-                    </div>
-                    
-                    <!-- TÉCNICAS -->
-                    <div class="resumo-card resumo-tecnicas">
-                        <div class="resumo-header">
-                            <i class="fas fa-chess-knight"></i>
-                            <h5>Técnicas</h5>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="gastosTecnicas">0</div>
-                            <div class="resumo-label">pontos</div>
-                        </div>
-                    </div>
-                    
-                    <!-- PECULIARIDADES -->
-                    <div class="resumo-card resumo-peculiaridades">
-                        <div class="resumo-header">
-                            <i class="fas fa-gem"></i>
-                            <h5>Peculiaridades</h5>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="gastosPeculiaridades">0</div>
-                            <div class="resumo-label">pontos</div>
-                        </div>
-                    </div>
-                    
-                    <!-- TOTAL LÍQUIDO -->
-                    <div class="resumo-card total-card">
-                        <div class="resumo-header">
+                    <!-- SEÇÃO 2: CONTROLE DE PONTOS (SIMPLIFICADO) -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
                             <i class="fas fa-calculator"></i>
-                            <h5>Total Líquido</h5>
+                            <h4>Controle de Pontos</h4>
                         </div>
-                        <div class="resumo-content">
-                            <div class="resumo-value" id="totalLiquido">150</div>
-                            <div class="resumo-label">pontos gastos</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- LEGENDA DOS PONTOS -->
-                <div class="resumo-legenda">
-                    <div class="legenda-item">
-                        <span class="legenda-cor positiva"></span>
-                        <span>Pontos positivos (gastos)</span>
-                    </div>
-                    <div class="legenda-item">
-                        <span class="legenda-cor negativa"></span>
-                        <span>Pontos negativos (ganhos de desvantagens)</span>
-                    </div>
-                    <div class="legenda-item">
-                        <span class="legenda-cor saldo"></span>
-                        <span>Saldo final</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- SEÇÃO 6: RESUMO RÁPIDO -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <i class="fas fa-chart-pie"></i>
-                <h4>Distribuição de Pontos</h4>
-            </div>
-            
-            <div class="distribuicao-container">
-                <div class="distribuicao-card">
-                    <div class="distribuicao-header">
-                        <h5>Como os pontos foram usados</h5>
-                    </div>
-                    <div class="distribuicao-content">
-                        <div class="distribuicao-item">
-                            <span class="distribuicao-label">Atributos</span>
-                            <div class="distribuicao-bar">
-                                <div class="distribuicao-fill" id="distribAtributos"></div>
+                        
+                        <div class="pontos-container">
+                            <div class="pontos-principais">
+                                <div class="ponto-card ponto-total">
+                                    <div class="ponto-icon">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="ponto-info">
+                                        <h5>Pontos Totais</h5>
+                                        <div class="ponto-value">
+                                            <input type="number" id="pontosTotais" class="ponto-input" 
+                                                   value="150" min="0" step="10">
+                                        </div>
+                                        <small>Definido pelo GM</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="ponto-card ponto-limite">
+                                    <div class="ponto-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="ponto-info">
+                                        <h5>Limite Desvantagens</h5>
+                                        <div class="ponto-value">
+                                            <input type="number" id="limiteDesvantagens" class="ponto-input" 
+                                                   value="-50" min="-200" max="0" step="5">
+                                        </div>
+                                        <small>Máximo permitido</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="ponto-card ponto-disponivel">
+                                    <div class="ponto-icon">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                    <div class="ponto-info">
+                                        <h5>Saldo Disponível</h5>
+                                        <div class="ponto-value" id="saldoDisponivel">150</div>
+                                        <small>Pontos restantes</small>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="distribuicao-valor" id="distribAtributosValor">0%</span>
                         </div>
-                        <div class="distribuicao-item">
-                            <span class="distribuicao-label">Vantagens</span>
-                            <div class="distribuicao-bar">
-                                <div class="distribuicao-fill" id="distribVantagens"></div>
+                    </div>
+                    
+                    <!-- SEÇÃO 3: ATRIBUTOS BÁSICOS -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-dumbbell"></i>
+                            <h4>Atributos Básicos</h4>
+                        </div>
+                        
+                        <div class="atributos-container">
+                            <div class="atributo-row">
+                                <div class="atributo-card">
+                                    <div class="atributo-header">
+                                        <i class="fas fa-fist-raised"></i>
+                                        <h5>FOR (ST)</h5>
+                                    </div>
+                                    <div class="atributo-value" id="atributoST">10</div>
+                                    <div class="atributo-label">Força</div>
+                                </div>
+                                
+                                <div class="atributo-card">
+                                    <div class="atributo-header">
+                                        <i class="fas fa-running"></i>
+                                        <h5>DES (DX)</h5>
+                                    </div>
+                                    <div class="atributo-value" id="atributoDX">10</div>
+                                    <div class="atributo-label">Destreza</div>
+                                </div>
+                                
+                                <div class="atributo-card">
+                                    <div class="atributo-header">
+                                        <i class="fas fa-brain"></i>
+                                        <h5>INT (IQ)</h5>
+                                    </div>
+                                    <div class="atributo-value" id="atributoIQ">10</div>
+                                    <div class="atributo-label">Inteligência</div>
+                                </div>
+                                
+                                <div class="atributo-card">
+                                    <div class="atributo-header">
+                                        <i class="fas fa-heartbeat"></i>
+                                        <h5>VIG (HT)</h5>
+                                    </div>
+                                    <div class="atributo-value" id="atributoHT">10</div>
+                                    <div class="atributo-label">Vigor</div>
+                                </div>
                             </div>
-                            <span class="distribuicao-valor" id="distribVantagensValor">0%</span>
-                        </div>
-                        <div class="distribuicao-item">
-                            <span class="distribuicao-label">Perícias/Magias</span>
-                            <div class="distribuicao-bar">
-                                <div class="distribuicao-fill" id="distribPericias"></div>
+                            
+                            <!-- VITALIDADE -->
+                            <div class="vitalidade-container">
+                                <div class="vitalidade-card">
+                                    <div class="vitalidade-header">
+                                        <i class="fas fa-heart"></i>
+                                        <h5>Pontos de Vida (PV)</h5>
+                                        <div class="vitalidade-controls">
+                                            <button class="vitalidade-btn" onclick="ajustarPV(-1)">-</button>
+                                            <button class="vitalidade-btn" onclick="ajustarPV(1)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="vitalidade-content">
+                                        <div class="vitalidade-value" id="valorPV">10/10</div>
+                                        <div class="vitalidade-bar">
+                                            <div class="bar-fill" id="barraPV"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="vitalidade-card">
+                                    <div class="vitalidade-header">
+                                        <i class="fas fa-tint"></i>
+                                        <h5>Pontos de Fadiga (PF)</h5>
+                                        <div class="vitalidade-controls">
+                                            <button class="vitalidade-btn" onclick="ajustarPF(-1)">-</button>
+                                            <button class="vitalidade-btn" onclick="ajustarPF(1)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="vitalidade-content">
+                                        <div class="vitalidade-value" id="valorPF">10/10</div>
+                                        <div class="vitalidade-bar">
+                                            <div class="bar-fill" id="barraPF"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="distribuicao-valor" id="distribPericiasValor">0%</span>
                         </div>
-                        <div class="distribuicao-item">
-                            <span class="distribuicao-label">Outros</span>
-                            <div class="distribuicao-bar">
-                                <div class="distribuicao-fill" id="distribOutros"></div>
+                    </div>
+                    
+                    <!-- SEÇÃO 4: CARACTERÍSTICAS FINANCEIRAS -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-coins"></i>
+                            <h4>Características Financeiras</h4>
+                        </div>
+                        
+                        <div class="financeiro-container">
+                            <div class="financeiro-card">
+                                <div class="financeiro-icon">
+                                    <i class="fas fa-chess-queen"></i>
+                                </div>
+                                <div class="financeiro-info">
+                                    <h5>Nível de Riqueza</h5>
+                                    <div class="financeiro-value" id="nivelRiqueza">Médio</div>
+                                    <small>Status econômico</small>
+                                </div>
                             </div>
-                            <span class="distribuicao-valor" id="distribOutrosValor">0%</span>
+                            
+                            <div class="financeiro-card">
+                                <div class="financeiro-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="financeiro-info">
+                                    <h5>Saldo Disponível</h5>
+                                    <div class="financeiro-value" id="saldoPersonagem">$2.000</div>
+                                    <small>Capital líquido</small>
+                                </div>
+                            </div>
+                            
+                            <div class="financeiro-card">
+                                <div class="financeiro-icon">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <div class="financeiro-info">
+                                    <h5>Aparência</h5>
+                                    <div class="financeiro-value" id="nivelAparencia">Média</div>
+                                    <small>Impressão visual</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- SEÇÃO 5: RESUMO DE GASTOS DETALHADO -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <h4>Resumo de Gastos Detalhado</h4>
+                        </div>
+                        
+                        <div class="resumo-container">
+                            <div class="resumo-grid">
+                                <!-- ATRIBUTOS -->
+                                <div class="resumo-card resumo-atributos">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-dumbbell"></i>
+                                        <h5>Atributos</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="gastosAtributos">0</div>
+                                        <div class="resumo-label">pontos</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- VANTAGENS -->
+                                <div class="resumo-card resumo-vantagens">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-star"></i>
+                                        <h5>Vantagens</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="gastosVantagens">0</div>
+                                        <div class="resumo-label">pontos</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- DESVANTAGENS -->
+                                <div class="resumo-card resumo-desvantagens">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-ban"></i>
+                                        <h5>Desvantagens</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="gastosDesvantagens">0</div>
+                                        <div class="resumo-label">pontos</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- PERÍCIAS -->
+                                <div class="resumo-card resumo-pericias">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <h5>Perícias</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="gastosPericias">0</div>
+                                        <div class="resumo-label">pontos</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- MAGIAS -->
+                                <div class="resumo-card resumo-magias">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-hat-wizard"></i>
+                                        <h5>Magias</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="gastosMagias">0</div>
+                                        <div class="resumo-label">pontos</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- TÉCNICAS -->
+                                <div class="resumo-card resumo-tecnicas">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-chess-knight"></i>
+                                        <h5>Técnicas</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="gastosTecnicas">0</div>
+                                        <div class="resumo-label">pontos</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- PECULIARIDADES -->
+                                <div class="resumo-card resumo-peculiaridades">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-gem"></i>
+                                        <h5>Peculiaridades</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="gastosPeculiaridades">0</div>
+                                        <div class="resumo-label">pontos</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- TOTAL LÍQUIDO -->
+                                <div class="resumo-card total-card">
+                                    <div class="resumo-header">
+                                        <i class="fas fa-calculator"></i>
+                                        <h5>Total Líquido</h5>
+                                    </div>
+                                    <div class="resumo-content">
+                                        <div class="resumo-value" id="totalLiquido">150</div>
+                                        <div class="resumo-label">pontos gastos</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- LEGENDA DOS PONTOS -->
+                            <div class="resumo-legenda">
+                                <div class="legenda-item">
+                                    <span class="legenda-cor positiva"></span>
+                                    <span>Pontos positivos (gastos)</span>
+                                </div>
+                                <div class="legenda-item">
+                                    <span class="legenda-cor negativa"></span>
+                                    <span>Pontos negativos (ganhos de desvantagens)</span>
+                                </div>
+                                <div class="legenda-item">
+                                    <span class="legenda-cor saldo"></span>
+                                    <span>Saldo final</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
-        </div>
-        
-    </div>
-</div>
-            <!-- ATRIBUTOS -->
-<div class="tab-pane" id="atributos">
-    <div class="atributos-container">
-        <!-- Controle de Pontos (Simplificado) -->
-        <div class="pontos-section">
-            <div class="ponto-card total">
-                <div class="ponto-icon">
-                    <i class="fas fa-star"></i>
-                </div>
-                <div class="ponto-info">
-                    <h5>Pontos Gastos em Atributos</h5>
-                    <div class="ponto-valor" id="pontosGastosCard">0</div>
-                </div>
-            </div>
-        </div>
+                        <!-- ATRIBUTOS -->
+            <div class="tab-pane" id="atributos">
+                <div class="atributos-container">
+                    <!-- Controle de Pontos (Simplificado) -->
+                    <div class="pontos-section">
+                        <div class="ponto-card total">
+                            <div class="ponto-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="ponto-info">
+                                <h5>Pontos Gastos em Atributos</h5>
+                                <div class="ponto-valor" id="pontosGastosCard">0</div>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- Atributos Principais -->
-        <div class="atributos-principais">
-            <div class="secao-header">
-                <i class="fas fa-crown"></i>
-                <h2>Atributos Principais</h2>
-            </div>
-            
-            <div class="cards-grid">
-                <!-- ST -->
-                <div class="atributo-card">
-                    <div class="atributo-header">
-                        <h3><i class="fas fa-fist-raised"></i> FORÇA (ST)</h3>
-                        <div class="custo-badge" id="custoST">0</div>
-                    </div>
-                    <div class="atributo-valor">
-                        <div class="controle">
-                            <button class="btn-controle" onclick="alterarAtributo('ST', -1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="text" id="ST" class="valor-input" value="10" readonly>
-                            <button class="btn-controle" onclick="alterarAtributo('ST', 1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                    <!-- Atributos Principais -->
+                    <div class="atributos-principais">
+                        <div class="secao-header">
+                            <i class="fas fa-crown"></i>
+                            <h2>Atributos Principais</h2>
                         </div>
-                        <div class="custo-info">
-                            <i class="fas fa-coins"></i> 10 pontos/nível
+                        
+                        <div class="cards-grid">
+                            <!-- ST -->
+                            <div class="atributo-card">
+                                <div class="atributo-header">
+                                    <h3><i class="fas fa-fist-raised"></i> FORÇA (ST)</h3>
+                                    <div class="custo-badge" id="custoST">0</div>
+                                </div>
+                                <div class="atributo-valor">
+                                    <div class="controle">
+                                        <button class="btn-controle" onclick="alterarAtributo('ST', -1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="text" id="ST" class="valor-input" value="10" readonly>
+                                        <button class="btn-controle" onclick="alterarAtributo('ST', 1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="custo-info">
+                                        <i class="fas fa-coins"></i> 10 pontos/nível
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DX -->
+                            <div class="atributo-card">
+                                <div class="atributo-header">
+                                    <h3><i class="fas fa-bolt"></i> DESTREZA (DX)</h3>
+                                    <div class="custo-badge" id="custoDX">0</div>
+                                </div>
+                                <div class="atributo-valor">
+                                    <div class="controle">
+                                        <button class="btn-controle" onclick="alterarAtributo('DX', -1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="text" id="DX" class="valor-input" value="10" readonly>
+                                        <button class="btn-controle" onclick="alterarAtributo('DX', 1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="custo-info">
+                                        <i class="fas fa-coins"></i> 20 pontos/nível
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- IQ -->
+                            <div class="atributo-card">
+                                <div class="atributo-header">
+                                    <h3><i class="fas fa-brain"></i> INTELIGÊNCIA (IQ)</h3>
+                                    <div class="custo-badge" id="custoIQ">0</div>
+                                </div>
+                                <div class="atributo-valor">
+                                    <div class="controle">
+                                        <button class="btn-controle" onclick="alterarAtributo('IQ', -1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="text" id="IQ" class="valor-input" value="10" readonly>
+                                        <button class="btn-controle" onclick="alterarAtributo('IQ', 1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="custo-info">
+                                        <i class="fas fa-coins"></i> 20 pontos/nível
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- HT -->
+                            <div class="atributo-card">
+                                <div class="atributo-header">
+                                    <h3><i class="fas fa-heartbeat"></i> VIGOR (HT)</h3>
+                                    <div class="custo-badge" id="custoHT">0</div>
+                                </div>
+                                <div class="atributo-valor">
+                                    <div class="controle">
+                                        <button class="btn-controle" onclick="alterarAtributo('HT', -1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="text" id="HT" class="valor-input" value="10" readonly>
+                                        <button class="btn-controle" onclick="alterarAtributo('HT', 1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="custo-info">
+                                        <i class="fas fa-coins"></i> 10 pontos/nível
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Atributos Secundários -->
+                    <div class="atributos-secundarios">
+                        <div class="secao-header">
+                            <i class="fas fa-layer-group"></i>
+                            <h2>Atributos Derivados</h2>
+                        </div>
+                        
+                        <div class="cards-grid secundarios">
+                            <!-- PV -->
+                            <div class="derivado-card">
+                                <div class="derivado-header">
+                                    <h3><i class="fas fa-heart"></i> PONTOS DE VIDA</h3>
+                                    <span class="fonte">(ST)</span>
+                                </div>
+                                <div class="derivado-valor">
+                                    <div class="base">
+                                        <span>Base:</span>
+                                        <strong id="PVBase">10</strong>
+                                    </div>
+                                    <div class="modificador">
+                                        <span>Modificador:</span>
+                                        <input type="number" id="bonusPV" class="mod-input" value="0" min="-10" max="10">
+                                    </div>
+                                    <div class="total">
+                                        <span>Total:</span>
+                                        <strong id="PVTotal">10</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PF -->
+                            <div class="derivado-card">
+                                <div class="derivado-header">
+                                    <h3><i class="fas fa-wind"></i> PONTOS DE FADIGA</h3>
+                                    <span class="fonte">(HT)</span>
+                                </div>
+                                <div class="derivado-valor">
+                                    <div class="base">
+                                        <span>Base:</span>
+                                        <strong id="PFBase">10</strong>
+                                    </div>
+                                    <div class="modificador">
+                                        <span>Modificador:</span>
+                                        <input type="number" id="bonusPF" class="mod-input" value="0" min="-10" max="10">
+                                    </div>
+                                    <div class="total">
+                                        <span>Total:</span>
+                                        <strong id="PFTotal">10</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vontade -->
+                            <div class="derivado-card">
+                                <div class="derivado-header">
+                                    <h3><i class="fas fa-brain"></i> VONTADE</h3>
+                                    <span class="fonte">(IQ)</span>
+                                </div>
+                                <div class="derivado-valor">
+                                    <div class="base">
+                                        <span>Base:</span>
+                                        <strong id="VontadeBase">10</strong>
+                                    </div>
+                                    <div class="modificador">
+                                        <span>Modificador:</span>
+                                        <input type="number" id="bonusVontade" class="mod-input" value="0" min="-10" max="10">
+                                    </div>
+                                    <div class="total">
+                                        <span>Total:</span>
+                                        <strong id="VontadeTotal">10</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Percepção -->
+                            <div class="derivado-card">
+                                <div class="derivado-header">
+                                    <h3><i class="fas fa-eye"></i> PERCEPÇÃO</h3>
+                                    <span class="fonte">(IQ)</span>
+                                </div>
+                                <div class="derivado-valor">
+                                    <div class="base">
+                                        <span>Base:</span>
+                                        <strong id="PercepcaoBase">10</strong>
+                                    </div>
+                                    <div class="modificador">
+                                        <span>Modificador:</span>
+                                        <input type="number" id="bonusPercepcao" class="mod-input" value="0" min="-10" max="10">
+                                    </div>
+                                    <div class="total">
+                                        <span>Total:</span>
+                                        <strong id="PercepcaoTotal">10</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Deslocamento -->
+                            <div class="derivado-card">
+                                <div class="derivado-header">
+                                    <h3><i class="fas fa-running"></i> DESLOCAMENTO</h3>
+                                    <span class="fonte">(DX+HT)/4</span>
+                                </div>
+                                <div class="derivado-valor">
+                                    <div class="base">
+                                        <span>Base:</span>
+                                        <strong id="DeslocamentoBase">5.00</strong>
+                                    </div>
+                                    <div class="modificador">
+                                        <span>Modificador:</span>
+                                        <input type="number" id="bonusDeslocamento" class="mod-input" value="0" min="-5" max="5" step="0.25">
+                                    </div>
+                                    <div class="total">
+                                        <span>Total:</span>
+                                        <strong id="DeslocamentoTotal">5.00</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sistema de Combate -->
+                    <div class="combate-section">
+                        <div class="secao-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h2>Sistema de Combate</h2>
+                        </div>
+                        
+                        <div class="combate-grid">
+                            <!-- Dano Base -->
+                            <div class="combate-card">
+                                <div class="combate-header">
+                                    <h3><i class="fas fa-dagger"></i> DANO BÁSICO</h3>
+                                    <span class="fonte">(ST)</span>
+                                </div>
+                                <div class="dano-container">
+                                    <div class="dano-item">
+                                        <span class="dano-tipo">Golpe Despreparado (GDP)</span>
+                                        <span class="dano-valor" id="danoGDP">1d-2</span>
+                                    </div>
+                                    <div class="dano-item">
+                                        <span class="dano-tipo">Golpe Estático Básico (GEB)</span>
+                                        <span class="dano-valor" id="danoGEB">1d</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Carga -->
+                            <div class="combate-card">
+                                <div class="combate-header">
+                                    <h3><i class="fas fa-weight-hanging"></i> NÍVEIS DE CARGA</h3>
+                                    <span class="fonte">(ST)</span>
+                                </div>
+                                <div class="carga-container">
+                                    <div class="carga-item">
+                                        <span class="carga-tipo">Nenhuma:</span>
+                                        <span class="carga-valor" id="cargaNenhuma">10.0</span>
+                                    </div>
+                                    <div class="carga-item">
+                                        <span class="carga-tipo">Leve:</span>
+                                        <span class="carga-valor" id="cargaLeve">20.0</span>
+                                    </div>
+                                    <div class="carga-item">
+                                        <span class="carga-tipo">Média:</span>
+                                        <span class="carga-valor" id="cargaMedia">30.0</span>
+                                    </div>
+                                    <div class="carga-item">
+                                        <span class="carga-tipo">Pesada:</span>
+                                        <span class="carga-valor" id="cargaPesada">60.0</span>
+                                    </div>
+                                    <div class="carga-item">
+                                        <span class="carga-tipo">Muito Pesada:</span>
+                                        <span class="carga-valor" id="cargaMuitoPesada">100.0</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- DX -->
-                <div class="atributo-card">
-                    <div class="atributo-header">
-                        <h3><i class="fas fa-bolt"></i> DESTREZA (DX)</h3>
-                        <div class="custo-badge" id="custoDX">0</div>
-                    </div>
-                    <div class="atributo-valor">
-                        <div class="controle">
-                            <button class="btn-controle" onclick="alterarAtributo('DX', -1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="text" id="DX" class="valor-input" value="10" readonly>
-                            <button class="btn-controle" onclick="alterarAtributo('DX', 1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
+            <!-- CARACTERÍSTICAS -->
+            <div class="tab-pane" id="caracteristicas">
+                <h3 class="tab-title">Características & Detalhes</h3>
+                <div class="caracteristicas-dashboard">
+                    
+                    <!-- SEÇÃO 1: APARÊNCIA FÍSICA -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-user"></i>
+                            <h4>Aparência Física</h4>
+                            <span class="pontos-badge" id="pontosAparencia">0 pts</span>
                         </div>
-                        <div class="custo-info">
-                            <i class="fas fa-coins"></i> 20 pontos/nível
+                        
+                        <div class="aparencia-container">
+                            <div class="aparencia-control">
+                                <label for="nivelAparencia">Nível de Aparência:</label>
+                                <select id="nivelAparencia" class="dashboard-select">
+                                    <option value="-24">Horrendo [-24 pts]</option>
+                                    <option value="-20">Monstruoso [-20 pts]</option>
+                                    <option value="-16">Hediondo [-16 pts]</option>
+                                    <option value="-8">Feio [-8 pts]</option>
+                                    <option value="-4">Sem Atrativos [-4 pts]</option>
+                                    <option value="0" selected>Comum [0 pts]</option>
+                                    <option value="4">Atraente [+4 pts]</option>
+                                    <option value="12">Elegante [+12 pts]</option>
+                                    <option value="16">Muito Elegante [+16 pts]</option>
+                                    <option value="20">Lindo [+20 pts]</option>
+                                </select>
+                            </div>
+                            
+                            <div class="aparencia-display" id="displayAparencia">
+                                <div class="display-header">
+                                    <i class="fas fa-user-circle"></i>
+                                    <div>
+                                        <strong>Comum</strong>
+                                        <small>Reação: +0</small>
+                                    </div>
+                                </div>
+                                <p class="display-desc">Aparência padrão, sem modificadores</p>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- SEÇÃO 2: NÍVEL DE RIQUEZA -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-coins"></i>
+                            <h4>Nível de Riqueza</h4>
+                            <span class="pontos-badge" id="pontosRiqueza">0 pts</span>
+                        </div>
+                        
+                        <div class="riqueza-container">
+                            <div class="riqueza-control">
+                                <label for="nivelRiqueza">Nível de Riqueza:</label>
+                                <select id="nivelRiqueza" class="dashboard-select">
+                                    <option value="-25">Falido [-25 pts]</option>
+                                    <option value="-15">Pobre [-15 pts]</option>
+                                    <option value="-10">Batalhador [-10 pts]</option>
+                                    <option value="0" selected>Médio [0 pts]</option>
+                                    <option value="10">Confortável [+10 pts]</option>
+                                    <option value="20">Rico [+20 pts]</option>
+                                    <option value="30">Muito Rico [+30 pts]</option>
+                                    <option value="50">Podre de Rico [+50 pts]</option>
+                                </select>
+                            </div>
+                            
+                            <div class="riqueza-info">
+                                <div class="info-item">
+                                    <span>Multiplicador:</span>
+                                    <strong id="multiplicadorRiqueza">1x</strong>
+                                </div>
+                                <div class="info-item">
+                                    <span>Renda Mensal:</span>
+                                    <strong id="rendaMensal">$1.000</strong>
+                                </div>
+                                <div class="info-item">
+                                    <span>Descrição:</span>
+                                    <small id="descricaoRiqueza">Nível de recursos pré-definido padrão</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SEÇÃO 3: IDIOMAS -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-globe"></i>
+                            <h4>Idiomas</h4>
+                            <span class="pontos-badge" id="pontosIdiomas">0 pts</span>
+                        </div>
+                        
+                        <div class="idiomas-container">
+                            <!-- IDIOMA MATERNO -->
+                            <div class="idioma-section">
+                                <h5 class="section-subtitle">
+                                    <i class="fas fa-home"></i>
+                                    Idioma Materno
+                                </h5>
+                                <div class="idioma-materno">
+                                    <input type="text" 
+                                           id="idiomaMaternoNome" 
+                                           value="Comum" 
+                                           class="dashboard-input"
+                                           placeholder="Nome do idioma materno">
+                                    <span class="nivel-tag">Nativo (0 pts)</span>
+                                </div>
+                            </div>
+                            
+                            <!-- ADICIONAR IDIOMA -->
+                            <div class="idioma-section">
+                                <h5 class="section-subtitle">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Adicionar Novo Idioma
+                                </h5>
+                                <div class="add-idioma-form">
+                                    <input type="text" 
+                                           id="novoIdiomaNome" 
+                                           class="dashboard-input"
+                                           placeholder="Digite o nome do idioma">
+                                    
+                                    <div class="niveis-idioma">
+                                        <div class="nivel-group">
+                                            <label>🎤 Nível de Fala:</label>
+                                            <select id="novoIdiomaFala" class="dashboard-select">
+                                                <option value="0">Nenhum (0 pts)</option>
+                                                <option value="2" selected>Rudimentar (2 pts)</option>
+                                                <option value="4">Sotaque (4 pts)</option>
+                                                <option value="6">Nativo (6 pts)</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="nivel-group">
+                                            <label>📝 Nível de Escrita:</label>
+                                            <select id="novoIdiomaEscrita" class="dashboard-select">
+                                                <option value="0" selected>Nenhum (0 pts)</option>
+                                                <option value="1">Rudimentar (1 pt)</option>
+                                                <option value="2">Sotaque (2 pts)</option>
+                                                <option value="3">Nativo (3 pts)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="add-idioma-actions">
+                                        <span class="custo-preview">Custo: <span id="custoIdiomaPreview">+2 pts</span></span>
+                                        <button id="btnAdicionarIdioma" class="btn-medieval">
+                                            <i class="fas fa-plus"></i> Adicionar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- LISTA DE IDIOMAS -->
+                            <div class="idioma-section">
+                                <h5 class="section-subtitle">
+                                    <i class="fas fa-list"></i>
+                                    Idiomas Adicionais (<span id="totalIdiomas">0</span>)
+                                </h5>
+                                <div id="listaIdiomasAdicionais" class="idiomas-lista">
+                                    <div class="empty-state">
+                                        <i class="fas fa-language"></i>
+                                        <p>Nenhum idioma adicional adicionado</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SEÇÃO 4: CARACTERÍSTICAS FÍSICAS (SEPARADA) -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-weight"></i>
+                            <h4>Características Físicas</h4>
+                            <span class="pontos-badge" id="pontosCaracteristicas">0 pts</span>
+                        </div>
+                        
+                        <div class="caracteristicas-container">
+                            <div class="caracteristicas-grid">
+                                <!-- CARDS DE CARACTERÍSTICAS -->
+                                <div class="caracteristica-item" data-tipo="magro">
+                                    <div class="caracteristica-icon">
+                                        <i class="fas fa-person"></i>
+                                    </div>
+                                    <div class="caracteristica-info">
+                                        <strong>Magro</strong>
+                                        <small>-5 pts | Peso: 67% do normal</small>
+                                    </div>
+                                    <button class="btn-caracteristica-add">+</button>
+                                </div>
+                                
+                                <div class="caracteristica-item" data-tipo="acima-peso">
+                                    <div class="caracteristica-icon">
+                                        <i class="fas fa-person"></i>
+                                    </div>
+                                    <div class="caracteristica-info">
+                                        <strong>Acima do Peso</strong>
+                                        <small>-1 pt | Peso: 130% do normal</small>
+                                    </div>
+                                    <button class="btn-caracteristica-add">+</button>
+                                </div>
+                                
+                                <div class="caracteristica-item" data-tipo="gordo">
+                                    <div class="caracteristica-icon">
+                                        <i class="fas fa-person"></i>
+                                    </div>
+                                    <div class="caracteristica-info">
+                                        <strong>Gordo</strong>
+                                        <small>-3 pts | Peso: 150% do normal</small>
+                                    </div>
+                                    <button class="btn-caracteristica-add">+</button>
+                                </div>
+                                
+                                <div class="caracteristica-item" data-tipo="muito-gordo">
+                                    <div class="caracteristica-icon">
+                                        <i class="fas fa-person"></i>
+                                    </div>
+                                    <div class="caracteristica-info">
+                                        <strong>Muito Gordo</strong>
+                                        <small>-5 pts | Peso: 200% do normal</small>
+                                    </div>
+                                    <button class="btn-caracteristica-add">+</button>
+                                </div>
+                                
+                                <div class="caracteristica-item" data-tipo="nanismo">
+                                    <div class="caracteristica-icon">
+                                        <i class="fas fa-arrows-alt-v"></i>
+                                    </div>
+                                    <div class="caracteristica-info">
+                                        <strong>Nanismo</strong>
+                                        <small>-15 pts | MT -1, -1 Deslocamento</small>
+                                    </div>
+                                    <button class="btn-caracteristica-add">+</button>
+                                </div>
+                                
+                                <div class="caracteristica-item" data-tipo="gigantismo">
+                                    <div class="caracteristica-icon">
+                                        <i class="fas fa-arrows-alt-v"></i>
+                                    </div>
+                                    <div class="caracteristica-info">
+                                        <strong>Gigantismo</strong>
+                                        <small>0 pts | MT +1, +1 Deslocamento</small>
+                                    </div>
+                                    <button class="btn-caracteristica-add">+</button>
+                                </div>
+                            </div>
+                            
+                            <!-- CARACTERÍSTICAS SELECIONADAS -->
+                            <div class="caracteristicas-selecionadas-section">
+                                <h5 class="section-subtitle">
+                                    <i class="fas fa-check-circle"></i>
+                                    Características Ativas
+                                </h5>
+                                <div id="caracteristicasSelecionadas" class="caracteristicas-selecionadas">
+                                    <!-- Dinâmico -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SEÇÃO 5: ALTURA E PESO -->
+                    <div class="dashboard-section">
+                        <div class="section-header">
+                            <i class="fas fa-ruler-combined"></i>
+                            <h4>Altura e Peso</h4>
+                            <span class="status-badge" id="statusFisico">Normal</span>
+                        </div>
+                        
+                        <div class="altura-peso-container">
+                            <!-- ALTURA -->
+                            <div class="fisica-control">
+                                <label for="altura">
+                                    <i class="fas fa-ruler-vertical"></i>
+                                    Altura (metros)
+                                </label>
+                                <div class="controle-numerico">
+                                    <button class="btn-controle" onclick="ajustarAltura(-0.01)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" 
+                                           id="altura" 
+                                           value="1.70" 
+                                           step="0.01" 
+                                           min="1.30" 
+                                           max="2.50" 
+                                           class="fisica-input">
+                                    <button class="btn-controle" onclick="ajustarAltura(0.01)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div id="statusAltura" class="status-info">Altura média</div>
+                            </div>
+                            
+                            <!-- PESO -->
+                            <div class="fisica-control">
+                                <label for="peso">
+                                    <i class="fas fa-weight-hanging"></i>
+                                    Peso (kg)
+                                </label>
+                                <div class="controle-numerico">
+                                    <button class="btn-controle" onclick="ajustarPeso(-1)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" 
+                                           id="peso" 
+                                           value="70" 
+                                           step="1" 
+                                           min="30" 
+                                           max="200" 
+                                           class="fisica-input">
+                                    <button class="btn-controle" onclick="ajustarPeso(1)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div id="statusPeso" class="status-info">Peso adequado</div>
+                            </div>
+                            
+                            <!-- DESVANTAGENS ATIVAS -->
+                            <div class="desvantagens-section" id="desvantagensAtivas">
+                                <h5 class="section-subtitle">
+                                    <i class="fas fa-list-check"></i>
+                                    Desvantagens Físicas Ativas
+                                </h5>
+                                <div id="listaDesvantagens" class="desvantagens-lista">
+                                    <!-- Dinâmico -->
+                                </div>
+                            </div>
+                            
+                            <!-- INFO ST -->
+                            <div class="st-info">
+                                <div class="info-row">
+                                    <span>ST Base:</span>
+                                    <strong id="stBase">10</strong>
+                                </div>
+                                <div class="info-row">
+                                    <span>Faixa de Altura:</span>
+                                    <span id="alturaFaixa">1.58m - 1.83m</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Faixa de Peso:</span>
+                                    <span id="pesoFaixa">57.5kg - 87.5kg</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Status:</span>
+                                    <span id="modificadorPeso" class="status-ok">Dentro da faixa</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
-
-                <!-- IQ -->
-                <div class="atributo-card">
-                    <div class="atributo-header">
-                        <h3><i class="fas fa-brain"></i> INTELIGÊNCIA (IQ)</h3>
-                        <div class="custo-badge" id="custoIQ">0</div>
-                    </div>
-                    <div class="atributo-valor">
-                        <div class="controle">
-                            <button class="btn-controle" onclick="alterarAtributo('IQ', -1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="text" id="IQ" class="valor-input" value="10" readonly>
-                            <button class="btn-controle" onclick="alterarAtributo('IQ', 1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                        <div class="custo-info">
-                            <i class="fas fa-coins"></i> 20 pontos/nível
-                        </div>
-                    </div>
-                </div>
-
-                <!-- HT -->
-                <div class="atributo-card">
-                    <div class="atributo-header">
-                        <h3><i class="fas fa-heartbeat"></i> VIGOR (HT)</h3>
-                        <div class="custo-badge" id="custoHT">0</div>
-                    </div>
-                    <div class="atributo-valor">
-                        <div class="controle">
-                            <button class="btn-controle" onclick="alterarAtributo('HT', -1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="text" id="HT" class="valor-input" value="10" readonly>
-                            <button class="btn-controle" onclick="alterarAtributo('HT', 1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                        <div class="custo-info">
-                            <i class="fas fa-coins"></i> 10 pontos/nível
-                        </div>
-                    </div>
-                </div>
             </div>
-        </div>
-
-        <!-- Atributos Secundários -->
-        <div class="atributos-secundarios">
-            <div class="secao-header">
-                <i class="fas fa-layer-group"></i>
-                <h2>Atributos Derivados</h2>
-            </div>
-            
-            <div class="cards-grid secundarios">
-                <!-- PV -->
-                <div class="derivado-card">
-                    <div class="derivado-header">
-                        <h3><i class="fas fa-heart"></i> PONTOS DE VIDA</h3>
-                        <span class="fonte">(ST)</span>
-                    </div>
-                    <div class="derivado-valor">
-                        <div class="base">
-                            <span>Base:</span>
-                            <strong id="PVBase">10</strong>
-                        </div>
-                        <div class="modificador">
-                            <span>Modificador:</span>
-                            <input type="number" id="bonusPV" class="mod-input" value="0" min="-10" max="10">
-                        </div>
-                        <div class="total">
-                            <span>Total:</span>
-                            <strong id="PVTotal">10</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PF -->
-                <div class="derivado-card">
-                    <div class="derivado-header">
-                        <h3><i class="fas fa-wind"></i> PONTOS DE FADIGA</h3>
-                        <span class="fonte">(HT)</span>
-                    </div>
-                    <div class="derivado-valor">
-                        <div class="base">
-                            <span>Base:</span>
-                            <strong id="PFBase">10</strong>
-                        </div>
-                        <div class="modificador">
-                            <span>Modificador:</span>
-                            <input type="number" id="bonusPF" class="mod-input" value="0" min="-10" max="10">
-                        </div>
-                        <div class="total">
-                            <span>Total:</span>
-                            <strong id="PFTotal">10</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vontade -->
-                <div class="derivado-card">
-                    <div class="derivado-header">
-                        <h3><i class="fas fa-brain"></i> VONTADE</h3>
-                        <span class="fonte">(IQ)</span>
-                    </div>
-                    <div class="derivado-valor">
-                        <div class="base">
-                            <span>Base:</span>
-                            <strong id="VontadeBase">10</strong>
-                        </div>
-                        <div class="modificador">
-                            <span>Modificador:</span>
-                            <input type="number" id="bonusVontade" class="mod-input" value="0" min="-10" max="10">
-                        </div>
-                        <div class="total">
-                            <span>Total:</span>
-                            <strong id="VontadeTotal">10</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Percepção -->
-                <div class="derivado-card">
-                    <div class="derivado-header">
-                        <h3><i class="fas fa-eye"></i> PERCEPÇÃO</h3>
-                        <span class="fonte">(IQ)</span>
-                    </div>
-                    <div class="derivado-valor">
-                        <div class="base">
-                            <span>Base:</span>
-                            <strong id="PercepcaoBase">10</strong>
-                        </div>
-                        <div class="modificador">
-                            <span>Modificador:</span>
-                            <input type="number" id="bonusPercepcao" class="mod-input" value="0" min="-10" max="10">
-                        </div>
-                        <div class="total">
-                            <span>Total:</span>
-                            <strong id="PercepcaoTotal">10</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Deslocamento -->
-                <div class="derivado-card">
-                    <div class="derivado-header">
-                        <h3><i class="fas fa-running"></i> DESLOCAMENTO</h3>
-                        <span class="fonte">(DX+HT)/4</span>
-                    </div>
-                    <div class="derivado-valor">
-                        <div class="base">
-                            <span>Base:</span>
-                            <strong id="DeslocamentoBase">5.00</strong>
-                        </div>
-                        <div class="modificador">
-                            <span>Modificador:</span>
-                            <input type="number" id="bonusDeslocamento" class="mod-input" value="0" min="-5" max="5" step="0.25">
-                        </div>
-                        <div class="total">
-                            <span>Total:</span>
-                            <strong id="DeslocamentoTotal">5.00</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sistema de Combate -->
-        <div class="combate-section">
-            <div class="secao-header">
-                <i class="fas fa-shield-alt"></i>
-                <h2>Sistema de Combate</h2>
-            </div>
-            
-            <div class="combate-grid">
-                <!-- Dano Base -->
-                <div class="combate-card">
-                    <div class="combate-header">
-                        <h3><i class="fas fa-dagger"></i> DANO BÁSICO</h3>
-                        <span class="fonte">(ST)</span>
-                    </div>
-                    <div class="dano-container">
-                        <div class="dano-item">
-                            <span class="dano-tipo">Golpe Despreparado (GDP)</span>
-                            <span class="dano-valor" id="danoGDP">1d-2</span>
-                        </div>
-                        <div class="dano-item">
-                            <span class="dano-tipo">Golpe Estático Básico (GEB)</span>
-                            <span class="dano-valor" id="danoGEB">1d</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Carga -->
-                <div class="combate-card">
-                    <div class="combate-header">
-                        <h3><i class="fas fa-weight-hanging"></i> NÍVEIS DE CARGA</h3>
-                        <span class="fonte">(ST)</span>
-                    </div>
-                    <div class="carga-container">
-                        <div class="carga-item">
-                            <span class="carga-tipo">Nenhuma:</span>
-                            <span class="carga-valor" id="cargaNenhuma">10.0</span>
-                        </div>
-                        <div class="carga-item">
-                            <span class="carga-tipo">Leve:</span>
-                            <span class="carga-valor" id="cargaLeve">20.0</span>
-                        </div>
-                        <div class="carga-item">
-                            <span class="carga-tipo">Média:</span>
-                            <span class="carga-valor" id="cargaMedia">30.0</span>
-                        </div>
-                        <div class="carga-item">
-                            <span class="carga-tipo">Pesada:</span>
-                            <span class="carga-valor" id="cargaPesada">60.0</span>
-                        </div>
-                        <div class="carga-item">
-                            <span class="carga-tipo">Muito Pesada:</span>
-                            <span class="carga-valor" id="cargaMuitoPesada">100.0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-          <div id="caracteristicas" class="tab-content">
-  <div class="caracteristicas-dashboard">
-    
-    <!-- SEÇÃO 1: APARÊNCIA FÍSICA -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <i class="fas fa-user"></i>
-        <h4>Aparência Física</h4>
-        <span class="pontos-badge" id="pontosAparencia">0 pts</span>
-      </div>
-      
-      <div class="aparencia-container">
-        <div class="aparencia-control">
-          <label for="nivelAparencia">Nível de Aparência:</label>
-          <select id="nivelAparencia" class="dashboard-select">
-            <option value="-24">Horrendo [-24 pts]</option>
-            <option value="-20">Monstruoso [-20 pts]</option>
-            <option value="-16">Hediondo [-16 pts]</option>
-            <option value="-8">Feio [-8 pts]</option>
-            <option value="-4">Sem Atrativos [-4 pts]</option>
-            <option value="0" selected>Comum [0 pts]</option>
-            <option value="4">Atraente [+4 pts]</option>
-            <option value="12">Elegante [+12 pts]</option>
-            <option value="16">Muito Elegante [+16 pts]</option>
-            <option value="20">Lindo [+20 pts]</option>
-          </select>
-        </div>
-        
-        <div class="aparencia-display" id="displayAparencia">
-          <div class="display-header">
-            <i class="fas fa-user-circle"></i>
-            <div>
-              <strong>Comum</strong>
-              <small>Reação: +0</small>
-            </div>
-          </div>
-          <p class="display-desc">Aparência padrão, sem modificadores</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- SEÇÃO 2: NÍVEL DE RIQUEZA -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <i class="fas fa-coins"></i>
-        <h4>Nível de Riqueza</h4>
-        <span class="pontos-badge" id="pontosRiqueza">0 pts</span>
-      </div>
-      
-      <div class="riqueza-container">
-        <div class="riqueza-control">
-          <label for="nivelRiqueza">Nível de Riqueza:</label>
-          <select id="nivelRiqueza" class="dashboard-select">
-            <option value="-25">Falido [-25 pts]</option>
-            <option value="-15">Pobre [-15 pts]</option>
-            <option value="-10">Batalhador [-10 pts]</option>
-            <option value="0" selected>Médio [0 pts]</option>
-            <option value="10">Confortável [+10 pts]</option>
-            <option value="20">Rico [+20 pts]</option>
-            <option value="30">Muito Rico [+30 pts]</option>
-            <option value="50">Podre de Rico [+50 pts]</option>
-          </select>
-        </div>
-        
-        <div class="riqueza-info">
-          <div class="info-item">
-            <span>Multiplicador:</span>
-            <strong id="multiplicadorRiqueza">1x</strong>
-          </div>
-          <div class="info-item">
-            <span>Renda Mensal:</span>
-            <strong id="rendaMensal">$1.000</strong>
-          </div>
-          <div class="info-item">
-            <span>Descrição:</span>
-            <small id="descricaoRiqueza">Nível de recursos pré-definido padrão</small>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- SEÇÃO 3: IDIOMAS -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <i class="fas fa-globe"></i>
-        <h4>Idiomas</h4>
-        <span class="pontos-badge" id="pontosIdiomas">0 pts</span>
-      </div>
-      
-      <div class="idiomas-container">
-        <!-- IDIOMA MATERNO -->
-        <div class="idioma-section">
-          <h5 class="section-subtitle">
-            <i class="fas fa-home"></i>
-            Idioma Materno
-          </h5>
-          <div class="idioma-materno">
-            <input type="text" 
-                   id="idiomaMaternoNome" 
-                   value="Comum" 
-                   class="dashboard-input"
-                   placeholder="Nome do idioma materno">
-            <span class="nivel-tag">Nativo (0 pts)</span>
-          </div>
-        </div>
-        
-        <!-- ADICIONAR IDIOMA -->
-        <div class="idioma-section">
-          <h5 class="section-subtitle">
-            <i class="fas fa-plus-circle"></i>
-            Adicionar Novo Idioma
-          </h5>
-          <div class="add-idioma-form">
-            <input type="text" 
-                   id="novoIdiomaNome" 
-                   class="dashboard-input"
-                   placeholder="Digite o nome do idioma">
-            
-            <div class="niveis-idioma">
-              <div class="nivel-group">
-                <label>🎤 Nível de Fala:</label>
-                <select id="novoIdiomaFala" class="dashboard-select">
-                  <option value="0">Nenhum (0 pts)</option>
-                  <option value="2" selected>Rudimentar (2 pts)</option>
-                  <option value="4">Sotaque (4 pts)</option>
-                  <option value="6">Nativo (6 pts)</option>
-                </select>
-              </div>
-              
-              <div class="nivel-group">
-                <label>📝 Nível de Escrita:</label>
-                <select id="novoIdiomaEscrita" class="dashboard-select">
-                  <option value="0" selected>Nenhum (0 pts)</option>
-                  <option value="1">Rudimentar (1 pt)</option>
-                  <option value="2">Sotaque (2 pts)</option>
-                  <option value="3">Nativo (3 pts)</option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="add-idioma-actions">
-              <span class="custo-preview">Custo: <span id="custoIdiomaPreview">+2 pts</span></span>
-              <button id="btnAdicionarIdioma" class="btn-medieval">
-                <i class="fas fa-plus"></i> Adicionar
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- LISTA DE IDIOMAS -->
-        <div class="idioma-section">
-          <h5 class="section-subtitle">
-            <i class="fas fa-list"></i>
-            Idiomas Adicionais (<span id="totalIdiomas">0</span>)
-          </h5>
-          <div id="listaIdiomasAdicionais" class="idiomas-lista">
-            <div class="empty-state">
-              <i class="fas fa-language"></i>
-              <p>Nenhum idioma adicional adicionado</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- SEÇÃO 4: CARACTERÍSTICAS FÍSICAS (SEPARADA) -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <i class="fas fa-weight"></i>
-        <h4>Características Físicas</h4>
-        <span class="pontos-badge" id="pontosCaracteristicas">0 pts</span>
-      </div>
-      
-      <div class="caracteristicas-container">
-        <div class="caracteristicas-grid">
-          <!-- CARDS DE CARACTERÍSTICAS -->
-          <div class="caracteristica-item" data-tipo="magro">
-            <div class="caracteristica-icon">
-              <i class="fas fa-person"></i>
-            </div>
-            <div class="caracteristica-info">
-              <strong>Magro</strong>
-              <small>-5 pts | Peso: 67% do normal</small>
-            </div>
-            <button class="btn-caracteristica-add">+</button>
-          </div>
-          
-          <div class="caracteristica-item" data-tipo="acima-peso">
-            <div class="caracteristica-icon">
-              <i class="fas fa-person"></i>
-            </div>
-            <div class="caracteristica-info">
-              <strong>Acima do Peso</strong>
-              <small>-1 pt | Peso: 130% do normal</small>
-            </div>
-            <button class="btn-caracteristica-add">+</button>
-          </div>
-          
-          <div class="caracteristica-item" data-tipo="gordo">
-            <div class="caracteristica-icon">
-              <i class="fas fa-person"></i>
-            </div>
-            <div class="caracteristica-info">
-              <strong>Gordo</strong>
-              <small>-3 pts | Peso: 150% do normal</small>
-            </div>
-            <button class="btn-caracteristica-add">+</button>
-          </div>
-          
-          <div class="caracteristica-item" data-tipo="muito-gordo">
-            <div class="caracteristica-icon">
-              <i class="fas fa-person"></i>
-            </div>
-            <div class="caracteristica-info">
-              <strong>Muito Gordo</strong>
-              <small>-5 pts | Peso: 200% do normal</small>
-            </div>
-            <button class="btn-caracteristica-add">+</button>
-          </div>
-          
-          <div class="caracteristica-item" data-tipo="nanismo">
-            <div class="caracteristica-icon">
-              <i class="fas fa-arrows-alt-v"></i>
-            </div>
-            <div class="caracteristica-info">
-              <strong>Nanismo</strong>
-              <small>-15 pts | MT -1, -1 Deslocamento</small>
-            </div>
-            <button class="btn-caracteristica-add">+</button>
-          </div>
-          
-          <div class="caracteristica-item" data-tipo="gigantismo">
-            <div class="caracteristica-icon">
-              <i class="fas fa-arrows-alt-v"></i>
-            </div>
-            <div class="caracteristica-info">
-              <strong>Gigantismo</strong>
-              <small>0 pts | MT +1, +1 Deslocamento</small>
-            </div>
-            <button class="btn-caracteristica-add">+</button>
-          </div>
-        </div>
-        
-        <!-- CARACTERÍSTICAS SELECIONADAS -->
-        <div class="caracteristicas-selecionadas-section">
-          <h5 class="section-subtitle">
-            <i class="fas fa-check-circle"></i>
-            Características Ativas
-          </h5>
-          <div id="caracteristicasSelecionadas" class="caracteristicas-selecionadas">
-            <!-- Dinâmico -->
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- SEÇÃO 5: ALTURA E PESO -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <i class="fas fa-ruler-combined"></i>
-        <h4>Altura e Peso</h4>
-        <span class="status-badge" id="statusFisico">Normal</span>
-      </div>
-      
-      <div class="altura-peso-container">
-        <!-- ALTURA -->
-        <div class="fisica-control">
-          <label for="altura">
-            <i class="fas fa-ruler-vertical"></i>
-            Altura (metros)
-          </label>
-          <div class="controle-numerico">
-            <button class="btn-controle" onclick="ajustarAltura(-0.01)">
-              <i class="fas fa-minus"></i>
-            </button>
-            <input type="number" 
-                   id="altura" 
-                   value="1.70" 
-                   step="0.01" 
-                   min="1.30" 
-                   max="2.50" 
-                   class="fisica-input">
-            <button class="btn-controle" onclick="ajustarAltura(0.01)">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-          <div id="statusAltura" class="status-info">Altura média</div>
-        </div>
-        
-        <!-- PESO -->
-        <div class="fisica-control">
-          <label for="peso">
-            <i class="fas fa-weight-hanging"></i>
-            Peso (kg)
-          </label>
-          <div class="controle-numerico">
-            <button class="btn-controle" onclick="ajustarPeso(-1)">
-              <i class="fas fa-minus"></i>
-            </button>
-            <input type="number" 
-                   id="peso" 
-                   value="70" 
-                   step="1" 
-                   min="30" 
-                   max="200" 
-                   class="fisica-input">
-            <button class="btn-controle" onclick="ajustarPeso(1)">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-          <div id="statusPeso" class="status-info">Peso adequado</div>
-        </div>
-        
-        <!-- DESVANTAGENS ATIVAS -->
-        <div class="desvantagens-section" id="desvantagensAtivas">
-          <h5 class="section-subtitle">
-            <i class="fas fa-list-check"></i>
-            Desvantagens Físicas Ativas
-          </h5>
-          <div id="listaDesvantagens" class="desvantagens-lista">
-            <!-- Dinâmico -->
-          </div>
-        </div>
-        
-        <!-- INFO ST -->
-        <div class="st-info">
-          <div class="info-row">
-            <span>ST Base:</span>
-            <strong id="stBase">10</strong>
-          </div>
-          <div class="info-row">
-            <span>Faixa de Altura:</span>
-            <span id="alturaFaixa">1.58m - 1.83m</span>
-          </div>
-          <div class="info-row">
-            <span>Faixa de Peso:</span>
-            <span id="pesoFaixa">57.5kg - 87.5kg</span>
-          </div>
-          <div class="info-row">
-            <span>Status:</span>
-            <span id="modificadorPeso" class="status-ok">Dentro da faixa</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-  </div>
-</div>
-
-            <!-- VANTAGENS/DESVANTAGENS -->
+                        <!-- VANTAGENS/DESVANTAGENS -->
             <div class="tab-pane" id="vantagens">
                 <h3 class="tab-title">Vantagens & Desvantagens</h3>
                 <div class="tab-placeholder">
@@ -1910,7 +1870,7 @@ body::before {
 
     <!-- NAVIGATION BUTTONS -->
     <div class="navigation-buttons">
-        <button onclick="previousTab()" class="btn btn-secondary">
+        <button onclick="prevTab()" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Anterior
         </button>
         
@@ -1930,339 +1890,388 @@ body::before {
             GURPS é uma marca registrada da Steve Jackson Games
         </p>
     </footer>
-   <!-- Scripts DEVEM vir nesta ordem: -->
-<!-- PRIMEIRO: Sistemas de Características -->
-<!-- ESTA ORDEM NO FINAL DO HTML: -->
-<script src="atributos.js"></script>
-<script src="caracteristicas-aparencia.js"></script>
 
-<script src="dashboard.js"></script>
-<!-- O script principal (acima) já está no HTML -->
- <script>
-// ================ FIREBASE ================
-const firebaseConfig = {
-    apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
-    authDomain: "gurpsroll.firebaseapp.com",
-    projectId: "gurpsroll"
-};
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// ================ VARIÁVEIS ================
-let currentUser = null;
-let currentTab = 'dashboard';
-const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias', 'magias', 'combate', 'equipamentos', 'resumo'];
-
-// ================ QUANDO CARREGAR ================
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔥 PÁGINA CARREGADA');
+    <!-- SCRIPTS -->
+    <script src="atributos.js"></script>
+    <script src="caracteristicas-aparencia.js"></script>
+    <script src="dashboard.js"></script>
     
-    // Login
-    auth.onAuthStateChanged(function(user) {
-        if (user) {
-            currentUser = user;
-            console.log('✅ Usuário logado:', user.email);
-            initPage();
-        } else {
-            console.log('❌ Não logado, redirecionando...');
-            window.location.href = 'login.html';
-        }
-    });
-    
-    // Configurar TABS PRIMEIRO
-    setupTabs();
-    
-    // Hotkey Ctrl+S
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 's') {
-            e.preventDefault();
-            saveCharacter();
-        }
-    });
-});
-
-// ================ FUNÇÃO PRINCIPAL ================
-function initPage() {
-    console.log('⚙️ Inicializando página...');
-    
-    // Código do jogador
-    const playerCode = document.getElementById('playerCode');
-    if (playerCode) {
-        playerCode.textContent = 'USER-' + currentUser.uid.slice(0, 8).toUpperCase();
-    }
-    
-    // Verificar edição
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
-    if (editId) {
-        console.log('✏️ Editando:', editId);
-        loadCharacter(editId);
-    }
-    
-    // Inicializar Dashboard
-    setTimeout(() => {
-        if (window.dashboardManager && typeof window.dashboardManager.inicializar === 'function') {
-            window.dashboardManager.inicializar();
-        }
-    }, 500);
-}
-
-// ================ SISTEMA DE TABS ================
-function setupTabs() {
-    console.log('🔄 Configurando tabs...');
-    
-    // Configurar cada botão de tab
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        const tabId = btn.getAttribute('data-tab');
-        console.log(`✅ Botão encontrado: ${tabId}`);
-        
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log(`🎯 Clicou na tab: ${tabId}`);
-            showTab(tabId);
-        });
-    });
-    
-    // Configurar botões "Anterior" e "Próximo"
-    const btnPrev = document.querySelector('.btn-secondary');
-    const btnNext = document.querySelector('.btn-primary');
-    
-    if (btnPrev && btnPrev.textContent.includes('Anterior')) {
-        btnPrev.addEventListener('click', function(e) {
-            e.preventDefault();
-            prevTab();
-        });
-    }
-    
-    if (btnNext && btnNext.textContent.includes('Próximo')) {
-        btnNext.addEventListener('click', function(e) {
-            e.preventDefault();
-            nextTab();
-        });
-    }
-    
-    // Mostrar tab inicial
-    setTimeout(() => {
-        showTab(currentTab);
-    }, 300);
-}
-
-function showTab(tabId) {
-    console.log(`🚀 Mostrando tab: ${tabId}`);
-    
-    // Validar se a tab existe
-    if (!tabs.includes(tabId)) {
-        console.error(`❌ Tab "${tabId}" não existe!`);
-        return;
-    }
-    
-    // 1. ESCONDER TODAS AS TABS
-    const allPanes = document.querySelectorAll('.tab-pane');
-    console.log(`📊 Encontradas ${allPanes.length} tabs`);
-    
-    allPanes.forEach(pane => {
-        pane.style.display = 'none';
-        pane.classList.remove('active');
-    });
-    
-    // 2. REMOVER 'ACTIVE' DOS BOTÕES
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // 3. MOSTRAR TAB SELECIONADA
-    const tabElement = document.getElementById(tabId);
-    const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-    
-    if (tabElement) {
-        tabElement.style.display = 'block';
-        tabElement.classList.add('active');
-        currentTab = tabId;
-        console.log(`✅ Tab ${tabId} exibida!`);
-    } else {
-        console.error(`❌ ERRO: Elemento #${tabId} não encontrado!`);
-        return;
-    }
-    
-    if (tabButton) {
-        tabButton.classList.add('active');
-    }
-    
-    // 4. INICIALIZAR SISTEMAS ESPECÍFICOS
-    if (tabId === 'dashboard') {
-        setTimeout(() => {
-            if (window.dashboardManager) {
-                console.log('📊 Inicializando dashboard...');
-                window.dashboardManager.atualizarTudo();
-            }
-        }, 100);
-    }
-    
-    if (tabId === 'caracteristicas') {
-        setTimeout(() => {
-            if (window.sistemaAparencia) {
-                console.log('🎭 Inicializando aparência...');
-                window.sistemaAparencia.inicializar();
-            }
-        }, 200);
-    }
-}
-
-function nextTab() {
-    const currentIndex = tabs.indexOf(currentTab);
-    if (currentIndex < tabs.length - 1) {
-        showTab(tabs[currentIndex + 1]);
-    } else {
-        showTab(tabs[0]); // Voltar para primeira
-    }
-}
-
-function prevTab() {
-    const currentIndex = tabs.indexOf(currentTab);
-    if (currentIndex > 0) {
-        showTab(tabs[currentIndex - 1]);
-    } else {
-        showTab(tabs[tabs.length - 1]); // Ir para última
-    }
-}
-
-// ================ FUNÇÕES DO PERSONAGEM ================
-async function loadCharacter(characterId) {
-    try {
-        console.log(`📖 Carregando personagem: ${characterId}`);
-        const doc = await db.collection('characters').doc(characterId).get();
-        
-        if (doc.exists) {
-            const data = doc.data();
-            console.log('✅ Personagem carregado');
-            
-            // Nome
-            const nameInput = document.getElementById('characterName');
-            if (nameInput && data.name) {
-                nameInput.value = data.name;
-            }
-            
-            // Dashboard
-            if (data.dashboard && window.dashboardManager) {
-                window.dashboardManager.carregarDados(data.dashboard);
-            }
-            
-            showMessage('✅ Personagem carregado!', 'success');
-        }
-    } catch (error) {
-        console.error('❌ Erro ao carregar:', error);
-        showMessage('❌ Erro ao carregar', 'error');
-    }
-}
-
-async function saveCharacter() {
-    const nameInput = document.getElementById('characterName');
-    const name = nameInput ? nameInput.value.trim() : '';
-    
-    if (!name) {
-        showMessage('⚠️ Digite um nome!', 'error');
-        return;
-    }
-    
-    try {
-        console.log('💾 Salvando personagem...');
-        
-        const characterData = {
-            name: name,
-            playerId: currentUser.uid,
-            updatedAt: new Date().toISOString()
+    <script>
+        // ================ FIREBASE ================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
+            authDomain: "gurpsroll.firebaseapp.com",
+            projectId: "gurpsroll"
         };
         
-        // Dashboard
-        if (window.dashboardManager && typeof window.dashboardManager.coletarDadosParaSalvar === 'function') {
-            characterData.dashboard = window.dashboardManager.coletarDadosParaSalvar();
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
         
-        // Verificar edição
-        const urlParams = new URLSearchParams(window.location.search);
-        const editId = urlParams.get('edit');
+        const auth = firebase.auth();
+        const db = firebase.firestore();
         
-        if (editId) {
-            await db.collection('characters').doc(editId).update(characterData);
-            showMessage('✅ Personagem atualizado!', 'success');
-        } else {
-            characterData.createdAt = new Date().toISOString();
-            const result = await db.collection('characters').add(characterData);
-            showMessage('✅ Personagem criado!', 'success');
+        // ================ VARIÁVEIS GLOBAIS ================
+        let currentUser = null;
+        let currentTab = 'dashboard';
+        const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias', 'magias', 'combate', 'equipamentos', 'resumo'];
+        
+        // ================ QUANDO CARREGAR ================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔥 PÁGINA CARREGADA');
+            
+            // Verificar login
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    currentUser = user;
+                    console.log('✅ Usuário logado:', user.email);
+                    initPage();
+                } else {
+                    console.log('❌ Não logado, redirecionando...');
+                    window.location.href = 'login.html';
+                }
+            });
+            
+            // Configurar tabs
+            setupTabs();
+            
+            // Hotkey Ctrl+S
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    saveCharacter();
+                }
+            });
+        });
+        
+        // ================ INICIALIZAR PÁGINA ================
+        function initPage() {
+            console.log('⚙️ Inicializando página...');
+            
+            // Atualizar código do jogador
+            const playerCode = document.getElementById('playerCode');
+            if (playerCode) {
+                playerCode.textContent = 'USER-' + currentUser.uid.slice(0, 8).toUpperCase();
+            }
+            
+            // Verificar se está editando
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+            if (editId) {
+                console.log('✏️ Editando personagem:', editId);
+                loadCharacter(editId);
+            }
+            
+            // Inicializar sistemas
+            setTimeout(() => {
+                if (window.dashboardManager && typeof window.dashboardManager.inicializar === 'function') {
+                    window.dashboardManager.inicializar();
+                }
+                
+                // Inicializar sistemas quando abrir suas respectivas tabs
+                document.addEventListener('click', function(e) {
+                    const tabBtn = e.target.closest('.tab-btn');
+                    if (tabBtn) {
+                        const tabId = tabBtn.getAttribute('data-tab');
+                        setTimeout(() => {
+                            if (tabId === 'caracteristicas' && window.sistemaAparencia && !window.sistemaAparencia.inicializado) {
+                                window.sistemaAparencia.inicializar();
+                            }
+                            if (tabId === 'atributos' && window.atributosManager && typeof window.atributosManager.inicializar === 'function') {
+                                window.atributosManager.inicializar();
+                            }
+                        }, 100);
+                    }
+                });
+            }, 500);
+        }
+        
+        // ================ SISTEMA DE TABS ================
+        function setupTabs() {
+            console.log('🔄 Configurando tabs...');
+            
+            // Configurar botões de tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const tabId = btn.getAttribute('data-tab');
+                
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log(`🎯 Clicou na tab: ${tabId}`);
+                    showTab(tabId);
+                });
+            });
+            
+            // Mostrar tab inicial
+            setTimeout(() => {
+                showTab(currentTab);
+            }, 300);
+        }
+        
+        function showTab(tabId) {
+            console.log(`🚀 Mostrando tab: ${tabId}`);
+            
+            // Validar tab
+            if (!tabs.includes(tabId)) {
+                console.error(`❌ Tab "${tabId}" não existe!`);
+                return;
+            }
+            
+            // 1. Esconder todas as tabs
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.style.display = 'none';
+                pane.classList.remove('active');
+            });
+            
+            // 2. Remover 'active' dos botões
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 3. Mostrar tab selecionada
+            const tabElement = document.getElementById(tabId);
+            const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+            
+            if (tabElement) {
+                tabElement.style.display = 'block';
+                tabElement.classList.add('active');
+                currentTab = tabId;
+                console.log(`✅ Tab ${tabId} exibida!`);
+            }
+            
+            if (tabButton) {
+                tabButton.classList.add('active');
+            }
+            
+            // 4. Inicializar sistema específico da tab
+            setTimeout(() => {
+                switch(tabId) {
+                    case 'dashboard':
+                        if (window.dashboardManager) {
+                            console.log('📊 Atualizando dashboard...');
+                            window.dashboardManager.atualizarTudo();
+                        }
+                        break;
+                        
+                    case 'caracteristicas':
+                        if (window.sistemaAparencia) {
+                            console.log('🎭 Inicializando sistema de características...');
+                            window.sistemaAparencia.inicializar();
+                        }
+                        break;
+                        
+                    case 'atributos':
+                        if (window.atributosManager && typeof window.atributosManager.inicializar === 'function') {
+                            console.log('💪 Inicializando sistema de atributos...');
+                            window.atributosManager.inicializar();
+                        }
+                        break;
+                }
+            }, 100);
+        }
+        
+        function nextTab() {
+            const currentIndex = tabs.indexOf(currentTab);
+            if (currentIndex < tabs.length - 1) {
+                showTab(tabs[currentIndex + 1]);
+            } else {
+                showTab(tabs[0]);
+            }
+        }
+        
+        function prevTab() {
+            const currentIndex = tabs.indexOf(currentTab);
+            if (currentIndex > 0) {
+                showTab(tabs[currentIndex - 1]);
+            } else {
+                showTab(tabs[tabs.length - 1]);
+            }
+        }
+        
+        // ================ FUNÇÕES DO PERSONAGEM ================
+        async function loadCharacter(characterId) {
+            try {
+                console.log(`📖 Carregando personagem: ${characterId}`);
+                showLoading(true);
+                
+                const doc = await db.collection('characters').doc(characterId).get();
+                
+                if (doc.exists) {
+                    const data = doc.data();
+                    console.log('✅ Personagem carregado:', data);
+                    
+                    // Nome
+                    const nameInput = document.getElementById('characterName');
+                    if (nameInput && data.name) {
+                        nameInput.value = data.name;
+                    }
+                    
+                    // Dashboard
+                    if (data.dashboard && window.dashboardManager) {
+                        window.dashboardManager.carregarDados(data.dashboard);
+                    }
+                    
+                    // Características
+                    if (data.caracteristicas && window.sistemaAparencia) {
+                        window.sistemaAparencia.carregarDados(data.caracteristicas);
+                    }
+                    
+                    // Atributos
+                    if (data.atributos && window.atributosManager) {
+                        window.atributosManager.carregarDados(data.atributos);
+                    }
+                    
+                    showMessage('✅ Personagem carregado com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar personagem:', error);
+                showMessage('❌ Erro ao carregar personagem: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function saveCharacter() {
+            const nameInput = document.getElementById('characterName');
+            const name = nameInput ? nameInput.value.trim() : '';
+            
+            if (!name) {
+                showMessage('⚠️ Digite um nome para o personagem!', 'error');
+                nameInput?.focus();
+                return;
+            }
+            
+            try {
+                console.log('💾 Salvando personagem...');
+                showLoading(true);
+                
+                const characterData = {
+                    name: name,
+                    playerId: currentUser.uid,
+                    playerEmail: currentUser.email,
+                    updatedAt: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Coletar dados dos sistemas
+                if (window.dashboardManager && typeof window.dashboardManager.coletarDadosParaSalvar === 'function') {
+                    characterData.dashboard = window.dashboardManager.coletarDadosParaSalvar();
+                }
+                
+                if (window.sistemaAparencia && typeof window.sistemaAparencia.getDetalhesPontos === 'function') {
+                    characterData.caracteristicas = window.sistemaAparencia.getDetalhesPontos();
+                }
+                
+                if (window.atributosManager && typeof window.atributosManager.coletarDados === 'function') {
+                    characterData.atributos = window.atributosManager.coletarDados();
+                }
+                
+                // Verificar se está editando
+                const urlParams = new URLSearchParams(window.location.search);
+                const editId = urlParams.get('edit');
+                
+                let result;
+                if (editId) {
+                    // Atualizar existente
+                    await db.collection('characters').doc(editId).update(characterData);
+                    result = { id: editId };
+                    showMessage('✅ Personagem atualizado com sucesso!', 'success');
+                } else {
+                    // Criar novo
+                    const docRef = await db.collection('characters').add(characterData);
+                    result = { id: docRef.id };
+                    showMessage('✅ Personagem criado com sucesso!', 'success');
+                    
+                    // Atualizar URL para modo edição
+                    setTimeout(() => {
+                        window.history.replaceState(null, null, `?edit=${docRef.id}`);
+                    }, 1500);
+                }
+                
+                console.log('✅ Personagem salvo com ID:', result.id);
+                
+            } catch (error) {
+                console.error('❌ Erro ao salvar personagem:', error);
+                showMessage('❌ Erro ao salvar: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // ================ FUNÇÕES AUXILIARES ================
+        function showMessage(text, type = 'info') {
+            console.log(`💬 ${type}: ${text}`);
+            
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            
+            toast.textContent = text;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
             
             setTimeout(() => {
-                window.history.replaceState(null, null, `?edit=${result.id}`);
-            }, 1500);
+                toast.style.display = 'none';
+            }, 3000);
         }
         
-    } catch (error) {
-        console.error('❌ Erro ao salvar:', error);
-        showMessage('❌ Erro: ' + error.message, 'error');
-    }
-}
-
-// ================ FUNÇÕES AUXILIARES ================
-function showMessage(text, type = 'info') {
-    console.log(`💬 ${type}: ${text}`);
-    
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
-    }
-    
-    toast.textContent = text;
-    toast.className = 'toast ' + type;
-    toast.style.display = 'block';
-    
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 3000);
-}
-
-// ================ FUNÇÕES GLOBAIS ================
-window.saveCharacter = saveCharacter;
-window.nextTab = nextTab;
-window.prevTab = prevTab;
-window.showTab = showTab;
-
-window.logout = function() {
-    if (confirm('Sair?')) {
-        auth.signOut().then(() => {
-            window.location.href = 'login.html';
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+        
+        // ================ FUNÇÕES GLOBAIS ================
+        window.saveCharacter = saveCharacter;
+        window.nextTab = nextTab;
+        window.prevTab = prevTab;
+        window.showTab = showTab;
+        
+        window.logout = function() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html';
+                });
+            }
+        };
+        
+        // ================ AJUSTES PARA SISTEMAS DE CARACTERÍSTICAS ================
+        // Fix para garantir que o sistema de características só aparece na sua tab
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mover conteúdo de características para a tab correta
+            const caracteristicasContent = document.querySelector('#caracteristicas .caracteristicas-dashboard');
+            if (caracteristicasContent) {
+                console.log('✅ Conteúdo de características já está na tab correta');
+            }
+            
+            // Remover qualquer conteúdo de características de outras tabs
+            document.querySelectorAll('.tab-pane:not(#caracteristicas) .caracteristicas-dashboard').forEach(el => {
+                el.remove();
+                console.log('🗑️ Removido conteúdo de características de tab errada');
+            });
         });
-    }
-};
-
-// ================ DEBUG ================
-window.testarTabs = function() {
-    console.log('=== 🐛 DEBUG TABS ===');
-    console.log('Tabs definidas:', tabs);
-    console.log('Tab atual:', currentTab);
-    
-    // Verificar botões
-    const botoes = document.querySelectorAll('.tab-btn');
-    console.log(`Botões encontrados: ${botoes.length}`);
-    
-    botoes.forEach(btn => {
-        const tabId = btn.getAttribute('data-tab');
-        const tabExiste = document.getElementById(tabId);
-        console.log(`Botão "${tabId}": ${tabExiste ? '✅' : '❌'} Tab existe`);
-    });
-    
-    console.log('=== FIM DEBUG ===');
-};
-
-// Teste automático após 3 segundos
-setTimeout(() => {
-    window.testarTabs();
-}, 3000);
-
-console.log('🎮 Sistema de criação carregado!');
-</script>
-
+        
+        // Debug
+        window.testarSistema = function() {
+            console.log('=== 🧪 TESTE DO SISTEMA ===');
+            console.log('Usuário:', currentUser?.email);
+            console.log('Tab atual:', currentTab);
+            console.log('Dashboard Manager:', window.dashboardManager ? '✅' : '❌');
+            console.log('Sistema Aparência:', window.sistemaAparencia ? '✅' : '❌');
+            console.log('Atributos Manager:', window.atributosManager ? '✅' : '❌');
+            
+            // Verificar se características só aparece na sua tab
+            const caracteristicasFora = document.querySelectorAll('.tab-pane:not(#caracteristicas) .caracteristicas-dashboard');
+            console.log('Características fora da tab:', caracteristicasFora.length > 0 ? '❌ PROBLEMA' : '✅ OK');
+            
+            console.log('=== FIM DO TESTE ===');
+        };
+        
+        // Teste automático
+        setTimeout(() => {
+            window.testarSistema();
+        }, 2000);
+        
+        console.log('🎮 Sistema de criação de personagem carregado!');
+    </script>
 </body>
 </html>
