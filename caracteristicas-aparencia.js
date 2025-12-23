@@ -1,258 +1,164 @@
-// caracteristicas-aparencia.js - VERSÃO CORRIGIDA
+// caracteristicas-aparencia.js - VERSÃO SIMPLIFICADA QUE FUNCIONA
 class SistemaAparencia {
   constructor() {
+    console.log('🎭 SistemaAparencia criado');
     this.niveisAparencia = {
-      "-24": { nome: "Horrendo", reacao: -6, descricao: "Indescritivelmente monstruoso ou repugnante", icone: "fas fa-frown", tipo: "desvantagem" },
-      "-20": { nome: "Monstruoso", reacao: -5, descricao: "Horrível e obviamente anormal", icone: "fas fa-ghost", tipo: "desvantagem" },
-      "-16": { nome: "Hediondo", reacao: -4, descricao: "Característica repugnante na aparência", icone: "fas fa-meh-rolling-eyes", tipo: "desvantagem" },
-      "-8": { nome: "Feio", reacao: -2, descricao: "Cabelo seboso, dentes tortos, etc.", icone: "fas fa-meh", tipo: "desvantagem" },
-      "-4": { nome: "Sem Atrativos", reacao: -1, descricao: "Algo antipático, mas não específico", icone: "fas fa-meh-blank", tipo: "desvantagem" },
-      "0": { nome: "Comum", reacao: 0, descricao: "Aparência padrão, sem modificadores", icone: "fas fa-user", tipo: "neutro" },
-      "4": { nome: "Atraente", reacao: 1, descricao: "Boa aparência, +1 em testes de reação", icone: "fas fa-smile", tipo: "vantagem" },
-      "12": { nome: "Elegante", reacao: { mesmoSexo: 2, outroSexo: 4 }, descricao: "Poderia entrar em concursos de beleza", icone: "fas fa-grin-stars", tipo: "vantagem" },
-      "16": { nome: "Muito Elegante", reacao: { mesmoSexo: 2, outroSexo: 6 }, descricao: "Poderia vencer concursos de beleza", icone: "fas fa-crown", tipo: "vantagem" },
-      "20": { nome: "Lindo", reacao: { mesmoSexo: 2, outroSexo: 8 }, descricao: "Espécime ideal, aparência divina", icone: "fas fa-star", tipo: "vantagem" }
+      "-24": { nome: "Horrendo", reacao: -6, tipo: "desvantagem", icone: "fas fa-frown" },
+      "-20": { nome: "Monstruoso", reacao: -5, tipo: "desvantagem", icone: "fas fa-ghost" },
+      "-16": { nome: "Hediondo", reacao: -4, tipo: "desvantagem", icone: "fas fa-meh-rolling-eyes" },
+      "-8": { nome: "Feio", reacao: -2, tipo: "desvantagem", icone: "fas fa-meh" },
+      "-4": { nome: "Sem Atrativos", reacao: -1, tipo: "desvantagem", icone: "fas fa-meh-blank" },
+      "0": { nome: "Comum", reacao: 0, tipo: "neutro", icone: "fas fa-user" },
+      "4": { nome: "Atraente", reacao: 1, tipo: "vantagem", icone: "fas fa-smile" },
+      "12": { nome: "Elegante", reacao: { mesmoSexo: 2, outroSexo: 4 }, tipo: "vantagem", icone: "fas fa-grin-stars" },
+      "16": { nome: "Muito Elegante", reacao: { mesmoSexo: 2, outroSexo: 6 }, tipo: "vantagem", icone: "fas fa-crown" },
+      "20": { nome: "Lindo", reacao: { mesmoSexo: 2, outroSexo: 8 }, tipo: "vantagem", icone: "fas fa-star" }
     };
-
-    this.inicializado = false;
     this.pontosAtuais = 0;
+    this.inicializado = false;
   }
 
   inicializar() {
-    if (this.inicializado) {
-      console.log('SistemaAparencia já inicializado');
-      return;
-    }
+    if (this.inicializado) return;
+    console.log('🚀 Inicializando SistemaAparencia...');
     
-    console.log('Inicializando SistemaAparencia...');
-    
-    // Verificar se os elementos existem
+    // 1. VERIFICAR ELEMENTOS RÁPIDO
     const select = document.getElementById('nivelAparencia');
-    const display = document.getElementById('displayAparencia');
-    const badge = document.getElementById('pontosAparencia');
-    
     if (!select) {
-      console.error('Elemento #nivelAparencia não encontrado!');
+      console.error('❌ #nivelAparencia não encontrado!');
       return;
     }
     
-    if (!display) {
-      console.error('Elemento #displayAparencia não encontrado!');
-      return;
-    }
-    
-    if (!badge) {
-      console.error('Elemento #pontosAparencia não encontrado!');
-      return;
-    }
-    
-    console.log('Elementos encontrados. Configurando eventos...');
-    
-    // Configurar evento de mudança
+    // 2. CONFIGURAR EVENTO SIMPLES
     select.addEventListener('change', (e) => {
-      console.log('Select mudou para:', e.target.value);
       this.atualizarAparencia(parseInt(e.target.value));
     });
     
-    // Configurar evento de input para atualização em tempo real
-    select.addEventListener('input', (e) => {
-      this.atualizarAparencia(parseInt(e.target.value));
-    });
-    
-    // Atualizar estado inicial
+    // 3. CONFIGURAR INICIAL
     const valorInicial = parseInt(select.value) || 0;
-    console.log('Valor inicial do select:', valorInicial);
     this.atualizarAparencia(valorInicial);
     
-    // Marcar como inicializado
     this.inicializado = true;
-    console.log('SistemaAparencia inicializado com sucesso!');
+    console.log('✅ SistemaAparencia pronto!');
   }
 
   atualizarAparencia(pontos) {
-    console.log('Atualizando aparência com pontos:', pontos);
-    
-    const nivel = this.niveisAparencia[pontos.toString()];
-    if (!nivel) {
-      console.error('Nível não encontrado para pontos:', pontos);
-      return;
-    }
+    const nivel = this.niveisAparencia[pontos];
+    if (!nivel) return;
     
     this.pontosAtuais = pontos;
     
-    // Atualizar badge de pontos
-    this.atualizarBadgePontos(pontos, nivel.tipo);
-    
-    // Atualizar display
-    this.atualizarDisplay(nivel);
-    
-    // Notificar sistema de pontos
-    this.notificarSistemaPontos();
-  }
-
-  atualizarBadgePontos(pontos, tipo) {
+    // ATUALIZAR BADGE
     const badge = document.getElementById('pontosAparencia');
-    if (!badge) return;
-    
-    // Formatar texto dos pontos
-    const pontosTexto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
-    badge.textContent = pontosTexto;
-    
-    // Estilizar conforme tipo
-    switch(tipo) {
-      case 'vantagem':
-        badge.style.background = 'linear-gradient(145deg, rgba(46, 204, 113, 0.2), rgba(39, 174, 96, 0.3))';
+    if (badge) {
+      badge.textContent = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+      
+      // CORES SIMPLES
+      if (pontos > 0) {
+        badge.style.background = 'rgba(46, 204, 113, 0.2)';
         badge.style.borderColor = '#2ecc71';
-        badge.style.color = '#2ecc71';
-        break;
-      case 'desvantagem':
-        badge.style.background = 'linear-gradient(145deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.3))';
+      } else if (pontos < 0) {
+        badge.style.background = 'rgba(231, 76, 60, 0.2)';
         badge.style.borderColor = '#e74c3c';
-        badge.style.color = '#e74c3c';
-        break;
-      default:
-        badge.style.background = 'linear-gradient(145deg, rgba(52, 152, 219, 0.2), rgba(41, 128, 185, 0.3))';
+      } else {
+        badge.style.background = 'rgba(52, 152, 219, 0.2)';
         badge.style.borderColor = '#3498db';
-        badge.style.color = '#3498db';
+      }
     }
     
-    // Animação
-    badge.style.transform = 'scale(1.1)';
-    setTimeout(() => {
-      badge.style.transform = 'scale(1)';
-    }, 200);
-  }
-
-  atualizarDisplay(nivel) {
+    // ATUALIZAR DISPLAY
     const display = document.getElementById('displayAparencia');
-    if (!display) return;
-    
-    // Criar texto de reação
-    let textoReacao = '';
-    if (typeof nivel.reacao === 'object') {
-      textoReacao = `Reação: +${nivel.reacao.outroSexo} (outro sexo), +${nivel.reacao.mesmoSexo} (mesmo sexo)`;
-    } else {
-      textoReacao = `Reação: ${nivel.reacao >= 0 ? '+' : ''}${nivel.reacao}`;
-    }
-    
-    // Atualizar conteúdo do display
-    const displayHeader = display.querySelector('.display-header');
-    const displayDesc = display.querySelector('.display-desc');
-    
-    if (displayHeader) {
-      displayHeader.innerHTML = `
-        <i class="${nivel.icone}"></i>
-        <div>
-          <strong>${nivel.nome}</strong>
-          <small>${textoReacao}</small>
+    if (display) {
+      display.innerHTML = `
+        <div class="display-header">
+          <i class="${nivel.icone}" style="color: ${this.getCorTipo(nivel.tipo)}"></i>
+          <div>
+            <strong>${nivel.nome}</strong>
+            <small>${this.getTextoReacao(nivel.reacao)}</small>
+          </div>
         </div>
+        <p class="display-desc">${this.getDescricao(nivel)}</p>
       `;
-      
-      // Cor do ícone conforme tipo
-      const icon = displayHeader.querySelector('i');
-      if (icon) {
-        switch(nivel.tipo) {
-          case 'vantagem': icon.style.color = '#2ecc71'; break;
-          case 'desvantagem': icon.style.color = '#e74c3c'; break;
-          default: icon.style.color = '#3498db';
-        }
-      }
     }
     
-    if (displayDesc) {
-      displayDesc.textContent = nivel.descricao;
+    // NOTIFICAR DASHBOARD
+    this.notificarDashboard();
+  }
+
+  getCorTipo(tipo) {
+    switch(tipo) {
+      case 'vantagem': return '#2ecc71';
+      case 'desvantagem': return '#e74c3c';
+      default: return '#3498db';
     }
   }
 
-  notificarSistemaPontos() {
-    const evento = new CustomEvent('aparenciaAtualizada', {
-      detail: {
-        pontos: this.pontosAtuais,
-        tipo: this.niveisAparencia[this.pontosAtuais.toString()]?.tipo || 'neutro',
-        nome: this.niveisAparencia[this.pontosAtuais.toString()]?.nome || 'Desconhecido',
-        timestamp: new Date().toISOString()
-      }
-    });
-    
-    document.dispatchEvent(evento);
-    console.log('Evento disparado: aparência atualizada', evento.detail);
+  getTextoReacao(reacao) {
+    if (typeof reacao === 'object') {
+      return `Reação: +${reacao.outroSexo} (outro sexo), +${reacao.mesmoSexo} (mesmo sexo)`;
+    }
+    return `Reação: ${reacao >= 0 ? '+' : ''}${reacao}`;
   }
 
-  // Métodos públicos
-  getPontos() {
-    return this.pontosAtuais;
-  }
-
-  getInfo() {
-    const nivel = this.niveisAparencia[this.pontosAtuais.toString()];
-    return {
-      pontos: this.pontosAtuais,
-      nome: nivel?.nome || 'Desconhecido',
-      tipo: nivel?.tipo || 'neutro',
-      descricao: nivel?.descricao || '',
-      reacao: nivel?.reacao || 0
+  getDescricao(nivel) {
+    const descricoes = {
+      "-24": "Indescritivelmente monstruoso ou repugnante",
+      "-20": "Horrível e obviamente anormal", 
+      "-16": "Característica repugnante na aparência",
+      "-8": "Cabelo seboso, dentes tortos, etc.",
+      "-4": "Algo antipático, mas não específico",
+      "0": "Aparência padrão, sem modificadores",
+      "4": "Boa aparência, +1 em testes de reação",
+      "12": "Poderia entrar em concursos de beleza",
+      "16": "Poderia vencer concursos de beleza",
+      "20": "Espécime ideal, aparência divina"
     };
+    return descricoes[this.pontosAtuais] || nivel.nome;
   }
 
-  // Para debug
-  testarFuncionamento() {
-    console.log('=== TESTE SISTEMA APARÊNCIA ===');
-    console.log('Select existe:', !!document.getElementById('nivelAparencia'));
-    console.log('Display existe:', !!document.getElementById('displayAparencia'));
-    console.log('Badge existe:', !!document.getElementById('pontosAparencia'));
-    console.log('Valor atual do select:', document.getElementById('nivelAparencia')?.value);
-    console.log('Pontos atuais:', this.pontosAtuais);
-    console.log('==============================');
+  notificarDashboard() {
+    // Disparar evento para o dashboard
+    const evento = new CustomEvent('aparenciaAtualizada', {
+      detail: { pontos: this.pontosAtuais }
+    });
+    document.dispatchEvent(evento);
   }
-}
 
-// Inicialização automática quando a aba estiver pronta
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM carregado, verificando aba de características...');
+  // GETTERS SIMPLES
+  getPontos() { return this.pontosAtuais; }
   
-  // Esperar um pouco para garantir que o HTML foi renderizado
-  setTimeout(() => {
-    const tabCaracteristicas = document.getElementById('caracteristicas');
-    if (tabCaracteristicas) {
-      console.log('Aba características encontrada, inicializando sistema...');
-      
-      // Criar instância
-      window.sistemaAparencia = new SistemaAparencia();
-      
-      // Inicializar
-      window.sistemaAparencia.inicializar();
-      
-      // Testar funcionamento
-      window.sistemaAparencia.testarFuncionamento();
-      
-      // Expor para debug
-      console.log('SistemaAparencia disponível como window.sistemaAparencia');
-    } else {
-      console.warn('Aba características não encontrada. Tentando inicializar de qualquer forma...');
-      
-      // Tentar inicializar mesmo assim (pode ser carregamento dinâmico)
-      window.sistemaAparencia = new SistemaAparencia();
-      setTimeout(() => {
-        window.sistemaAparencia.inicializar();
-      }, 500);
-    }
-  }, 100);
-});
-
-// Listener para quando a aba for ativada (se você tem sistema de tabs)
-document.addEventListener('tabAtivada', function(e) {
-  if (e.detail && e.detail.tabId === 'caracteristicas') {
-    console.log('Aba características ativada, inicializando sistema...');
-    
-    if (!window.sistemaAparencia) {
-      window.sistemaAparencia = new SistemaAparencia();
-    }
-    
-    window.sistemaAparencia.inicializar();
+  getInfo() {
+    const nivel = this.niveisAparencia[this.pontosAtuais];
+    return nivel ? {
+      pontos: this.pontosAtuais,
+      nome: nivel.nome,
+      tipo: nivel.tipo,
+      reacao: nivel.reacao
+    } : null;
   }
-});
-
-// Exportar para uso em outros módulos
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = SistemaAparencia;
 }
+
+// ================ INICIALIZAÇÃO SIMPLES ================
+(function() {
+  console.log('📁 Carregando SistemaAparencia...');
+  
+  // Criar instância global
+  window.sistemaAparencia = new SistemaAparencia();
+  
+  // Inicializar quando a tab características for clicada
+  document.addEventListener('click', function(e) {
+    const tabBtn = e.target.closest('[data-tab="caracteristicas"]');
+    if (tabBtn && !window.sistemaAparencia.inicializado) {
+      setTimeout(() => window.sistemaAparencia.inicializar(), 300);
+    }
+  });
+  
+  // Tentar inicializar após 2 segundos (fallback)
+  setTimeout(() => {
+    if (!window.sistemaAparencia.inicializado) {
+      window.sistemaAparencia.inicializar();
+    }
+  }, 2000);
+})();
+
+console.log('🎭 SistemaAparencia carregado!');
