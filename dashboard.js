@@ -1,5 +1,5 @@
-// dashboard.js - COMPLETO E FUNCIONAL
-// ATUALIZA AUTOMATICAMENTE OS CARDS DE RESUMO
+// dashboard.js - SISTEMA FUNCIONAL DE DASHBOARD
+// VERSÃO CORRIGIDA - REMOVIDAS SIMULAÇÕES
 
 // ===== SISTEMA PRINCIPAL =====
 class DashboardManager {
@@ -15,6 +15,7 @@ class DashboardManager {
             gastosPeculiaridades: 0
         };
         this.inicializado = false;
+        this.ultimosAtributos = { ST: 10, DX: 10, IQ: 10, HT: 10 };
     }
 
     inicializar() {
@@ -26,13 +27,192 @@ class DashboardManager {
         this.configurarContadorDescricao();
         this.configurarPontos();
         this.configurarBotoes();
-        this.configurarOuvintes();
+        
+        // Inicializar monitoramento das outras abas
+        this.iniciarMonitoramento();
         
         // Forçar atualização inicial
         this.atualizarTudo();
         
         this.inicializado = true;
         console.log('✅ DashboardManager pronto!');
+    }
+
+    // ===== MONITORAMENTO DAS OUTRAS ABAS =====
+    iniciarMonitoramento() {
+        // Monitorar mudanças na aba de atributos
+        this.monitorarAtributos();
+        
+        // Monitorar outras abas (será implementado conforme necessário)
+        this.monitorarCaracteristicas();
+        
+        // Verificar periodicamente por mudanças
+        setInterval(() => {
+            this.verificarMudancasAtributos();
+        }, 2000);
+    }
+
+    monitorarAtributos() {
+        // Esta função será chamada pela aba de atributos quando houver mudanças
+        // Por enquanto, criamos um método público para ser chamado
+        console.log('👁️ Monitorando atributos...');
+    }
+
+    monitorarCaracteristicas() {
+        // Monitorar características (vantagens/desvantagens)
+        console.log('👁️ Monitorando características...');
+    }
+
+    verificarMudancasAtributos() {
+        // Verificar se há formulário de atributos na página
+        const formAtributos = document.querySelector('#atributos form');
+        if (!formAtributos) return;
+        
+        // Coletar valores atuais
+        const atributosAtuais = {
+            ST: this.obterValorAtributo('ST'),
+            DX: this.obterValorAtributo('DX'),
+            IQ: this.obterValorAtributo('IQ'),
+            HT: this.obterValorAtributo('HT')
+        };
+        
+        // Verificar se houve mudança
+        let mudou = false;
+        Object.keys(atributosAtuais).forEach(chave => {
+            if (atributosAtuais[chave] !== this.ultimosAtributos[chave]) {
+                mudou = true;
+            }
+        });
+        
+        // Se houve mudança, recalcular
+        if (mudou) {
+            console.log('🔄 Atributos alterados:', atributosAtuais);
+            this.ultimosAtributos = { ...atributosAtuais };
+            this.calcularPontosAtributos(atributosAtuais);
+        }
+    }
+
+    obterValorAtributo(nome) {
+        // Tentar diferentes seletores para encontrar o atributo
+        const seletores = [
+            `input[name="${nome}"], 
+             input[id*="${nome.toLowerCase()}"], 
+             input[placeholder*="${nome}"], 
+             .atributo-${nome.toLowerCase()} input`
+        ];
+        
+        let valor = 10; // Valor padrão
+        
+        // Verificar se existe um elemento específico para este atributo
+        const elemento = document.querySelector(`[data-atributo="${nome}"]`) ||
+                        document.getElementById(`atributo${nome}`) ||
+                        document.getElementById(nome);
+        
+        if (elemento) {
+            if (elemento.tagName === 'INPUT') {
+                valor = parseInt(elemento.value) || 10;
+            } else {
+                valor = parseInt(elemento.textContent) || 10;
+            }
+        }
+        
+        return valor;
+    }
+
+    calcularPontosAtributos(atributos) {
+        // Calcular pontos gastos em atributos baseado no sistema GURPS
+        // Cada atributo acima de 10 custa 10 pontos por nível
+        // Cada atributo abaixo de 10 dá -10 pontos por nível
+        
+        let totalPontos = 0;
+        
+        // Calcular custo para cada atributo
+        Object.keys(atributos).forEach(chave => {
+            const valor = atributos[chave];
+            const diferenca = valor - 10;
+            const custo = diferenca * 10; // 10 pontos por nível
+            totalPontos += custo;
+        });
+        
+        console.log(`💰 Custo total em atributos: ${totalPontos} pontos`);
+        
+        // Atualizar dashboard
+        this.atualizarAtributosNoDashboard(atributos);
+        this.atualizarCard('gastosAtributos', totalPontos);
+        this.pontos.gastosAtributos = totalPontos;
+        
+        // Recalcular totais
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+    }
+
+    atualizarAtributosNoDashboard(atributos) {
+        // Atualizar valores dos atributos no dashboard
+        if (atributos.ST) document.getElementById('atributoST').textContent = atributos.ST;
+        if (atributos.DX) document.getElementById('atributoDX').textContent = atributos.DX;
+        if (atributos.IQ) document.getElementById('atributoIQ').textContent = atributos.IQ;
+        if (atributos.HT) document.getElementById('atributoHT').textContent = atributos.HT;
+        
+        // Atualizar PV (baseado em ST) e PF (baseado em HT)
+        const pvBase = Math.max(atributos.ST, 10);
+        const pfBase = Math.max(atributos.HT, 10);
+        
+        const pvElement = document.getElementById('valorPV');
+        if (pvElement) {
+            const partes = pvElement.textContent.split('/');
+            const pvAtual = parseInt(partes[0]) || pvBase;
+            pvElement.textContent = `${pvAtual}/${pvBase}`;
+            
+            // Atualizar barra de PV
+            const barraPV = document.getElementById('barraPV');
+            if (barraPV) {
+                const porcentagem = (pvAtual / pvBase) * 100;
+                barraPV.style.width = `${porcentagem}%`;
+            }
+        }
+        
+        const pfElement = document.getElementById('valorPF');
+        if (pfElement) {
+            const partes = pfElement.textContent.split('/');
+            const pfAtual = parseInt(partes[0]) || pfBase;
+            pfElement.textContent = `${pfAtual}/${pfBase}`;
+            
+            // Atualizar barra de PF
+            const barraPF = document.getElementById('barraPF');
+            if (barraPF) {
+                const porcentagem = (pfAtual / pfBase) * 100;
+                barraPF.style.width = `${porcentagem}%`;
+            }
+        }
+    }
+
+    // ===== MÉTODOS PÚBLICOS PARA OUTRAS ABAS =====
+    atualizarAtributos(st, dx, iq, ht) {
+        const atributos = { ST: st, DX: dx, IQ: iq, HT: ht };
+        this.calcularPontosAtributos(atributos);
+    }
+
+    atualizarCaracteristicas(vantagens, desvantagens) {
+        // Atualizar cards de vantagens e desvantagens
+        const totalVantagens = vantagens.reduce((sum, item) => sum + (item.pontos || 0), 0);
+        const totalDesvantagens = desvantagens.reduce((sum, item) => sum + (item.pontos || 0), 0);
+        
+        this.atualizarCard('gastosVantagens', totalVantagens);
+        this.atualizarCard('gastosDesvantagens', totalDesvantagens);
+        
+        this.pontos.gastosVantagens = totalVantagens;
+        this.pontos.gastosDesvantagens = totalDesvantagens;
+        
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
+    }
+
+    atualizarPericias(pericias) {
+        const totalPericias = pericias.reduce((sum, item) => sum + (item.pontos || 0), 0);
+        this.atualizarCard('gastosPericias', totalPericias);
+        this.pontos.gastosPericias = totalPericias;
+        this.atualizarTotalLiquido();
+        this.atualizarSaldoDisponivel();
     }
 
     // ===== CONFIGURAÇÕES BÁSICAS =====
@@ -89,104 +269,34 @@ class DashboardManager {
         
         if (limiteDesvantagens) {
             limiteDesvantagens.addEventListener('input', () => {
-                // Apenas atualiza o valor
+                // Verificar se desvantagens ultrapassaram o limite
+                if (this.pontos.gastosDesvantagens < limiteDesvantagens.value) {
+                    alert(`⚠️ Atenção: Desvantagens (${this.pontos.gastosDesvantagens}) ultrapassaram o limite (${limiteDesvantagens.value})!`);
+                }
             });
         }
     }
 
     configurarBotoes() {
         // Botões de PV
-        const btnPVDiminuir = document.querySelector('[onclick*="ajustarPV(-1)"]');
-        const btnPVAumentar = document.querySelector('[onclick*="ajustarPV(1)"]');
-        
-        if (btnPVDiminuir) {
-            btnPVDiminuir.addEventListener('click', (e) => {
+        const btnPVDiminuir = document.querySelectorAll('[onclick*="ajustarPV"]');
+        btnPVDiminuir.forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.ajustarPV(-1);
+                const valor = btn.textContent === '-' ? -1 : 1;
+                this.ajustarPV(valor);
             });
-        }
-        
-        if (btnPVAumentar) {
-            btnPVAumentar.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.ajustarPV(1);
-            });
-        }
+        });
         
         // Botões de PF
-        const btnPFDiminuir = document.querySelector('[onclick*="ajustarPF(-1)"]');
-        const btnPFAumentar = document.querySelector('[onclick*="ajustarPF(1)"]');
-        
-        if (btnPFDiminuir) {
-            btnPFDiminuir.addEventListener('click', (e) => {
+        const btnPFDiminuir = document.querySelectorAll('[onclick*="ajustarPF"]');
+        btnPFDiminuir.forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.ajustarPF(-1);
+                const valor = btn.textContent === '-' ? -1 : 1;
+                this.ajustarPF(valor);
             });
-        }
-        
-        if (btnPFAumentar) {
-            btnPFAumentar.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.ajustarPF(1);
-            });
-        }
-    }
-
-    // ===== OUVINTES DE EVENTOS =====
-    configurarOuvintes() {
-        // Ouvir eventos de atributos
-        document.addEventListener('atributosAlterados', (e) => {
-            console.log('📥 Dashboard: Recebendo atributos', e.detail);
-            this.atualizarComAtributos(e.detail);
         });
-        
-        // Ouvir eventos de características
-        document.addEventListener('caracteristicasAtualizadas', (e) => {
-            console.log('📥 Dashboard: Recebendo características', e.detail);
-            this.atualizarComCaracteristicas(e.detail);
-        });
-    }
-
-    // ===== ATUALIZAÇÕES COM DADOS EXTERNOS =====
-    atualizarComAtributos(dados) {
-        if (!dados) return;
-        
-        // Atualizar valores dos atributos
-        if (dados.ST) document.getElementById('atributoST').textContent = dados.ST;
-        if (dados.DX) document.getElementById('atributoDX').textContent = dados.DX;
-        if (dados.IQ) document.getElementById('atributoIQ').textContent = dados.IQ;
-        if (dados.HT) document.getElementById('atributoHT').textContent = dados.HT;
-        
-        // Atualizar PV/PF
-        if (dados.PV) {
-            const pvElement = document.getElementById('valorPV');
-            if (pvElement) pvElement.textContent = `${dados.PV}/${dados.PV}`;
-        }
-        
-        if (dados.PF) {
-            const pfElement = document.getElementById('valorPF');
-            if (pfElement) pfElement.textContent = `${dados.PF}/${dados.PF}`;
-        }
-        
-        // ATUALIZAR CARD DE ATRIBUTOS
-        if (dados.pontosGastos !== undefined) {
-            this.pontos.gastosAtributos = dados.pontosGastos;
-            this.atualizarCard('gastosAtributos', dados.pontosGastos);
-            this.atualizarTotalLiquido();
-            this.atualizarSaldoDisponivel();
-        }
-    }
-
-    atualizarComCaracteristicas(dados) {
-        if (!dados) return;
-        
-        // ATUALIZAR CARD DE PECULIARIDADES (onde vão as características)
-        if (dados.total !== undefined) {
-            this.pontos.gastosPeculiaridades = dados.total;
-            this.atualizarCard('gastosPeculiaridades', dados.total);
-            this.atualizarTotalLiquido();
-            this.atualizarSaldoDisponivel();
-        }
     }
 
     // ===== ATUALIZAÇÃO DE CARDS =====
@@ -297,96 +407,27 @@ class DashboardManager {
         this.atualizarSaldoDisponivel();
     }
 
-    // ===== FUNÇÕES PARA SALVAR/CARREGAR =====
-    coletarDadosParaSalvar() {
-        return {
-            identificacao: {
-                raca: document.getElementById('dashboardRaca')?.value || '',
-                classe: document.getElementById('dashboardClasse')?.value || '',
-                nivel: document.getElementById('dashboardNivel')?.value || '',
-                descricao: document.getElementById('dashboardDescricao')?.value || ''
-            },
-            pontos: {
-                total: parseInt(document.getElementById('pontosTotais')?.value) || 150,
-                limiteDesvantagens: parseInt(document.getElementById('limiteDesvantagens')?.value) || -50
-            },
-            atributos: {
-                ST: parseInt(document.getElementById('atributoST')?.textContent) || 10,
-                DX: parseInt(document.getElementById('atributoDX')?.textContent) || 10,
-                IQ: parseInt(document.getElementById('atributoIQ')?.textContent) || 10,
-                HT: parseInt(document.getElementById('atributoHT')?.textContent) || 10,
-                PV: parseInt(document.getElementById('valorPV')?.textContent.split('/')[0]) || 10,
-                PF: parseInt(document.getElementById('valorPF')?.textContent.split('/')[0]) || 10
-            },
-            gastos: this.pontos,
-            foto: document.getElementById('fotoPreview')?.src || ''
+    // ===== FUNÇÕES PARA TESTE =====
+    testarAtributos() {
+        console.log('🧪 TESTANDO ATRIBUTOS');
+        
+        // Simular valores de atributos diferentes
+        const atributosTeste = {
+            ST: 12,
+            DX: 14,
+            IQ: 13,
+            HT: 11
         };
-    }
-
-    carregarDados(dados) {
-        if (!dados) return;
         
-        // Carregar identificação
-        if (dados.identificacao) {
-            const id = dados.identificacao;
-            if (document.getElementById('dashboardRaca') && id.raca) 
-                document.getElementById('dashboardRaca').value = id.raca;
-            if (document.getElementById('dashboardClasse') && id.classe) 
-                document.getElementById('dashboardClasse').value = id.classe;
-            if (document.getElementById('dashboardNivel') && id.nivel) 
-                document.getElementById('dashboardNivel').value = id.nivel;
-            if (document.getElementById('dashboardDescricao') && id.descricao) {
-                document.getElementById('dashboardDescricao').value = id.descricao;
-                const contador = document.getElementById('contadorDescricao');
-                if (contador) contador.textContent = id.descricao.length;
-            }
-        }
+        this.atualizarAtributos(
+            atributosTeste.ST,
+            atributosTeste.DX,
+            atributosTeste.IQ,
+            atributosTeste.HT
+        );
         
-        // Carregar pontos
-        if (dados.pontos) {
-            if (document.getElementById('pontosTotais')) 
-                document.getElementById('pontosTotais').value = dados.pontos.total || 150;
-            if (document.getElementById('limiteDesvantagens')) 
-                document.getElementById('limiteDesvantagens').value = dados.pontos.limiteDesvantagens || -50;
-        }
-        
-        // Carregar atributos
-        if (dados.atributos) {
-            const attr = dados.atributos;
-            if (document.getElementById('atributoST')) 
-                document.getElementById('atributoST').textContent = attr.ST || 10;
-            if (document.getElementById('atributoDX')) 
-                document.getElementById('atributoDX').textContent = attr.DX || 10;
-            if (document.getElementById('atributoIQ')) 
-                document.getElementById('atributoIQ').textContent = attr.IQ || 10;
-            if (document.getElementById('atributoHT')) 
-                document.getElementById('atributoHT').textContent = attr.HT || 10;
-            if (document.getElementById('valorPV')) 
-                document.getElementById('valorPV').textContent = `${attr.PV || 10}/${attr.PV || 10}`;
-            if (document.getElementById('valorPF')) 
-                document.getElementById('valorPF').textContent = `${attr.PF || 10}/${attr.PF || 10}`;
-        }
-        
-        // Carregar gastos
-        if (dados.gastos) {
-            this.pontos = { ...dados.gastos };
-            
-            // Atualizar cards
-            Object.keys(this.pontos).forEach(chave => {
-                const idCard = 'gastos' + chave.charAt(0).toUpperCase() + chave.slice(1);
-                this.atualizarCard(idCard, this.pontos[chave]);
-            });
-        }
-        
-        // Carregar foto
-        if (dados.foto && dados.foto !== '' && document.getElementById('fotoPreview')) {
-            document.getElementById('fotoPreview').src = dados.foto;
-            document.getElementById('fotoPreview').style.display = 'block';
-            document.getElementById('fotoPlaceholder').style.display = 'none';
-        }
-        
-        // Atualizar tudo
-        this.atualizarTudo();
+        console.log('Atributos atualizados:', atributosTeste);
+        console.log('Pontos gastos em atributos:', this.pontos.gastosAtributos);
     }
 }
 
@@ -400,20 +441,44 @@ class DashboardManager {
     // Inicializar quando a aba for aberta
     document.addEventListener('click', function(e) {
         const tabBtn = e.target.closest('[data-tab="dashboard"]');
-        if (tabBtn && !window.dashboardManager.inicializado) {
-            setTimeout(() => window.dashboardManager.inicializar(), 300);
+        if (tabBtn) {
+            setTimeout(() => {
+                if (!window.dashboardManager.inicializado) {
+                    window.dashboardManager.inicializar();
+                }
+                window.dashboardManager.atualizarTudo();
+            }, 100);
         }
     });
     
-    // Tentar inicializar automaticamente
+    // Tentar inicializar automaticamente se dashboard já estiver ativo
     setTimeout(() => {
         const dashboardTab = document.getElementById('dashboard');
         if (dashboardTab && dashboardTab.classList.contains('active') && !window.dashboardManager.inicializado) {
             window.dashboardManager.inicializar();
         }
-    }, 1000);
+    }, 500);
     
-    // Exportar funções globais
+    // Exportar funções globais para outras abas usarem
+    window.atualizarDashboardAtributos = function(st, dx, iq, ht) {
+        if (window.dashboardManager) {
+            window.dashboardManager.atualizarAtributos(st, dx, iq, ht);
+        }
+    };
+    
+    window.atualizarDashboardCaracteristicas = function(vantagens, desvantagens) {
+        if (window.dashboardManager) {
+            window.dashboardManager.atualizarCaracteristicas(vantagens, desvantagens);
+        }
+    };
+    
+    window.atualizarDashboardPericias = function(pericias) {
+        if (window.dashboardManager) {
+            window.dashboardManager.atualizarPericias(pericias);
+        }
+    };
+    
+    // Funções de ajuste manual
     window.ajustarPV = function(valor) {
         if (window.dashboardManager) {
             window.dashboardManager.ajustarPV(valor);
@@ -426,31 +491,12 @@ class DashboardManager {
         }
     };
     
+    // Função de teste
     window.testarDashboard = function() {
-        console.log('🧪 TESTANDO DASHBOARD');
-        console.log('Estado:', window.dashboardManager?.pontos);
-        
-        // Simular evento de atributos
-        const evento = new CustomEvent('atributosAlterados', {
-            detail: {
-                ST: 12,
-                DX: 14,
-                IQ: 13,
-                HT: 11,
-                PV: 12,
-                PF: 11,
-                pontosGastos: 60
-            }
-        });
-        document.dispatchEvent(evento);
-        
-        // Verificar cards
-        const cards = ['gastosAtributos', 'gastosPeculiaridades', 'totalLiquido', 'saldoDisponivel'];
-        cards.forEach(id => {
-            const el = document.getElementById(id);
-            console.log(`${id}:`, el?.textContent);
-        });
+        if (window.dashboardManager) {
+            window.dashboardManager.testarAtributos();
+        }
     };
+    
+    console.log('✅ DashboardManager carregado! Use testarDashboard() para testar.');
 })();
-
-console.log('✅ DashboardManager carregado!');
