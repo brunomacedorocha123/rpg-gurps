@@ -14,9 +14,18 @@ class DashboardManager {
                 gastosMagias: 0,
                 gastosTecnicas: 0,
                 gastosPeculiaridades: 0,
+                // NOVO: Pontos de Características
+                gastosCaracteristicas: 0,
                 saldoDisponivel: 150,
                 limiteDesvantagens: -50,
                 pontosGastosTotal: 0
+            },
+            caracteristicas: {
+                // NOVO: Para armazenar pontos de características
+                aparência: 0,
+                riqueza: 0,
+                idiomas: 0,
+                fisicas: 0
             },
             atributos: {
                 ST: 10,
@@ -40,7 +49,9 @@ class DashboardManager {
                 saldo: '$2.000',
                 aparencia: 'Média'
             },
-            foto: null
+            foto: null,
+            userId: null,
+            characterId: null
         };
         
         this.fotoTemporaria = null;
@@ -48,6 +59,19 @@ class DashboardManager {
         this.intervaloMonitor = null;
         this.ultimosAtributos = { ST: 10, DX: 10, IQ: 10, HT: 10 };
         this.ultimaAtualizacaoAtributos = 0;
+        
+        // NOVO: Cache dos pontos de características
+        this.pontosCaracteristicasCache = {
+            aparência: 0,
+            riqueza: 0,
+            idiomas: 0,
+            fisicas: 0,
+            total: 0
+        };
+        
+        // NOVO: Controle de salvamento automático
+        this.autoSaveTimeout = null;
+        this.autoSaveEnabled = true;
     }
 
     inicializar() {
@@ -59,6 +83,10 @@ class DashboardManager {
         this.carregarValoresIniciais();
         this.iniciarMonitoramentoContinuo();
         this.forcarAtualizacaoInicial();
+        
+        // NOVO: Configurar monitoramento de características
+        this.configurarMonitorCaracteristicas();
+        
         return this;
     }
 
@@ -169,6 +197,7 @@ class DashboardManager {
                         tamanho: file.size
                     };
                     this.estado.foto = this.fotoTemporaria;
+                    this.salvarAuto();
                 };
                 reader.readAsDataURL(file);
             }
@@ -183,6 +212,7 @@ class DashboardManager {
                 fotoUpload.value = '';
                 this.fotoTemporaria = null;
                 this.estado.foto = null;
+                this.salvarAuto();
             });
         }
 
@@ -219,19 +249,30 @@ class DashboardManager {
 
     configurarEventosDashboard() {
         const inputsPrincipais = [
-            { id: 'dashboardRaca', tipo: 'text', callback: (v) => this.estado.identificacao.raca = v },
-            { id: 'dashboardClasse', tipo: 'text', callback: (v) => this.estado.identificacao.classe = v },
-            { id: 'dashboardNivel', tipo: 'text', callback: (v) => this.estado.identificacao.nivel = v },
+            { id: 'dashboardRaca', tipo: 'text', callback: (v) => {
+                this.estado.identificacao.raca = v;
+                this.salvarAuto();
+            }},
+            { id: 'dashboardClasse', tipo: 'text', callback: (v) => {
+                this.estado.identificacao.classe = v;
+                this.salvarAuto();
+            }},
+            { id: 'dashboardNivel', tipo: 'text', callback: (v) => {
+                this.estado.identificacao.nivel = v;
+                this.salvarAuto();
+            }},
             { id: 'pontosTotais', tipo: 'number', callback: (v) => {
                 this.estado.pontos.total = parseInt(v) || 150;
                 this.recalcularSaldoCompleto();
                 this.atualizarDisplayPontos();
                 this.atualizarDisplayResumo();
                 this.atualizarDisplayDistribuicao();
+                this.salvarAuto();
             }},
             { id: 'limiteDesvantagens', tipo: 'number', callback: (v) => {
                 this.estado.pontos.limiteDesvantagens = parseInt(v) || -50;
                 this.atualizarDisplayPontos();
+                this.salvarAuto();
             }}
         ];
 
@@ -259,11 +300,13 @@ class DashboardManager {
             { id: 'nivelAparencia', callback: (v) => {
                 this.estado.financeiro.aparencia = v;
                 this.atualizarDisplayFinanceiro();
+                this.salvarAuto();
             }},
             { id: 'nivelRiqueza', callback: (v) => {
                 this.estado.financeiro.riqueza = v;
                 this.calcularRendaDetalhada();
                 this.atualizarDisplayFinanceiro();
+                this.salvarAuto();
             }}
         ];
 
@@ -288,6 +331,7 @@ class DashboardManager {
                 if (contador) {
                     contador.textContent = textareaDescricao.value.length;
                 }
+                this.salvarAuto();
             });
             
             textareaDescricao.addEventListener('focus', () => {
@@ -298,6 +342,7 @@ class DashboardManager {
             textareaDescricao.addEventListener('blur', () => {
                 textareaDescricao.style.borderColor = '';
                 textareaDescricao.style.boxShadow = '';
+                this.salvarAuto();
             });
         }
     }
@@ -311,6 +356,152 @@ class DashboardManager {
                 input.addEventListener('input', () => this.verificarAtualizacaoAtributos());
             }
         });
+    }
+
+    // ===========================================
+    // NOVO MÉTODO: Configurar monitoramento de características
+    // ===========================================
+    configurarMonitorCaracteristicas() {
+        console.log('Configurando monitor de características...');
+        
+        // 1. ESCUTAR EVENTOS DA APARÊNCIA
+        document.addEventListener('pontosAparenciaAtualizados', (e) => {
+            if (e.detail && typeof e.detail.pontos === 'number') {
+                console.log('🎭 Evento aparência recebido:', e.detail.pontos);
+                this.atualizarPontosCaracteristicas('aparência', e.detail.pontos);
+            }
+        });
+
+        // 2. ESCUTAR EVENTOS DA RIQUEZA
+        document.addEventListener('pontosRiquezaAtualizados', (e) => {
+            if (e.detail && typeof e.detail.pontos === 'number') {
+                console.log('💰 Evento riqueza recebido:', e.detail.pontos);
+                this.atualizarPontosCaracteristicas('riqueza', e.detail.pontos);
+            }
+        });
+
+        // 3. ESCUTAR EVENTOS DE IDIOMAS
+        document.addEventListener('pontosIdiomasAtualizados', (e) => {
+            if (e.detail && typeof e.detail.pontos === 'number') {
+                console.log('🌐 Evento idiomas recebido:', e.detail.pontos);
+                this.atualizarPontosCaracteristicas('idiomas', e.detail.pontos);
+            }
+        });
+
+        // 4. ESCUTAR EVENTOS DE CARACTERÍSTICAS FÍSICAS
+        document.addEventListener('pontosFisicasAtualizados', (e) => {
+            if (e.detail && typeof e.detail.pontos === 'number') {
+                console.log('💪 Evento físicas recebido:', e.detail.pontos);
+                this.atualizarPontosCaracteristicas('fisicas', e.detail.pontos);
+            }
+        });
+    }
+
+    // ===========================================
+    // NOVO MÉTODO: Atualizar pontos de características específicas
+    // ===========================================
+    atualizarPontosCaracteristicas(tipo, pontos) {
+        console.log(`📊 Atualizando ${tipo}: ${pontos} pontos`);
+        
+        // Atualizar cache
+        this.pontosCaracteristicasCache[tipo] = pontos;
+        
+        // Recalcular total de características
+        const totalCaracteristicas = 
+            this.pontosCaracteristicasCache.aparência +
+            this.pontosCaracteristicasCache.riqueza +
+            this.pontosCaracteristicasCache.idiomas +
+            this.pontosCaracteristicasCache.fisicas;
+        
+        // Atualizar estado
+        this.estado.caracteristicas[tipo] = pontos;
+        this.estado.pontos.gastosCaracteristicas = totalCaracteristicas;
+        
+        console.log(`📊 Total características: ${totalCaracteristicas}`);
+        
+        // Recalcular saldo completo
+        this.recalcularSaldoCompleto();
+        
+        // Atualizar displays
+        this.atualizarDisplayPontos();
+        this.atualizarDisplayResumo();
+        this.atualizarDisplayDistribuicao();
+        
+        // Atualizar UI da aba de características
+        this.atualizarUICaracteristicas();
+        
+        // Salvar automaticamente
+        this.salvarAuto();
+        
+        // Disparar evento para UI de características
+        this.dispararEventoCaracteristicas();
+    }
+
+    // ===========================================
+    // NOVO MÉTODO: Atualizar UI da aba de características
+    // ===========================================
+    atualizarUICaracteristicas() {
+        // Atualizar totais nas abas de características
+        const totalCaracteristicas = this.estado.pontos.gastosCaracteristicas;
+        
+        // Elemento totalCaracteristicas na aba de características
+        const elTotal = document.getElementById('totalCaracteristicas');
+        if (elTotal) {
+            elTotal.textContent = totalCaracteristicas >= 0 ? 
+                `+${totalCaracteristicas} pts` : `${totalCaracteristicas} pts`;
+        }
+        
+        // Atualizar cada seção individualmente
+        const pontosAparencia = this.estado.caracteristicas.aparência;
+        const elResumoAparencia = document.getElementById('resumoAparencia');
+        if (elResumoAparencia) {
+            elResumoAparencia.textContent = pontosAparencia >= 0 ? 
+                `+${pontosAparencia} pts` : `${pontosAparencia} pts`;
+        }
+        
+        const pontosRiqueza = this.estado.caracteristicas.riqueza;
+        const elResumoRiqueza = document.getElementById('resumoRiqueza');
+        if (elResumoRiqueza) {
+            elResumoRiqueza.textContent = pontosRiqueza >= 0 ? 
+                `+${pontosRiqueza} pts` : `${pontosRiqueza} pts`;
+        }
+        
+        // Atualizar total da seção 1 (Aparência + Riqueza)
+        const secao1 = pontosAparencia + pontosRiqueza;
+        const elSecao1 = document.getElementById('totalSecao1');
+        if (elSecao1) {
+            elSecao1.textContent = secao1 >= 0 ? `+${secao1} pts` : `${secao1} pts`;
+        }
+        
+        // Atualizar badges individuais
+        const badgeAparencia = document.getElementById('pontosAparencia');
+        if (badgeAparencia) {
+            badgeAparencia.textContent = pontosAparencia >= 0 ? 
+                `+${pontosAparencia} pts` : `${pontosAparencia} pts`;
+        }
+        
+        const badgeRiqueza = document.getElementById('pontosRiqueza');
+        if (badgeRiqueza) {
+            badgeRiqueza.textContent = pontosRiqueza >= 0 ? 
+                `+${pontosRiqueza} pts` : `${pontosRiqueza} pts`;
+        }
+    }
+
+    // ===========================================
+    // NOVO MÉTODO: Disparar evento para UI de características
+    // ===========================================
+    dispararEventoCaracteristicas() {
+        const evento = new CustomEvent('dashboardCaracteristicasAtualizadas', {
+            detail: {
+                totalCaracteristicas: this.estado.pontos.gastosCaracteristicas,
+                saldoDisponivel: this.estado.pontos.saldoDisponivel,
+                aparência: this.estado.caracteristicas.aparência,
+                riqueza: this.estado.caracteristicas.riqueza,
+                idiomas: this.estado.caracteristicas.idiomas,
+                fisicas: this.estado.caracteristicas.fisicas
+            }
+        });
+        document.dispatchEvent(evento);
     }
 
     configurarEventosExternos() {
@@ -328,6 +519,7 @@ class DashboardManager {
                 this.atualizarDisplayResumo();
                 this.atualizarDisplayDistribuicao();
                 this.atualizarDisplayPontos();
+                this.salvarAuto();
             }
         });
 
@@ -338,6 +530,7 @@ class DashboardManager {
                 this.atualizarDisplayResumo();
                 this.atualizarDisplayDistribuicao();
                 this.atualizarDisplayPontos();
+                this.salvarAuto();
             }
         });
 
@@ -348,6 +541,7 @@ class DashboardManager {
                 this.atualizarDisplayResumo();
                 this.atualizarDisplayDistribuicao();
                 this.atualizarDisplayPontos();
+                this.salvarAuto();
             }
         });
 
@@ -358,6 +552,7 @@ class DashboardManager {
                 this.atualizarDisplayResumo();
                 this.atualizarDisplayDistribuicao();
                 this.atualizarDisplayPontos();
+                this.salvarAuto();
             }
         });
     }
@@ -396,10 +591,12 @@ class DashboardManager {
                         const novoValor = Math.round(percentual * this.estado.atributos.PV.max);
                         this.estado.atributos.PV.atual = Math.max(0, Math.min(novoValor, this.estado.atributos.PV.max));
                         this.atualizarDisplayAtributos();
+                        this.salvarAuto();
                     } else if (tipo === 'PF') {
                         const novoValor = Math.round(percentual * this.estado.atributos.PF.max);
                         this.estado.atributos.PF.atual = Math.max(0, Math.min(novoValor, this.estado.atributos.PF.max));
                         this.atualizarDisplayAtributos();
+                        this.salvarAuto();
                     }
                 });
             }
@@ -494,11 +691,13 @@ class DashboardManager {
         if (atributosMudaram) {
             this.recalcularSaldoCompleto();
             this.atualizarDisplayCompleto();
+            this.salvarAuto();
         }
     }
 
     verificarAtualizacoesPendentes() {
-        // Nada a fazer aqui - mantido para compatibilidade
+        // Verificar se há mudanças nas características que não foram capturadas
+        // Pode ser usado para integração futura
     }
 
     atualizarVantagensDesvantagens(total) {
@@ -517,6 +716,7 @@ class DashboardManager {
             antigoDesvantagens !== this.estado.pontos.gastosDesvantagens) {
             this.recalcularSaldoCompleto();
             this.atualizarDisplayCompleto();
+            this.salvarAuto();
         }
     }
 
@@ -549,26 +749,39 @@ class DashboardManager {
         }
     }
 
+    // ===========================================
+    // MÉTODO CRÍTICO: Recalcular saldo considerando TUDO
+    // ===========================================
     recalcularSaldoCompleto() {
         const total = this.estado.pontos.total;
         
-        // Pontos gastos em atributos, vantagens, perícias, etc
+        // TODOS os gastos positivos (atributos, vantagens, características, etc.)
         const gastosPositivos = 
             this.estado.pontos.gastosAtributos + 
             this.estado.pontos.gastosVantagens + 
             this.estado.pontos.gastosPericias + 
             this.estado.pontos.gastosMagias +
             this.estado.pontos.gastosTecnicas +
-            this.estado.pontos.gastosPeculiaridades;
+            this.estado.pontos.gastosPeculiaridades +
+            this.estado.pontos.gastosCaracteristicas; // CARACTERÍSTICAS AQUI!
         
         // Pontos ganhos com desvantagens (valor negativo)
         const pontosDesvantagens = this.estado.pontos.gastosDesvantagens;
         
-        // Cálculo do saldo: Total - Gastos + Pontos de Desvantagens
+        // CÁLCULO FINAL DO SALDO:
+        // Saldo = Total - Gastos Positivos + Pontos de Desvantagens
         const saldoDisponivel = total - gastosPositivos + pontosDesvantagens;
         
+        // Atualizar estado
         this.estado.pontos.saldoDisponivel = saldoDisponivel;
         this.estado.pontos.pontosGastosTotal = gastosPositivos - pontosDesvantagens;
+        
+        console.log(`📊 Recálculo saldo:
+          Total: ${total}
+          Gastos Positivos: ${gastosPositivos}
+          Desvantagens: ${pontosDesvantagens}
+          Saldo Final: ${saldoDisponivel}
+          Características: ${this.estado.pontos.gastosCaracteristicas}`);
     }
 
     atualizarContadorDescricao() {
@@ -607,9 +820,14 @@ class DashboardManager {
 
     atualizarDisplayPontos() {
         const saldoDisponivel = this.estado.pontos.saldoDisponivel;
-        const gastosDesvantagens = this.estado.pontos.gastosDesvantagens;
         
         this.atualizarElemento('saldoDisponivel', saldoDisponivel);
+        
+        // NOVO: Atualizar o elemento de pontos totais se existir
+        const pontosTotaisElement = document.getElementById('pontosTotais');
+        if (pontosTotaisElement && pontosTotaisElement.value !== this.estado.pontos.total.toString()) {
+            pontosTotaisElement.value = this.estado.pontos.total;
+        }
     }
 
     atualizarDisplayFinanceiro() {
@@ -617,18 +835,30 @@ class DashboardManager {
         if (saldoPersonagemElement) {
             saldoPersonagemElement.textContent = this.estado.financeiro.saldo;
         }
+        
+        const nivelAparenciaElement = document.getElementById('nivelAparencia');
+        if (nivelAparenciaElement) {
+            nivelAparenciaElement.textContent = this.estado.financeiro.aparencia;
+        }
     }
 
     atualizarDisplayResumo() {
         const gastosAtributos = this.estado.pontos.gastosAtributos;
         const gastosVantagens = this.estado.pontos.gastosVantagens;
         const gastosDesvantagens = this.estado.pontos.gastosDesvantagens;
+        const gastosCaracteristicas = this.estado.pontos.gastosCaracteristicas;
         const saldoDisponivel = this.estado.pontos.saldoDisponivel;
         
         this.atualizarElemento('gastosAtributos', gastosAtributos);
         this.atualizarElemento('gastosVantagens', gastosVantagens);
         this.atualizarElemento('gastosDesvantagens', gastosDesvantagens);
         this.atualizarElemento('totalLiquido', saldoDisponivel);
+        
+        // NOVO: Adicionar gastos de características se houver elemento
+        const gastosCaracteristicasElement = document.getElementById('gastosCaracteristicas');
+        if (gastosCaracteristicasElement) {
+            gastosCaracteristicasElement.textContent = gastosCaracteristicas;
+        }
     }
 
     atualizarDisplayDistribuicao() {
@@ -638,7 +868,7 @@ class DashboardManager {
         const gastosAtributos = this.estado.pontos.gastosAtributos;
         const gastosVantagens = this.estado.pontos.gastosVantagens;
         const gastosPericiasMagias = this.estado.pontos.gastosPericias + this.estado.pontos.gastosMagias;
-        const outros = this.estado.pontos.gastosTecnicas + this.estado.pontos.gastosPeculiaridades;
+        const outros = this.estado.pontos.gastosTecnicas + this.estado.pontos.gastosPeculiaridades + this.estado.pontos.gastosCaracteristicas;
         
         const gastosTotais = gastosAtributos + gastosVantagens + gastosPericiasMagias + outros;
         
@@ -691,12 +921,82 @@ class DashboardManager {
         const novoPV = this.estado.atributos.PV.atual + valor;
         this.estado.atributos.PV.atual = Math.max(0, Math.min(novoPV, this.estado.atributos.PV.max));
         this.atualizarDisplayAtributos();
+        this.salvarAuto();
     }
 
     ajustarPF(valor) {
         const novoPF = this.estado.atributos.PF.atual + valor;
         this.estado.atributos.PF.atual = Math.max(0, Math.min(novoPF, this.estado.atributos.PF.max));
         this.atualizarDisplayAtributos();
+        this.salvarAuto();
+    }
+
+    // ===========================================
+    // NOVO MÉTODO: Salvar automaticamente
+    // ===========================================
+    salvarAuto() {
+        if (!this.autoSaveEnabled) return;
+        
+        // Salvar no localStorage imediatamente
+        try {
+            const data = {
+                pontos: this.estado.pontos,
+                caracteristicas: this.estado.caracteristicas,
+                atributos: this.estado.atributos,
+                identificacao: this.estado.identificacao,
+                financeiro: this.estado.financeiro,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('gurps_dashboard_data', JSON.stringify(data));
+        } catch (e) {
+            console.warn('Não foi possível salvar no localStorage:', e);
+        }
+        
+        // Salvar no Firebase com debounce (a cada 5 segundos no máximo)
+        if (this.autoSaveTimeout) {
+            clearTimeout(this.autoSaveTimeout);
+        }
+        
+        this.autoSaveTimeout = setTimeout(() => {
+            this.salvarNoFirebase();
+            this.autoSaveTimeout = null;
+        }, 2000);
+    }
+
+    // ===========================================
+    // MÉTODO: Salvar no Firebase
+    // ===========================================
+    async salvarNoFirebase() {
+        try {
+            const auth = firebase.auth();
+            const user = auth.currentUser;
+            
+            if (!user) {
+                console.log('Usuário não autenticado. Salvando apenas localmente.');
+                return;
+            }
+            
+            const characterData = {
+                dashboard_data: {
+                    pontos: this.estado.pontos,
+                    caracteristicas: this.estado.caracteristicas,
+                    atributos: this.estado.atributos,
+                    identificacao: this.estado.identificacao,
+                    financeiro: this.estado.financeiro
+                },
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            const db = firebase.firestore();
+            
+            if (this.estado.characterId) {
+                await db.collection('characters').doc(this.estado.characterId).update(characterData);
+                console.log('Dashboard atualizado no Firebase');
+            }
+            
+        } catch (error) {
+            console.error('Erro ao salvar no Firebase:', error);
+        }
     }
 
     coletarDadosParaSalvar() {
@@ -705,6 +1005,7 @@ class DashboardManager {
             pontos: this.estado.pontos,
             atributos: this.estado.atributos,
             financeiro: this.estado.financeiro,
+            caracteristicas: this.estado.caracteristicas,
             foto: this.fotoTemporaria,
             dashboard: {
                 atualizadoEm: new Date().toISOString()
@@ -727,6 +1028,17 @@ class DashboardManager {
             this.estado.pontos = { ...this.estado.pontos, ...dados.pontos };
             this.atualizarElemento('pontosTotais', this.estado.pontos.total);
             this.atualizarElemento('limiteDesvantagens', this.estado.pontos.limiteDesvantagens);
+        }
+        
+        if (dados.caracteristicas) {
+            this.estado.caracteristicas = { ...this.estado.caracteristicas, ...dados.caracteristicas };
+            this.pontosCaracteristicasCache = {
+                aparência: this.estado.caracteristicas.aparência,
+                riqueza: this.estado.caracteristicas.riqueza,
+                idiomas: this.estado.caracteristicas.idiomas,
+                fisicas: this.estado.caracteristicas.fisicas,
+                total: this.estado.pontos.gastosCaracteristicas
+            };
         }
         
         if (dados.atributos) {
@@ -764,11 +1076,20 @@ class DashboardManager {
         if (this.intervaloMonitor) {
             clearInterval(this.intervaloMonitor);
         }
+        
+        if (this.autoSaveTimeout) {
+            clearTimeout(this.autoSaveTimeout);
+            this.salvarNoFirebase();
+        }
+        
         this.monitorAtivo = false;
     }
 }
 
-// Inicialização automática
+// ===========================================
+// INICIALIZAÇÃO GLOBAL
+// ===========================================
+
 (function() {
     let dashboardManagerInstance = null;
     
@@ -776,44 +1097,71 @@ class DashboardManager {
         if (!dashboardManagerInstance) {
             dashboardManagerInstance = new DashboardManager();
             dashboardManagerInstance.inicializar();
+            
+            // Expor no escopo global
+            window.dashboardManager = dashboardManagerInstance;
+            
+            console.log('✅ Dashboard Manager inicializado com sucesso!');
+            
+            // Forçar uma atualização inicial
+            setTimeout(() => {
+                dashboardManagerInstance.recalcularSaldoCompleto();
+                dashboardManagerInstance.atualizarDisplayCompleto();
+            }, 1000);
         }
     }
     
+    // Inicializar quando a página carregar
     document.addEventListener('DOMContentLoaded', function() {
+        // Aguardar um pouco para garantir que tudo esteja carregado
         setTimeout(() => {
             inicializarDashboard();
-        }, 300);
+        }, 500);
     });
     
+    // Exportar para uso global
     window.DashboardManager = DashboardManager;
-    window.dashboardManager = {
-        getInstance: function() {
-            if (!dashboardManagerInstance) {
-                dashboardManagerInstance = new DashboardManager();
-                dashboardManagerInstance.inicializar();
-            }
-            return dashboardManagerInstance;
+    
+    // Funções de utilidade global
+    window.atualizarDashboard = function() {
+        if (dashboardManagerInstance) {
+            dashboardManagerInstance.recalcularSaldoCompleto();
+            dashboardManagerInstance.atualizarDisplayCompleto();
         }
+    };
+    
+    window.obterPontosCaracteristicas = function() {
+        return dashboardManagerInstance ? 
+            dashboardManagerInstance.estado.pontos.gastosCaracteristicas : 0;
+    };
+    
+    window.getDashboardManager = function() {
+        return dashboardManagerInstance;
     };
 })();
 
-// Funções globais
+// Funções globais auxiliares
 window.ajustarPV = function(valor) {
-    const dashboard = window.dashboardManager.getInstance();
+    const dashboard = window.dashboardManager;
     if (dashboard) dashboard.ajustarPV(valor);
 };
 
 window.ajustarPF = function(valor) {
-    const dashboard = window.dashboardManager.getInstance();
+    const dashboard = window.dashboardManager;
     if (dashboard) dashboard.ajustarPF(valor);
 };
 
 window.carregarDadosDashboard = function(dados) {
-    const dashboard = window.dashboardManager.getInstance();
+    const dashboard = window.dashboardManager;
     if (dashboard) dashboard.carregarDados(dados);
 };
 
 window.obterDadosDashboard = function() {
-    const dashboard = window.dashboardManager.getInstance();
+    const dashboard = window.dashboardManager;
     return dashboard ? dashboard.coletarDadosParaSalvar() : null;
+};
+
+window.salvarDashboard = function() {
+    const dashboard = window.dashboardManager;
+    if (dashboard) dashboard.salvarNoFirebase();
 };
