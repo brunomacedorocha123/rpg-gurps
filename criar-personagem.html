@@ -1939,57 +1939,41 @@ body::before {
 <script src="dashboard.js"></script>
 <!-- O script principal (acima) já está no HTML -->
  <script>
-// ===========================================
-// INICIALIZAÇÃO DO FIREBASE
-// ===========================================
-if (typeof firebase === 'undefined') {
-    console.error('Firebase não carregado!');
-}
-
+// ================ FIREBASE ================
 const firebaseConfig = {
     apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
     authDomain: "gurpsroll.firebaseapp.com",
     projectId: "gurpsroll"
 };
-
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ===========================================
-// VARIÁVEIS GLOBAIS
-// ===========================================
+// ================ VARIÁVEIS ================
 let currentUser = null;
 let currentTab = 'dashboard';
-const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias'];
+const tabs = ['dashboard', 'atributos', 'caracteristicas', 'vantagens', 'pericias', 'magias', 'combate', 'equipamentos', 'resumo'];
 
-// ===========================================
-// QUANDO A PÁGINA CARREGAR
-// ===========================================
+// ================ QUANDO CARREGAR ================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Página carregada');
+    console.log('🔥 PÁGINA CARREGADA');
     
-    // Verificar login
+    // Login
     auth.onAuthStateChanged(function(user) {
         if (user) {
             currentUser = user;
-            console.log('Usuário logado:', user.email);
+            console.log('✅ Usuário logado:', user.email);
             initPage();
         } else {
+            console.log('❌ Não logado, redirecionando...');
             window.location.href = 'login.html';
         }
     });
     
-    // Configurar abas
+    // Configurar TABS PRIMEIRO
     setupTabs();
     
-    // Botão salvar
-    document.getElementById('saveBtn')?.addEventListener('click', saveCharacter);
-    
-    // Hotkeys
+    // Hotkey Ctrl+S
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 's') {
             e.preventDefault();
@@ -1998,81 +1982,160 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ===========================================
-// FUNÇÕES BÁSICAS
-// ===========================================
+// ================ FUNÇÃO PRINCIPAL ================
 function initPage() {
-    console.log('Inicializando página...');
+    console.log('⚙️ Inicializando página...');
     
-    // Carregar dados do usuário
+    // Código do jogador
     const playerCode = document.getElementById('playerCode');
     if (playerCode) {
         playerCode.textContent = 'USER-' + currentUser.uid.slice(0, 8).toUpperCase();
     }
     
-    // Verificar se está editando
+    // Verificar edição
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
-    
     if (editId) {
-        console.log('Editando personagem:', editId);
+        console.log('✏️ Editando:', editId);
         loadCharacter(editId);
     }
+    
+    // Inicializar Dashboard
+    setTimeout(() => {
+        if (window.dashboardManager && typeof window.dashboardManager.inicializar === 'function') {
+            window.dashboardManager.inicializar();
+        }
+    }, 500);
 }
 
+// ================ SISTEMA DE TABS ================
 function setupTabs() {
-    // Botões das abas
+    console.log('🔄 Configurando tabs...');
+    
+    // Configurar cada botão de tab
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
+        const tabId = btn.getAttribute('data-tab');
+        console.log(`✅ Botão encontrado: ${tabId}`);
+        
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log(`🎯 Clicou na tab: ${tabId}`);
             showTab(tabId);
         });
     });
+    
+    // Configurar botões "Anterior" e "Próximo"
+    const btnPrev = document.querySelector('.btn-secondary');
+    const btnNext = document.querySelector('.btn-primary');
+    
+    if (btnPrev && btnPrev.textContent.includes('Anterior')) {
+        btnPrev.addEventListener('click', function(e) {
+            e.preventDefault();
+            prevTab();
+        });
+    }
+    
+    if (btnNext && btnNext.textContent.includes('Próximo')) {
+        btnNext.addEventListener('click', function(e) {
+            e.preventDefault();
+            nextTab();
+        });
+    }
+    
+    // Mostrar tab inicial
+    setTimeout(() => {
+        showTab(currentTab);
+    }, 300);
 }
 
-// CORREÇÃO AQUI: VOLTAR PARA O SISTEMA COM CLASSES
 function showTab(tabId) {
-    // Remove active de todas as abas
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
+    console.log(`🚀 Mostrando tab: ${tabId}`);
+    
+    // Validar se a tab existe
+    if (!tabs.includes(tabId)) {
+        console.error(`❌ Tab "${tabId}" não existe!`);
+        return;
+    }
+    
+    // 1. ESCONDER TODAS AS TABS
+    const allPanes = document.querySelectorAll('.tab-pane');
+    console.log(`📊 Encontradas ${allPanes.length} tabs`);
+    
+    allPanes.forEach(pane => {
+        pane.style.display = 'none';
+        pane.classList.remove('active');
     });
     
+    // 2. REMOVER 'ACTIVE' DOS BOTÕES
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    // Adiciona active à aba selecionada
-    const tab = document.getElementById(tabId);
-    const tabButton = document.querySelector(`[data-tab="${tabId}"]`);
+    // 3. MOSTRAR TAB SELECIONADA
+    const tabElement = document.getElementById(tabId);
+    const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
     
-    if (tab) {
-        tab.classList.add('active');
+    if (tabElement) {
+        tabElement.style.display = 'block';
+        tabElement.classList.add('active');
         currentTab = tabId;
+        console.log(`✅ Tab ${tabId} exibida!`);
+    } else {
+        console.error(`❌ ERRO: Elemento #${tabId} não encontrado!`);
+        return;
     }
     
     if (tabButton) {
         tabButton.classList.add('active');
     }
     
-    // Se for a aba de características, garantir que os sistemas carreguem
-    if (tabId === 'caracteristicas') {
+    // 4. INICIALIZAR SISTEMAS ESPECÍFICOS
+    if (tabId === 'dashboard') {
         setTimeout(() => {
-            // Inicializar aparência se existir
-            if (window.SistemaAparencia && !window.sistemaAparencia) {
-                window.sistemaAparencia = new SistemaAparencia();
-                console.log('Sistema de aparência carregado');
+            if (window.dashboardManager) {
+                console.log('📊 Inicializando dashboard...');
+                window.dashboardManager.atualizarTudo();
             }
         }, 100);
     }
+    
+    if (tabId === 'caracteristicas') {
+        setTimeout(() => {
+            if (window.sistemaAparencia) {
+                console.log('🎭 Inicializando aparência...');
+                window.sistemaAparencia.inicializar();
+            }
+        }, 200);
+    }
 }
 
+function nextTab() {
+    const currentIndex = tabs.indexOf(currentTab);
+    if (currentIndex < tabs.length - 1) {
+        showTab(tabs[currentIndex + 1]);
+    } else {
+        showTab(tabs[0]); // Voltar para primeira
+    }
+}
+
+function prevTab() {
+    const currentIndex = tabs.indexOf(currentTab);
+    if (currentIndex > 0) {
+        showTab(tabs[currentIndex - 1]);
+    } else {
+        showTab(tabs[tabs.length - 1]); // Ir para última
+    }
+}
+
+// ================ FUNÇÕES DO PERSONAGEM ================
 async function loadCharacter(characterId) {
     try {
+        console.log(`📖 Carregando personagem: ${characterId}`);
         const doc = await db.collection('characters').doc(characterId).get();
         
         if (doc.exists) {
             const data = doc.data();
-            console.log('Personagem carregado:', data);
+            console.log('✅ Personagem carregado');
             
             // Nome
             const nameInput = document.getElementById('characterName');
@@ -2080,70 +2143,74 @@ async function loadCharacter(characterId) {
                 nameInput.value = data.name;
             }
             
-            // Carregar aparência
-            if (data.aparencia && window.sistemaAparencia) {
-                window.sistemaAparencia.carregarDados(data.aparencia);
+            // Dashboard
+            if (data.dashboard && window.dashboardManager) {
+                window.dashboardManager.carregarDados(data.dashboard);
             }
             
-            showMessage('Personagem carregado!', 'success');
+            showMessage('✅ Personagem carregado!', 'success');
         }
     } catch (error) {
-        console.error('Erro ao carregar:', error);
-        showMessage('Erro ao carregar personagem', 'error');
+        console.error('❌ Erro ao carregar:', error);
+        showMessage('❌ Erro ao carregar', 'error');
     }
 }
 
 async function saveCharacter() {
-    const name = document.getElementById('characterName')?.value.trim();
+    const nameInput = document.getElementById('characterName');
+    const name = nameInput ? nameInput.value.trim() : '';
     
     if (!name) {
-        showMessage('Digite um nome para o personagem', 'error');
+        showMessage('⚠️ Digite um nome!', 'error');
         return;
     }
     
     try {
-        // Coletar dados básicos
+        console.log('💾 Salvando personagem...');
+        
         const characterData = {
             name: name,
             playerId: currentUser.uid,
             updatedAt: new Date().toISOString()
         };
         
-        // Coletar dados da dashboard se existir
-        if (window.dashboardManager) {
-            characterData.dashboard = window.dashboardManager.obterDados();
+        // Dashboard
+        if (window.dashboardManager && typeof window.dashboardManager.coletarDadosParaSalvar === 'function') {
+            characterData.dashboard = window.dashboardManager.coletarDadosParaSalvar();
         }
         
-        // Coletar aparência se existir
-        if (window.sistemaAparencia) {
-            characterData.aparencia = window.sistemaAparencia.exportarDados();
-        }
-        
-        // Verificar se é edição
+        // Verificar edição
         const urlParams = new URLSearchParams(window.location.search);
         const editId = urlParams.get('edit');
         
         if (editId) {
             await db.collection('characters').doc(editId).update(characterData);
-            showMessage('Personagem atualizado!', 'success');
+            showMessage('✅ Personagem atualizado!', 'success');
         } else {
             characterData.createdAt = new Date().toISOString();
-            await db.collection('characters').add(characterData);
-            showMessage('Personagem criado!', 'success');
+            const result = await db.collection('characters').add(characterData);
+            showMessage('✅ Personagem criado!', 'success');
+            
+            setTimeout(() => {
+                window.history.replaceState(null, null, `?edit=${result.id}`);
+            }, 1500);
         }
         
     } catch (error) {
-        console.error('Erro ao salvar:', error);
-        showMessage('Erro ao salvar: ' + error.message, 'error');
+        console.error('❌ Erro ao salvar:', error);
+        showMessage('❌ Erro: ' + error.message, 'error');
     }
 }
 
-function showMessage(text, type) {
-    let toast = document.getElementById('toast');
+// ================ FUNÇÕES AUXILIARES ================
+function showMessage(text, type = 'info') {
+    console.log(`💬 ${type}: ${text}`);
     
+    let toast = document.getElementById('toast');
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'toast';
+        toast.className = 'toast';
         document.body.appendChild(toast);
     }
     
@@ -2156,28 +2223,45 @@ function showMessage(text, type) {
     }, 3000);
 }
 
-// ===========================================
-// FUNÇÕES GLOBAIS ÚTEIS
-// ===========================================
-window.nextTab = function() {
-    const currentIndex = tabs.indexOf(currentTab);
-    if (currentIndex < tabs.length - 1) {
-        showTab(tabs[currentIndex + 1]);
-    }
-};
-
-window.prevTab = function() {
-    const currentIndex = tabs.indexOf(currentTab);
-    if (currentIndex > 0) {
-        showTab(tabs[currentIndex - 1]);
-    }
-};
+// ================ FUNÇÕES GLOBAIS ================
+window.saveCharacter = saveCharacter;
+window.nextTab = nextTab;
+window.prevTab = prevTab;
+window.showTab = showTab;
 
 window.logout = function() {
-    auth.signOut().then(() => {
-        window.location.href = 'login.html';
-    });
+    if (confirm('Sair?')) {
+        auth.signOut().then(() => {
+            window.location.href = 'login.html';
+        });
+    }
 };
+
+// ================ DEBUG ================
+window.testarTabs = function() {
+    console.log('=== 🐛 DEBUG TABS ===');
+    console.log('Tabs definidas:', tabs);
+    console.log('Tab atual:', currentTab);
+    
+    // Verificar botões
+    const botoes = document.querySelectorAll('.tab-btn');
+    console.log(`Botões encontrados: ${botoes.length}`);
+    
+    botoes.forEach(btn => {
+        const tabId = btn.getAttribute('data-tab');
+        const tabExiste = document.getElementById(tabId);
+        console.log(`Botão "${tabId}": ${tabExiste ? '✅' : '❌'} Tab existe`);
+    });
+    
+    console.log('=== FIM DEBUG ===');
+};
+
+// Teste automático após 3 segundos
+setTimeout(() => {
+    window.testarTabs();
+}, 3000);
+
+console.log('🎮 Sistema de criação carregado!');
 </script>
 
 </body>
