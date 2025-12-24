@@ -1,5 +1,6 @@
+// atributos.js
 // ===== SISTEMA DE ATRIBUTOS - GURPS =====
-// Versão Completa com Comunicação com Dashboard
+// Versão 3.0 - Sistema Completo e Funcional
 
 // Tabelas de referência
 const danoTable = {
@@ -68,438 +69,371 @@ const cargasTable = {
     20: { nenhuma: 40.0, leve: 80.0, media: 120.0, pesada: 240.0, muitoPesada: 400.0 }
 };
 
-// Estado global
-const estadoAtributos = {
-    ST: 10,
-    DX: 10,
-    IQ: 10,
-    HT: 10,
-    bonusPV: 0,
-    bonusPF: 0,
-    bonusVontade: 0,
-    bonusPercepcao: 0,
-    bonusDeslocamento: 0
+// Estado do personagem
+let personagem = {
+    pontos: { total: 150, gastos: 0, saldo: 150 },
+    atributos: { ST: 10, DX: 10, IQ: 10, HT: 10 },
+    bonus: {
+        PV: 0,
+        PF: 0,
+        Vontade: 0,
+        Percepcao: 0,
+        Deslocamento: 0
+    }
 };
 
-// ===== FUNÇÕES DE CONTROLE =====
+// ===== FUNÇÕES PRINCIPAIS =====
 
 function alterarAtributo(atributo, valor) {
     const input = document.getElementById(atributo);
-    if (!input) return; // Se elemento não existe, não faz nada
-    
-    let novoValor = parseInt(estadoAtributos[atributo]) + valor;
+    let novoValor = parseInt(input.value) + valor;
     
     if (novoValor < 1) novoValor = 1;
     if (novoValor > 40) novoValor = 40;
     
-    estadoAtributos[atributo] = novoValor;
     input.value = novoValor;
+    input.classList.add('pulse');
+    setTimeout(() => input.classList.remove('pulse'), 500);
     
-    calcularTudo();
+    atualizarAtributos();
 }
 
-function atualizarBonus(atributo, valor) {
-    const input = document.getElementById(`bonus${atributo}`);
-    if (!input) return; // Se elemento não existe, não faz nada
+function atualizarAtributos() {
+    const ST = parseInt(document.getElementById('ST').value) || 10;
+    const DX = parseInt(document.getElementById('DX').value) || 10;
+    const IQ = parseInt(document.getElementById('IQ').value) || 10;
+    const HT = parseInt(document.getElementById('HT').value) || 10;
     
-    const chave = `bonus${atributo}`;
-    estadoAtributos[chave] = parseInt(valor) || 0;
+    personagem.atributos.ST = ST;
+    personagem.atributos.DX = DX;
+    personagem.atributos.IQ = IQ;
+    personagem.atributos.HT = HT;
     
-    input.classList.remove('positivo', 'negativo');
-    if (estadoAtributos[chave] > 0) {
-        input.classList.add('positivo');
-    } else if (estadoAtributos[chave] < 0) {
-        input.classList.add('negativo');
-    }
+    calcularAtributosSecundarios(ST, DX, IQ, HT);
+    calcularDanoBase(ST);
+    calcularCargas(ST);
+    calcularPontos();
+    atualizarCustos();
+    atualizarTotaisComBonus();
     
-    calcularTudo();
+    // Disparar evento para outros sistemas
+    dispararEventoAtributosAlterados();
+    
+    // Atualizar status
+    atualizarStatusAtributos();
 }
 
-// ===== CÁLCULOS PRINCIPAIS =====
-
-function calcularTudo() {
-    // Verificar se estamos na aba de atributos
-    const abaAtributos = document.getElementById('atributos');
-    if (!abaAtributos || !abaAtributos.classList.contains('active')) {
-        return; // Não calcular se não estiver na aba de atributos
-    }
+function calcularAtributosSecundarios(ST, DX, IQ, HT) {
+    // Atualiza apenas as bases (mantém os cálculos automáticos)
+    document.getElementById('PVBase').textContent = ST;
+    document.getElementById('PFBase').textContent = HT;
+    document.getElementById('VontadeBase').textContent = IQ;
+    document.getElementById('PercepcaoBase').textContent = IQ;
     
-    atualizarBases();
-    calcularDano();
-    calcularCarga();
-    calcularPontosGastos();
-    calcularTotais();
-    notificarDashboard();
+    const deslocamentoBase = (HT + DX) / 4;
+    document.getElementById('DeslocamentoBase').textContent = deslocamentoBase.toFixed(2);
 }
 
-function atualizarBases() {
-    const pvBase = document.getElementById('PVBase');
-    const pfBase = document.getElementById('PFBase');
-    const vontadeBase = document.getElementById('VontadeBase');
-    const percepcaoBase = document.getElementById('PercepcaoBase');
-    const deslocamentoBase = document.getElementById('DeslocamentoBase');
-    
-    if (pvBase) pvBase.textContent = estadoAtributos.ST;
-    if (pfBase) pfBase.textContent = estadoAtributos.HT;
-    if (vontadeBase) vontadeBase.textContent = estadoAtributos.IQ;
-    if (percepcaoBase) percepcaoBase.textContent = estadoAtributos.IQ;
-    
-    if (deslocamentoBase) {
-        const deslocamentoBaseValor = (estadoAtributos.HT + estadoAtributos.DX) / 4;
-        deslocamentoBase.textContent = deslocamentoBaseValor.toFixed(2);
-    }
-}
-
-function calcularDano() {
-    const danoGDP = document.getElementById('danoGDP');
-    const danoGEB = document.getElementById('danoGEB');
-    if (!danoGDP || !danoGEB) return;
-    
-    const ST = estadoAtributos.ST;
-    const stKey = Math.max(1, Math.min(ST, 40));
+function calcularDanoBase(ST) {
+    let stKey = ST;
+    if (ST > 40) stKey = 40;
+    if (ST < 1) stKey = 1;
     
     const dano = danoTable[stKey];
     if (dano) {
-        danoGDP.textContent = dano.gdp;
-        danoGEB.textContent = dano.geb;
+        document.getElementById('danoGDP').textContent = dano.gdp;
+        document.getElementById('danoGEB').textContent = dano.geb;
     }
 }
 
-function calcularCarga() {
-    const cargaNenhuma = document.getElementById('cargaNenhuma');
-    const cargaLeve = document.getElementById('cargaLeve');
-    const cargaMedia = document.getElementById('cargaMedia');
-    const cargaPesada = document.getElementById('cargaPesada');
-    const cargaMuitoPesada = document.getElementById('cargaMuitoPesada');
-    
-    if (!cargaNenhuma || !cargaLeve || !cargaMedia || !cargaPesada || !cargaMuitoPesada) return;
-    
-    const ST = estadoAtributos.ST;
-    const stKey = Math.max(1, Math.min(ST, 20));
+function calcularCargas(ST) {
+    let stKey = ST;
+    if (ST > 20) stKey = 20;
+    if (ST < 1) stKey = 1;
     
     const cargas = cargasTable[stKey];
     if (cargas) {
-        cargaNenhuma.textContent = cargas.nenhuma.toFixed(1);
-        cargaLeve.textContent = cargas.leve.toFixed(1);
-        cargaMedia.textContent = cargas.media.toFixed(1);
-        cargaPesada.textContent = cargas.pesada.toFixed(1);
-        cargaMuitoPesada.textContent = cargas.muitoPesada.toFixed(1);
+        document.getElementById('cargaNenhuma').textContent = cargas.nenhuma.toFixed(1);
+        document.getElementById('cargaLeve').textContent = cargas.leve.toFixed(1);
+        document.getElementById('cargaMedia').textContent = cargas.media.toFixed(1);
+        document.getElementById('cargaPesada').textContent = cargas.pesada.toFixed(1);
+        document.getElementById('cargaMuitoPesada').textContent = cargas.muitoPesada.toFixed(1);
     }
 }
 
-function calcularPontosGastos() {
-    const custoST = (estadoAtributos.ST - 10) * 10;
-    const custoDX = (estadoAtributos.DX - 10) * 20;
-    const custoIQ = (estadoAtributos.IQ - 10) * 20;
-    const custoHT = (estadoAtributos.HT - 10) * 10;
+function calcularPontos() {
+    const ST = personagem.atributos.ST;
+    const DX = personagem.atributos.DX;
+    const IQ = personagem.atributos.IQ;
+    const HT = personagem.atributos.HT;
+    
+    const custoST = (ST - 10) * 10;
+    const custoDX = (DX - 10) * 20;
+    const custoIQ = (IQ - 10) * 20;
+    const custoHT = (HT - 10) * 10;
     
     const totalGastos = custoST + custoDX + custoIQ + custoHT;
     
-    // Atualizar o elemento principal
-    const pontosElement = document.getElementById('pontosGastos');
-    if (pontosElement) {
-        pontosElement.textContent = totalGastos;
-    }
+    personagem.pontos.gastos = totalGastos;
+    personagem.pontos.saldo = personagem.pontos.total - totalGastos;
     
-    // Atualizar também o card (se existir com ID diferente)
-    const cardElement = document.getElementById('pontosGastosCard');
-    if (cardElement) {
-        cardElement.textContent = totalGastos;
-    }
+    document.getElementById('pontosGastos').textContent = totalGastos;
+    document.getElementById('pontosSaldo').textContent = personagem.pontos.saldo;
     
-    // Atualizar custos individuais
-    const custoSTElement = document.getElementById('custoST');
-    const custoDXElement = document.getElementById('custoDX');
-    const custoIQElement = document.getElementById('custoIQ');
-    const custoHTElement = document.getElementById('custoHT');
+    // Atualizar estilo baseado no saldo
+    const saldoElement = document.getElementById('pontosSaldo');
+    saldoElement.classList.remove('positivo', 'negativo');
     
-    if (custoSTElement) custoSTElement.textContent = custoST;
-    if (custoDXElement) custoDXElement.textContent = custoDX;
-    if (custoIQElement) custoIQElement.textContent = custoIQ;
-    if (custoHTElement) custoHTElement.textContent = custoHT;
-}
-
-function calcularTotais() {
-    const pvTotalElement = document.getElementById('PVTotal');
-    const pfTotalElement = document.getElementById('PFTotal');
-    const vontadeTotalElement = document.getElementById('VontadeTotal');
-    const percepcaoTotalElement = document.getElementById('PercepcaoTotal');
-    const deslocamentoTotalElement = document.getElementById('DeslocamentoTotal');
-    const deslocamentoBaseElement = document.getElementById('DeslocamentoBase');
-    
-    if (pvTotalElement) {
-        const pvTotal = Math.max(estadoAtributos.ST + estadoAtributos.bonusPV, 1);
-        pvTotalElement.textContent = pvTotal;
-    }
-    
-    if (pfTotalElement) {
-        const pfTotal = Math.max(estadoAtributos.HT + estadoAtributos.bonusPF, 1);
-        pfTotalElement.textContent = pfTotal;
-    }
-    
-    if (vontadeTotalElement) {
-        const vontadeTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusVontade, 1);
-        vontadeTotalElement.textContent = vontadeTotal;
-    }
-    
-    if (percepcaoTotalElement) {
-        const percepcaoTotal = Math.max(estadoAtributos.IQ + estadoAtributos.bonusPercepcao, 1);
-        percepcaoTotalElement.textContent = percepcaoTotal;
-    }
-    
-    if (deslocamentoTotalElement && deslocamentoBaseElement) {
-        const deslocamentoBase = parseFloat(deslocamentoBaseElement.textContent) || 0;
-        const deslocamentoTotal = Math.max(deslocamentoBase + estadoAtributos.bonusDeslocamento, 0).toFixed(2);
-        deslocamentoTotalElement.textContent = deslocamentoTotal;
+    if (personagem.pontos.saldo > 0) {
+        saldoElement.classList.add('positivo');
+    } else if (personagem.pontos.saldo < 0) {
+        saldoElement.classList.add('negativo');
     }
 }
 
-// ===== COMUNICAÇÃO COM DASHBOARD =====
-
-function notificarDashboard() {
-    // Calcular pontos gastos em atributos
-    const pontosAtributos = (estadoAtributos.ST - 10) * 10 +
-                           (estadoAtributos.DX - 10) * 20 +
-                           (estadoAtributos.IQ - 10) * 20 +
-                           (estadoAtributos.HT - 10) * 10;
+function atualizarCustos() {
+    const ST = personagem.atributos.ST;
+    const DX = personagem.atributos.DX;
+    const IQ = personagem.atributos.IQ;
+    const HT = personagem.atributos.HT;
     
-    // Criar evento para o dashboard
-    const eventoAtributos = new CustomEvent('atributosAlterados', {
+    document.getElementById('custoST').textContent = (ST - 10) * 10;
+    document.getElementById('custoDX').textContent = (DX - 10) * 20;
+    document.getElementById('custoIQ').textContent = (IQ - 10) * 20;
+    document.getElementById('custoHT').textContent = (HT - 10) * 10;
+}
+
+function atualizarTotaisComBonus() {
+    // PV: Base (ST) + Bônus
+    const pvBase = parseInt(document.getElementById('PVBase').textContent);
+    const pvBonus = personagem.bonus.PV;
+    const pvTotal = Math.max(pvBase + pvBonus, 1);
+    document.getElementById('PVTotal').textContent = pvTotal;
+    
+    // PF: Base (HT) + Bônus
+    const pfBase = parseInt(document.getElementById('PFBase').textContent);
+    const pfBonus = personagem.bonus.PF;
+    const pfTotal = Math.max(pfBase + pfBonus, 1);
+    document.getElementById('PFTotal').textContent = pfTotal;
+    
+    // Vontade: Base (IQ) + Bônus
+    const vontadeBase = parseInt(document.getElementById('VontadeBase').textContent);
+    const vontadeBonus = personagem.bonus.Vontade;
+    const vontadeTotal = Math.max(vontadeBase + vontadeBonus, 1);
+    document.getElementById('VontadeTotal').textContent = vontadeTotal;
+    
+    // Percepção: Base (IQ) + Bônus
+    const percepcaoBase = parseInt(document.getElementById('PercepcaoBase').textContent);
+    const percepcaoBonus = personagem.bonus.Percepcao;
+    const percepcaoTotal = Math.max(percepcaoBase + percepcaoBonus, 1);
+    document.getElementById('PercepcaoTotal').textContent = percepcaoTotal;
+    
+    // Deslocamento: Base + Bônus
+    const deslocamentoBase = parseFloat(document.getElementById('DeslocamentoBase').textContent);
+    const deslocamentoBonus = personagem.bonus.Deslocamento;
+    const deslocamentoTotal = Math.max(deslocamentoBase + deslocamentoBonus, 0).toFixed(2);
+    document.getElementById('DeslocamentoTotal').textContent = deslocamentoTotal;
+}
+
+function atualizarBonus(atributo, valor) {
+    const numValor = parseInt(valor) || 0;
+    personagem.bonus[atributo] = numValor;
+    atualizarEstiloBonusInput(atributo, numValor);
+    atualizarTotaisComBonus();
+}
+
+function atualizarEstiloBonusInput(atributo, valor) {
+    const input = document.getElementById(`bonus${atributo}`);
+    if (input) {
+        input.classList.remove('positivo', 'negativo');
+        
+        if (valor > 0) {
+            input.classList.add('positivo');
+        } else if (valor < 0) {
+            input.classList.add('negativo');
+        }
+    }
+}
+
+// ===== EVENTOS PARA INTEGRAÇÃO =====
+
+function dispararEventoAtributosAlterados() {
+    const evento = new CustomEvent('atributosAlterados', {
         detail: {
-            ST: estadoAtributos.ST,
-            DX: estadoAtributos.DX,
-            IQ: estadoAtributos.IQ,
-            HT: estadoAtributos.HT,
-            PV: Math.max(estadoAtributos.ST + estadoAtributos.bonusPV, 1),
-            PF: Math.max(estadoAtributos.HT + estadoAtributos.bonusPF, 1),
-            pontosAtributos: pontosAtributos,
-            atualizadoEm: new Date().toISOString()
+            ST: personagem.atributos.ST,
+            DX: personagem.atributos.DX, 
+            IQ: personagem.atributos.IQ,
+            HT: personagem.atributos.HT
         }
     });
+    document.dispatchEvent(evento);
+}
+
+// ===== FUNÇÕES DE STATUS =====
+
+function atualizarStatusAtributos() {
+    const statusElement = document.getElementById('statusAtributos');
     
-    // Disparar evento para o dashboard
-    document.dispatchEvent(eventoAtributos);
-    
-    console.log('📤 Dados enviados para Dashboard:', eventoAtributos.detail);
-    
-    // Se o dashboard manager estiver disponível, atualizar diretamente
-    if (window.dashboardManager && typeof window.dashboardManager.atualizarAtributos === 'function') {
-        window.dashboardManager.atualizarAtributos(
-            estadoAtributos.ST,
-            estadoAtributos.DX,
-            estadoAtributos.IQ,
-            estadoAtributos.HT
-        );
+    if (personagem.pontos.saldo < 0) {
+        statusElement.className = 'status-message erro';
+        statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ATENÇÃO: Você excedeu ${Math.abs(personagem.pontos.saldo)} pontos!`;
+    } else if (personagem.pontos.saldo === 0) {
+        statusElement.className = 'status-message sucesso';
+        statusElement.innerHTML = `<i class="fas fa-check-circle"></i> Perfeito! Você usou todos os pontos disponíveis.`;
+    } else if (personagem.pontos.saldo <= 10) {
+        statusElement.className = 'status-message info';
+        statusElement.innerHTML = `<i class="fas fa-info-circle"></i> Restam ${personagem.pontos.saldo} pontos.`;
     } else {
-        // Se não existir ainda, tentar função global
-        if (window.atualizarDashboardAtributos) {
-            window.atualizarDashboardAtributos(
-                estadoAtributos.ST,
-                estadoAtributos.DX,
-                estadoAtributos.IQ,
-                estadoAtributos.HT
-            );
-        }
+        statusElement.className = 'status-message info';
+        statusElement.innerHTML = `<i class="fas fa-info-circle"></i> Sistema de atributos funcionando. Saldo: ${personagem.pontos.saldo} pontos.`;
     }
 }
 
-// ===== EVENTOS E INICIALIZAÇÃO =====
+// ===== INICIALIZAÇÃO =====
 
 function inicializarAtributos() {
-    // Verificar se estamos na aba de atributos
-    const abaAtributos = document.getElementById('atributos');
-    if (!abaAtributos || !abaAtributos.classList.contains('active')) {
-        return; // Não inicializar se não estiver na aba de atributos
-    }
+    configurarEventListeners();
+    atualizarAtributos();
+}
+
+function configurarEventListeners() {
+    // Event listeners para atributos principais
+    const inputsAtributos = ['ST', 'DX', 'IQ', 'HT'];
     
-    // Verificar se os elementos principais existem
-    const elementosNecessarios = ['ST', 'DX', 'IQ', 'HT'];
-    for (const id of elementosNecessarios) {
-        if (!document.getElementById(id)) {
-            // Tentar novamente depois
-            setTimeout(inicializarAtributos, 100);
-            return;
-        }
-    }
-    
-    console.log('🎯 Inicializando sistema de atributos...');
-    
-    // Inicializar inputs dos atributos principais
-    ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
-        const input = document.getElementById(atributo);
+    inputsAtributos.forEach(inputId => {
+        const input = document.getElementById(inputId);
         if (input) {
-            // Salvar valor inicial
-            estadoAtributos[atributo] = parseInt(input.value) || 10;
-            
-            // Configurar eventos
-            input.addEventListener('change', function() {
-                estadoAtributos[atributo] = parseInt(this.value) || 10;
-                calcularTudo();
+            input.addEventListener('input', () => {
+                clearTimeout(window.inputTimeout);
+                window.inputTimeout = setTimeout(() => {
+                    atualizarAtributos();
+                }, 300);
             });
             
-            input.addEventListener('input', function() {
-                estadoAtributos[atributo] = parseInt(this.value) || 10;
-                calcularTudo();
+            input.addEventListener('change', () => {
+                atualizarAtributos();
             });
         }
     });
     
-    // Inicializar inputs dos bônus
-    ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
+    // Event listeners para bônus manuais
+    const inputsBonus = ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'];
+    
+    inputsBonus.forEach(atributo => {
         const input = document.getElementById(`bonus${atributo}`);
         if (input) {
-            // Salvar valor inicial
-            const chave = `bonus${atributo}`;
-            estadoAtributos[chave] = parseInt(input.value) || 0;
-            
-            // Configurar eventos
-            input.addEventListener('change', function() {
-                atualizarBonus(atributo, this.value);
+            input.addEventListener('input', () => {
+                clearTimeout(window.bonusTimeout);
+                window.bonusTimeout = setTimeout(() => {
+                    atualizarBonus(atributo, input.value);
+                }, 300);
             });
             
-            input.addEventListener('input', function() {
-                atualizarBonus(atributo, this.value);
+            input.addEventListener('change', () => {
+                atualizarBonus(atributo, input.value);
             });
             
-            // Aplicar formatação inicial
-            atualizarBonus(atributo, input.value);
+            // Inicializa o estilo do input
+            atualizarEstiloBonusInput(atributo, input.value);
         }
     });
-    
-    // Calcular tudo pela primeira vez
-    calcularTudo();
-    
-    // Forçar notificação inicial para o dashboard
-    setTimeout(notificarDashboard, 300);
 }
 
-// ===== FUNÇÕES PARA FIREBASE =====
+// ===== INTEGRAÇÃO COM O SISTEMA PRINCIPAL =====
 
-function obterDadosParaSalvar() {
+function obterDadosAtributos() {
     return {
-        atributos: {
-            ST: estadoAtributos.ST,
-            DX: estadoAtributos.DX,
-            IQ: estadoAtributos.IQ,
-            HT: estadoAtributos.HT
-        },
-        bonus: {
-            PV: estadoAtributos.bonusPV,
-            PF: estadoAtributos.bonusPF,
-            Vontade: estadoAtributos.bonusVontade,
-            Percepcao: estadoAtributos.bonusPercepcao,
-            Deslocamento: estadoAtributos.bonusDeslocamento
-        },
-        pontosGastosAtributos: (estadoAtributos.ST - 10) * 10 +
-                              (estadoAtributos.DX - 10) * 20 +
-                              (estadoAtributos.IQ - 10) * 20 +
-                              (estadoAtributos.HT - 10) * 10,
-        atualizadoEm: new Date().toISOString()
+        ST: personagem.atributos.ST,
+        DX: personagem.atributos.DX,
+        IQ: personagem.atributos.IQ,
+        HT: personagem.atributos.HT,
+        PV: parseInt(document.getElementById('PVTotal').textContent),
+        PF: parseInt(document.getElementById('PFTotal').textContent),
+        Vontade: parseInt(document.getElementById('VontadeTotal').textContent),
+        Percepcao: parseInt(document.getElementById('PercepcaoTotal').textContent),
+        Deslocamento: parseFloat(document.getElementById('DeslocamentoTotal').textContent),
+        DanoGDP: document.getElementById('danoGDP').textContent,
+        DanoGEB: document.getElementById('danoGEB').textContent,
+        PontosGastos: personagem.pontos.gastos,
+        Bonus: personagem.bonus
     };
 }
 
-function carregarDados(dados) {
-    if (!dados) return;
-    
-    // Carregar atributos principais
-    if (dados.atributos) {
-        Object.keys(dados.atributos).forEach(atributo => {
-            estadoAtributos[atributo] = dados.atributos[atributo];
-            const input = document.getElementById(atributo);
-            if (input) input.value = dados.atributos[atributo];
-        });
+function carregarDadosAtributos(dados) {
+    // Carrega atributos principais
+    if (dados.ST) {
+        document.getElementById('ST').value = dados.ST;
+        personagem.atributos.ST = dados.ST;
+    }
+    if (dados.DX) {
+        document.getElementById('DX').value = dados.DX;
+        personagem.atributos.DX = dados.DX;
+    }
+    if (dados.IQ) {
+        document.getElementById('IQ').value = dados.IQ;
+        personagem.atributos.IQ = dados.IQ;
+    }
+    if (dados.HT) {
+        document.getElementById('HT').value = dados.HT;
+        personagem.atributos.HT = dados.HT;
     }
     
-    // Carregar bônus
-    if (dados.bonus) {
-        Object.keys(dados.bonus).forEach(atributo => {
-            const chave = `bonus${atributo}`;
-            estadoAtributos[chave] = dados.bonus[atributo];
-            const input = document.getElementById(`bonus${atributo}`);
-            if (input) {
-                input.value = dados.bonus[atributo];
-                atualizarBonus(atributo, dados.bonus[atributo]);
-            }
-        });
+    // Carrega bônus se existirem
+    if (dados.Bonus) {
+        personagem.bonus = { ...personagem.bonus, ...dados.Bonus };
+        
+        document.getElementById('bonusPV').value = personagem.bonus.PV;
+        document.getElementById('bonusPF').value = personagem.bonus.PF;
+        document.getElementById('bonusVontade').value = personagem.bonus.Vontade;
+        document.getElementById('bonusPercepcao').value = personagem.bonus.Percepcao;
+        document.getElementById('bonusDeslocamento').value = personagem.bonus.Deslocamento;
+        
+        // Atualiza estilos dos inputs
+        atualizarEstiloBonusInput('PV', personagem.bonus.PV);
+        atualizarEstiloBonusInput('PF', personagem.bonus.PF);
+        atualizarEstiloBonusInput('Vontade', personagem.bonus.Vontade);
+        atualizarEstiloBonusInput('Percepcao', personagem.bonus.Percepcao);
+        atualizarEstiloBonusInput('Deslocamento', personagem.bonus.Deslocamento);
     }
     
-    // Recalcular tudo
-    calcularTudo();
+    atualizarAtributos();
 }
 
-// ===== EXPORTAÇÃO =====
+// ===== EXPORTAÇÃO DE FUNÇÕES =====
 
 window.alterarAtributo = alterarAtributo;
-window.atualizarBonus = atualizarBonus;
+window.atualizarAtributos = atualizarAtributos;
+window.obterDadosAtributos = obterDadosAtributos;
+window.carregarDadosAtributos = carregarDadosAtributos;
 window.inicializarAtributos = inicializarAtributos;
-window.obterDadosParaSalvar = obterDadosParaSalvar;
-window.carregarDados = carregarDados;
-window.notificarDashboard = notificarDashboard; // Exportar para testes
 
-// ===== INICIALIZAÇÃO AUTOMÁTICA =====
-
+// Inicialização quando a aba for carregada
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📋 DOM Carregado - Sistema de Atributos pronto');
-    
-    // Aguardar um pouco e verificar se estamos na aba de atributos
-    setTimeout(() => {
-        const abaAtributos = document.getElementById('atributos');
-        if (abaAtributos && abaAtributos.classList.contains('active')) {
+    // Inicializa imediatamente se a aba já estiver ativa
+    const atributosTab = document.getElementById('atributos-tab');
+    if (atributosTab && atributosTab.style.display !== 'none') {
+        setTimeout(() => {
             inicializarAtributos();
-        }
-    }, 500);
-});
-
-// Escutar quando a aba mudar para inicializar atributos
-document.addEventListener('tabChanged', function(e) {
-    if (e.detail && e.detail.tab === 'atributos') {
-        console.log('🔄 Tab mudou para Atributos, inicializando...');
-        setTimeout(inicializarAtributos, 100);
+        }, 100);
+    }
+    
+    // Observa mudanças nas abas
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const tab = mutation.target;
+                if (tab.id === 'atributos-tab' && tab.style.display !== 'none') {
+                    setTimeout(() => {
+                        inicializarAtributos();
+                    }, 100);
+                }
+            }
+        });
+    });
+    
+    // Observa a aba de atributos
+    const atributosTabElement = document.getElementById('atributos-tab');
+    if (atributosTabElement) {
+        observer.observe(atributosTabElement, { attributes: true });
     }
 });
-
-// Escutar se o dashboard pedir dados
-document.addEventListener('dashboardSolicitaAtributos', function() {
-    console.log('📨 Dashboard solicitou dados de atributos');
-    notificarDashboard();
-});
-
-// ===== COMPATIBILIDADE COM O CARD DE PONTOS =====
-
-function verificarEAtualizarCardPontos() {
-    const totalGastos = (estadoAtributos.ST - 10) * 10 +
-                       (estadoAtributos.DX - 10) * 20 +
-                       (estadoAtributos.IQ - 10) * 20 +
-                       (estadoAtributos.HT - 10) * 10;
-    
-    // Tentar atualizar vários possíveis IDs
-    const possiveisIds = ['pontosGastosCard', 'pontosGastos', 'displayPontosGastos'];
-    
-    possiveisIds.forEach(id => {
-        const elemento = document.getElementById(id);
-        if (elemento) {
-            elemento.textContent = totalGastos;
-        }
-    });
-}
-
-// Adicionar verificação de card quando calcular
-calcularTudo = (function(original) {
-    return function() {
-        original();
-        verificarEAtualizarCardPontos();
-    };
-})(calcularTudo);
-
-// Executar uma vez quando a página carregar
-setTimeout(verificarEAtualizarCardPontos, 300);
-
-// ===== TESTE AUTOMÁTICO =====
-// Testar comunicação após 1 segundo
-setTimeout(() => {
-    console.log('🔍 Testando comunicação com Dashboard...');
-    // Criar um evento de teste
-    const eventoTeste = new Event('atributosAlterados');
-    document.dispatchEvent(eventoTeste);
-    console.log('✅ Evento de teste disparado');
-}, 1000);
