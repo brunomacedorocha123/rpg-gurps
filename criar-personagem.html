@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="style-atributos.css">
+    <link rel="stylesheet" href="style-caracteristicas.css">
     <style>
         * {
             margin: 0;
@@ -497,23 +498,317 @@
     </div>
 </div>
 
-        <!-- CARACTERÍSTICAS -->
-        <div id="caracteristicas-tab" class="tab-content" style="display: none;">
-            <div id="sociais-subtab">
-                <div class="dev-message">
-                    <i class="fas fa-tools"></i>
-                    <h2>Riqueza, Aparência e Idiomas - Em Desenvolvimento</h2>
-                    <p>Configuração de nível de riqueza, aparência e idiomas do personagem</p>
+       <!-- CARACTERÍSTICAS -->
+<div id="caracteristicas-tab" class="tab-content" style="display: none;">
+    <div class="caracteristicas-container">
+        <!-- Sub-abas de Navegação -->
+        <div class="subtabs-navigation">
+            <button class="subtab-btn active" onclick="openSubTab('sociais')">
+                <i class="fas fa-users"></i>
+                <span>Riqueza, Aparência e Idiomas</span>
+            </button>
+            <button class="subtab-btn" onclick="openSubTab('fisicas')">
+                <i class="fas fa-ruler-combined"></i>
+                <span>Características Físicas</span>
+            </button>
+        </div>
+        
+        <!-- Sub-aba SOCIAIS (Riqueza, Aparência, Idiomas) -->
+        <div id="sociais-subtab" class="subtab-content active">
+            <h2 class="secao-titulo">Características Sociais</h2>
+            
+            <!-- Sistema de Riqueza -->
+            <div class="cards-grid">
+                <div class="riqueza-card">
+                    <div class="riqueza-header">
+                        <h3><i class="fas fa-coins"></i> Nível de Riqueza</h3>
+                        <div class="riqueza-badge" id="pontosRiqueza">+0 pts</div>
+                    </div>
+                    
+                    <div class="riqueza-selector">
+                        <label for="nivelRiqueza">Selecione seu nível de riqueza:</label>
+                        <select id="nivelRiqueza" class="riqueza-select">
+                            <option value="-25">Falido (-25 pts)</option>
+                            <option value="-15">Pobre (-15 pts)</option>
+                            <option value="-10">Batalhador (-10 pts)</option>
+                            <option value="0" selected>Médio (0 pts)</option>
+                            <option value="10">Confortável (+10 pts)</option>
+                            <option value="20">Rico (+20 pts)</option>
+                            <option value="30">Muito Rico (+30 pts)</option>
+                            <option value="50">Podre de Rico (+50 pts)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="riqueza-display" id="displayRiqueza">
+                        <!-- Conteúdo será gerado por JavaScript -->
+                    </div>
+                    
+                    <div class="riqueza-renda">
+                        <div class="riqueza-renda-label">Renda Mensal Estimada:</div>
+                        <div class="riqueza-renda-valor" id="rendaMensal">$1,000</div>
+                    </div>
+                </div>
+                
+                <!-- Sistema de Aparência -->
+                <div class="aparencia-card">
+                    <div class="aparencia-header">
+                        <h3><i class="fas fa-user-tie"></i> Nível de Aparência</h3>
+                        <div class="aparencia-badge" id="pontosAparencia">0 pts</div>
+                    </div>
+                    
+                    <div class="aparencia-selector">
+                        <label for="nivelAparencia">Selecione seu nível de aparência:</label>
+                        <select id="nivelAparencia" class="aparencia-select">
+                            <option value="-24">Horrendo (-24 pts)</option>
+                            <option value="-20">Monstruoso (-20 pts)</option>
+                            <option value="-16">Hediondo (-16 pts)</option>
+                            <option value="-8">Feio (-8 pts)</option>
+                            <option value="-4">Sem Atrativos (-4 pts)</option>
+                            <option value="0" selected>Comum (0 pts)</option>
+                            <option value="4">Atraente (+4 pts)</option>
+                            <option value="12">Elegante (+12 pts)</option>
+                            <option value="16">Muito Elegante (+16 pts)</option>
+                            <option value="20">Lindo (+20 pts)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="aparencia-display" id="displayAparencia">
+                        <!-- Conteúdo será gerado por JavaScript -->
+                    </div>
                 </div>
             </div>
-            <div id="fisicas-subtab" style="display: none;">
-                <div class="dev-message">
-                    <i class="fas fa-tools"></i>
-                    <h2>Características Físicas, Peso e Altura - Em Desenvolvimento</h2>
-                    <p>Configuração de características físicas, medidas e descrição física</p>
+            
+            <!-- Sistema de Idiomas -->
+            <div class="idiomas-card">
+                <div class="idiomas-header">
+                    <h3><i class="fas fa-language"></i> Idiomas</h3>
+                    <div class="idiomas-badge" id="pontosIdiomas">+0 pts</div>
+                </div>
+                
+                <!-- Idioma Materno -->
+                <div class="idioma-materno">
+                    <h4>Idioma Materno</h4>
+                    <div class="idioma-materno-info">
+                        <input type="text" 
+                               id="idiomaMaternoNome" 
+                               class="idioma-materno-nome" 
+                               value="Comum" 
+                               placeholder="Nome do idioma materno">
+                        <div class="idioma-materno-nativo">Nativo (0 pts)</div>
+                    </div>
+                </div>
+                
+                <!-- Adicionar Novo Idioma -->
+                <div class="adicionar-idioma">
+                    <h4>Adicionar Novo Idioma</h4>
+                    
+                    <div class="idioma-form">
+                        <input type="text" 
+                               id="novoIdiomaNome" 
+                               class="idioma-input" 
+                               placeholder="Nome do idioma (ex: Élfico)">
+                        
+                        <select id="novoIdiomaFala" class="idioma-select">
+                            <option value="6" selected>Nativo (+6 pts)</option>
+                            <option value="4">Com sotaque (+4 pts)</option>
+                            <option value="2">Rudimentar (+2 pts)</option>
+                            <option value="0">Nenhum (0 pts)</option>
+                        </select>
+                        
+                        <select id="novoIdiomaEscrita" class="idioma-select">
+                            <option value="6">Nativo (+3 pts)</option>
+                            <option value="4">Com sotaque (+2 pts)</option>
+                            <option value="2">Rudimentar (+1 pts)</option>
+                            <option value="0" selected>Nenhum (0 pts)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="custo-preview">
+                        Custo estimado: <strong id="custoIdiomaPreview">+6 pts</strong>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button id="btnAdicionarIdioma" class="btn-adicionar">
+                            <i class="fas fa-plus-circle"></i> Adicionar Idioma
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lista de Idiomas Adicionais -->
+                <div class="lista-idiomas">
+                    <div class="lista-header">
+                        <div class="total-idiomas">
+                            Idiomas Adicionais: <strong id="totalIdiomas">0</strong>
+                        </div>
+                    </div>
+                    
+                    <div id="listaIdiomasAdicionais" class="idiomas-lista">
+                        <!-- Lista será gerada por JavaScript -->
+                        <div class="empty-state">Nenhum idioma adicional adicionado</div>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Sub-aba FÍSICAS (Peso, Altura, Descrição) -->
+        <div id="fisicas-subtab" class="subtab-content">
+            <h2 class="secao-titulo">Características Físicas</h2>
+            
+            <div class="cards-grid fisicas-grid">
+                <!-- Peso e Altura -->
+                <div class="fisica-card">
+                    <h3><i class="fas fa-weight-hanging"></i> Peso e Altura</h3>
+                    
+                    <div class="peso-altura-inputs">
+                        <div class="input-group">
+                            <label for="pesoPersonagem">Peso:</label>
+                            <input type="number" 
+                                   id="pesoPersonagem" 
+                                   class="fisica-input" 
+                                   value="70" 
+                                   min="20" 
+                                   max="300"
+                                   step="0.1">
+                            <span class="input-suffix">kg</span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="alturaPersonagem">Altura:</label>
+                            <input type="number" 
+                                   id="alturaPersonagem" 
+                                   class="fisica-input" 
+                                   value="175" 
+                                   min="50" 
+                                   max="300"
+                                   step="0.1">
+                            <span class="input-suffix">cm</span>
+                        </div>
+                    </div>
+                    
+                    <div class="imc-display" style="text-align: center; padding: 15px; background: rgba(30,22,8,0.7); border-radius: 8px;">
+                        <div style="color: var(--text-light); margin-bottom: 5px;">IMC Estimado:</div>
+                        <div style="color: var(--text-gold); font-size: 1.4rem; font-family: 'MedievalSharp', cursive;" id="imcValor">22.86</div>
+                        <div style="color: var(--wood-light); font-size: 0.9rem; margin-top: 5px;" id="imcClassificacao">Peso normal</div>
+                    </div>
+                </div>
+                
+                <!-- Características Físicas -->
+                <div class="fisica-card">
+                    <h3><i class="fas fa-user-circle"></i> Características Físicas</h3>
+                    
+                    <div class="caracteristicas-grid">
+                        <div class="caracteristica-item">
+                            <i class="fas fa-eye"></i>
+                            <span class="caracteristica-texto" id="corOlhos">Olhos: Castanhos</span>
+                        </div>
+                        <div class="caracteristica-item">
+                            <i class="fas fa-cut"></i>
+                            <span class="caracteristica-texto" id="cabelo">Cabelo: Castanho</span>
+                        </div>
+                        <div class="caracteristica-item">
+                            <i class="fas fa-tint"></i>
+                            <span class="caracteristica-texto" id="corPele">Pele: Clara</span>
+                        </div>
+                        <div class="caracteristica-item">
+                            <i class="fas fa-male"></i>
+                            <span class="caracteristica-texto" id="genero">Gênero: Masculino</span>
+                        </div>
+                        <div class="caracteristica-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span class="caracteristica-texto" id="idade">Idade: 25 anos</span>
+                        </div>
+                        <div class="caracteristica-item">
+                            <i class="fas fa-hand-paper"></i>
+                            <span class="caracteristica-texto" id="maos">Mãos: Destro</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn-adicionar" onclick="editarCaracteristicas()">
+                            <i class="fas fa-edit"></i> Editar Características
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Descrição Física -->
+            <div class="fisica-card">
+                <h3><i class="fas fa-file-alt"></i> Descrição Física</h3>
+                
+                <div class="descricao-container">
+                    <label for="descricaoFisica">Descreva a aparência física do personagem:</label>
+                    <textarea id="descricaoFisica" 
+                              class="descricao-textarea" 
+                              placeholder="Descreva aqui as características físicas marcantes do personagem, como cicatrizes, tatuagens, marcas distintivas, postura, maneira de andar, etc...">
+Este personagem possui uma estatura média, com ombros largos e postura ereta. Seus cabelos castanhos são curtos e bem cuidados, e seus olhos castanhos transmitem uma expressão determinada. Uma pequena cicatriz percorre sua testa do lado esquerdo, resultado de um incidente na juventude.
+                    </textarea>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn-adicionar" onclick="salvarDescricao()">
+                        <i class="fas fa-save"></i> Salvar Descrição
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mensagem de Status -->
+        <div id="statusCaracteristicas" class="status-message info">
+            <i class="fas fa-info-circle"></i> Sistema de características carregado. Ajuste os valores conforme necessário.
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Características (será mostrado pelo JS) -->
+<div id="modalCaracteristicas" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: linear-gradient(145deg, rgba(60,44,20,0.98), rgba(40,30,10,0.98)); border: 3px solid var(--primary-gold); border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <h3 style="color: var(--text-gold); margin-bottom: 20px; text-align: center;">Editar Características Físicas</h3>
+        
+        <div style="display: grid; gap: 15px;">
+            <div class="input-group">
+                <label style="color: var(--text-light);">Cor dos Olhos:</label>
+                <input type="text" id="modalCorOlhos" class="idioma-input" value="Castanhos">
+            </div>
+            <div class="input-group">
+                <label style="color: var(--text-light);">Cabelo:</label>
+                <input type="text" id="modalCabelo" class="idioma-input" value="Castanho">
+            </div>
+            <div class="input-group">
+                <label style="color: var(--text-light);">Cor da Pele:</label>
+                <input type="text" id="modalCorPele" class="idioma-input" value="Clara">
+            </div>
+            <div class="input-group">
+                <label style="color: var(--text-light);">Gênero:</label>
+                <select id="modalGenero" class="idioma-select">
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label style="color: var(--text-light);">Idade:</label>
+                <input type="number" id="modalIdade" class="idioma-input" value="25" min="0" max="150">
+            </div>
+            <div class="input-group">
+                <label style="color: var(--text-light);">Mão Dominante:</label>
+                <select id="modalMaos" class="idioma-select">
+                    <option value="Destro">Destro</option>
+                    <option value="Canhoto">Canhoto</option>
+                    <option value="Ambidestro">Ambidestro</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
+            <button class="btn-adicionar" onclick="salvarCaracteristicas()">
+                <i class="fas fa-check"></i> Salvar
+            </button>
+            <button class="btn-adicionar" style="background: rgba(139,0,0,0.5); border-color: #8b0000;" onclick="fecharModal()">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- VANTAGENS/DESVANTAGENS -->
         <div id="vantagens-tab" class="tab-content" style="display: none;">
@@ -580,6 +875,7 @@
         </button>
     </div>
     <script src="atributos.js"></script>
+    <script src="caracteristicas-aparencia.js"></script>
     <script>
         // ===========================================
         // INICIALIZAÇÃO DO FIREBASE
