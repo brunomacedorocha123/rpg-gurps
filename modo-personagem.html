@@ -11,12 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ===== VARIÁVEIS CSS ===== */
         :root {
             --primary-dark: #1a1200;
             --secondary-dark: #2c2008;
@@ -33,6 +28,13 @@
             --mode-pc: #2a4d8f;
             --mode-gm: #8b0000;
             --card-bg: rgba(44, 32, 8, 0.8);
+        }
+
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -61,7 +63,7 @@
             z-index: -1;
         }
 
-        /* HEADER */
+        /* ===== HEADER ===== */
         .header {
             background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
             border-bottom: 3px solid var(--primary-gold);
@@ -124,7 +126,7 @@
             to { text-shadow: 0 0 20px rgba(212, 175, 55, 0.9), 0 0 30px rgba(212, 175, 55, 0.5); }
         }
 
-        /* MENU PRINCIPAL */
+        /* ===== MENU PRINCIPAL ===== */
         .main-nav {
             background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
             border-bottom: 2px solid var(--wood-dark);
@@ -197,7 +199,7 @@
             box-shadow: 0 0 15px rgba(42, 77, 143, 0.5);
         }
 
-        /* BANNER */
+        /* ===== BANNER ===== */
         .character-banner {
             text-align: center;
             margin: 20px;
@@ -235,14 +237,14 @@
             line-height: 1.6;
         }
 
-        /* CONTEÚDO PRINCIPAL */
+        /* ===== CONTEÚDO PRINCIPAL ===== */
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px 40px;
         }
 
-        /* GRID DE CARDS CLICÁVEIS */
+        /* ===== GRID DE CARDS CLICÁVEIS ===== */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -297,7 +299,7 @@
             line-height: 1.5;
         }
 
-        /* ÁREA DE CONTEÚDO DINÂMICO */
+        /* ===== ÁREA DE CONTEÚDO DINÂMICO ===== */
         .content-area {
             background: var(--card-bg);
             border: 2px solid var(--wood-light);
@@ -327,8 +329,8 @@
             padding-bottom: 10px;
         }
 
-        /* ESTILOS ESPECÍFICOS PARA CADA SEÇÃO */
-
+        /* ===== ESTILOS ESPECÍFICOS PARA CADA SEÇÃO ===== */
+        
         /* NOVO PERSONAGEM */
         .creation-options {
             display: grid;
@@ -353,7 +355,10 @@
         }
 
         /* MEUS PERSONAGENS */
-        .characters-container {
+        .characters-container,
+        .campaigns-container,
+        .rules-container,
+        .game-table-container {
             text-align: center;
             padding: 40px 20px;
         }
@@ -364,25 +369,7 @@
             margin-top: 20px;
         }
 
-        /* CAMPANHAS */
-        .campaigns-container {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        /* REGRAS GURPS */
-        .rules-container {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        /* MESA */
-        .game-table-container {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        /* BOTÕES */
+        /* ===== BOTÕES ===== */
         .btn {
             padding: 12px 25px;
             font-family: 'Cinzel', serif;
@@ -439,7 +426,7 @@
             transform: translateY(-2px);
         }
 
-        /* FOOTER */
+        /* ===== FOOTER ===== */
         .footer {
             text-align: center;
             padding: 25px 20px;
@@ -459,7 +446,7 @@
             background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
         }
 
-        /* RESPONSIVIDADE */
+        /* ===== RESPONSIVIDADE ===== */
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -509,7 +496,7 @@
     </style>
 </head>
 <body>
-    <!-- HEADER -->
+    <!-- ===== HEADER ===== -->
     <header class="header">
         <div class="logo" onclick="goToHome()">
             <i class="fas fa-dragon" style="color: var(--primary-gold); font-size: 1.8rem;"></i>
@@ -531,11 +518,11 @@
         </div>
     </header>
 
-    <!-- MENU PRINCIPAL -->
+    <!-- ===== MENU PRINCIPAL ===== -->
     <nav class="main-nav">
         <div class="nav-scroll-container">
             <div class="nav-menu">
-                <button class="nav-btn active" onclick="window.location.href='crier-personagem.html'"></button>
+                <button class="nav-btn active" onclick="openSection('novo-personagem')">
                     <i class="fas fa-user-plus"></i> Novo Personagem
                 </button>
                 <button class="nav-btn" onclick="openSection('meus-personagens')">
@@ -554,17 +541,17 @@
         </div>
     </nav>
 
-    <!-- BANNER -->
+    <!-- ===== BANNER ===== -->
     <section class="character-banner">
         <h2>Modo Personagem</h2>
         <p>Gerencie seus personagens, campanhas e acesse as ferramentas de jogo</p>
     </section>
 
-    <!-- CONTEÚDO PRINCIPAL -->
+    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
     <main class="main-content">
         <!-- CARDS PRINCIPAIS -->
         <div class="cards-grid">
-            <div class="section-card active" data-section="novo-personagem" onclick="openSection('novo-personagem')">
+            <div class="section-card active" data-section="novo-personagem" onclick="goToCriarPersonagem()">
                 <i class="fas fa-user-plus"></i>
                 <h3>Novo Personagem</h3>
                 <p>Crie um novo personagem para suas aventuras GURPS</p>
@@ -595,7 +582,7 @@
             </div>
         </div>
 
-        <!-- ÁREA DE CONTEÚDO DINÂMICO -->
+        <!-- ===== ÁREAS DE CONTEÚDO DINÂMICO ===== -->
         
         <!-- NOVO PERSONAGEM -->
         <div id="novo-personagem-content" class="content-area active">
@@ -604,19 +591,19 @@
             </h2>
             
             <div class="creation-options">
-                <div class="creation-option" onclick="window.location.href='crier-personagem.html'">
+                <div class="creation-option" onclick="goToCriarPersonagem()">
                     <i class="fas fa-bolt" style="font-size: 2rem; color: var(--secondary-gold); margin-bottom: 10px;"></i>
                     <h4>Criação Rápida</h4>
                     <p>Assistente guiado passo a passo</p>
                 </div>
                 
-                <div class="creation-option" onclick="window.location.href='crier-personagem.html'">
+                <div class="creation-option" onclick="goToCriarPersonagem()">
                     <i class="fas fa-cogs" style="font-size: 2rem; color: var(--secondary-gold); margin-bottom: 10px;"></i>
                     <h4>Criação Avançada</h4>
                     <p>Controle total sobre todas as opções</p>
                 </div>
                 
-                <div class="creation-option" onclick="window.location.href='crier-personagem.html'">
+                <div class="creation-option" onclick="goToCriarPersonagem()">
                     <i class="fas fa-file-alt" style="font-size: 2rem; color: var(--secondary-gold); margin-bottom: 10px;"></i>
                     <h4>Usar Template</h4>
                     <p>Comece com um modelo pré-definido</p>
@@ -642,7 +629,7 @@
                 <p class="empty-state">Quando você criar personagens, eles aparecerão aqui</p>
                 
                 <div style="margin-top: 30px;">
-                    <button class="btn btn-primary" onclick="openSection('novo-personagem')">
+                    <button class="btn btn-primary" onclick="goToCriarPersonagem()">
                         <i class="fas fa-plus"></i> Criar Primeiro Personagem
                     </button>
                 </div>
@@ -722,7 +709,7 @@
         </div>
     </main>
 
-    <!-- FOOTER -->
+    <!-- ===== FOOTER ===== -->
     <footer class="footer">
         <p>© 2024 GURPS Tool - Ferramenta Não Oficial para GURPS</p>
         <p style="color: var(--wood-light); font-size: 0.9rem; margin-top: 10px;">
@@ -792,17 +779,22 @@
             const navButtons = document.querySelectorAll('.nav-btn');
             navButtons.forEach(btn => btn.classList.remove('active'));
             
-            document.querySelector(`.nav-btn[onclick*="${sectionId}"]`).classList.add('active');
+            const targetBtn = document.querySelector(`.nav-btn[onclick*="${sectionId}"]`);
+            if (targetBtn) targetBtn.classList.add('active');
             
             // Atualiza cards
             const cards = document.querySelectorAll('.section-card');
             cards.forEach(card => card.classList.remove('active'));
-            document.querySelector(`.section-card[data-section="${sectionId}"]`).classList.add('active');
+            
+            const targetCard = document.querySelector(`.section-card[data-section="${sectionId}"]`);
+            if (targetCard) targetCard.classList.add('active');
             
             // Atualiza conteúdo
             const contentAreas = document.querySelectorAll('.content-area');
             contentAreas.forEach(area => area.classList.remove('active'));
-            document.getElementById(`${sectionId}-content`).classList.add('active');
+            
+            const targetContent = document.getElementById(`${sectionId}-content`);
+            if (targetContent) targetContent.classList.add('active');
         }
 
         // ===========================================
@@ -810,6 +802,11 @@
         // ===========================================
         function goToHome() {
             window.location.href = 'index.html';
+        }
+
+        function goToCriarPersonagem() {
+            showToast('🎭 Redirecionando para criar personagem...', 'info');
+            window.location.href = 'criar-personagem.html';
         }
 
         function copyPlayerCode() {
@@ -950,8 +947,8 @@
         // Inicializar com a seção de novo personagem aberta
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 Modo Personagem carregado');
-            console.log('✅ Os 3 cards de criação agora redirecionam para crier-personagem.html');
-            console.log('📁 Verifique se existe o arquivo: crier-personagem.html');
+            console.log('✅ Todos os botões de "Novo Personagem" agora redirecionam para criar-personagem.html');
+            console.log('📁 Verifique se existe o arquivo: criar-personagem.html');
         });
     </script>
 </body>
