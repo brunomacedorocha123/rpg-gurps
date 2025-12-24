@@ -1,182 +1,421 @@
-// caracteristicas-riqueza.js - SOLUÇÃO DEFINITIVA
-console.log("🎯 SISTEMA DE RIQUEZA - INICIANDO");
+// caracteristicas-riqueza.js
+// ===== SISTEMA DE RIQUEZA - GURPS =====
+// Baseado no código original fornecido
 
-// Eu SEI o HTML, então vou usar os IDs EXATOS:
-const DADOS_RIQUEZA = {
-    "-25": { pontos: -25, mult: "0.1x", renda: "$50", desc: "Você não possui praticamente nada." },
-    "-15": { pontos: -15, mult: "0.3x", renda: "$300", desc: "Possui apenas o essencial para sobreviver." },
-    "-10": { pontos: -10, mult: "0.5x", renda: "$500", desc: "Consegue pagar suas contas, mas sem sobras." },
-    "0": { pontos: 0, mult: "1x", renda: "$1.000", desc: "Possui uma vida confortável." },
-    "10": { pontos: 10, mult: "2x", renda: "$2.000", desc: "Vive bem, pode se dar ao luxo de pequenos prazeres." },
-    "20": { pontos: 20, mult: "5x", renda: "$5.000", desc: "Possui propriedades, investimentos e vida de luxo." },
-    "30": { pontos: 30, mult: "10x", renda: "$10.000", desc: "Parte da elite econômica." },
-    "50": { pontos: 50, mult: "20x", renda: "$20.000", desc: "Fortuna colossal." }
-};
-
-// Sistema principal
 class SistemaRiqueza {
     constructor() {
-        this.nivelAtual = "0";
+        // Níveis de riqueza do GURPS
+        this.niveisRiqueza = {
+            "falido": { 
+                pontos: -25, 
+                multiplicador: 0, 
+                descricao: "Sem emprego, fonte de renda, dinheiro ou bens",
+                recursos: "Nenhum",
+                icone: "fas fa-skull-crossbones",
+                tipo: "desvantagem",
+                cor: "#e74c3c"
+            },
+            "pobre": { 
+                pontos: -15, 
+                multiplicador: 0.2, 
+                descricao: "1/5 da riqueza média da sociedade",
+                recursos: "Muito limitados",
+                icone: "fas fa-house-damage",
+                tipo: "desvantagem",
+                cor: "#e74c3c"
+            },
+            "batalhador": { 
+                pontos: -10, 
+                multiplicador: 0.5, 
+                descricao: "Metade da riqueza média",
+                recursos: "Limitados",
+                icone: "fas fa-hands-helping",
+                tipo: "desvantagem",
+                cor: "#e74c3c"
+            },
+            "medio": { 
+                pontos: 0, 
+                multiplicador: 1, 
+                descricao: "Nível de recursos pré-definido padrão",
+                recursos: "Padrão",
+                icone: "fas fa-user",
+                tipo: "neutro",
+                cor: "#95a5a6"
+            },
+            "confortavel": { 
+                pontos: 10, 
+                multiplicador: 2, 
+                descricao: "O dobro da riqueza média",
+                recursos: "Confortáveis",
+                icone: "fas fa-smile",
+                tipo: "vantagem",
+                cor: "#27ae60"
+            },
+            "rico": { 
+                pontos: 20, 
+                multiplicador: 5, 
+                descricao: "5 vezes a riqueza média",
+                recursos: "Abundantes",
+                icone: "fas fa-grin-stars",
+                tipo: "vantagem",
+                cor: "#27ae60"
+            },
+            "muito-rico": { 
+                pontos: 30, 
+                multiplicador: 20, 
+                descricao: "20 vezes a riqueza média", 
+                recursos: "Extremamente abundantes",
+                icone: "fas fa-crown",
+                tipo: "vantagem",
+                cor: "#27ae60"
+            },
+            "podre-rico": { 
+                pontos: 50, 
+                multiplicador: 100, 
+                descricao: "100 vezes a riqueza média",
+                recursos: "Ilimitados para necessidades comuns",
+                icone: "fas fa-gem",
+                tipo: "vantagem",
+                cor: "#27ae60"
+            }
+        };
+
+        this.rendaBase = 1000; // Renda base para cálculo
         this.inicializado = false;
-        console.log("🏗️ Sistema de riqueza criado");
+        
+        // Começa no padrão (médio)
+        this.nivelAtual = 'medio';
+        this.pontosAtuais = 0;
+        
+        // Inicializa quando a aba for carregada
+        this.inicializarQuandoPronto();
     }
-    
-    inicializar() {
-        console.log("🔧 Inicializando...");
-        
-        // Verificar se estamos na tab correta
-        const tabCaracteristicas = document.getElementById('caracteristicas');
-        if (!tabCaracteristicas || tabCaracteristicas.style.display === 'none') {
-            console.log("📭 Tab características não visível, aguardando...");
-            return false;
-        }
-        
-        // Verificar elementos
-        const select = document.getElementById('nivelRiqueza');
-        const badge = document.getElementById('pontosRiqueza');
-        
-        if (!select || !badge) {
-            console.error("❌ Elementos não encontrados!");
-            return false;
-        }
-        
-        console.log("✅ Elementos encontrados!");
-        
-        // Configurar evento
-        this.configurarEvento(select);
-        
-        // Atualizar display inicial
-        this.atualizarDisplay(select.value);
-        
-        this.inicializado = true;
-        console.log("🎉 Sistema inicializado!");
-        return true;
-    }
-    
-    configurarEvento(select) {
-        console.log("🔗 Configurando evento no select...");
-        
-        // Remover qualquer evento antigo (clone o elemento)
-        const novoSelect = select.cloneNode(true);
-        select.parentNode.replaceChild(novoSelect, select);
-        
-        // Adicionar novo evento
-        novoSelect.addEventListener('change', (e) => {
-            const valor = e.target.value;
-            console.log(`🎛️ Select alterado: ${valor}`);
-            this.atualizarDisplay(valor);
+
+    inicializarQuandoPronto() {
+        // Espera a aba de características ser carregada
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const tab = mutation.target;
+                    if (tab.id === 'caracteristicas-tab' && tab.style.display !== 'none') {
+                        setTimeout(() => {
+                            if (!this.inicializado) {
+                                this.inicializar();
+                            }
+                        }, 100);
+                    }
+                }
+            });
         });
-        
-        console.log("✅ Evento configurado!");
+
+        const caracteristicasTab = document.getElementById('caracteristicas-tab');
+        if (caracteristicasTab) {
+            observer.observe(caracteristicasTab, { attributes: true });
+        }
     }
-    
-    atualizarDisplay(valor) {
-        console.log(`🔄 Atualizando display para: ${valor}`);
+
+    inicializar() {
+        if (this.inicializado) return;
         
-        const dados = DADOS_RIQUEZA[valor];
-        if (!dados) {
-            console.error(`❌ Dados não encontrados para: ${valor}`);
+        console.log('💰 Sistema de Riqueza inicializando...');
+        
+        this.configurarEventos();
+        this.atualizarDisplayRiqueza();
+        this.inicializado = true;
+        this.notificarSistemaPontos();
+        
+        console.log('✅ Sistema de Riqueza inicializado');
+    }
+
+    configurarEventos() {
+        const selectRiqueza = document.getElementById('nivelRiqueza');
+        if (selectRiqueza) {
+            // Configurar valor padrão (médio = 0 pontos)
+            selectRiqueza.value = '0';
+            
+            selectRiqueza.addEventListener('change', () => {
+                this.atualizarDisplayRiqueza();
+                this.notificarSistemaPontos();
+            });
+        }
+    }
+
+    atualizarDisplayRiqueza() {
+        const select = document.getElementById('nivelRiqueza');
+        const display = document.getElementById('displayRiqueza');
+        const badge = document.getElementById('pontosRiqueza');
+        const rendaElement = document.getElementById('rendaMensal');
+        
+        if (!select || !display || !badge || !rendaElement) {
+            console.error('❌ Elementos de riqueza não encontrados!');
             return;
         }
+
+        const valor = parseInt(select.value) || 0;
+        const nivel = this.obterNivelPorPontos(valor);
         
-        // 1. Atualizar badge de pontos
-        const badge = document.getElementById('pontosRiqueza');
-        if (badge) {
-            badge.textContent = dados.pontos >= 0 ? `+${dados.pontos} pts` : `${dados.pontos} pts`;
+        if (nivel) {
+            const rendaMensal = this.calcularRendaMensal(valor);
             
-            // Cor baseada no valor
-            if (dados.pontos > 0) {
-                badge.style.backgroundColor = '#2e7d32';
-                badge.style.color = 'white';
-            } else if (dados.pontos < 0) {
-                badge.style.backgroundColor = '#c62828';
-                badge.style.color = 'white';
-            } else {
-                badge.style.backgroundColor = '#37474f';
-                badge.style.color = 'white';
+            // Atualizar variáveis internas
+            this.nivelAtual = this.obterNomePorPontos(valor);
+            this.pontosAtuais = valor;
+            
+            const textoPontos = valor >= 0 ? `+${valor}` : `${valor}`;
+            const tipoTexto = nivel.tipo === 'vantagem' ? 'VANTAGEM' : 
+                              nivel.tipo === 'desvantagem' ? 'DESVANTAGEM' : 'NEUTRO';
+            
+            display.innerHTML = `
+                <div class="riqueza-nivel">
+                    <i class="${nivel.icone}" style="color: ${nivel.cor}; font-size: 1.8rem;"></i>
+                    <div>
+                        <strong style="font-size: 1.3rem; color: ${nivel.cor};">${this.obterNomePorPontos(valor)}</strong>
+                        <div style="font-size: 0.9em; color: ${nivel.tipo === 'vantagem' ? '#27ae60' : nivel.tipo === 'desvantagem' ? '#e74c3c' : '#95a5a6'};">
+                            ${tipoTexto} | ${textoPontos} pontos
+                        </div>
+                    </div>
+                </div>
+                <div class="riqueza-detalhes">
+                    <div><strong>Multiplicador:</strong> ${nivel.multiplicador}x</div>
+                    <div><strong>Recursos:</strong> ${nivel.recursos}</div>
+                    <div style="margin-top: 10px;">${nivel.descricao}</div>
+                </div>
+            `;
+
+            // Atualizar badge
+            const pontosTexto = valor >= 0 ? `+${valor} pts` : `${valor} pts`;
+            badge.textContent = pontosTexto;
+            badge.style.background = nivel.cor;
+            badge.style.color = '#fff';
+            badge.style.fontWeight = 'bold';
+
+            // Atualizar renda
+            rendaElement.textContent = this.formatarMoeda(rendaMensal);
+            rendaElement.style.color = nivel.cor;
+            rendaElement.style.fontWeight = 'bold';
+            
+            // Destacar visualmente
+            const card = document.querySelector('.riqueza-card');
+            if (card) {
+                card.style.borderColor = nivel.cor;
+                card.style.boxShadow = `0 0 20px ${nivel.cor}40`;
+            }
+            
+            this.ultimoPontos = valor;
+        }
+    }
+
+    calcularRendaMensal(pontosRiqueza) {
+        const nivel = this.obterNivelPorPontos(pontosRiqueza);
+        if (!nivel) return 0;
+        return Math.floor(this.rendaBase * nivel.multiplicador);
+    }
+
+    formatarMoeda(valor) {
+        return `$${valor.toLocaleString('pt-BR')}`;
+    }
+
+    obterNivelPorPontos(pontos) {
+        return Object.values(this.niveisRiqueza).find(nivel => nivel.pontos === pontos);
+    }
+
+    obterNomePorPontos(pontos) {
+        const entry = Object.entries(this.niveisRiqueza).find(([key, nivel]) => nivel.pontos === pontos);
+        return entry ? this.formatarNome(entry[0]) : 'Desconhecido';
+    }
+
+    formatarNome(key) {
+        return key.split('-')
+            .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1))
+            .join(' ');
+    }
+
+    getPontosRiqueza() {
+        const select = document.getElementById('nivelRiqueza');
+        return select ? parseInt(select.value) || 0 : 0;
+    }
+
+    getRendaMensal() {
+        return this.calcularRendaMensal(this.getPontosRiqueza());
+    }
+
+    getTipoPontos() {
+        const pontos = this.getPontosRiqueza();
+        if (pontos > 0) return 'vantagem';
+        if (pontos < 0) return 'desvantagem';
+        return 'neutro';
+    }
+
+    notificarSistemaPontos() {
+        const pontos = this.getPontosRiqueza();
+        const tipo = this.getTipoPontos();
+        
+        const evento = new CustomEvent('riquezaPontosAtualizados', {
+            detail: {
+                pontos: pontos,
+                tipo: tipo,
+                nivel: this.obterNomePorPontos(pontos),
+                rendaMensal: this.getRendaMensal(),
+                timestamp: new Date().toISOString()
+            }
+        });
+        document.dispatchEvent(evento);
+        
+        // Também notificar o sistema principal de pontos
+        this.notificarPontosTotais();
+    }
+    
+    notificarPontosTotais() {
+        const pontos = this.getPontosRiqueza();
+        const tipo = this.getTipoPontos();
+        
+        const evento = new CustomEvent('caracteristicasPontosAtualizados', {
+            detail: {
+                tipo: 'riqueza',
+                pontos: pontos,
+                custoAbsoluto: Math.abs(pontos),
+                isVantagem: tipo === 'vantagem',
+                isDesvantagem: tipo === 'desvantagem',
+                rendaMensal: this.getRendaMensal()
+            }
+        });
+        document.dispatchEvent(evento);
+    }
+
+    // ===== MÉTODOS PARA INTEGRAÇÃO =====
+    
+    exportarDados() {
+        const pontos = this.getPontosRiqueza();
+        const nivel = this.obterNivelPorPontos(pontos);
+        
+        return {
+            riqueza: {
+                pontos: pontos,
+                tipo: this.getTipoPontos(),
+                nome: this.obterNomePorPontos(pontos),
+                multiplicador: nivel?.multiplicador || 1,
+                rendaMensal: this.getRendaMensal(),
+                descricao: nivel?.descricao || '',
+                custoAbsoluto: Math.abs(pontos)
+            }
+        };
+    }
+
+    carregarDados(dados) {
+        if (dados.riqueza && dados.riqueza.pontos !== undefined) {
+            const select = document.getElementById('nivelRiqueza');
+            if (select) {
+                select.value = dados.riqueza.pontos;
+                this.nivelAtual = dados.riqueza.nome;
+                this.pontosAtuais = dados.riqueza.pontos;
+                this.atualizarDisplayRiqueza();
+                this.notificarSistemaPontos();
+                return true;
             }
         }
-        
-        // 2. Atualizar multiplicador
-        const mult = document.getElementById('multiplicadorRiqueza');
-        if (mult) {
-            mult.textContent = dados.mult;
-            mult.style.color = '#ffd700';
+        return false;
+    }
+
+    resetarParaPadrao() {
+        const select = document.getElementById('nivelRiqueza');
+        if (select) {
+            select.value = '0'; // Médio
+            this.nivelAtual = 'medio';
+            this.pontosAtuais = 0;
+            this.atualizarDisplayRiqueza();
+            this.notificarSistemaPontos();
         }
+    }
+
+    validarRiqueza() {
+        const pontos = this.getPontosRiqueza();
+        const tipo = this.getTipoPontos();
+        const nome = this.obterNomePorPontos(pontos);
+        const renda = this.getRendaMensal();
         
-        // 3. Atualizar renda
-        const renda = document.getElementById('rendaMensal');
-        if (renda) {
-            renda.textContent = dados.renda;
-            renda.style.color = '#4caf50';
-        }
+        return {
+            valido: true,
+            pontos: pontos,
+            tipo: tipo,
+            nome: nome,
+            rendaMensal: renda,
+            mensagem: `Riqueza: ${nome} (${pontos >= 0 ? '+' : ''}${pontos} pts) | Renda: ${this.formatarMoeda(renda)} - ${tipo === 'vantagem' ? '✅ Vantagem' : tipo === 'desvantagem' ? '🚫 Desvantagem' : '⚪ Neutro'}`
+        };
+    }
+    
+    // ===== MÉTODOS ÚTEIS =====
+    
+    getDescricaoCompleta() {
+        const pontos = this.getPontosRiqueza();
+        const nivel = this.obterNivelPorPontos(pontos);
+        const nome = this.obterNomePorPontos(pontos);
         
-        // 4. Atualizar descrição
-        const desc = document.getElementById('descricaoRiqueza');
-        if (desc) {
-            desc.textContent = dados.desc;
-        }
-        
-        console.log(`✅ Display atualizado: ${dados.pontos} pts, ${dados.mult}, ${dados.renda}`);
+        return {
+            nome: nome,
+            pontos: pontos,
+            multiplicador: nivel?.multiplicador || 1,
+            rendaMensal: this.getRendaMensal(),
+            recursos: nivel?.recursos || '',
+            descricao: nivel?.descricao || '',
+            tipo: nivel?.tipo || 'neutro',
+            icone: nivel?.icone || 'fas fa-coins',
+            cor: nivel?.cor || '#95a5a6'
+        };
+    }
+
+    setRendaBase(novaRendaBase) {
+        this.rendaBase = novaRendaBase;
+        this.atualizarDisplayRiqueza();
+        this.notificarSistemaPontos();
+    }
+
+    getRendaBase() {
+        return this.rendaBase;
+    }
+    
+    forcarAtualizacao() {
+        this.atualizarDisplayRiqueza();
+        this.notificarSistemaPontos();
     }
 }
 
-// Criar instância global
-window.riqueza = new SistemaRiqueza();
+// ===== INICIALIZAÇÃO GLOBAL =====
+let sistemaRiqueza;
 
-// Inicializar quando a tab for mostrada
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("📄 DOM carregado");
+// Inicializar quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    sistemaRiqueza = new SistemaRiqueza();
     
-    // Observar quando a tab características for ativada
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === 'class' || mutation.attributeName === 'style') {
-                const tab = document.getElementById('caracteristicas');
-                if (tab && (tab.classList.contains('active') || tab.style.display === 'block')) {
-                    if (!window.riqueza.inicializado) {
-                        console.log("🎯 Tab características ativada, inicializando...");
-                        setTimeout(() => window.riqueza.inicializar(), 100);
-                    }
-                }
+    // Também inicializar se a aba já estiver ativa
+    const caracteristicasTab = document.getElementById('caracteristicas-tab');
+    if (caracteristicasTab && caracteristicasTab.style.display !== 'none') {
+        setTimeout(() => {
+            if (sistemaRiqueza && !sistemaRiqueza.inicializado) {
+                sistemaRiqueza.inicializar();
             }
-        });
-    });
-    
-    // Observar a tab
-    const tab = document.getElementById('caracteristicas');
-    if (tab) {
-        observer.observe(tab, { attributes: true });
+        }, 300);
     }
-    
-    // Forçar inicialização após 2 segundos
-    setTimeout(() => {
-        if (!window.riqueza.inicializado) {
-            console.log("⏰ Forçando inicialização...");
-            window.riqueza.inicializar();
-        }
-    }, 2000);
 });
 
-// Teste manual
-window.testarRiqueza = function() {
-    console.log("🧪 Testando sistema de riqueza...");
-    
-    const select = document.getElementById('nivelRiqueza');
-    if (!select) {
-        console.error("❌ Select não encontrado!");
-        return;
-    }
-    
-    // Testar mudança para 20 (Rico)
-    select.value = "20";
-    const event = new Event('change', { bubbles: true });
-    select.dispatchEvent(event);
-    
-    console.log("✅ Teste executado! Deve mostrar: +20 pts, 5x, $5.000");
+// ===== FUNÇÕES GLOBAIS PARA ACESSO =====
+window.getPontosRiqueza = function() {
+    return sistemaRiqueza ? sistemaRiqueza.getPontosRiqueza() : 0;
 };
 
-console.log("✅ Sistema de riqueza carregado!");
-console.log("💡 Comandos:");
-console.log("- riqueza.atualizarDisplay('10') - Mudar para Confortável");
-console.log("- testarRiqueza() - Testar sistema");
+window.getRendaMensal = function() {
+    return sistemaRiqueza ? sistemaRiqueza.getRendaMensal() : 0;
+};
+
+window.getRiquezaDetalhes = function() {
+    return sistemaRiqueza ? sistemaRiqueza.getDescricaoCompleta() : null;
+};
+
+window.validarRiqueza = function() {
+    return sistemaRiqueza ? sistemaRiqueza.validarRiqueza() : { valido: false, mensagem: 'Sistema não inicializado' };
+};
+
+// Exportar para uso em outros sistemas
+window.SistemaRiqueza = SistemaRiqueza;
+window.sistemaRiqueza = sistemaRiqueza;
+
+console.log('📦 Sistema de Riqueza carregado e pronto!');
