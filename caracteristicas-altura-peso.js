@@ -9,6 +9,7 @@ class SistemaAlturaPeso {
         this.peso = 70; // kg
         this.stBase = 10;
         this.inicializado = false;
+        this.caracteristicasAtivas = []; // NOVO: Armazena características ativas
 
         // Tabelas GURPS para altura/peso baseado em ST
         this.alturaPorST = {
@@ -75,6 +76,10 @@ class SistemaAlturaPeso {
         this.configurarEventos();
         this.forcarAtualizacaoST();
         this.atualizarDisplay();
+        
+        // Adicionar botão de ajuste automático
+        setTimeout(() => this.adicionarBotaoAjusteAutomatico(), 500);
+        
         this.inicializado = true;
         
         console.log('✅ Sistema de Altura/Peso inicializado');
@@ -110,9 +115,13 @@ class SistemaAlturaPeso {
             });
         }
 
-        // Escuta características físicas (se existirem)
+        // ===== NOVO: Escuta características físicas =====
         document.addEventListener('caracteristicasFisicasAlteradas', (e) => {
-            this.atualizarDisplay();
+            if (e.detail && e.detail.caracteristicas) {
+                this.caracteristicasAtivas = e.detail.caracteristicas;
+                this.atualizarDisplay();
+                this.atualizarFaixasBaseadoCaracteristicas();
+            }
         });
 
         // Verificação periódica de ST
@@ -227,7 +236,32 @@ class SistemaAlturaPeso {
         this.salvarDados();
     }
 
-    // ===== CÁLCULOS E VERIFICAÇÕES =====
+    // ===== NOVO: AJUSTE AUTOMÁTICO BASEADO EM CARACTERÍSTICAS =====
+    ajustarPesoAutomaticamente() {
+        const multiplicador = this.obterMultiplicadorPeso();
+        
+        if (multiplicador === 1.0) {
+            this.mostrarMensagemTemporaria('Nenhuma característica ativa para ajuste', 'info');
+            return;
+        }
+        
+        // Calcula peso médio para o ST
+        const faixaPeso = this.obterFaixaPeso(this.stBase);
+        const pesoMedio = (faixaPeso.min + faixaPeso.max) / 2;
+        
+        // Aplica multiplicador da característica
+        const novoPeso = Math.round(pesoMedio * multiplicador);
+        
+        // Limites de segurança
+        const pesoFinal = Math.max(20, Math.min(200, novoPeso));
+        
+        // Define o novo peso
+        this.definirPeso(pesoFinal);
+        
+        const nomeCarac = this.obterNomeCaracteristicaAtiva();
+        this.mostrarMensagemTemporaria(`Peso ajustado para ${nomeCarac}: ${pesoFinal}kg`, 'sucesso');
+    }
+        // ===== CÁLCULOS E VERIFICAÇÕES =====
 
     obterFaixaAltura(st) {
         if (st >= 6 && st <= 16) {
@@ -283,20 +317,67 @@ class SistemaAlturaPeso {
         return { min: 30, max: 200 }; // Fallback
     }
 
+    // ===== NOVO: MÉTODOS PARA CARACTERÍSTICAS FÍSICAS =====
     obterMultiplicadorPeso() {
-        // Verifica se há características físicas ativas
-        if (window.sistemaCaracteristicasFisicas) {
-            return window.sistemaCaracteristicasFisicas.getMultiplicadorPeso() || 1.0;
+        if (!this.caracteristicasAtivas || this.caracteristicasAtivas.length === 0) {
+            return 1.0;
         }
+        
+        // Procura características que afetam peso
+        const caracteristicaPeso = this.caracteristicasAtivas.find(c => 
+            c.tipo === 'magro' || 
+            c.tipo === 'acima-peso' || 
+            c.tipo === 'gordo' || 
+            c.tipo === 'muito-gordo'
+        );
+        
+        if (caracteristicaPeso) {
+            switch(caracteristicaPeso.tipo) {
+                case 'magro': return 0.67;
+                case 'acima-peso': return 1.3;
+                case 'gordo': return 1.5;
+                case 'muito-gordo': return 2.0;
+                default: return 1.0;
+            }
+        }
+        
         return 1.0;
     }
 
     temNanismo() {
-        // Verifica se há nanismo ativo
-        if (window.sistemaCaracteristicasFisicas) {
-            return window.sistemaCaracteristicasFisicas.temNanismo() || false;
+        if (!this.caracteristicasAtivas) return false;
+        return this.caracteristicasAtivas.some(c => c.tipo === 'nanismo');
+    }
+
+    obterNomeCaracteristicaAtiva() {
+        const multiplicador = this.obterMultiplicadorPeso();
+        
+        switch(multiplicador) {
+            case 0.67: return 'Magro';
+            case 1.3: return 'Acima do Peso';
+            case 1.5: return 'Gordo';
+            case 2.0: return 'Muito Gordo';
+            default: 
+                if (this.temNanismo()) return 'Nanismo';
+                return 'Normal';
         }
-        return false;
+    }
+
+    atualizarFaixasBaseadoCaracteristicas() {
+        const multiplicador = this.obterMultiplicadorPeso();
+        const temNanismo = this.temNanismo();
+        
+        // Se tem nanismo, ajusta altura máxima
+        if (temNanismo) {
+            // Limitar altura se necessário
+            if (this.altura > 1.32) {
+                this.definirAltura(1.32);
+                this.mostrarMensagemTemporaria('Altura ajustada para Nanismo (max 1.32m)', 'info');
+            }
+        }
+        
+        // Atualizar display com novas faixas
+        this.atualizarDisplay();
     }
 
     verificarConformidade() {
@@ -355,7 +436,8 @@ class SistemaAlturaPeso {
             statusFisico.style.background = "#e74c3c";
             statusFisico.style.color = "white";
         } else if (conformidade.multiplicadorPeso !== 1.0) {
-            statusFisico.textContent = "Característica Ativa";
+            const nomeCarac = this.obterNomeCaracteristicaAtiva();
+            statusFisico.textContent = nomeCarac;
             statusFisico.style.background = "#f39c12";
             statusFisico.style.color = "white";
         } else if (conformidade.dentroDaFaixa) {
@@ -395,7 +477,7 @@ class SistemaAlturaPeso {
         statusAltura.className = `controle-faixa ${classe}`;
     }
 
-    atualizarStatusPeso(conformidade) {
+        atualizarStatusPeso(conformidade) {
         const statusPeso = document.getElementById('statusPeso');
         if (!statusPeso) return;
 
@@ -466,8 +548,9 @@ class SistemaAlturaPeso {
         
         if (!container || !lista) return;
         
-        // Verifica se há características ativas
-        const temCaracteristicas = this.obterMultiplicadorPeso() !== 1.0 || this.temNanismo();
+        const multiplicador = this.obterMultiplicadorPeso();
+        const temNanismo = this.temNanismo();
+        const temCaracteristicas = multiplicador !== 1.0 || temNanismo;
         
         if (!temCaracteristicas) {
             container.style.display = 'none';
@@ -478,8 +561,7 @@ class SistemaAlturaPeso {
         
         let html = '';
         
-        // Verifica características de peso
-        const multiplicador = this.obterMultiplicadorPeso();
+        // Adicionar características de peso
         if (multiplicador !== 1.0) {
             let nome, efeito, pontos;
             
@@ -524,14 +606,14 @@ class SistemaAlturaPeso {
             `;
         }
         
-        // Verifica nanismo
-        if (this.temNanismo()) {
+        // Adicionar nanismo
+        if (temNanismo) {
             html += `
                 <div class="desvantagem-item">
                     <div class="desvantagem-icone">📏</div>
                     <div class="desvantagem-info">
                         <strong>Nanismo</strong>
-                        <small>Altura máxima: 1.32m</small>
+                        <small>Altura máxima: 1.32m | MT -1, -1 Deslocamento</small>
                     </div>
                     <div class="desvantagem-pontos">
                         -15
@@ -543,16 +625,77 @@ class SistemaAlturaPeso {
         lista.innerHTML = html;
     }
 
-    obterNomeCaracteristicaAtiva() {
-        const multiplicador = this.obterMultiplicadorPeso();
+    // ===== NOVO: BOTÃO DE AJUSTE AUTOMÁTICO =====
+    adicionarBotaoAjusteAutomatico() {
+        // Verificar se já existe o botão
+        if (document.getElementById('btnAjusteAutomatico')) return;
         
-        switch(multiplicador) {
-            case 0.67: return 'Magro';
-            case 1.3: return 'Acima do Peso';
-            case 1.5: return 'Gordo';
-            case 2.0: return 'Muito Gordo';
-            default: return 'Característica';
-        }
+        const card = document.querySelector('.altura-peso-card');
+        if (!card) return;
+        
+        // Encontrar o container de desvantagens ou criar um novo local
+        const infoFaixa = card.querySelector('.info-faixa');
+        if (!infoFaixa) return;
+        
+        // Criar botão de ajuste automático
+        const botaoDiv = document.createElement('div');
+        botaoDiv.style.textAlign = 'center';
+        botaoDiv.style.marginTop = '15px';
+        botaoDiv.style.paddingTop = '15px';
+        botaoDiv.style.borderTop = '1px solid rgba(212,175,55,0.3)';
+        
+        botaoDiv.innerHTML = `
+            <button id="btnAjusteAutomatico" 
+                    style="background: linear-gradient(145deg, var(--primary-gold), #b8941f);
+                           color: var(--primary-dark);
+                           border: 2px solid var(--secondary-gold);
+                           border-radius: 6px;
+                           padding: 8px 15px;
+                           font-family: 'Cinzel', serif;
+                           font-weight: bold;
+                           cursor: pointer;
+                           transition: all 0.3s ease;
+                           display: flex;
+                           align-items: center;
+                           justify-content: center;
+                           gap: 8px;
+                           margin: 0 auto;">
+                <i class="fas fa-cogs"></i> Ajustar Automaticamente
+            </button>
+            <div style="color: var(--wood-light); font-size: 0.85em; margin-top: 8px;">
+                Baseado nas características selecionadas
+            </div>
+        `;
+        
+        // Inserir após info-faixa
+        infoFaixa.parentNode.insertBefore(botaoDiv, infoFaixa.nextSibling);
+        
+        // Adicionar evento ao botão
+        document.getElementById('btnAjusteAutomatico').addEventListener('click', () => {
+            this.ajustarPesoAutomaticamente();
+        });
+    }
+
+    mostrarMensagemTemporaria(mensagem, tipo) {
+        const statusDiv = document.getElementById('statusFisico');
+        if (!statusDiv) return;
+        
+        const originalTexto = statusDiv.textContent;
+        const originalCor = statusDiv.style.background;
+        const originalCorTexto = statusDiv.style.color;
+        
+        // Mudar temporariamente
+        statusDiv.textContent = mensagem;
+        statusDiv.style.background = tipo === 'sucesso' ? '#27ae60' : 
+                                   tipo === 'erro' ? '#e74c3c' : '#f39c12';
+        statusDiv.style.color = 'white';
+        
+        // Restaurar após 2 segundos
+        setTimeout(() => {
+            statusDiv.textContent = originalTexto;
+            statusDiv.style.background = originalCor;
+            statusDiv.style.color = originalCorTexto;
+        }, 2000);
     }
 
     // ===== PERSISTÊNCIA =====
@@ -565,6 +708,9 @@ class SistemaAlturaPeso {
                 if (dados.altura !== undefined) this.altura = dados.altura;
                 if (dados.peso !== undefined) this.peso = dados.peso;
                 if (dados.stBase !== undefined) this.stBase = dados.stBase;
+                if (dados.caracteristicasAtivas !== undefined) {
+                    this.caracteristicasAtivas = dados.caracteristicasAtivas;
+                }
             }
         } catch (error) {
             console.warn('⚠️ Erro ao carregar dados salvos:', error);
@@ -577,6 +723,7 @@ class SistemaAlturaPeso {
                 altura: this.altura,
                 peso: this.peso,
                 stBase: this.stBase,
+                caracteristicasAtivas: this.caracteristicasAtivas,
                 timestamp: new Date().toISOString()
             };
             localStorage.setItem('sistemaAlturaPeso', JSON.stringify(dadosParaSalvar));
@@ -599,7 +746,8 @@ class SistemaAlturaPeso {
                 faixaPeso: conformidade.faixaPeso,
                 dentroDaFaixa: conformidade.dentroDaFaixa,
                 multiplicadorPeso: conformidade.multiplicadorPeso,
-                temNanismo: conformidade.temNanismo
+                temNanismo: conformidade.temNanismo,
+                caracteristicasAtivas: this.caracteristicasAtivas
             }
         };
     }
@@ -615,6 +763,9 @@ class SistemaAlturaPeso {
             if (dados.alturaPeso.stBase !== undefined) {
                 this.stBase = dados.alturaPeso.stBase;
             }
+            if (dados.alturaPeso.caracteristicasAtivas !== undefined) {
+                this.caracteristicasAtivas = dados.alturaPeso.caracteristicasAtivas;
+            }
             this.atualizarDisplay();
             return true;
         }
@@ -625,6 +776,7 @@ class SistemaAlturaPeso {
         this.altura = 1.70;
         this.peso = 70;
         this.stBase = 10;
+        this.caracteristicasAtivas = [];
         
         const inputAltura = document.getElementById('alturaInput');
         if (inputAltura) inputAltura.value = '1.70';
@@ -634,6 +786,7 @@ class SistemaAlturaPeso {
         
         this.atualizarDisplay();
         this.salvarDados();
+        this.mostrarMensagemTemporaria('Dados resetados para padrão', 'sucesso');
     }
 
     validarAlturaPeso() {
@@ -659,6 +812,29 @@ class SistemaAlturaPeso {
             mensagem: mensagem,
             detalhes: conformidade
         };
+    }
+
+    // ===== UTILITÁRIOS =====
+    temGigantismo() {
+        if (!this.caracteristicasAtivas) return false;
+        return this.caracteristicasAtivas.some(c => c.tipo === 'gigantismo');
+    }
+
+    obterModificadores() {
+        const modificadores = {};
+        
+        if (this.caracteristicasAtivas && this.caracteristicasAtivas.length > 0) {
+            this.caracteristicasAtivas.forEach(carac => {
+                if (carac.modificadores) {
+                    Object.entries(carac.modificadores).forEach(([chave, valor]) => {
+                        if (!modificadores[chave]) modificadores[chave] = 0;
+                        modificadores[chave] += valor;
+                    });
+                }
+            });
+        }
+        
+        return modificadores;
     }
 }
 
@@ -690,6 +866,13 @@ window.ajustarAltura = function(variacao) {
 window.ajustarPeso = function(variacao) {
     if (sistemaAlturaPeso) {
         sistemaAlturaPeso.ajustarPeso(variacao);
+    }
+};
+
+// ===== NOVA FUNÇÃO: AJUSTE AUTOMÁTICO =====
+window.ajustarPesoAutomaticamente = function() {
+    if (sistemaAlturaPeso) {
+        sistemaAlturaPeso.ajustarPesoAutomaticamente();
     }
 };
 
