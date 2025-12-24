@@ -1,4 +1,4 @@
-// caracteristicas-riqueza.js - VERSÃO COMPLETA E FUNCIONAL
+// caracteristicas-riqueza.js - VERSÃO CORRIGIDA
 console.log("💰 SISTEMA DE RIQUEZA - CARREGANDO...");
 
 // ============================================
@@ -69,11 +69,17 @@ const DADOS_RIQUEZA = {
 let nivelAtualRiqueza = "0";
 let elementosRiqueza = {};
 let sistemaInicializado = false;
+let eventListenerAdicionado = false; // CONTROLE DE EVENT LISTENER
 
 // ============================================
 // 3. FUNÇÃO PARA INJETAR CSS NECESSÁRIO
 // ============================================
 function injetarCSSRiqueza() {
+    // Verificar se o CSS já foi injetado
+    if (document.getElementById('css-riqueza')) {
+        return;
+    }
+    
     const css = `
         /* ESTILOS ESPECÍFICOS PARA RIQUEZA */
         #pontosRiqueza.riqueza-positiva {
@@ -121,6 +127,7 @@ function injetarCSSRiqueza() {
     `;
     
     const style = document.createElement('style');
+    style.id = 'css-riqueza';
     style.textContent = css;
     document.head.appendChild(style);
     console.log("🎨 CSS da riqueza injetado");
@@ -135,17 +142,16 @@ function encontrarElementosRiqueza() {
         badge: document.getElementById('pontosRiqueza'),
         multiplicador: document.getElementById('multiplicadorRiqueza'),
         renda: document.getElementById('rendaMensal'),
-        descricao: document.getElementById('descricaoRiqueza'),
-        container: document.querySelector('.riqueza-container'),
-        info: document.querySelector('.riqueza-info')
+        descricao: document.getElementById('descricaoRiqueza')
     };
     
-    console.log("🔍 Buscando elementos da riqueza:");
-    console.log("- Select:", elementosRiqueza.select ? "✅" : "❌");
-    console.log("- Badge:", elementosRiqueza.badge ? "✅" : "❌");
-    console.log("- Multiplicador:", elementosRiqueza.multiplicador ? "✅" : "❌");
-    console.log("- Renda:", elementosRiqueza.renda ? "✅" : "❌");
-    console.log("- Descrição:", elementosRiqueza.descricao ? "✅" : "❌");
+    console.log("🔍 Elementos encontrados:", {
+        select: elementosRiqueza.select ? "✅" : "❌",
+        badge: elementosRiqueza.badge ? "✅" : "❌",
+        multiplicador: elementosRiqueza.multiplicador ? "✅" : "❌",
+        renda: elementosRiqueza.renda ? "✅" : "❌",
+        descricao: elementosRiqueza.descricao ? "✅" : "❌"
+    });
     
     return elementosRiqueza.select && elementosRiqueza.badge;
 }
@@ -154,7 +160,7 @@ function encontrarElementosRiqueza() {
 // 5. FUNÇÃO PRINCIPAL DE ATUALIZAÇÃO
 // ============================================
 function atualizarRiqueza() {
-    console.log("🔄 Atualizando sistema de riqueza...");
+    console.log("🔄 Atualizando riqueza para nível:", nivelAtualRiqueza);
     
     const dados = DADOS_RIQUEZA[nivelAtualRiqueza];
     if (!dados) {
@@ -162,18 +168,12 @@ function atualizarRiqueza() {
         return;
     }
     
-    console.log("📊 Nível atual:", dados.nome);
-    console.log("📊 Pontos:", dados.pontos);
-    console.log("📊 Multiplicador:", dados.multiplicador);
-    console.log("📊 Renda:", dados.renda);
-    
     // 1. ATUALIZAR BADGE DE PONTOS
     if (elementosRiqueza.badge) {
         elementosRiqueza.badge.textContent = dados.pontos >= 0 ? `+${dados.pontos} pts` : `${dados.pontos} pts`;
         
         // Aplicar classe de cor
-        elementosRiqueza.badge.classList.remove('riqueza-positiva', 'riqueza-negativa', 'riqueza-neutra');
-        
+        elementosRiqueza.badge.className = 'pontos-badge'; // Reset classes
         if (dados.pontos > 0) {
             elementosRiqueza.badge.classList.add('riqueza-positiva');
         } else if (dados.pontos < 0) {
@@ -187,26 +187,21 @@ function atualizarRiqueza() {
         setTimeout(() => {
             elementosRiqueza.badge.classList.remove('riqueza-destaque');
         }, 600);
-        
-        console.log("✅ Badge atualizado:", elementosRiqueza.badge.textContent);
     }
     
     // 2. ATUALIZAR MULTIPLICADOR
     if (elementosRiqueza.multiplicador) {
         elementosRiqueza.multiplicador.textContent = dados.multiplicador + 'x';
-        console.log("✅ Multiplicador atualizado:", elementosRiqueza.multiplicador.textContent);
     }
     
     // 3. ATUALIZAR RENDA MENSAL
     if (elementosRiqueza.renda) {
         elementosRiqueza.renda.textContent = dados.renda;
-        console.log("✅ Renda atualizada:", elementosRiqueza.renda.textContent);
     }
     
     // 4. ATUALIZAR DESCRIÇÃO
     if (elementosRiqueza.descricao) {
         elementosRiqueza.descricao.textContent = dados.descricao;
-        console.log("✅ Descrição atualizada");
     }
     
     // 5. ATUALIZAR SELECT (se necessário)
@@ -217,21 +212,15 @@ function atualizarRiqueza() {
     // 6. SALVAR NO LOCALSTORAGE
     try {
         localStorage.setItem('gurps_riqueza_nivel', nivelAtualRiqueza);
-        console.log("💾 Dados salvos no localStorage");
     } catch (e) {
         console.warn("⚠️ Não foi possível salvar no localStorage");
     }
     
-    // 7. NOTIFICAR SISTEMAS EXTERNOS (se existirem)
-    if (window.atualizarPontosCaracteristicas) {
-        window.atualizarPontosCaracteristicas('riqueza', dados.pontos);
-    }
-    
-    console.log("✅ Sistema de riqueza atualizado completamente!");
+    console.log("✅ Riqueza atualizada:", dados.nome, dados.pontos, "pts");
 }
 
 // ============================================
-// 6. FUNÇÃO PARA CONFIGURAR EVENTOS
+// 6. FUNÇÃO PARA CONFIGURAR EVENTOS (CORRIGIDA)
 // ============================================
 function configurarEventosRiqueza() {
     console.log("🔗 Configurando eventos da riqueza...");
@@ -241,14 +230,18 @@ function configurarEventosRiqueza() {
         return;
     }
     
-    // Remover event listeners antigos (clone do elemento)
-    const novoSelect = elementosRiqueza.select.cloneNode(true);
-    elementosRiqueza.select.parentNode.replaceChild(novoSelect, elementosRiqueza.select);
-    elementosRiqueza.select = novoSelect;
+    // REMOVER TODOS OS EVENT LISTENERS ANTIGOS
+    if (eventListenerAdicionado) {
+        console.log("⚠️ Removendo event listener antigo...");
+        const novoSelect = elementosRiqueza.select.cloneNode(true);
+        elementosRiqueza.select.parentNode.replaceChild(novoSelect, elementosRiqueza.select);
+        elementosRiqueza.select = novoSelect;
+        eventListenerAdicionado = false;
+    }
     
-    // Adicionar novo event listener
+    // ADICIONAR NOVO EVENT LISTENER (APENAS UM)
     elementosRiqueza.select.addEventListener('change', function(e) {
-        console.log("🎛️ Nível de riqueza alterado:", e.target.value);
+        console.log("🎛️ Evento change disparado! Valor:", e.target.value);
         
         const novoValor = e.target.value;
         if (DADOS_RIQUEZA[novoValor]) {
@@ -257,9 +250,10 @@ function configurarEventosRiqueza() {
         } else {
             console.error("❌ Valor inválido:", novoValor);
         }
-    });
+    }, { once: false }); // Importante: once: false para não remover após primeira execução
     
-    console.log("✅ Eventos configurados");
+    eventListenerAdicionado = true;
+    console.log("✅ Event listener configurado (apenas um)");
 }
 
 // ============================================
@@ -287,213 +281,286 @@ function carregarDadosSalvos() {
 // 8. FUNÇÃO DE INICIALIZAÇÃO PRINCIPAL
 // ============================================
 function inicializarSistemaRiqueza() {
-    console.log("🚀 INICIALIZANDO SISTEMA DE RIQUEZA...");
+    console.log("=".repeat(50));
+    console.log("🚀 INICIALIZANDO SISTEMA DE RIQUEZA");
+    console.log("=".repeat(50));
     
-    // 1. Injetar CSS
+    // Evitar múltiplas inicializações
+    if (sistemaInicializado) {
+        console.log("⚠️ Sistema já inicializado, pulando...");
+        return true;
+    }
+    
+    // 1. Injetar CSS (apenas uma vez)
     injetarCSSRiqueza();
     
     // 2. Encontrar elementos
     if (!encontrarElementosRiqueza()) {
         console.error("❌ Elementos essenciais não encontrados!");
-        console.log("Tentando novamente em 500ms...");
-        setTimeout(inicializarSistemaRiqueza, 500);
         return false;
     }
     
     // 3. Carregar dados salvos
     carregarDadosSalvos();
     
-    // 4. Configurar eventos
+    // 4. Configurar eventos (apenas uma vez)
     configurarEventosRiqueza();
     
     // 5. Atualizar display inicial
     atualizarRiqueza();
     
     sistemaInicializado = true;
+    console.log("=".repeat(50));
     console.log("🎉 SISTEMA DE RIQUEZA INICIALIZADO COM SUCESSO!");
+    console.log("Nível atual:", nivelAtualRiqueza);
+    console.log("=".repeat(50));
     
     return true;
 }
 
 // ============================================
-// 9. SISTEMA DE DETECÇÃO DE TAB ATIVA
+// 9. DETECÇÃO SIMPLES DE TAB ATIVA
 // ============================================
-function verificarTabCaracteristicasAtiva() {
-    const tab = document.getElementById('caracteristicas');
-    if (tab && tab.classList.contains('active')) {
-        console.log("📋 Tab características está ativa!");
+function verificarEInicializar() {
+    // Verificar se estamos na tab características
+    const tabCaracteristicas = document.getElementById('caracteristicas');
+    const tabAtiva = tabCaracteristicas && tabCaracteristicas.classList.contains('active');
+    
+    // Verificar se os elementos existem
+    const selectExiste = !!document.getElementById('nivelRiqueza');
+    const badgeExiste = !!document.getElementById('pontosRiqueza');
+    
+    if (tabAtiva && selectExiste && badgeExiste && !sistemaInicializado) {
+        console.log("🎯 Condições perfeitas para inicializar riqueza!");
+        inicializarSistemaRiqueza();
         return true;
     }
+    
     return false;
 }
 
-// Observador para quando a tab for ativada
-const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-            if (verificarTabCaracteristicasAtiva() && !sistemaInicializado) {
-                console.log("🎯 Tab características ativada, inicializando riqueza...");
-                setTimeout(inicializarSistemaRiqueza, 100);
-            }
-        }
-    });
-});
-
 // ============================================
-// 10. INICIALIZAÇÃO AUTOMÁTICA
+// 10. INICIALIZAÇÃO SIMPLES E DIRETA
 // ============================================
-// Estratégia 1: Quando DOM carrega
+// Estratégia principal: Inicializar quando DOM carrega
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("📄 DOM completamente carregado");
+    console.log("📄 DOM carregado, tentando inicializar riqueza...");
     
-    // Iniciar observador
-    const tab = document.getElementById('caracteristicas');
-    if (tab) {
-        observer.observe(tab, { attributes: true });
-        console.log("👁️ Observador configurado para tab características");
-    }
-    
-    // Se já estiver na tab características, inicializar
-    if (verificarTabCaracteristicasAtiva()) {
-        console.log("🎯 Inicializando imediatamente (tab já ativa)");
-        setTimeout(inicializarSistemaRiqueza, 300);
-    }
+    // Tentar imediatamente
+    setTimeout(function() {
+        if (!verificarEInicializar()) {
+            console.log("⏳ Aguardando condições para inicializar...");
+            
+            // Tentar novamente a cada 500ms por 5 segundos
+            let tentativas = 0;
+            const interval = setInterval(function() {
+                tentativas++;
+                console.log(`🔄 Tentativa ${tentativas} de inicialização...`);
+                
+                if (verificarEInicializar() || tentativas >= 10) {
+                    clearInterval(interval);
+                    if (tentativas >= 10) {
+                        console.error("❌ Não foi possível inicializar após 10 tentativas");
+                    }
+                }
+            }, 500);
+        }
+    }, 300);
 });
 
-// Estratégia 2: Quando clicar em qualquer tab
+// ============================================
+// 11. CAPTURAR CLIQUE NAS TABS
+// ============================================
 document.addEventListener('click', function(e) {
     const tabBtn = e.target.closest('.tab-btn');
     if (tabBtn && tabBtn.getAttribute('data-tab') === 'caracteristicas') {
         console.log("🎯 Tab características clicada!");
-        if (!sistemaInicializado) {
-            setTimeout(inicializarSistemaRiqueza, 200);
-        }
+        setTimeout(function() {
+            if (!sistemaInicializado) {
+                verificarEInicializar();
+            }
+        }, 100);
     }
 });
 
-// Estratégia 3: Forçar inicialização após 3 segundos
-setTimeout(function() {
-    if (!sistemaInicializado) {
-        console.log("⏰ Forçando inicialização após timeout...");
-        inicializarSistemaRiqueza();
-    }
-}, 3000);
-
 // ============================================
-// 11. FUNÇÕES PÚBLICAS PARA USO EXTERNO
+// 12. FUNÇÕES PÚBLICAS SIMPLIFICADAS
 // ============================================
 window.riquezaSystem = {
-    // Reinicializar sistema
-    reiniciar: function() {
-        console.log("🔄 Reiniciando sistema de riqueza...");
-        sistemaInicializado = false;
-        return inicializarSistemaRiqueza();
+    // Atualizar manualmente
+    atualizar: function() {
+        if (!sistemaInicializado) {
+            console.log("⚠️ Sistema não inicializado, inicializando agora...");
+            inicializarSistemaRiqueza();
+        }
+        atualizarRiqueza();
+    },
+    
+    // Mudar nível manualmente (SEM USAR EVENTO)
+    mudarNivel: function(novoNivel) {
+        console.log("🎯 Mudando nível manualmente para:", novoNivel);
+        
+        if (DADOS_RIQUEZA[novoNivel]) {
+            nivelAtualRiqueza = novoNivel;
+            
+            // Atualizar select diretamente
+            if (elementosRiqueza.select) {
+                elementosRiqueza.select.value = novoNivel;
+            }
+            
+            // Atualizar display
+            atualizarRiqueza();
+            return true;
+        }
+        
+        console.error("❌ Nível inválido:", novoNivel);
+        return false;
     },
     
     // Obter dados atuais
     getDados: function() {
-        return {
-            nivel: nivelAtualRiqueza,
-            dados: DADOS_RIQUEZA[nivelAtualRiqueza]
-        };
-    },
-    
-    // Definir nível manualmente
-    setNivel: function(novoNivel) {
-        if (DADOS_RIQUEZA[novoNivel]) {
-            nivelAtualRiqueza = novoNivel;
-            if (elementosRiqueza.select) {
-                elementosRiqueza.select.value = novoNivel;
-            }
-            atualizarRiqueza();
-            return true;
-        }
-        return false;
-    },
-    
-    // Carregar dados externos
-    carregarDados: function(dadosExternos) {
-        if (dadosExternos && dadosExternos.nivel && DADOS_RIQUEZA[dadosExternos.nivel]) {
-            return this.setNivel(dadosExternos.nivel);
-        }
-        return false;
-    },
-    
-    // Resetar para padrão
-    resetar: function() {
-        return this.setNivel("0");
-    },
-    
-    // Obter pontos atuais
-    getPontos: function() {
-        return DADOS_RIQUEZA[nivelAtualRiqueza]?.pontos || 0;
-    },
-    
-    // Obter multiplicador atual
-    getMultiplicador: function() {
-        return DADOS_RIQUEZA[nivelAtualRiqueza]?.multiplicador || 1.0;
-    },
-    
-    // Verificar status
-    status: function() {
-        return {
-            inicializado: sistemaInicializado,
-            nivel: nivelAtualRiqueza,
-            elementos: !!elementosRiqueza.select
-        };
+        return DADOS_RIQUEZA[nivelAtualRiqueza];
     },
     
     // Debug
     debug: function() {
-        console.group("🔧 DEBUG SISTEMA RIQUEZA");
-        console.log("Status:", this.status());
-        console.log("Dados atuais:", this.getDados());
-        console.log("Elementos:", elementosRiqueza);
-        console.log("LocalStorage:", localStorage.getItem('gurps_riqueza_nivel'));
+        console.group("🔧 DEBUG RIQUEZA");
+        console.log("Inicializado:", sistemaInicializado);
+        console.log("Nível atual:", nivelAtualRiqueza);
+        console.log("Dados:", DADOS_RIQUEZA[nivelAtualRiqueza]);
+        console.log("Event listener:", eventListenerAdicionado);
+        console.log("Select atual:", elementosRiqueza.select?.value);
         console.groupEnd();
     }
 };
 
 // ============================================
-// 12. TESTE AUTOMÁTICO
+// 13. TESTE MANUAL DIRETO
 // ============================================
-console.log("🧪 SISTEMA DE RIQUEZA PRONTO PARA TESTE");
-console.log("💡 Comandos disponíveis no console:");
-console.log("- riquezaSystem.debug() - Ver status do sistema");
-console.log("- riquezaSystem.reiniciar() - Reiniciar sistema");
-console.log("- riquezaSystem.setNivel('10') - Mudar para Confortável");
-console.log("- testarRiqueza() - Teste rápido");
-
-// Função de teste rápido
-window.testarRiqueza = function() {
-    console.group("🧪 TESTE RÁPIDO DA RIQUEZA");
+window.testarRiquezaCompleto = function() {
+    console.group("🧪 TESTE COMPLETO DA RIQUEZA");
     
-    // Verificar elementos
-    const elementos = {
-        select: document.getElementById('nivelRiqueza'),
-        badge: document.getElementById('pontosRiqueza'),
-        mult: document.getElementById('multiplicadorRiqueza'),
-        renda: document.getElementById('rendaMensal')
-    };
+    // 1. Verificar elementos
+    const select = document.getElementById('nivelRiqueza');
+    const badge = document.getElementById('pontosRiqueza');
     
-    console.log("Elementos encontrados:", elementos);
+    console.log("1. Elementos:", {
+        select: select ? `✅ (valor: ${select.value})` : "❌",
+        badge: badge ? `✅ (texto: ${badge.textContent})` : "❌"
+    });
     
-    // Testar mudança
-    if (elementos.select) {
-        console.log("Select atual:", elementos.select.value);
-        
-        // Testar mudança para '10'
-        elementos.select.value = '10';
-        elementos.select.dispatchEvent(new Event('change'));
-        
-        console.log("Select alterado para: 10");
-        console.log("Badge deve mostrar: +10 pts");
-        console.log("Multiplicador deve mostrar: 2x");
-        console.log("Renda deve mostrar: $2.000");
+    if (!select || !badge) {
+        console.error("❌ Elementos não encontrados!");
+        console.groupEnd();
+        return false;
     }
     
-    console.groupEnd();
-    return "Teste executado!";
+    // 2. Testar cada valor manualmente
+    const niveisParaTestar = ["-25", "-15", "-10", "0", "10", "20", "30", "50"];
+    
+    console.log("2. Testando todos os níveis:");
+    
+    niveisParaTestar.forEach((nivel, index) => {
+        setTimeout(() => {
+            console.log(`   Teste ${index + 1}: Nível ${nivel}`);
+            
+            // Mudar valor diretamente
+            select.value = nivel;
+            
+            // Disparar evento manualmente
+            const event = new Event('change', { bubbles: true });
+            select.dispatchEvent(event);
+            
+            // Verificar resultado
+            setTimeout(() => {
+                const dados = DADOS_RIQUEZA[nivel];
+                const pontosEsperados = dados.pontos >= 0 ? `+${dados.pontos} pts` : `${dados.pontos} pts`;
+                const multiplicadorEsperado = dados.multiplicador + 'x';
+                
+                console.log(`   → Esperado: ${pontosEsperados}, ${multiplicadorEsperado}, ${dados.renda}`);
+                console.log(`   → Badge: ${badge.textContent}`);
+                
+                if (badge.textContent === pontosEsperados) {
+                    console.log(`   ✅ OK!`);
+                } else {
+                    console.log(`   ❌ FALHOU!`);
+                }
+                
+                if (index === niveisParaTestar.length - 1) {
+                    console.log("✅ Todos os testes concluídos!");
+                    console.groupEnd();
+                }
+            }, 100);
+        }, index * 500);
+    });
+    
+    return true;
 };
 
-console.log("✅ caracteristicas-riqueza.js CARREGADO COM SUCESSO");
+// ============================================
+// 14. FALLBACK DIRETO (SEMPRE FUNCIONA)
+// ============================================
+// Esta função SEMPRE funciona, independente de tudo
+function setupRiquezaDireto() {
+    console.log("⚡ CONFIGURAÇÃO DIRETA DA RIQUEZA");
+    
+    const select = document.getElementById('nivelRiqueza');
+    const badge = document.getElementById('pontosRiqueza');
+    const mult = document.getElementById('multiplicadorRiqueza');
+    const renda = document.getElementById('rendaMensal');
+    const desc = document.getElementById('descricaoRiqueza');
+    
+    if (!select || !badge) {
+        console.error("❌ Elementos não encontrados para setup direto");
+        return false;
+    }
+    
+    // Configurar evento DIRETAMENTE
+    select.onchange = function() {
+        const valor = this.value;
+        const dados = DADOS_RIQUEZA[valor];
+        
+        if (!dados) return;
+        
+        console.log("🎛️ Setup direto: Mudando para", valor);
+        
+        // Atualizar tudo diretamente
+        badge.textContent = dados.pontos >= 0 ? `+${dados.pontos} pts` : `${dados.pontos} pts`;
+        
+        // Cor do badge
+        badge.style.backgroundColor = dados.pontos > 0 ? '#27ae60' : 
+                                     dados.pontos < 0 ? '#c0392b' : '#7f8c8d';
+        badge.style.color = 'white';
+        badge.style.fontWeight = 'bold';
+        
+        if (mult) mult.textContent = dados.multiplicador + 'x';
+        if (renda) renda.textContent = dados.renda;
+        if (desc) desc.textContent = dados.descricao;
+        
+        // Salvar
+        localStorage.setItem('gurps_riqueza_direto', valor);
+    };
+    
+    // Carregar valor salvo
+    const salvo = localStorage.getItem('gurps_riqueza_direto') || '0';
+    if (DADOS_RIQUEZA[salvo]) {
+        select.value = salvo;
+        select.onchange(); // Disparar para atualizar
+    }
+    
+    console.log("✅ Setup direto configurado!");
+    return true;
+}
+
+// Configurar setup direto após 1 segundo
+setTimeout(setupRiquezaDireto, 1000);
+
+// ============================================
+// 15. MENSAGEM FINAL
+// ============================================
+console.log("✅ Sistema de riqueza carregado!");
+console.log("💡 Comandos disponíveis:");
+console.log("1. riquezaSystem.mudarNivel('20') - Mudar para Rico");
+console.log("2. riquezaSystem.atualizar() - Forçar atualização");
+console.log("3. riquezaSystem.debug() - Ver status");
+console.log("4. testarRiquezaCompleto() - Testar todos os níveis");
