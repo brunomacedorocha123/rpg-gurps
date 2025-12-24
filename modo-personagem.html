@@ -604,19 +604,19 @@
             </h2>
             
             <div class="creation-options">
-                <div class="creation-option" onclick="startCharacterCreation('rapida')">
+                <div class="creation-option" onclick="window.location.href='crier-personagem.html'">
                     <i class="fas fa-bolt" style="font-size: 2rem; color: var(--secondary-gold); margin-bottom: 10px;"></i>
                     <h4>Criação Rápida</h4>
                     <p>Assistente guiado passo a passo</p>
                 </div>
                 
-                <div class="creation-option" onclick="startCharacterCreation('avancada')">
+                <div class="creation-option" onclick="window.location.href='crier-personagem.html'">
                     <i class="fas fa-cogs" style="font-size: 2rem; color: var(--secondary-gold); margin-bottom: 10px;"></i>
-                    <h4>Criação Avançada</h3>
+                    <h4>Criação Avançada</h4>
                     <p>Controle total sobre todas as opções</p>
                 </div>
                 
-                <div class="creation-option" onclick="startCharacterCreation('template')">
+                <div class="creation-option" onclick="window.location.href='crier-personagem.html'">
                     <i class="fas fa-file-alt" style="font-size: 2rem; color: var(--secondary-gold); margin-bottom: 10px;"></i>
                     <h4>Usar Template</h4>
                     <p>Comece com um modelo pré-definido</p>
@@ -851,11 +851,6 @@
         // ===========================================
         // FUNÇÕES DOS CARDS (PLACEHOLDER)
         // ===========================================
-        function startCharacterCreation(type) {
-            showToast(`⚔️ Iniciando criação ${type === 'rapida' ? 'rápida' : type === 'avancada' ? 'avançada' : 'por template'}`, 'info');
-            // Aqui você implementará a lógica de criação de personagem
-        }
-
         function joinCampaign() {
             showToast('🏰 Entrando em campanha...', 'info');
             // Implementar lógica para entrar em campanha
@@ -955,6 +950,8 @@
         // Inicializar com a seção de novo personagem aberta
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 Modo Personagem carregado');
+            console.log('✅ Os 3 cards de criação agora redirecionam para crier-personagem.html');
+            console.log('📁 Verifique se existe o arquivo: crier-personagem.html');
         });
     </script>
 </body>
