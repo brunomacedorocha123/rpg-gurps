@@ -9,6 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- NO HEAD DO ARQUIVO PRINCIPAL -->
+<link rel="stylesheet" href="style-atributos.css">
     <style>
         * {
             margin: 0;
@@ -582,21 +584,274 @@
             </div>
         </div>
 
-        <!-- ATRIBUTOS -->
-        <div id="atributos" class="tab-pane">
-            <div class="development-placeholder">
-                <div class="development-icon">
-                    <i class="fas fa-dumbbell"></i>
+        <!-- DENTRO DO <div id="atributos" class="tab-pane"> -->
+<div id="atributos" class="tab-pane">
+    <div class="atributos-container">
+        <!-- CABEÇALHO DE PONTOS -->
+        <div class="pontos-header">
+            <div class="pontos-grid">
+                <div class="ponto-item total">
+                    <div class="ponto-label">Pontos Totais</div>
+                    <div class="ponto-valor" id="pontosTotais">150</div>
                 </div>
-                <h2 class="development-title">Atributos</h2>
-                <p class="development-message">
-                    Seção para configurar os atributos básicos do personagem: Força, Destreza, Inteligência e Saúde.
-                    Incluirá cálculos automáticos de pontos, modificadores e custos.
-                </p>
-                <div class="development-status">EM DESENVOLVIMENTO</div>
+                <div class="ponto-item gastos">
+                    <div class="ponto-label">Pontos Gastos</div>
+                    <div class="ponto-valor" id="pontosGastos">0</div>
+                </div>
+                <div class="ponto-item saldo">
+                    <div class="ponto-label">Saldo de Pontos</div>
+                    <div class="ponto-valor" id="pontosSaldo">150</div>
+                </div>
             </div>
         </div>
 
+        <!-- ATRIBUTOS PRINCIPAIS -->
+        <div class="atributos-grid">
+            <!-- FORÇA (ST) -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <div class="atributo-title">
+                        <i class="fas fa-fist-raised"></i> FORÇA (ST)
+                    </div>
+                    <div class="atributo-custo" id="custoST">0</div>
+                </div>
+                <div class="atributo-controles">
+                    <button class="atributo-btn menos" onclick="alterarAtributo('ST', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="ST" class="atributo-input" value="10" min="1" max="40">
+                    <button class="atributo-btn mais" onclick="alterarAtributo('ST', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="atributo-valor-padrao">
+                    Valor padrão: 10 | Custo: 10 pontos por nível
+                </div>
+            </div>
+
+            <!-- DESTREZA (DX) -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <div class="atributo-title">
+                        <i class="fas fa-running"></i> DESTREZA (DX)
+                    </div>
+                    <div class="atributo-custo" id="custoDX">0</div>
+                </div>
+                <div class="atributo-controles">
+                    <button class="atributo-btn menos" onclick="alterarAtributo('DX', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="DX" class="atributo-input" value="10" min="1" max="40">
+                    <button class="atributo-btn mais" onclick="alterarAtributo('DX', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="atributo-valor-padrao">
+                    Valor padrão: 10 | Custo: 20 pontos por nível
+                </div>
+            </div>
+
+            <!-- INTELIGÊNCIA (IQ) -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <div class="atributo-title">
+                        <i class="fas fa-brain"></i> INTELIGÊNCIA (IQ)
+                    </div>
+                    <div class="atributo-custo" id="custoIQ">0</div>
+                </div>
+                <div class="atributo-controles">
+                    <button class="atributo-btn menos" onclick="alterarAtributo('IQ', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="IQ" class="atributo-input" value="10" min="1" max="40">
+                    <button class="atributo-btn mais" onclick="alterarAtributo('IQ', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="atributo-valor-padrao">
+                    Valor padrão: 10 | Custo: 20 pontos por nível
+                </div>
+            </div>
+
+            <!-- SAÚDE (HT) -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <div class="atributo-title">
+                        <i class="fas fa-heartbeat"></i> SAÚDE (HT)
+                    </div>
+                    <div class="atributo-custo" id="custoHT">0</div>
+                </div>
+                <div class="atributo-controles">
+                    <button class="atributo-btn menos" onclick="alterarAtributo('HT', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="HT" class="atributo-input" value="10" min="1" max="40">
+                    <button class="atributo-btn mais" onclick="alterarAtributo('HT', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="atributo-valor-padrao">
+                    Valor padrão: 10 | Custo: 10 pontos por nível
+                </div>
+            </div>
+        </div>
+
+        <!-- MENSAGEM DE STATUS -->
+        <div id="statusAtributos" class="status-message info">
+            <i class="fas fa-info-circle"></i>
+            Sistema de atributos funcionando. Ajuste os valores acima.
+        </div>
+
+        <!-- ATRIBUTOS SECUNDÁRIOS -->
+        <div class="atributos-secundarios">
+            <h2 class="secao-titulo">Atributos Derivados</h2>
+            <div class="secundarios-grid">
+                <!-- PONTOS DE VIDA (PV) -->
+                <div class="atributo-secundario">
+                    <div class="secundario-header">
+                        <div class="secundario-nome">
+                            <i class="fas fa-heart"></i> PONTOS DE VIDA (PV)
+                        </div>
+                        <div class="total-valor" id="PVTotal">10</div>
+                    </div>
+                    <div class="secundario-base">
+                        <div class="base-label">Base (ST):</div>
+                        <div class="base-valor" id="PVBase">10</div>
+                    </div>
+                    <div class="secundario-bonus">
+                        <div class="bonus-label">Bônus/Redução:</div>
+                        <input type="number" id="bonusPV" class="bonus-input" value="0" onchange="atualizarBonus('PV', this.value)">
+                    </div>
+                </div>
+
+                <!-- PONTOS DE FADIGA (PF) -->
+                <div class="atributo-secundario">
+                    <div class="secundario-header">
+                        <div class="secundario-nome">
+                            <i class="fas fa-wind"></i> PONTOS DE FADIGA (PF)
+                        </div>
+                        <div class="total-valor" id="PFTotal">10</div>
+                    </div>
+                    <div class="secundario-base">
+                        <div class="base-label">Base (HT):</div>
+                        <div class="base-valor" id="PFBase">10</div>
+                    </div>
+                    <div class="secundario-bonus">
+                        <div class="bonus-label">Bônus/Redução:</div>
+                        <input type="number" id="bonusPF" class="bonus-input" value="0" onchange="atualizarBonus('PF', this.value)">
+                    </div>
+                </div>
+
+                <!-- VONTADE -->
+                <div class="atributo-secundario">
+                    <div class="secundario-header">
+                        <div class="secundario-nome">
+                            <i class="fas fa-medal"></i> VONTADE
+                        </div>
+                        <div class="total-valor" id="VontadeTotal">10</div>
+                    </div>
+                    <div class="secundario-base">
+                        <div class="base-label">Base (IQ):</div>
+                        <div class="base-valor" id="VontadeBase">10</div>
+                    </div>
+                    <div class="secundario-bonus">
+                        <div class="bonus-label">Bônus/Redução:</div>
+                        <input type="number" id="bonusVontade" class="bonus-input" value="0" onchange="atualizarBonus('Vontade', this.value)">
+                    </div>
+                </div>
+
+                <!-- PERCEPÇÃO -->
+                <div class="atributo-secundario">
+                    <div class="secundario-header">
+                        <div class="secundario-nome">
+                            <i class="fas fa-eye"></i> PERCEPÇÃO
+                        </div>
+                        <div class="total-valor" id="PercepcaoTotal">10</div>
+                    </div>
+                    <div class="secundario-base">
+                        <div class="base-label">Base (IQ):</div>
+                        <div class="base-valor" id="PercepcaoBase">10</div>
+                    </div>
+                    <div class="secundario-bonus">
+                        <div class="bonus-label">Bônus/Redução:</div>
+                        <input type="number" id="bonusPercepcao" class="bonus-input" value="0" onchange="atualizarBonus('Percepcao', this.value)">
+                    </div>
+                </div>
+
+                <!-- DESLOCAMENTO -->
+                <div class="atributo-secundario">
+                    <div class="secundario-header">
+                        <div class="secundario-nome">
+                            <i class="fas fa-walking"></i> DESLOCAMENTO BÁSICO
+                        </div>
+                        <div class="total-valor" id="DeslocamentoTotal">5.00</div>
+                    </div>
+                    <div class="secundario-base">
+                        <div class="base-label">Base ((HT+DX)/4):</div>
+                        <div class="base-valor" id="DeslocamentoBase">5.00</div>
+                    </div>
+                    <div class="secundario-bonus">
+                        <div class="bonus-label">Bônus/Redução:</div>
+                        <input type="number" id="bonusDeslocamento" class="bonus-input" value="0" step="0.25" onchange="atualizarBonus('Deslocamento', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABELAS DE DANO E CARGA -->
+        <div class="tabelas-container">
+            <!-- TABELA DE DANO -->
+            <div class="tabela-card">
+                <h3 class="tabela-titulo">
+                    <i class="fas fa-bolt"></i> DANO DE FORÇA
+                </h3>
+                <div class="tabela-conteudo">
+                    <div class="dano-info">
+                        <div class="dano-tipo">
+                            <div class="tipo-label">Golpe Desarmado (GDP)</div>
+                            <div class="tipo-valor" id="danoGDP">1d-2</div>
+                        </div>
+                        <div class="dano-tipo">
+                            <div class="tipo-label">Golpe com Arma (GEB)</div>
+                            <div class="tipo-valor" id="danoGEB">1d</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA DE CARGA -->
+            <div class="tabela-card">
+                <h3 class="tabela-titulo">
+                    <i class="fas fa-weight-hanging"></i> LIMITES DE CARGA
+                </h3>
+                <div class="tabela-conteudo">
+                    <div class="carga-grid">
+                        <div class="carga-item">
+                            <div class="carga-nivel">Nenhuma</div>
+                            <div class="carga-valor" id="cargaNenhuma">10.0</div>
+                        </div>
+                        <div class="carga-item">
+                            <div class="carga-nivel">Leve</div>
+                            <div class="carga-valor" id="cargaLeve">20.0</div>
+                        </div>
+                        <div class="carga-item">
+                            <div class="carga-nivel">Média</div>
+                            <div class="carga-valor" id="cargaMedia">30.0</div>
+                        </div>
+                        <div class="carga-item">
+                            <div class="carga-nivel">Pesada</div>
+                            <div class="carga-valor" id="cargaPesada">60.0</div>
+                        </div>
+                        <div class="carga-item">
+                            <div class="carga-nivel">Muito Pesada</div>
+                            <div class="carga-valor" id="cargaMuitoPesada">100.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
         <!-- CARACTERÍSTICAS -->
         <div id="caracteristicas" class="tab-pane">
             <div class="development-placeholder">
@@ -717,6 +972,9 @@
             GURPS é uma marca registrada da Steve Jackson Games • Desenvolvido com Firebase
         </p>
     </footer>
+
+    <!-- ANTES DO FECHAMENTO DO BODY -->
+    <script src="atributos.js"></script>
 
     <script>
         // ===========================================
