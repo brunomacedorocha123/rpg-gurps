@@ -1,5 +1,5 @@
 // ===========================================
-// ATRIBUTOS.JS - Sistema Completo de Atributos GURPS - CORRIGIDO
+// ATRIBUTOS.JS - Sistema Completo de Atributos GURPS - FINAL
 // ===========================================
 
 // Tabelas de referência
@@ -101,22 +101,25 @@ function alterarAtributo(atributo, valor) {
 }
 
 function atualizarAtributos() {
+    // Obtém valores atuais
     const ST = parseInt(document.getElementById('ST').value) || 10;
     const DX = parseInt(document.getElementById('DX').value) || 10;
     const IQ = parseInt(document.getElementById('IQ').value) || 10;
     const HT = parseInt(document.getElementById('HT').value) || 10;
     
+    // Atualiza estado
     personagemAtributos.atributos.ST = ST;
     personagemAtributos.atributos.DX = DX;
     personagemAtributos.atributos.IQ = IQ;
     personagemAtributos.atributos.HT = HT;
     
+    // Executa todos os cálculos
     calcularAtributosSecundarios(ST, DX, IQ, HT);
     calcularDanoBase(ST);
     calcularCargas(ST);
     calcularPontos();
     atualizarCustos();
-    atualizarTotaisComBonus();
+    atualizarTotaisComBonus(); // <-- ISSO AQUI ATUALIZA OS TOTAIS COM BÔNUS!
     atualizarStatusAtributos();
     
     // Disparar evento para outros sistemas
@@ -243,7 +246,15 @@ function atualizarTotaisComBonus() {
 }
 
 function atualizarBonus(atributo, valor) {
-    const numValor = parseInt(valor) || 0;
+    // Converte valor para número
+    let numValor;
+    if (atributo === 'Deslocamento') {
+        numValor = parseFloat(valor) || 0;
+    } else {
+        numValor = parseInt(valor) || 0;
+    }
+    
+    // Atualiza estado
     personagemAtributos.bonus[atributo] = numValor;
     
     // Atualiza estilo do input
@@ -257,11 +268,17 @@ function atualizarBonus(atributo, valor) {
         }
     }
     
-    // Atualiza totais
+    // ATUALIZA OS TOTAIS IMEDIATAMENTE - ESTAVA FALTANDO ISSO!
     atualizarTotaisComBonus();
+    
+    // Atualiza status
+    atualizarStatusAtributos();
     
     // Salva localmente
     salvarAtributosLocal();
+    
+    // Dispara evento
+    dispararEventoAtributosAlterados();
 }
 
 // ===== EVENTOS PARA INTEGRAÇÃO =====
@@ -359,33 +376,45 @@ function inicializarAtributos() {
 }
 
 function configurarEventListeners() {
-    // Event listeners para atributos principais
+    // Event listeners para atributos principais (ST, DX, IQ, HT)
     ['ST', 'DX', 'IQ', 'HT'].forEach(inputId => {
         const input = document.getElementById(inputId);
         if (input) {
+            // Debounce para input
             input.addEventListener('input', () => {
                 clearTimeout(window.inputTimeout);
                 window.inputTimeout = setTimeout(atualizarAtributos, 300);
             });
             
+            // Atualiza imediatamente ao sair do campo
             input.addEventListener('change', atualizarAtributos);
         }
     });
     
-    // Event listeners para bônus manuais
+    // Event listeners para bônus manuais - AGORA FUNCIONANDO!
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById('bonus' + atributo);
         if (input) {
-            input.addEventListener('input', () => {
+            // Debounce para input
+            input.addEventListener('input', function() {
                 clearTimeout(window.bonusTimeout);
                 window.bonusTimeout = setTimeout(() => {
-                    atualizarBonus(atributo, input.value);
+                    atualizarBonus(atributo, this.value);
                 }, 300);
             });
             
-            input.addEventListener('change', () => {
-                atualizarBonus(atributo, input.value);
+            // Atualiza imediatamente ao sair do campo
+            input.addEventListener('change', function() {
+                atualizarBonus(atributo, this.value);
             });
+            
+            // Aplica estilo inicial
+            const valorInicial = parseInt(input.value) || 0;
+            if (valorInicial > 0) {
+                input.classList.add('positivo');
+            } else if (valorInicial < 0) {
+                input.classList.add('negativo');
+            }
         }
     });
 }
@@ -403,8 +432,8 @@ function obterDadosAtributos() {
         Vontade: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Vontade,
         Percepcao: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Percepcao,
         Deslocamento: parseFloat(document.getElementById('DeslocamentoTotal').textContent || "5.00"),
-        DanoGDP: document.getElementById('danoGDP').textContent,
-        DanoGEB: document.getElementById('danoGEB').textContent,
+        DanoGDP: document.getElementById('danoGDP')?.textContent || "1d-2",
+        DanoGEB: document.getElementById('danoGEB')?.textContent || "1d",
         PontosGastos: personagemAtributos.pontos.gastos,
         Bonus: { ...personagemAtributos.bonus }
     };
