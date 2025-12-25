@@ -565,17 +565,315 @@
             </div>
         </div>
 
-        <!-- ATRIBUTOS -->
-        <div id="atributos" class="tab-content active">
-            <div class="content-placeholder">
-                <i class="fas fa-dumbbell"></i>
-                <h3>Forja de Atributos</h3>
-                <p>Aqui você definirá ST, DX, IQ, HT e todos os atributos secundários.</p>
-                <p style="margin-top: 20px; color: rgba(212, 175, 55, 0.7);">
-                    <i class="fas fa-code"></i> Sistema de atributos será implementado aqui
-                </p>
+      <!-- Substitua o conteúdo da div#atributos em criar-personagem.html por isso: -->
+<div id="atributos" class="tab-content active">
+    <div class="atributos-container">
+        <!-- HEADER COM PONTOS GASTOS -->
+        <div class="atributos-header">
+            <h2>Forja de Atributos</h2>
+            <div class="pontos-atributos">
+                <div class="ponto-item">
+                    <div class="ponto-label">Pontos Gastos</div>
+                    <div id="pontosGastos" class="ponto-valor">0</div>
+                </div>
+                <div class="ponto-item">
+                    <div class="ponto-label">ST Custo</div>
+                    <div id="custoST" class="ponto-valor">0</div>
+                </div>
+                <div class="ponto-item">
+                    <div class="ponto-label">DX Custo</div>
+                    <div id="custoDX" class="ponto-valor">0</div>
+                </div>
+                <div class="ponto-item">
+                    <div class="ponto-label">IQ Custo</div>
+                    <div id="custoIQ" class="ponto-valor">0</div>
+                </div>
+                <div class="ponto-item">
+                    <div class="ponto-label">HT Custo</div>
+                    <div id="custoHT" class="ponto-valor">0</div>
+                </div>
             </div>
         </div>
+
+        <!-- ATRIBUTOS PRINCIPAIS -->
+        <div class="atributos-grid">
+            <!-- ST - FORÇA -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <i class="fas fa-fist-raised atributo-icon"></i>
+                    <div>
+                        <div class="atributo-sigla">ST</div>
+                        <div class="atributo-nome">FORÇA</div>
+                    </div>
+                </div>
+                
+                <div class="atributo-controle">
+                    <button class="btn-atributo" onclick="alterarAtributo('ST', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="ST" class="input-atributo" value="10" min="1" max="40">
+                    <button class="btn-atributo" onclick="alterarAtributo('ST', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="atributo-custo">
+                    <div class="custo-label">Custo (10 pts/nível)</div>
+                    <div id="custoSTValor" class="custo-valor">0 pontos</div>
+                </div>
+            </div>
+
+            <!-- DX - DESTREZA -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <i class="fas fa-running atributo-icon"></i>
+                    <div>
+                        <div class="atributo-sigla">DX</div>
+                        <div class="atributo-nome">DESTREZA</div>
+                    </div>
+                </div>
+                
+                <div class="atributo-controle">
+                    <button class="btn-atributo" onclick="alterarAtributo('DX', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="DX" class="input-atributo" value="10" min="1" max="40">
+                    <button class="btn-atributo" onclick="alterarAtributo('DX', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="atributo-custo">
+                    <div class="custo-label">Custo (20 pts/nível)</div>
+                    <div id="custoDXValor" class="custo-valor">0 pontos</div>
+                </div>
+            </div>
+
+            <!-- IQ - INTELIGÊNCIA -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <i class="fas fa-brain atributo-icon"></i>
+                    <div>
+                        <div class="atributo-sigla">IQ</div>
+                        <div class="atributo-nome">INTELIGÊNCIA</div>
+                    </div>
+                </div>
+                
+                <div class="atributo-controle">
+                    <button class="btn-atributo" onclick="alterarAtributo('IQ', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="IQ" class="input-atributo" value="10" min="1" max="40">
+                    <button class="btn-atributo" onclick="alterarAtributo('IQ', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="atributo-custo">
+                    <div class="custo-label">Custo (20 pts/nível)</div>
+                    <div id="custoIQValor" class="custo-valor">0 pontos</div>
+                </div>
+            </div>
+
+            <!-- HT - SAÚDE -->
+            <div class="atributo-card">
+                <div class="atributo-header">
+                    <i class="fas fa-heart atributo-icon"></i>
+                    <div>
+                        <div class="atributo-sigla">HT</div>
+                        <div class="atributo-nome">SAÚDE</div>
+                    </div>
+                </div>
+                
+                <div class="atributo-controle">
+                    <button class="btn-atributo" onclick="alterarAtributo('HT', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="HT" class="input-atributo" value="10" min="1" max="40">
+                    <button class="btn-atributo" onclick="alterarAtributo('HT', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="atributo-custo">
+                    <div class="custo-label">Custo (10 pts/nível)</div>
+                    <div id="custoHTValor" class="custo-valor">0 pontos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ATRIBUTOS SECUNDÁRIOS -->
+        <div class="atributos-secundarios">
+            <h3>Atributos Secundários</h3>
+            <div class="secundarios-grid">
+                <!-- PV - Pontos de Vida -->
+                <div class="secundario-item">
+                    <div class="secundario-header">
+                        <div class="secundario-sigla">PV</div>
+                        <i class="fas fa-heartbeat secundario-icon"></i>
+                    </div>
+                    <div class="secundario-nome">Pontos de Vida</div>
+                    <div class="secundario-valores">
+                        <div class="valor-base">
+                            Base: <span id="PVBase">10</span>
+                        </div>
+                        <span class="operador">+</span>
+                        <input type="number" id="bonusPV" class="bonus-input" value="0" min="-99" max="99">
+                    </div>
+                    <div class="valor-total">
+                        Total: <span id="PVTotal">10</span>
+                    </div>
+                </div>
+
+                <!-- PF - Pontos de Fadiga -->
+                <div class="secundario-item">
+                    <div class="secundario-header">
+                        <div class="secundario-sigla">PF</div>
+                        <i class="fas fa-wind secundario-icon"></i>
+                    </div>
+                    <div class="secundario-nome">Pontos de Fadiga</div>
+                    <div class="secundario-valores">
+                        <div class="valor-base">
+                            Base: <span id="PFBase">10</span>
+                        </div>
+                        <span class="operador">+</span>
+                        <input type="number" id="bonusPF" class="bonus-input" value="0" min="-99" max="99">
+                    </div>
+                    <div class="valor-total">
+                        Total: <span id="PFTotal">10</span>
+                    </div>
+                </div>
+
+                <!-- VONTADE -->
+                <div class="secundario-item">
+                    <div class="secundario-header">
+                        <div class="secundario-sigla">VON</div>
+                        <i class="fas fa-cross secundario-icon"></i>
+                    </div>
+                    <div class="secundario-nome">Vontade</div>
+                    <div class="secundario-valores">
+                        <div class="valor-base">
+                            Base: <span id="VontadeBase">10</span>
+                        </div>
+                        <span class="operador">+</span>
+                        <input type="number" id="bonusVontade" class="bonus-input" value="0" min="-99" max="99">
+                    </div>
+                    <div class="valor-total">
+                        Total: <span id="VontadeTotal">10</span>
+                    </div>
+                </div>
+
+                <!-- PERCEPÇÃO -->
+                <div class="secundario-item">
+                    <div class="secundario-header">
+                        <div class="secundario-sigla">PER</div>
+                        <i class="fas fa-eye secundario-icon"></i>
+                    </div>
+                    <div class="secundario-nome">Percepção</div>
+                    <div class="secundario-valores">
+                        <div class="valor-base">
+                            Base: <span id="PercepcaoBase">10</span>
+                        </div>
+                        <span class="operador">+</span>
+                        <input type="number" id="bonusPercepcao" class="bonus-input" value="0" min="-99" max="99">
+                    </div>
+                    <div class="valor-total">
+                        Total: <span id="PercepcaoTotal">10</span>
+                    </div>
+                </div>
+
+                <!-- DESLOCAMENTO -->
+                <div class="secundario-item">
+                    <div class="secundario-header">
+                        <div class="secundario-sigla">DES</div>
+                        <i class="fas fa-shoe-prints secundario-icon"></i>
+                    </div>
+                    <div class="secundario-nome">Deslocamento</div>
+                    <div class="secundario-valores">
+                        <div class="valor-base">
+                            Base: <span id="DeslocamentoBase">5.00</span>
+                        </div>
+                        <span class="operador">+</span>
+                        <input type="number" id="bonusDeslocamento" class="bonus-input" value="0" min="-99" max="99" step="0.25">
+                    </div>
+                    <div class="valor-total">
+                        Total: <span id="DeslocamentoTotal">5.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TÁBUAS DE REFERÊNCIA -->
+        <div class="tabelas-container">
+            <!-- TABELA DE DANO -->
+            <div class="tabela-card">
+                <h3>Tabela de Dano Base</h3>
+                <div class="tabela-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ST</th>
+                                <th>GDP</th>
+                                <th>GEB</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong id="currentST">10</strong></td>
+                                <td id="danoGDP">1d-2</td>
+                                <td id="danoGEB">1d</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>GDP: Golpe Desarmado • GEB: Golpe com Arma Básica</p>
+                </div>
+            </div>
+
+            <!-- TABELA DE CARGAS -->
+            <div class="tabela-card">
+                <h3>Capacidade de Carga</h3>
+                <div class="tabela-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Carga</th>
+                                <th>Peso (ST <span id="currentST2">10</span>)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Nenhuma</td>
+                                <td id="cargaNenhuma">10.0</td>
+                            </tr>
+                            <tr>
+                                <td>Leve</td>
+                                <td id="cargaLeve">20.0</td>
+                            </tr>
+                            <tr>
+                                <td>Média</td>
+                                <td id="cargaMedia">30.0</td>
+                            </tr>
+                            <tr>
+                                <td>Pesada</td>
+                                <td id="cargaPesada">60.0</td>
+                            </tr>
+                            <tr>
+                                <td>Muito Pesada</td>
+                                <td id="cargaMuitoPesada">100.0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATUS/MENSAGENS -->
+        <div id="statusAtributos" class="status-atributos">
+            <i class="fas fa-info-circle"></i>
+            <span>Sistema de atributos funcionando.</span>
+        </div>
+    </div>
+</div>
 
         <!-- CARACTERÍSTICAS -->
         <div id="caracteristicas" class="tab-content">
