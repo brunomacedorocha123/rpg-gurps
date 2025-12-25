@@ -1,10 +1,10 @@
-// caracteristicas-idiomas.js
-// ===== SISTEMA DE IDIOMAS - GURPS =====
-// Baseado no código original fornecido
+// ===========================================
+// CARACTERÍSTICAS-IDIOMAS.JS
+// Sistema de idiomas com desvantagens de alfabetização
+// ===========================================
 
 class SistemaIdiomas {
     constructor() {
-        // Configurações iniciais
         this.idiomaMaterno = {
             nome: 'Comum',
             nivelFala: 6,
@@ -14,70 +14,43 @@ class SistemaIdiomas {
         
         this.idiomasAdicionais = [];
         
-        // Desvantagens de alfabetização (NOVO!)
-        this.desvantagensAlfabetizacao = [
-            { id: 'analfabeto', nome: 'Analfabeto', pontos: -3, descricao: 'Não sabe ler nem escrever', icone: 'fas fa-book-dead', tipo: 'desvantagem' },
-            { id: 'semi-analfabeto', nome: 'Semi-analfabeto', pontos: -2, descricao: 'Lê e escreve com extrema dificuldade', icone: 'fas fa-book-reader', tipo: 'desvantagem' }
-        ];
-        
-        this.desvantagemSelecionada = null; // Pode ser 'analfabeto', 'semi-analfabeto' ou null
-        
-        // Níveis de proficiência em idiomas
+        // Níveis de proficiência
         this.niveisFala = [
-            { valor: 0, nome: 'Nenhum', custo: 0 },
-            { valor: 2, nome: 'Rudimentar', custo: 2 },
-            { valor: 4, nome: 'Sotaque', custo: 4 },
-            { valor: 6, nome: 'Nativo', custo: 6 }
+            { valor: 0, nome: 'Nenhum', custo: 0, descricao: 'Não fala o idioma' },
+            { valor: 2, nome: 'Rudimentar', custo: 2, descricao: 'Vocabulário limitado, erros frequentes' },
+            { valor: 4, nome: 'Sotaque', custo: 4, descricao: 'Pronúncia estrangeira perceptível' },
+            { valor: 6, nome: 'Nativo', custo: 6, descricao: 'Fala como nativo' }
         ];
         
         this.niveisEscrita = [
-            { valor: 0, nome: 'Nenhum', custo: 0 },
-            { valor: 2, nome: 'Rudimentar', custo: 1 },
-            { valor: 4, nome: 'Sotaque', custo: 2 },
-            { valor: 6, nome: 'Nativo', custo: 3 }
+            { valor: 0, nome: 'Nenhum', custo: 0, descricao: 'Não escreve o idioma' },
+            { valor: 2, nome: 'Rudimentar', custo: 1, descricao: 'Escreve apenas palavras simples' },
+            { valor: 4, nome: 'Sotaque', custo: 2, descricao: 'Escreve bem, mas com erros ocasionais' },
+            { valor: 6, nome: 'Nativo', custo: 3, descricao: 'Escreve fluentemente' }
+        ];
+        
+        // Desvantagens de alfabetização
+        this.desvantagensAlfabetizacao = [
+            { valor: 0, nome: 'Alfabetizado', descricao: 'Consegue ler e escrever normalmente', pontos: 0 },
+            { valor: -2, nome: 'Semianalfabeto', descricao: 'Só consegue ler e escrever palavras simples', pontos: -2 },
+            { valor: -3, nome: 'Analfabeto', descricao: 'Não consegue ler nem escrever', pontos: -3 }
         ];
 
+        this.alfabetizacaoAtual = 0; // 0 = alfabetizado
         this.inicializado = false;
-        
-        // Inicializa quando a aba for carregada
-        this.inicializarQuandoPronto();
-    }
-    
-    inicializarQuandoPronto() {
-        // Espera a aba de características ser carregada
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                    const tab = mutation.target;
-                    if (tab.id === 'caracteristicas-tab' && tab.style.display !== 'none') {
-                        setTimeout(() => {
-                            if (!this.inicializado) {
-                                this.inicializar();
-                            }
-                        }, 100);
-                    }
-                }
-            });
-        });
-
-        const caracteristicasTab = document.getElementById('caracteristicas-tab');
-        if (caracteristicasTab) {
-            observer.observe(caracteristicasTab, { attributes: true });
-        }
+        this.carregarDoLocalStorage();
     }
     
     inicializar() {
         if (this.inicializado) return;
         
-        console.log('🗣️ Sistema de Idiomas inicializando...');
-        
         this.configurarEventos();
         this.atualizarPreviewCusto();
         this.atualizarDisplay();
         this.inicializado = true;
-        this.notificarPontosTotais();
         
-        console.log('✅ Sistema de Idiomas inicializado');
+        // Notificar sistema de pontos
+        this.notificarAtualizacao();
     }
     
     configurarEventos() {
@@ -117,71 +90,28 @@ class SistemaIdiomas {
                 const idiomaId = parseInt(button.dataset.id);
                 this.removerIdioma(idiomaId);
             }
-            
-            // Desvantagens de alfabetização (NOVO!)
-            if (e.target.closest('.btn-desvantagem-alfabetizacao')) {
-                const button = e.target.closest('.btn-desvantagem-alfabetizacao');
-                const desvantagemId = button.dataset.id;
-                this.selecionarDesvantagemAlfabetizacao(desvantagemId);
-            }
-            
-            // Remover desvantagem de alfabetização (NOVO!)
-            if (e.target.closest('.btn-remove-desvantagem')) {
-                this.removerDesvantagemAlfabetizacao();
-            }
         });
         
-        // Idioma materno
-        const inputIdiomaMaterno = document.getElementById('idiomaMaternoNome');
-        if (inputIdiomaMaterno) {
-            inputIdiomaMaterno.addEventListener('input', () => {
-                this.idiomaMaterno.nome = inputIdiomaMaterno.value;
-                this.atualizarDisplay();
+        // Eventos para alfabetização
+        const radiosAlfabetizacao = document.querySelectorAll('input[name="alfabetizacao"]');
+        radiosAlfabetizacao.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.alfabetizacaoAtual = parseInt(e.target.value);
+                this.atualizarDescricaoAlfabetizacao();
+                this.salvarNoLocalStorage();
+                this.notificarAtualizacao();
+            });
+        });
+        
+        // Input do idioma materno
+        const inputMaterno = document.getElementById('idiomaMaternoNome');
+        if (inputMaterno) {
+            inputMaterno.addEventListener('change', () => {
+                this.idiomaMaterno.nome = inputMaterno.value;
+                this.salvarNoLocalStorage();
             });
         }
     }
-    
-    // ===== DESVANTAGENS DE ALFABETIZAÇÃO (NOVO!) =====
-    
-    selecionarDesvantagemAlfabetizacao(desvantagemId) {
-        const desvantagem = this.desvantagensAlfabetizacao.find(d => d.id === desvantagemId);
-        if (desvantagem) {
-            this.desvantagemSelecionada = desvantagemId;
-            
-            // Se selecionar analfabeto ou semi-analfabeto, remover todos os idiomas com escrita
-            if (desvantagemId === 'analfabeto' || desvantagemId === 'semi-analfabeto') {
-                this.idiomasAdicionais = this.idiomasAdicionais.map(idioma => {
-                    // Mantém o idioma, mas remove escrita
-                    return {
-                        ...idioma,
-                        nivelEscrita: 0,
-                        custoTotal: this.calcularCustoIdioma(idioma.nivelFala, 0)
-                    };
-                });
-            }
-            
-            this.atualizarDisplay();
-            this.notificarPontosTotais();
-        }
-    }
-    
-    removerDesvantagemAlfabetizacao() {
-        this.desvantagemSelecionada = null;
-        this.atualizarDisplay();
-        this.notificarPontosTotais();
-    }
-    
-    getDesvantagemAlfabetizacaoAtiva() {
-        if (!this.desvantagemSelecionada) return null;
-        return this.desvantagensAlfabetizacao.find(d => d.id === this.desvantagemSelecionada);
-    }
-    
-    getPontosDesvantagemAlfabetizacao() {
-        const desvantagem = this.getDesvantagemAlfabetizacaoAtiva();
-        return desvantagem ? desvantagem.pontos : 0;
-    }
-    
-    // ===== IDIOMAS ADICIONAIS =====
     
     atualizarPreviewCusto() {
         const selectFala = document.getElementById('novoIdiomaFala');
@@ -195,7 +125,7 @@ class SistemaIdiomas {
             const preview = document.getElementById('custoIdiomaPreview');
             if (preview) {
                 preview.textContent = `${custo >= 0 ? '+' : ''}${custo} pts`;
-                preview.style.color = custo >= 0 ? '#27ae60' : '#e74c3c';
+                preview.style.color = custo > 0 ? '#27ae60' : '#95a5a6';
             }
         }
     }
@@ -205,32 +135,21 @@ class SistemaIdiomas {
         const nomeDigitado = inputNome ? inputNome.value.trim() : '';
         
         if (!nomeDigitado) {
-            this.mostrarAlerta('Por favor, digite um nome para o idioma!', 'erro');
+            alert('Por favor, digite um nome para o idioma!');
             inputNome?.focus();
             return;
         }
         
         if (this.idiomaJaExiste(nomeDigitado)) {
-            this.mostrarAlerta('Este idioma já foi adicionado!', 'erro');
+            alert('Este idioma já foi adicionado!');
             return;
-        }
-        
-        // Verificar se o jogador é analfabeto/semi-analfabeto
-        const desvantagemAtiva = this.getDesvantagemAlfabetizacaoAtiva();
-        if ((desvantagemAtiva?.id === 'analfabeto' || desvantagemAtiva?.id === 'semi-analfabeto')) {
-            this.mostrarAlerta(`Você é ${desvantagemAtiva.nome.toLowerCase()}! A escrita será definida como "Nenhum".`, 'info');
         }
         
         const selectFala = document.getElementById('novoIdiomaFala');
         const selectEscrita = document.getElementById('novoIdiomaEscrita');
         
-        let nivelFala = selectFala ? parseInt(selectFala.value) : 2;
-        let nivelEscrita = selectEscrita ? parseInt(selectEscrita.value) : 0;
-        
-        // Forçar escrita 0 se for analfabeto/semi-analfabeto
-        if (desvantagemAtiva && (desvantagemAtiva.id === 'analfabeto' || desvantagemAtiva.id === 'semi-analfabeto')) {
-            nivelEscrita = 0;
-        }
+        const nivelFala = selectFala ? parseInt(selectFala.value) : 2;
+        const nivelEscrita = selectEscrita ? parseInt(selectEscrita.value) : 0;
         
         const custoTotal = this.calcularCustoIdioma(nivelFala, nivelEscrita);
         
@@ -239,7 +158,8 @@ class SistemaIdiomas {
             nome: nomeDigitado,
             nivelFala: nivelFala,
             nivelEscrita: nivelEscrita,
-            custoTotal: custoTotal
+            custoTotal: custoTotal,
+            dataAdicao: new Date().toISOString()
         };
         
         this.idiomasAdicionais.push(novoIdioma);
@@ -250,14 +170,14 @@ class SistemaIdiomas {
             inputNome.focus();
         }
         
-        if (selectFala) selectFala.value = '6'; // Reset para Nativo
-        if (selectEscrita) selectEscrita.value = '0'; // Reset para Nenhum
+        // Resetar para valores padrão
+        if (selectFala) selectFala.value = '2';
+        if (selectEscrita) selectEscrita.value = '0';
         
         this.atualizarPreviewCusto();
         this.atualizarDisplay();
-        this.notificarPontosTotais();
-        
-        this.mostrarAlerta(`Idioma "${nomeDigitado}" adicionado com sucesso!`, 'sucesso');
+        this.salvarNoLocalStorage();
+        this.notificarAtualizacao();
     }
 
     idiomaJaExiste(nome) {
@@ -269,9 +189,8 @@ class SistemaIdiomas {
     removerIdioma(id) {
         this.idiomasAdicionais = this.idiomasAdicionais.filter(i => i.id !== id);
         this.atualizarDisplay();
-        this.notificarPontosTotais();
-        
-        this.mostrarAlerta('Idioma removido!', 'info');
+        this.salvarNoLocalStorage();
+        this.notificarAtualizacao();
     }
     
     calcularCustoIdioma(nivelFala, nivelEscrita) {
@@ -285,78 +204,19 @@ class SistemaIdiomas {
     }
     
     calcularPontosIdiomas() {
-        return this.idiomasAdicionais.reduce((total, idioma) => total + idioma.custoTotal, 0);
-    }
-    
-    calcularPontosTotais() {
-        const pontosIdiomas = this.calcularPontosIdiomas();
-        const pontosDesvantagem = this.getPontosDesvantagemAlfabetizacao();
-        return pontosIdiomas + pontosDesvantagem;
+        // Pontos dos idiomas adicionais
+        const pontosIdiomas = this.idiomasAdicionais.reduce((total, idioma) => total + idioma.custoTotal, 0);
+        
+        // Adicionar desvantagem de alfabetização (valor negativo)
+        const pontosAlfabetizacao = this.alfabetizacaoAtual;
+        
+        return pontosIdiomas + pontosAlfabetizacao;
     }
     
     atualizarDisplay() {
-        this.atualizarDesvantagensAlfabetizacao(); // NOVO!
         this.atualizarListaIdiomas();
         this.atualizarPontos();
-        this.atualizarIdiomaMaterno();
-    }
-    
-    // NOVO: Atualizar display das desvantagens de alfabetização
-    atualizarDesvantagensAlfabetizacao() {
-        const container = document.getElementById('desvantagensAlfabetizacaoContainer');
-        if (!container) {
-            // Criar container se não existir
-            const antesLista = document.querySelector('.adicionar-idioma');
-            if (antesLista) {
-                const novoContainer = document.createElement('div');
-                novoContainer.id = 'desvantagensAlfabetizacaoContainer';
-                novoContainer.className = 'desvantagens-alfabetizacao';
-                antesLista.parentNode.insertBefore(novoContainer, antesLista);
-            } else {
-                return;
-            }
-        }
-        
-        const desvantagemAtiva = this.getDesvantagemAlfabetizacaoAtiva();
-        
-        if (desvantagemAtiva) {
-            container.innerHTML = `
-                <div class="desvantagem-ativa" style="background: rgba(231, 76, 60, 0.1); border: 2px solid #e74c3c; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <i class="${desvantagemAtiva.icone}" style="color: #e74c3c;"></i>
-                            <strong style="color: #e74c3c; margin-left: 10px;">${desvantagemAtiva.nome}</strong>
-                            <div style="color: #fff; font-size: 0.9em; margin-top: 5px;">
-                                <span style="color: #e74c3c; font-weight: bold;">${desvantagemAtiva.pontos} pts</span> | ${desvantagemAtiva.descricao}
-                            </div>
-                        </div>
-                        <button class="btn-remove-desvantagem" style="background: #e74c3c; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer;">
-                            <i class="fas fa-times"></i> Remover
-                        </button>
-                    </div>
-                </div>
-            `;
-        } else {
-            container.innerHTML = `
-                <div class="desvantagens-opcoes" style="margin-bottom: 20px;">
-                    <h4 style="color: var(--text-light); margin-bottom: 10px; font-size: 1.1rem;">
-                        <i class="fas fa-exclamation-triangle"></i> Desvantagens de Alfabetização
-                    </h4>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        ${this.desvantagensAlfabetizacao.map(desv => `
-                            <button class="btn-desvantagem-alfabetizacao" data-id="${desv.id}" 
-                                style="background: rgba(231, 76, 60, 0.2); border: 2px solid #e74c3c; color: #e74c3c; padding: 10px 15px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold;">
-                                <i class="${desv.icone}"></i>
-                                ${desv.nome} (${desv.pontos} pts)
-                            </button>
-                        `).join('')}
-                    </div>
-                    <div style="color: var(--wood-light); font-size: 0.9em; margin-top: 10px;">
-                        Selecione uma desvantagem se seu personagem tiver dificuldades com leitura/escrita
-                    </div>
-                </div>
-            `;
-        }
+        this.atualizarDescricaoAlfabetizacao();
     }
     
     atualizarListaIdiomas() {
@@ -377,25 +237,19 @@ class SistemaIdiomas {
         container.innerHTML = this.idiomasAdicionais.map(idioma => {
             const nivelFala = this.obterTextoNivel(idioma.nivelFala, 'fala');
             const nivelEscrita = this.obterTextoNivel(idioma.nivelEscrita, 'escrita');
-            const desvantagemAtiva = this.getDesvantagemAlfabetizacaoAtiva();
-            
-            let escritaIcone = '📝';
-            if (desvantagemAtiva && (desvantagemAtiva.id === 'analfabeto' || desvantagemAtiva.id === 'semi-analfabeto')) {
-                escritaIcone = '🚫'; // Bloqueado se for analfabeto
-            }
             
             return `
                 <div class="idioma-item">
                     <div class="idioma-info">
                         <strong>${idioma.nome}</strong>
                         <div class="idioma-niveis">
-                            <small>🗣️ ${nivelFala} | ${escritaIcone} ${nivelEscrita}</small>
+                            <small><i class="fas fa-comment"></i> ${nivelFala} | <i class="fas fa-pen"></i> ${nivelEscrita}</small>
                         </div>
                     </div>
                     <div class="idioma-actions">
-                        <span class="idioma-custo" style="background: ${idioma.custoTotal > 0 ? 'rgba(39, 174, 96, 0.3)' : 'rgba(149, 165, 166, 0.3)'}; color: ${idioma.custoTotal > 0 ? '#27ae60' : '#95a5a6'};">+${idioma.custoTotal}</span>
-                        <button class="btn-remove-idioma" data-id="${idioma.id}">
-                            <i class="fas fa-trash" style="color: #e74c3c;"></i>
+                        <span class="idioma-custo">+${idioma.custoTotal}</span>
+                        <button class="btn-remove-idioma" data-id="${idioma.id}" title="Remover idioma">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
@@ -403,44 +257,35 @@ class SistemaIdiomas {
         }).join('');
     }
     
-    atualizarIdiomaMaterno() {
-        const desvantagemAtiva = this.getDesvantagemAlfabetizacaoAtiva();
-        const elementoNativo = document.querySelector('.idioma-materno-nativo');
-        
-        if (elementoNativo) {
-            if (desvantagemAtiva && (desvantagemAtiva.id === 'analfabeto' || desvantagemAtiva.id === 'semi-analfabeto')) {
-                elementoNativo.innerHTML = `
-                    <div style="color: #e74c3c;">
-                        <i class="fas fa-exclamation-circle"></i> Nativo (0 pts)<br>
-                        <small style="color: #e74c3c; font-size: 0.8em;">${desvantagemAtiva.nome} - escrita bloqueada</small>
-                    </div>
-                `;
-            } else {
-                elementoNativo.innerHTML = 'Nativo (0 pts)';
+    atualizarPontos() {
+        const badge = document.getElementById('pontosIdiomas');
+        if (badge) {
+            const pontos = this.calcularPontosIdiomas();
+            const textoPontos = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
+            
+            badge.textContent = textoPontos;
+            badge.className = 'pontos-badge';
+            
+            if (pontos > 0) {
+                badge.classList.add('positivo');
+            } else if (pontos < 0) {
+                badge.classList.add('negativo');
             }
         }
     }
     
-    atualizarPontos() {
-        const badge = document.getElementById('pontosIdiomas');
-        if (badge) {
-            const pontos = this.calcularPontosTotais();
-            const pontosTexto = pontos >= 0 ? `+${pontos} pts` : `${pontos} pts`;
-            badge.textContent = pontosTexto;
-            
-            // Cor baseada nos pontos
-            if (pontos < 0) {
-                badge.style.background = '#e74c3c'; // Vermelho para desvantagem
-                badge.style.color = '#fff';
-            } else if (pontos > 0) {
-                badge.style.background = '#27ae60'; // Verde para vantagem
-                badge.style.color = '#fff';
-            } else {
-                badge.style.background = '#95a5a6'; // Cinza para neutro
-                badge.style.color = '#fff';
-            }
-            
-            badge.style.fontWeight = 'bold';
+    atualizarDescricaoAlfabetizacao() {
+        const descElement = document.getElementById('descAlfabetizacao');
+        const desvantagem = this.desvantagensAlfabetizacao.find(d => d.valor === this.alfabetizacaoAtual);
+        
+        if (descElement && desvantagem) {
+            descElement.textContent = desvantagem.descricao;
+        }
+        
+        // Marcar o radio correto
+        const radio = document.querySelector(`input[name="alfabetizacao"][value="${this.alfabetizacaoAtual}"]`);
+        if (radio) {
+            radio.checked = true;
         }
     }
     
@@ -449,166 +294,190 @@ class SistemaIdiomas {
         const nivelObj = niveis.find(n => n.valor === nivel);
         return nivelObj ? nivelObj.nome : 'Desconhecido';
     }
-    
-    mostrarAlerta(mensagem, tipo = 'info') {
-        // Você pode implementar um sistema de toast ou usar alert
-        console.log(`${tipo.toUpperCase()}: ${mensagem}`);
+
+    notificarAtualizacao() {
+        const pontos = this.calcularPontosIdiomas();
+        const tipo = pontos >= 0 ? 'vantagem' : 'desvantagem';
         
-        // Exemplo simples com alert
-        // alert(mensagem);
-    }
-    
-    notificarPontosTotais() {
-        const pontos = this.calcularPontosTotais();
-        const pontosIdiomas = this.calcularPontosIdiomas();
-        const pontosDesvantagem = this.getPontosDesvantagemAlfabetizacao();
-        
-        const evento = new CustomEvent('idiomasPontosAtualizados', {
+        const evento = new CustomEvent('caracteristicasAtualizadas', {
             detail: {
-                pontosTotais: pontos,
-                pontosIdiomas: pontosIdiomas,
-                pontosDesvantagem: pontosDesvantagem,
+                tipo: 'idiomas',
+                pontos: pontos,
+                tipoPontos: tipo,
                 totalIdiomas: this.idiomasAdicionais.length,
-                desvantagemAlfabetizacao: this.getDesvantagemAlfabetizacaoAtiva(),
+                alfabetizacao: this.alfabetizacaoAtual,
                 timestamp: new Date().toISOString()
             }
         });
         document.dispatchEvent(evento);
-        
-        // Notificar sistema principal
-        const eventoPrincipal = new CustomEvent('caracteristicasPontosAtualizados', {
-            detail: {
-                tipo: 'idiomas',
-                pontos: pontos,
-                custoAbsoluto: Math.abs(pontos),
-                isVantagem: pontos > 0,
-                isDesvantagem: pontos < 0,
-                detalhes: {
-                    idiomas: this.idiomasAdicionais.length,
-                    desvantagem: this.desvantagemSelecionada
-                }
-            }
-        });
-        document.dispatchEvent(eventoPrincipal);
     }
 
-    // ===== MÉTODOS PARA INTEGRAÇÃO =====
-    
+    // LOCAL STORAGE
+    salvarNoLocalStorage() {
+        try {
+            const dados = {
+                idiomaMaterno: this.idiomaMaterno,
+                idiomasAdicionais: this.idiomasAdicionais,
+                alfabetizacao: this.alfabetizacaoAtual,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('gurps_idiomas', JSON.stringify(dados));
+        } catch (error) {
+            console.warn('Não foi possível salvar idiomas:', error);
+        }
+    }
+
+    carregarDoLocalStorage() {
+        try {
+            const dadosSalvos = localStorage.getItem('gurps_idiomas');
+            if (dadosSalvos) {
+                const dados = JSON.parse(dadosSalvos);
+                
+                if (dados.idiomaMaterno) {
+                    this.idiomaMaterno = dados.idiomaMaterno;
+                    const input = document.getElementById('idiomaMaternoNome');
+                    if (input) input.value = this.idiomaMaterno.nome;
+                }
+                
+                if (dados.idiomasAdicionais) {
+                    this.idiomasAdicionais = dados.idiomasAdicionais;
+                }
+                
+                if (dados.alfabetizacao !== undefined) {
+                    this.alfabetizacaoAtual = dados.alfabetizacao;
+                }
+                
+                return true;
+            }
+        } catch (error) {
+            console.warn('Não foi possível carregar idiomas:', error);
+        }
+        return false;
+    }
+
+    // EXPORTAÇÃO DE DADOS
     exportarDados() {
         return {
-            idiomaMaterno: this.idiomaMaterno,
-            idiomasAdicionais: this.idiomasAdicionais,
-            desvantagemAlfabetizacao: this.desvantagemSelecionada,
-            pontosTotais: this.calcularPontosTotais(),
-            pontosIdiomas: this.calcularPontosIdiomas(),
-            pontosDesvantagem: this.getPontosDesvantagemAlfabetizacao()
+            idiomas: {
+                idiomaMaterno: this.idiomaMaterno,
+                idiomasAdicionais: this.idiomasAdicionais,
+                alfabetizacao: this.alfabetizacaoAtual,
+                pontosTotais: this.calcularPontosIdiomas(),
+                totalIdiomas: this.idiomasAdicionais.length
+            }
         };
     }
 
     carregarDados(dados) {
-        if (dados.idiomaMaterno) {
-            this.idiomaMaterno = dados.idiomaMaterno;
-            const input = document.getElementById('idiomaMaternoNome');
-            if (input) input.value = this.idiomaMaterno.nome;
+        if (dados.idiomas) {
+            if (dados.idiomas.idiomaMaterno) {
+                this.idiomaMaterno = dados.idiomas.idiomaMaterno;
+                const input = document.getElementById('idiomaMaternoNome');
+                if (input) input.value = this.idiomaMaterno.nome;
+            }
+            
+            if (dados.idiomas.idiomasAdicionais) {
+                this.idiomasAdicionais = dados.idiomas.idiomasAdicionais;
+            }
+            
+            if (dados.idiomas.alfabetizacao !== undefined) {
+                this.alfabetizacaoAtual = dados.idiomas.alfabetizacao;
+            }
+            
+            this.atualizarDisplay();
+            return true;
         }
-        
-        if (dados.idiomasAdicionais) {
-            this.idiomasAdicionais = dados.idiomasAdicionais;
-        }
-        
-        if (dados.desvantagemAlfabetizacao) {
-            this.desvantagemSelecionada = dados.desvantagemAlfabetizacao;
-        }
-        
-        this.atualizarDisplay();
-        this.notificarPontosTotais();
+        return false;
     }
 
-    resetarParaPadrao() {
-        this.idiomaMaterno = {
-            nome: 'Comum',
-            nivelFala: 6,
-            nivelEscrita: 6,
-            custoTotal: 0
-        };
-        
-        this.idiomasAdicionais = [];
-        this.desvantagemSelecionada = null;
-        
-        const input = document.getElementById('idiomaMaternoNome');
-        if (input) input.value = 'Comum';
-        
-        this.atualizarDisplay();
-        this.notificarPontosTotais();
-    }
-
+    // VALIDAÇÃO
     validarIdiomas() {
-        const pontos = this.calcularPontosTotais();
-        const totalIdiomas = this.idiomasAdicionais.length;
-        const desvantagem = this.getDesvantagemAlfabetizacaoAtiva();
-        
-        let mensagem = `Idiomas: ${totalIdiomas} idioma(s) adicional(is)`;
-        if (desvantagem) {
-            mensagem += ` | ${desvantagem.nome} (${desvantagem.pontos} pts)`;
-        }
-        mensagem += ` | Total: ${pontos >= 0 ? '+' : ''}${pontos} pts`;
+        const pontos = this.calcularPontosIdiomas();
+        const desvantagem = this.desvantagensAlfabetizacao.find(d => d.valor === this.alfabetizacaoAtual);
         
         return {
             valido: true,
             pontos: pontos,
-            totalIdiomas: totalIdiomas,
-            desvantagem: desvantagem,
-            mensagem: mensagem
+            totalIdiomas: this.idiomasAdicionais.length,
+            alfabetizacao: desvantagem?.nome || 'Desconhecido',
+            mensagem: `Idiomas: ${this.idiomasAdicionais.length} adicionais, ${desvantagem?.nome || 'Alfabetizado'} (${pontos >= 0 ? '+' : ''}${pontos} pts)`
         };
     }
 }
 
-// ===== INICIALIZAÇÃO GLOBAL =====
-let sistemaIdiomas;
+// INICIALIZAÇÃO GLOBAL
+let sistemaIdiomas = null;
 
-// Inicializar quando o DOM estiver pronto
+function inicializarSistemaIdiomas() {
+    if (!sistemaIdiomas) {
+        sistemaIdiomas = new SistemaIdiomas();
+    }
+    sistemaIdiomas.inicializar();
+    return sistemaIdiomas;
+}
+
+// EVENTOS DO DOM
 document.addEventListener('DOMContentLoaded', function() {
-    sistemaIdiomas = new SistemaIdiomas();
-    
-    // Também inicializar se a aba já estiver ativa
-    const caracteristicasTab = document.getElementById('caracteristicas-tab');
-    if (caracteristicasTab && caracteristicasTab.style.display !== 'none') {
-        setTimeout(() => {
-            if (sistemaIdiomas && !sistemaIdiomas.inicializado) {
-                sistemaIdiomas.inicializar();
+    // Inicializar quando a aba de características for ativa
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const tab = mutation.target;
+                if (tab.id === 'caracteristicas' && tab.classList.contains('active')) {
+                    // Verificar se é a sub-aba correta
+                    const subtabAtiva = document.querySelector('#subtab-social-aparencia.active');
+                    if (subtabAtiva) {
+                        setTimeout(inicializarSistemaIdiomas, 100);
+                    }
+                }
             }
-        }, 300);
+        });
+    });
+
+    // Observar a aba principal
+    const tabCaracteristicas = document.getElementById('caracteristicas');
+    if (tabCaracteristicas) {
+        observer.observe(tabCaracteristicas, { attributes: true });
     }
 });
 
-// ===== FUNÇÕES GLOBAIS PARA ACESSO =====
-window.adicionarIdioma = function() {
-    if (sistemaIdiomas) {
-        sistemaIdiomas.adicionarIdioma();
+// Evento para troca de sub-abas
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.subtab-btn')) {
+        const btn = e.target.closest('.subtab-btn');
+        const subtabId = btn.dataset.subtab;
+        
+        if (subtabId === 'social-aparencia') {
+            setTimeout(inicializarSistemaIdiomas, 100);
+        }
     }
-};
+});
 
-window.getPontosIdiomas = function() {
-    return sistemaIdiomas ? sistemaIdiomas.calcularPontosTotais() : 0;
-};
-
-window.getIdiomasDetalhes = function() {
-    if (!sistemaIdiomas) return null;
+// SISTEMA DE SUB-ABAS
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar navegação entre sub-abas
+    const subtabButtons = document.querySelectorAll('.subtab-btn');
+    const subtabPanes = document.querySelectorAll('.subtab-pane');
     
-    return {
-        idiomaMaterno: sistemaIdiomas.idiomaMaterno,
-        idiomasAdicionais: sistemaIdiomas.idiomasAdicionais,
-        desvantagem: sistemaIdiomas.getDesvantagemAlfabetizacaoAtiva(),
-        pontosTotais: sistemaIdiomas.calcularPontosTotais()
-    };
-};
+    subtabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const subtabId = this.dataset.subtab;
+            
+            // Remover classe active de todos
+            subtabButtons.forEach(btn => btn.classList.remove('active'));
+            subtabPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Adicionar classe active ao selecionado
+            this.classList.add('active');
+            const targetPane = document.getElementById(`subtab-${subtabId}`);
+            if (targetPane) {
+                targetPane.classList.add('active');
+            }
+        });
+    });
+});
 
-window.validarIdiomas = function() {
-    return sistemaIdiomas ? sistemaIdiomas.validarIdiomas() : { valido: false, mensagem: 'Sistema não inicializado' };
-};
-
-// Exportar para uso em outros sistemas
+// EXPORTAR PARA USO GLOBAL
 window.SistemaIdiomas = SistemaIdiomas;
+window.inicializarSistemaIdiomas = inicializarSistemaIdiomas;
 window.sistemaIdiomas = sistemaIdiomas;
-
-console.log('📦 Sistema de Idiomas carregado e pronto!');

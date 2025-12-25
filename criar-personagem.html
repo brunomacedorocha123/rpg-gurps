@@ -1052,11 +1052,203 @@
                 </div>
             </div>
 
-            <!-- SUB-ABA 2: CARACTERÍSTICAS FÍSICAS -->
-            <div id="subtab-caracteristicas-fisicas" class="subtab-pane">
-                <div class="status-mensagem" style="margin-bottom: 20px;">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Em desenvolvimento - Sub-aba de características físicas</span>
+           <!-- SUB-ABA 2: CARACTERÍSTICAS FÍSICAS -->
+<div id="subtab-caracteristicas-fisicas" class="subtab-pane">
+    <!-- CARDS SUPERIORES -->
+    <div class="caracteristicas-grid">
+        <!-- CARD CARACTERÍSTICAS FÍSICAS -->
+        <div class="caracteristica-card">
+            <div class="card-header">
+                <i class="fas fa-weight"></i>
+                <h3>Características Físicas</h3>
+                <span class="pontos-badge" id="pontosCaracteristicas">0 pts</span>
+            </div>
+            <div class="card-content">
+                <div class="caracteristicas-lista">
+                    <!-- Dinâmico - será preenchido pelo JS -->
+                </div>
+                
+                <!-- CARACTERÍSTICAS SELECIONADAS -->
+                <div id="caracteristicasSelecionadas" class="caracteristicas-selecionadas">
+                    <!-- Dinâmico -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD ALTURA E PESO -->
+        <div class="caracteristica-card">
+            <div class="card-header">
+                <i class="fas fa-ruler-combined"></i>
+                <h3>Altura e Peso</h3>
+                <span class="status-badge" id="statusFisico">Normal</span>
+            </div>
+            <div class="card-content">
+                <!-- CONTROLES ALTURA -->
+                <div class="fisica-control">
+                    <label><i class="fas fa-ruler-vertical"></i> Altura (metros):</label>
+                    <div class="controle-numerico">
+                        <button class="btn-controle" onclick="ajustarAltura(-0.01)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" id="altura" value="1.70" step="0.01" min="1.20" max="2.50" class="fisica-input">
+                        <button class="btn-controle" onclick="ajustarAltura(0.01)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="statusAltura" class="status-info"></div>
+                </div>
+
+                <!-- CONTROLES PESO -->
+                <div class="fisica-control">
+                    <label><i class="fas fa-weight-scale"></i> Peso (kg):</label>
+                    <div class="controle-numerico">
+                        <button class="btn-controle" onclick="ajustarPeso(-1)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" id="peso" value="70" step="1" min="20" max="200" class="fisica-input">
+                        <button class="btn-controle" onclick="ajustarPeso(1)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="statusPeso" class="status-info"></div>
+                </div>
+
+                <!-- DESVANTAGENS ATIVAS -->
+                <div class="desvantagens-ativas" id="desvantagensAtivas" style="display: none;">
+                    <div class="desvantagens-header">
+                        <i class="fas fa-list-check"></i>
+                        <h4>Características Físicas Ativas</h4>
+                    </div>
+                    <div class="desvantagens-lista" id="listaDesvantagens">
+                        <!-- Dinâmico -->
+                    </div>
+                </div>
+
+                <!-- INFO BASE ST -->
+                <div class="fisica-info">
+                    <div class="info-row">
+                        <span>ST Base:</span>
+                        <strong id="stBase">10</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Faixa de Altura (ST):</span>
+                        <span id="alturaFaixa">1.58m - 1.83m</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Faixa de Peso (ST):</span>
+                        <span id="pesoFaixa">57.5kg - 87.5kg</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Status:</span>
+                        <span id="modificadorPeso">Dentro da faixa</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD CARACTERÍSTICAS VISUAIS -->
+    <div class="caracteristica-card full-width">
+        <div class="card-header">
+            <i class="fas fa-eye"></i>
+            <h3>Aparência Visual</h3>
+        </div>
+        <div class="card-content">
+            <div class="visual-grid">
+                <!-- COR DA PELE -->
+                <div class="visual-group">
+                    <label><i class="fas fa-palette"></i> Cor da Pele:</label>
+                    <select class="form-select select-visual" data-tipo="cor-pele">
+                        <option value="Muito clara">Muito clara</option>
+                        <option value="Clara">Clara</option>
+                        <option value="Morena clara">Morena clara</option>
+                        <option value="Morena" selected>Morena</option>
+                        <option value="Morena escura">Morena escura</option>
+                        <option value="Escura">Escura</option>
+                        <option value="Muito escura">Muito escura</option>
+                    </select>
+                </div>
+
+                <!-- COR DOS OLHOS -->
+                <div class="visual-group">
+                    <label><i class="fas fa-eye"></i> Cor dos Olhos:</label>
+                    <select class="form-select select-visual" data-tipo="cor-olhos">
+                        <option value="Azuis">Azuis</option>
+                        <option value="Verdes">Verdes</option>
+                        <option value="Castanhos claros">Castanhos claros</option>
+                        <option value="Castanhos" selected>Castanhos</option>
+                        <option value="Castanhos escuros">Castanhos escuros</option>
+                        <option value="Pretos">Pretos</option>
+                        <option value="Vermelhos">Vermelhos</option>
+                        <option value="Âmbar">Âmbar</option>
+                    </select>
+                </div>
+
+                <!-- COR DO CABELO -->
+                <div class="visual-group">
+                    <label><i class="fas fa-user-hair"></i> Cor do Cabelo:</label>
+                    <select class="form-select select-visual" data-tipo="cor-cabelo">
+                        <option value="Loiro">Loiro</option>
+                        <option value="Ruivo">Ruivo</option>
+                        <option value="Castanho claro">Castanho claro</option>
+                        <option value="Castanho" selected>Castanho</option>
+                        <option value="Castanho escuro">Castanho escuro</option>
+                        <option value="Preto">Preto</option>
+                        <option value="Grisalho">Grisalho</option>
+                        <option value="Branco">Branco</option>
+                    </select>
+                </div>
+
+                <!-- TIPO DE CABELO -->
+                <div class="visual-group">
+                    <label><i class="fas fa-user-hair-long"></i> Tipo de Cabelo:</label>
+                    <select class="form-select select-visual" data-tipo="tipo-cabelo">
+                        <option value="Liso">Liso</option>
+                        <option value="Ondulado">Ondulado</option>
+                        <option value="Cacheado">Cacheado</option>
+                        <option value="Crespo">Crespo</option>
+                        <option value="Careca">Careca</option>
+                        <option value="Calvo">Calvo</option>
+                        <option value="Longo">Longo</option>
+                        <option value="Curto" selected>Curto</option>
+                        <option value="Médio">Médio</option>
+                    </select>
+                </div>
+
+                <!-- TIPO DE ROSTO -->
+                <div class="visual-group">
+                    <label><i class="fas fa-user"></i> Tipo de Rosto:</label>
+                    <select class="form-select select-visual" data-tipo="tipo-rosto">
+                        <option value="Oval" selected>Oval</option>
+                        <option value="Redondo">Redondo</option>
+                        <option value="Quadrado">Quadrado</option>
+                        <option value="Alongado">Alongado</option>
+                        <option value="Triangular">Triangular</option>
+                        <option value="Diamante">Diamante</option>
+                        <option value="Coração">Coração</option>
+                    </select>
+                </div>
+
+                <!-- IDADE -->
+                <div class="visual-group">
+                    <label><i class="fas fa-birthday-cake"></i> Idade:</label>
+                    <div class="controle-numerico">
+                        <button class="btn-controle" onclick="ajustarIdade(-1)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" id="idade-personagem" value="25" min="12" max="100" class="fisica-input">
+                        <button class="btn-controle" onclick="ajustarIdade(1)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DESCRIÇÃO DA APARÊNCIA -->
+            <div class="descricao-visual">
+                <h4><i class="fas fa-file-alt"></i> Descrição da Aparência:</h4>
+                <div id="descricaoVisual" class="texto-descricao">
+                    25 anos, pele morena, olhos castanhos, cabelo castanho curto, rosto oval
                 </div>
             </div>
         </div>
@@ -1142,6 +1334,10 @@
     <div id="custom-toast"></div>
     <script src="atributos.js"></script>
      <script src="caracteristicas-aparencia.js"></script>
+      <script src="caracteristicas-riqueza.js"></script>
+       <script src="caracteristicas-idiomas.js"></script>
+        <script src="caracteristicas-fisicas.js"></script>
+        <script src="caracteristicas-main.js"></script>
     <script>
         // ===========================================
         // INICIALIZAÇÃO FIREBASE
