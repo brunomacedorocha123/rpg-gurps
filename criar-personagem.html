@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <!-- NO HEAD DO ARQUIVO PRINCIPAL -->
 <link rel="stylesheet" href="style-atributos.css">
+<link rel="stylesheet" href="style-caracteristicas.css">
     <style>
         * {
             margin: 0;
@@ -852,20 +853,166 @@
         </div>
     </div>
 </div>
-        <!-- CARACTERÍSTICAS -->
-        <div id="caracteristicas" class="tab-pane">
-            <div class="development-placeholder">
-                <div class="development-icon">
-                    <i class="fas fa-user-circle"></i>
+       <!-- DENTRO DO <div id="caracteristicas" class="tab-pane"> -->
+<div id="caracteristicas" class="tab-pane">
+    <div class="caracteristicas-container">
+        
+        <!-- APARÊNCIA -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-smile"></i>
+                    Aparência
+                </h3>
+                <span class="badge-pontos" id="pontosAparencia">0 pts</span>
+            </div>
+            
+            <select id="nivelAparencia" class="select-custom">
+                <option value="-24">Horrendo (-24 pts)</option>
+                <option value="-20">Monstruoso (-20 pts)</option>
+                <option value="-16">Hediondo (-16 pts)</option>
+                <option value="-8">Feio (-8 pts)</option>
+                <option value="-4">Sem Atrativos (-4 pts)</option>
+                <option value="0" selected>Comum (0 pts)</option>
+                <option value="4">Atraente (4 pts)</option>
+                <option value="12">Elegante (12 pts)</option>
+                <option value="16">Muito Elegante (16 pts)</option>
+                <option value="20">Lindo (20 pts)</option>
+            </select>
+            
+            <div id="displayAparencia" class="card-content">
+                <div class="aparencia-info">
+                    <i class="fas fa-user"></i>
+                    <div class="info-texto">
+                        <strong>Aparência Comum</strong>
+                        <small>Aparência padrão, sem modificadores</small>
+                    </div>
                 </div>
-                <h2 class="development-title">Características</h2>
-                <p class="development-message">
-                    Definição das características do personagem: nome, descrição, história, aparência, idade, peso,
-                    altura, cultura, religião, entre outros detalhes narrativos.
-                </p>
-                <div class="development-status">EM DESENVOLVIMENTO</div>
             </div>
         </div>
+
+        <!-- RIQUEZA -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-coins"></i>
+                    Nível de Riqueza
+                </h3>
+                <span class="badge-pontos" id="pontosRiqueza">0 pts</span>
+            </div>
+            
+            <select id="nivelRiqueza" class="select-custom">
+                <option value="-25">Falido (-25 pts)</option>
+                <option value="-15">Pobre (-15 pts)</option>
+                <option value="-10">Batalhador (-10 pts)</option>
+                <option value="0" selected>Médio (0 pts)</option>
+                <option value="10">Confortável (10 pts)</option>
+                <option value="20">Rico (20 pts)</option>
+                <option value="30">Muito Rico (30 pts)</option>
+                <option value="50">Podre de Rico (50 pts)</option>
+            </select>
+            
+            <div id="displayRiqueza" class="card-content">
+                <div class="riqueza-info">
+                    <i class="fas fa-user"></i>
+                    <div class="info-texto">
+                        <strong>Riqueza Média</strong>
+                        <small>Nível de recursos pré-definido padrão</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="renda-mensal">
+                <span>Renda Mensal:</span>
+                <strong id="rendaMensal">$1,000</strong>
+            </div>
+        </div>
+
+        <!-- IDIOMAS -->
+        <div class="card card-idiomas">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-language"></i>
+                    Idiomas
+                </h3>
+                <span class="badge-pontos" id="pontosIdiomas">0 pts</span>
+            </div>
+            
+            <!-- Idioma Materno -->
+            <div class="idioma-materno">
+                <div class="section-title">
+                    <i class="fas fa-home"></i>
+                    Idioma Materno
+                </div>
+                <input type="text" id="idiomaMaternoNome" class="input-text" value="Comum" placeholder="Nome do idioma">
+                <div class="info-small">
+                    <i class="fas fa-check-circle"></i>
+                    Nativo (0 pts) - Nível 6 em fala e escrita
+                </div>
+            </div>
+            
+            <!-- Desvantagens -->
+            <div id="desvantagensAlfabetizacaoContainer"></div>
+            
+            <!-- Adicionar Idioma -->
+            <div class="adicionar-idioma">
+                <div class="section-title">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Idioma
+                </div>
+                
+                <div class="form-grid">
+                    <div class="input-group">
+                        <input type="text" id="novoIdiomaNome" class="input-text" placeholder="Nome do idioma">
+                    </div>
+                    
+                    <div class="input-group">
+                        <select id="novoIdiomaFala" class="select-small">
+                            <option value="6">Nativo (6)</option>
+                            <option value="4">Sotaque (4)</option>
+                            <option value="2">Rudimentar (2)</option>
+                            <option value="0">Nenhum (0)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <select id="novoIdiomaEscrita" class="select-small">
+                            <option value="6">Nativo (3)</option>
+                            <option value="4">Sotaque (2)</option>
+                            <option value="2">Rudimentar (1)</option>
+                            <option value="0" selected>Nenhum (0)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="btnAdicionarIdioma" class="btn-add">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="custo-preview">
+                    Custo: <span id="custoIdiomaPreview">+0 pts</span>
+                </div>
+            </div>
+            
+            <!-- Lista de Idiomas -->
+            <div class="lista-idiomas">
+                <div class="section-title">
+                    <i class="fas fa-list"></i>
+                    Idiomas Adicionais
+                    <span class="count" id="totalIdiomas">0</span>
+                </div>
+                
+                <div id="listaIdiomasAdicionais" class="lista-conteudo">
+                    <div class="empty-state">
+                        <i class="fas fa-book"></i>
+                        Nenhum idioma adicional
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
 
         <!-- VANTAGENS/DESVANTAGENS -->
         <div id="vantagens" class="tab-pane">
@@ -975,6 +1122,10 @@
 
     <!-- ANTES DO FECHAMENTO DO BODY -->
     <script src="atributos.js"></script>
+     <script src="caracteristicas-aparencia.js"></script>
+     <script src="caracteristicas-riqueza.js"></script>
+     <script src="caracteristicas-idiomas.js"></script>
+
 
     <script>
         // ===========================================
