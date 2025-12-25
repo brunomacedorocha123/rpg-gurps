@@ -1052,11 +1052,11 @@
                 </div>
             </div>
 
-           <!-- SUB-ABA 2: CARACTERÍSTICAS FÍSICAS -->
+          <!-- SUB-ABA 2: CARACTERÍSTICAS FÍSICAS -->
 <div id="subtab-caracteristicas-fisicas" class="subtab-pane">
     <!-- CARDS SUPERIORES -->
     <div class="caracteristicas-grid">
-        <!-- CARD CARACTERÍSTICAS FÍSICAS -->
+        <!-- CARD ESQUERDO: CARACTERÍSTICAS FÍSICAS -->
         <div class="caracteristica-card">
             <div class="card-header">
                 <i class="fas fa-weight"></i>
@@ -1064,18 +1064,83 @@
                 <span class="pontos-badge" id="pontosCaracteristicas">0 pts</span>
             </div>
             <div class="card-content">
+                <!-- LISTA DE CARACTERÍSTICAS FÍSICAS (os 6 itens FIXOS) -->
                 <div class="caracteristicas-lista">
-                    <!-- Dinâmico - será preenchido pelo JS -->
+                    <!-- ITEM 1: MAGRO -->
+                    <div class="caracteristica-item" data-tipo="magro">
+                        <div class="caracteristica-info">
+                            <strong>Magro</strong>
+                            <small>-5 pts | Peso: 67% do normal</small>
+                        </div>
+                        <button class="btn-add-caracteristica" data-tipo="magro">
+                            Adicionar
+                        </button>
+                    </div>
+                    
+                    <!-- ITEM 2: ACIMA DO PESO -->
+                    <div class="caracteristica-item" data-tipo="acima-peso">
+                        <div class="caracteristica-info">
+                            <strong>Acima do Peso</strong>
+                            <small>-1 pt | Peso: 130% do normal</small>
+                        </div>
+                        <button class="btn-add-caracteristica" data-tipo="acima-peso">
+                            Adicionar
+                        </button>
+                    </div>
+                    
+                    <!-- ITEM 3: GORDO -->
+                    <div class="caracteristica-item" data-tipo="gordo">
+                        <div class="caracteristica-info">
+                            <strong>Gordo</strong>
+                            <small>-3 pts | Peso: 150% do normal</small>
+                        </div>
+                        <button class="btn-add-caracteristica" data-tipo="gordo">
+                            Adicionar
+                        </button>
+                    </div>
+                    
+                    <!-- ITEM 4: MUITO GORDO -->
+                    <div class="caracteristica-item" data-tipo="muito-gordo">
+                        <div class="caracteristica-info">
+                            <strong>Muito Gordo</strong>
+                            <small>-5 pts | Peso: 200% do normal</small>
+                        </div>
+                        <button class="btn-add-caracteristica" data-tipo="muito-gordo">
+                            Adicionar
+                        </button>
+                    </div>
+                    
+                    <!-- ITEM 5: NANISMO -->
+                    <div class="caracteristica-item" data-tipo="nanismo">
+                        <div class="caracteristica-info">
+                            <strong>Nanismo</strong>
+                            <small>-15 pts | Altura máxima: 1.32m</small>
+                        </div>
+                        <button class="btn-add-caracteristica" data-tipo="nanismo">
+                            Adicionar
+                        </button>
+                    </div>
+                    
+                    <!-- ITEM 6: GIGANTISMO -->
+                    <div class="caracteristica-item" data-tipo="gigantismo">
+                        <div class="caracteristica-info">
+                            <strong>Gigantismo</strong>
+                            <small>0 pts | MT +1, +1 Deslocamento</small>
+                        </div>
+                        <button class="btn-add-caracteristica" data-tipo="gigantismo">
+                            Adicionar
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- CARACTERÍSTICAS SELECIONADAS -->
                 <div id="caracteristicasSelecionadas" class="caracteristicas-selecionadas">
-                    <!-- Dinâmico -->
+                    <!-- Dinâmico - características adicionadas aparecem aqui -->
                 </div>
             </div>
         </div>
 
-        <!-- CARD ALTURA E PESO -->
+        <!-- CARD DIREITO: ALTURA E PESO -->
         <div class="caracteristica-card">
             <div class="card-header">
                 <i class="fas fa-ruler-combined"></i>
@@ -1147,7 +1212,7 @@
         </div>
     </div>
 
-    <!-- CARD CARACTERÍSTICAS VISUAIS -->
+    <!-- CARD INFERIOR: CARACTERÍSTICAS VISUAIS (SIMPLIFICADO) -->
     <div class="caracteristica-card full-width">
         <div class="card-header">
             <i class="fas fa-eye"></i>
@@ -1215,21 +1280,7 @@
                     </select>
                 </div>
 
-                <!-- TIPO DE ROSTO -->
-                <div class="visual-group">
-                    <label><i class="fas fa-user"></i> Tipo de Rosto:</label>
-                    <select class="form-select select-visual" data-tipo="tipo-rosto">
-                        <option value="Oval" selected>Oval</option>
-                        <option value="Redondo">Redondo</option>
-                        <option value="Quadrado">Quadrado</option>
-                        <option value="Alongado">Alongado</option>
-                        <option value="Triangular">Triangular</option>
-                        <option value="Diamante">Diamante</option>
-                        <option value="Coração">Coração</option>
-                    </select>
-                </div>
-
-                <!-- IDADE -->
+                <!-- IDADE (campo numérico) -->
                 <div class="visual-group">
                     <label><i class="fas fa-birthday-cake"></i> Idade:</label>
                     <div class="controle-numerico">
@@ -1244,11 +1295,11 @@
                 </div>
             </div>
 
-            <!-- DESCRIÇÃO DA APARÊNCIA -->
+            <!-- DESCRIÇÃO DA APARÊNCIA (automaticamente gerada) -->
             <div class="descricao-visual">
                 <h4><i class="fas fa-file-alt"></i> Descrição da Aparência:</h4>
                 <div id="descricaoVisual" class="texto-descricao">
-                    25 anos, pele morena, olhos castanhos, cabelo castanho curto, rosto oval
+                    25 anos, pele morena, olhos castanhos, cabelo castanho curto
                 </div>
             </div>
         </div>
