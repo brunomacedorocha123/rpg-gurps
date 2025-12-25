@@ -72,7 +72,7 @@ const cargasTable = {
 // Estado do personagem
 let personagemAtributos = {
     pontos: { total: 150, gastos: 0 },
-    atributos: { ST: 10, DX: 10, IQ: 10, HT: 10 },
+    atributos: { ST: 10, DX: 10, IQ: 11, HT: 10 }, // IQ começa com 11 conforme imagem
     bonus: {
         PV: 0,
         PF: 0,
@@ -100,11 +100,69 @@ function alterarAtributo(atributo, valor) {
     atualizarAtributos();
 }
 
+// ===== NOVA FUNÇÃO PARA ATRIBUTOS SECUNDÁRIOS =====
+
+function ajustarSecundario(atributo, valor) {
+    const input = document.getElementById('bonus' + atributo);
+    if (!input) return;
+    
+    // Converte valor atual
+    let novoValor;
+    if (atributo === 'Deslocamento') {
+        novoValor = parseFloat(input.value) + valor;
+        // Limita a 2 casas decimais
+        novoValor = Math.round(novoValor * 100) / 100;
+    } else {
+        novoValor = parseInt(input.value) + valor;
+    }
+    
+    // Define limites razoáveis (opcional)
+    if (atributo === 'Deslocamento') {
+        // Deslocamento pode ser negativo, mas vamos limitar a -10 a +20
+        if (novoValor < -10) novoValor = -10;
+        if (novoValor > 20) novoValor = 20;
+    } else {
+        // Outros atributos: -10 a +20
+        if (novoValor < -10) novoValor = -10;
+        if (novoValor > 20) novoValor = 20;
+    }
+    
+    input.value = novoValor;
+    
+    // Animação visual
+    input.classList.add('changed');
+    setTimeout(() => input.classList.remove('changed'), 300);
+    
+    // Atualiza o estado
+    if (atributo === 'Deslocamento') {
+        personagemAtributos.bonus[atributo] = parseFloat(input.value) || 0;
+    } else {
+        personagemAtributos.bonus[atributo] = parseInt(input.value) || 0;
+    }
+    
+    // Atualiza estilo
+    input.classList.remove('positivo', 'negativo');
+    if (novoValor > 0) {
+        input.classList.add('positivo');
+    } else if (novoValor < 0) {
+        input.classList.add('negativo');
+    }
+    
+    // Atualiza totais
+    atualizarTotaisComBonus();
+    
+    // Atualiza status
+    atualizarStatusAtributos();
+    
+    // Salva localmente
+    salvarAtributosLocal();
+}
+
 function atualizarAtributos() {
     // Obtém valores atuais
     const ST = parseInt(document.getElementById('ST').value) || 10;
     const DX = parseInt(document.getElementById('DX').value) || 10;
-    const IQ = parseInt(document.getElementById('IQ').value) || 10;
+    const IQ = parseInt(document.getElementById('IQ').value) || 11; // Padrão 11
     const HT = parseInt(document.getElementById('HT').value) || 10;
     
     // Atualiza estado
@@ -344,6 +402,9 @@ function inicializarAtributos() {
     // Tenta carregar dados salvos
     if (!carregarAtributosLocal()) {
         // Se não houver dados salvos, inicializa com valores padrão
+        // Define IQ como 11 conforme imagem
+        document.getElementById('IQ').value = 11;
+        personagemAtributos.atributos.IQ = 11;
         atualizarAtributos();
     }
     
@@ -366,7 +427,7 @@ function configurarEventListeners() {
         }
     });
     
-    // Event listeners para bônus/redutores - CORRETO!
+    // Event listeners para bônus/redutores dos atributos secundários
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById('bonus' + atributo);
         if (input) {
@@ -384,7 +445,13 @@ function configurarEventListeners() {
             });
             
             // Aplica estilo inicial baseado no valor atual
-            const valorInicial = parseInt(input.value) || 0;
+            let valorInicial;
+            if (atributo === 'Deslocamento') {
+                valorInicial = parseFloat(input.value) || 0;
+            } else {
+                valorInicial = parseInt(input.value) || 0;
+            }
+            
             input.classList.remove('positivo', 'negativo');
             if (valorInicial > 0) {
                 input.classList.add('positivo');
@@ -473,6 +540,7 @@ function initAtributosTab() {
 // ===== EXPORTAÇÃO DE FUNÇÕES =====
 
 window.alterarAtributo = alterarAtributo;
+window.ajustarSecundario = ajustarSecundario; // NOVA FUNÇÃO
 window.atualizarAtributos = atualizarAtributos;
 window.obterDadosAtributos = obterDadosAtributos;
 window.carregarDadosAtributos = carregarDadosAtributos;
