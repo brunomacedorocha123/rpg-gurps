@@ -1,5 +1,5 @@
 // ===========================================
-// ATRIBUTOS.JS - Sistema Completo de Atributos GURPS - FINAL
+// ATRIBUTOS.JS - Sistema Completo de Atributos GURPS - 100% FUNCIONAL
 // ===========================================
 
 // Tabelas de referência
@@ -119,11 +119,8 @@ function atualizarAtributos() {
     calcularCargas(ST);
     calcularPontos();
     atualizarCustos();
-    atualizarTotaisComBonus(); // <-- ISSO AQUI ATUALIZA OS TOTAIS COM BÔNUS!
+    atualizarTotaisComBonus();
     atualizarStatusAtributos();
-    
-    // Disparar evento para outros sistemas
-    dispararEventoAtributosAlterados();
     
     // Salvar automaticamente
     salvarAtributosLocal();
@@ -214,61 +211,61 @@ function atualizarCustos() {
 }
 
 function atualizarTotaisComBonus() {
-    // PV: Base (ST) + Bônus
+    // PV: Base (ST) + Bônus/Redutor
     const pvBase = personagemAtributos.atributos.ST;
     const pvBonus = personagemAtributos.bonus.PV;
     const pvTotal = Math.max(pvBase + pvBonus, 1);
     document.getElementById('PVTotal').textContent = pvTotal;
     
-    // PF: Base (HT) + Bônus
+    // PF: Base (HT) + Bônus/Redutor
     const pfBase = personagemAtributos.atributos.HT;
     const pfBonus = personagemAtributos.bonus.PF;
     const pfTotal = Math.max(pfBase + pfBonus, 1);
     document.getElementById('PFTotal').textContent = pfTotal;
     
-    // Vontade: Base (IQ) + Bônus
+    // Vontade: Base (IQ) + Bônus/Redutor
     const vontadeBase = personagemAtributos.atributos.IQ;
     const vontadeBonus = personagemAtributos.bonus.Vontade;
     const vontadeTotal = Math.max(vontadeBase + vontadeBonus, 1);
     document.getElementById('VontadeTotal').textContent = vontadeTotal;
     
-    // Percepção: Base (IQ) + Bônus
+    // Percepção: Base (IQ) + Bônus/Redutor
     const percepcaoBase = personagemAtributos.atributos.IQ;
     const percepcaoBonus = personagemAtributos.bonus.Percepcao;
     const percepcaoTotal = Math.max(percepcaoBase + percepcaoBonus, 1);
     document.getElementById('PercepcaoTotal').textContent = percepcaoTotal;
     
-    // Deslocamento: Base ((HT+DX)/4) + Bônus
+    // Deslocamento: Base ((HT+DX)/4) + Bônus/Redutor
     const deslocamentoBase = (personagemAtributos.atributos.HT + personagemAtributos.atributos.DX) / 4;
     const deslocamentoBonus = personagemAtributos.bonus.Deslocamento;
     const deslocamentoTotal = Math.max(deslocamentoBase + deslocamentoBonus, 0).toFixed(2);
     document.getElementById('DeslocamentoTotal').textContent = deslocamentoTotal;
 }
 
-function atualizarBonus(atributo, valor) {
-    // Converte valor para número
-    let numValor;
+function atualizarBonusInput(atributo) {
+    const input = document.getElementById('bonus' + atributo);
+    if (!input) return;
+    
+    // Converte valor
+    let valor;
     if (atributo === 'Deslocamento') {
-        numValor = parseFloat(valor) || 0;
+        valor = parseFloat(input.value) || 0;
     } else {
-        numValor = parseInt(valor) || 0;
+        valor = parseInt(input.value) || 0;
     }
     
     // Atualiza estado
-    personagemAtributos.bonus[atributo] = numValor;
+    personagemAtributos.bonus[atributo] = valor;
     
     // Atualiza estilo do input
-    const input = document.getElementById('bonus' + atributo);
-    if (input) {
-        input.classList.remove('positivo', 'negativo');
-        if (numValor > 0) {
-            input.classList.add('positivo');
-        } else if (numValor < 0) {
-            input.classList.add('negativo');
-        }
+    input.classList.remove('positivo', 'negativo');
+    if (valor > 0) {
+        input.classList.add('positivo');
+    } else if (valor < 0) {
+        input.classList.add('negativo');
     }
     
-    // ATUALIZA OS TOTAIS IMEDIATAMENTE - ESTAVA FALTANDO ISSO!
+    // Atualiza totais
     atualizarTotaisComBonus();
     
     // Atualiza status
@@ -276,28 +273,6 @@ function atualizarBonus(atributo, valor) {
     
     // Salva localmente
     salvarAtributosLocal();
-    
-    // Dispara evento
-    dispararEventoAtributosAlterados();
-}
-
-// ===== EVENTOS PARA INTEGRAÇÃO =====
-
-function dispararEventoAtributosAlterados() {
-    const evento = new CustomEvent('atributosAlterados', {
-        detail: {
-            ST: personagemAtributos.atributos.ST,
-            DX: personagemAtributos.atributos.DX, 
-            IQ: personagemAtributos.atributos.IQ,
-            HT: personagemAtributos.atributos.HT,
-            PV: personagemAtributos.atributos.ST + personagemAtributos.bonus.PV,
-            PF: personagemAtributos.atributos.HT + personagemAtributos.bonus.PF,
-            Vontade: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Vontade,
-            Percepcao: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Percepcao,
-            Deslocamento: parseFloat(document.getElementById('DeslocamentoTotal').textContent)
-        }
-    });
-    document.dispatchEvent(evento);
 }
 
 // ===== FUNÇÕES DE STATUS =====
@@ -308,7 +283,7 @@ function atualizarStatusAtributos() {
     
     const gastos = personagemAtributos.pontos.gastos;
     
-    // Limpa classes
+    // Limpa e atualiza status
     statusElement.className = 'status-mensagem';
     
     if (gastos > 150) {
@@ -380,7 +355,7 @@ function configurarEventListeners() {
     ['ST', 'DX', 'IQ', 'HT'].forEach(inputId => {
         const input = document.getElementById(inputId);
         if (input) {
-            // Debounce para input
+            // Debounce para input (atualiza após 300ms sem digitar)
             input.addEventListener('input', () => {
                 clearTimeout(window.inputTimeout);
                 window.inputTimeout = setTimeout(atualizarAtributos, 300);
@@ -391,7 +366,7 @@ function configurarEventListeners() {
         }
     });
     
-    // Event listeners para bônus manuais - AGORA FUNCIONANDO!
+    // Event listeners para bônus/redutores - CORRETO!
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById('bonus' + atributo);
         if (input) {
@@ -399,17 +374,18 @@ function configurarEventListeners() {
             input.addEventListener('input', function() {
                 clearTimeout(window.bonusTimeout);
                 window.bonusTimeout = setTimeout(() => {
-                    atualizarBonus(atributo, this.value);
+                    atualizarBonusInput(atributo);
                 }, 300);
             });
             
             // Atualiza imediatamente ao sair do campo
             input.addEventListener('change', function() {
-                atualizarBonus(atributo, this.value);
+                atualizarBonusInput(atributo);
             });
             
-            // Aplica estilo inicial
+            // Aplica estilo inicial baseado no valor atual
             const valorInicial = parseInt(input.value) || 0;
+            input.classList.remove('positivo', 'negativo');
             if (valorInicial > 0) {
                 input.classList.add('positivo');
             } else if (valorInicial < 0) {
@@ -458,7 +434,7 @@ function carregarDadosAtributos(dados) {
         personagemAtributos.atributos.HT = dados.HT;
     }
     
-    // Carrega bônus se existirem
+    // Carrega bônus/redutores se existirem
     if (dados.Bonus) {
         personagemAtributos.bonus = { ...personagemAtributos.bonus, ...dados.Bonus };
         
