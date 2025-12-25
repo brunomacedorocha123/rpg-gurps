@@ -1,22 +1,20 @@
 // =============================================
 // CARACTERÍSTICAS FÍSICAS - SISTEMA COMPLETO
-// Inclui: Características Físicas + Altura/Peso + Aparência Visual
 // =============================================
 
 class SistemaCaracteristicasFisicas {
     constructor() {
-        // CARACTERÍSTICAS FÍSICAS (MAGRO/GORDO/NANISMO/ETC)
+        // CARACTERÍSTICAS FÍSICAS (os 6 itens)
         this.caracteristicas = {
             "magro": { 
                 pontos: -5,
                 nome: "Magro",
                 tipo: "desvantagem",
-                efeitos: "Peso = 2/3 do normal (×0.67)",
+                efeitos: "Peso = 67% do normal (×0.67)",
                 pesoMultiplicador: 0.67,
                 alturaMaxima: null,
                 icone: "fas fa-person-walking",
                 descricao: "Peso reduzido para 67% da média do ST",
-                modificadores: { stDerrubar: -2, disfarce: -2, htMaxima: 14 },
                 conflitos: ["acima-peso", "gordo", "muito-gordo"]
             },
             "acima-peso": { 
@@ -28,7 +26,6 @@ class SistemaCaracteristicasFisicas {
                 alturaMaxima: null,
                 icone: "fas fa-weight-hanging",
                 descricao: "Peso aumentado para 130% da média do ST",
-                modificadores: { disfarce: -1, natacao: 1, stDerrubar: 1 },
                 conflitos: ["magro", "gordo", "muito-gordo"]
             },
             "gordo": { 
@@ -40,7 +37,6 @@ class SistemaCaracteristicasFisicas {
                 alturaMaxima: null,
                 icone: "fas fa-weight-hanging",
                 descricao: "Peso aumentado para 150% da média do ST",
-                modificadores: { disfarce: -2, natacao: 3, stDerrubar: 2, htMaxima: 15 },
                 conflitos: ["magro", "acima-peso", "muito-gordo"]
             },
             "muito-gordo": { 
@@ -52,7 +48,6 @@ class SistemaCaracteristicasFisicas {
                 alturaMaxima: null,
                 icone: "fas fa-weight-hanging",
                 descricao: "Peso dobrado em relação à média do ST",
-                modificadores: { disfarce: -3, natacao: 5, stDerrubar: 3, htMaxima: 13 },
                 conflitos: ["magro", "acima-peso", "gordo"]
             },
             "nanismo": { 
@@ -64,24 +59,22 @@ class SistemaCaracteristicasFisicas {
                 alturaMaxima: 1.32,
                 icone: "fas fa-arrow-down",
                 descricao: "Altura limitada a 1.32m máximo",
-                modificadores: { tamanho: -1, deslocamento: -1, disfarce: -2, perseguicao: -2 },
                 conflitos: ["gigantismo"]
             },
             "gigantismo": { 
                 pontos: 0,
                 nome: "Gigantismo",
                 tipo: "vantagem",
-                efeitos: "Altura acima do máximo racial",
+                efeitos: "MT +1, +1 Deslocamento",
                 pesoMultiplicador: null,
                 alturaMaxima: null,
                 icone: "fas fa-arrow-up",
                 descricao: "Altura acima do máximo para a raça",
-                modificadores: { tamanho: 1, deslocamento: 1, disfarce: -2, perseguicao: -2 },
                 conflitos: ["nanismo"]
             }
         };
 
-        // CARACTERÍSTICAS VISUAIS
+        // CARACTERÍSTICAS VISUAIS (sem tipo de rosto)
         this.caracteristicasVisuais = {
             "cor-pele": [
                 "Muito clara", "Clara", "Morena clara", "Morena", "Morena escura", "Escura", "Muito escura"
@@ -94,9 +87,6 @@ class SistemaCaracteristicasFisicas {
             ],
             "tipo-cabelo": [
                 "Liso", "Ondulado", "Cacheado", "Crespo", "Careca", "Calvo", "Longo", "Curto", "Médio"
-            ],
-            "tipo-rosto": [
-                "Oval", "Redondo", "Quadrado", "Alongado", "Triangular", "Diamante", "Coração"
             ],
             "idade": { min: 12, max: 100, default: 25 }
         };
@@ -137,18 +127,97 @@ class SistemaCaracteristicasFisicas {
             "cor-olhos": "Castanhos",
             "cor-cabelo": "Castanho",
             "tipo-cabelo": "Curto",
-            "tipo-rosto": "Oval",
             "idade": 25
         };
         
         // ALTURA/PESO ATUAL
         this.altura = 1.70;
         this.peso = 70;
-        this.stBase = 10;
+        this.stBase = 10; // Vai ser atualizado pelo sistema de atributos
         
         // INICIALIZAÇÃO
         this.inicializado = false;
         this.carregarDoLocalStorage();
+    }
+
+    // =============================================
+    // MÉTODOS PARA OBTER ST DO SISTEMA DE ATRIBUTOS
+    // =============================================
+
+    obterSTDoSistemaAtributos() {
+        // MÉTODO 1: Pegar diretamente do input ST
+        const inputST = document.getElementById('ST');
+        if (inputST && inputST.value) {
+            const stVal = parseInt(inputST.value);
+            if (!isNaN(stVal) && stVal >= 1 && stVal <= 40) {
+                return stVal;
+            }
+        }
+        
+        // MÉTODO 2: Usar a função global do sistema de atributos
+        if (typeof obterDadosAtributos === 'function') {
+            try {
+                const dados = obterDadosAtributos();
+                if (dados.ST && dados.ST >= 1 && dados.ST <= 40) {
+                    return dados.ST;
+                }
+            } catch (error) {
+                console.warn('Não foi possível obter ST do sistema de atributos:', error);
+            }
+        }
+        
+        // MÉTODO 3: Usar o objeto global personagemAtributos
+        if (window.personagemAtributos && window.personagemAtributos.atributos) {
+            const st = window.personagemAtributos.atributos.ST;
+            if (st && st >= 1 && st <= 40) return st;
+        }
+        
+        // VALOR PADRÃO SE NADA FUNCIONAR
+        return 10;
+    }
+
+    atualizarSTBase() {
+        const novoST = this.obterSTDoSistemaAtributos();
+        
+        if (novoST !== this.stBase) {
+            this.stBase = novoST;
+            console.log(`📊 ST atualizado: ${novoST}`);
+            return true;
+        }
+        return false;
+    }
+
+    configurarEscutaST() {
+        // Escutar mudanças no input ST
+        const inputST = document.getElementById('ST');
+        if (inputST) {
+            inputST.addEventListener('change', () => {
+                this.stBase = parseInt(inputST.value) || 10;
+                this.atualizarTudo();
+            });
+            
+            inputST.addEventListener('input', () => {
+                clearTimeout(this.stTimeout);
+                this.stTimeout = setTimeout(() => {
+                    this.stBase = parseInt(inputST.value) || 10;
+                    this.atualizarTudo();
+                }, 500);
+            });
+        }
+        
+        // Escutar eventos do sistema de atributos
+        document.addEventListener('atributosAtualizados', () => {
+            if (this.atualizarSTBase()) {
+                this.atualizarTudo();
+            }
+        });
+        
+        // Verificação periódica (fallback)
+        this.stInterval = setInterval(() => {
+            if (this.atualizarSTBase()) {
+                this.atualizarTudo();
+            }
+        }, 2000);
     }
 
     // =============================================
@@ -158,14 +227,24 @@ class SistemaCaracteristicasFisicas {
     inicializar() {
         if (this.inicializado) return;
         
+        console.log('🏋️ Inicializando sistema de características físicas...');
+        
+        // Primeiro, pegar o ST atual
+        this.atualizarSTBase();
+        
+        // Configurar eventos
         this.configurarEventos();
-        this.atualizarSTDoPersonagem();
+        
+        // Atualizar tudo
         this.atualizarTudo();
+        
         this.inicializado = true;
+        
+        console.log('✅ Sistema de características físicas inicializado');
     }
 
     configurarEventos() {
-        // Eventos para botões de características
+        // Eventos para características físicas
         this.configurarEventosCaracteristicas();
         
         // Eventos para altura/peso
@@ -179,6 +258,7 @@ class SistemaCaracteristicasFisicas {
     }
 
     configurarEventosCaracteristicas() {
+        // Usar event delegation para os botões
         document.addEventListener('click', (e) => {
             if (e.target.closest('.btn-add-caracteristica')) {
                 const btn = e.target.closest('.btn-add-caracteristica');
@@ -213,44 +293,24 @@ class SistemaCaracteristicasFisicas {
 
     configurarEventosVisuais() {
         // Eventos para selects visuais
-        const selectsVisuais = document.querySelectorAll('.select-visual');
-        selectsVisuais.forEach(select => {
-            select.addEventListener('change', (e) => {
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('select-visual')) {
                 const tipo = e.target.dataset.tipo;
                 const valor = e.target.value;
                 this.atualizarVisual(tipo, valor);
-            });
+            }
         });
         
         // Evento para idade
         const inputIdade = document.getElementById('idade-personagem');
         if (inputIdade) {
             inputIdade.addEventListener('change', () => {
-                this.atualizarVisual('idade', parseInt(inputIdade.value));
+                const idade = parseInt(inputIdade.value);
+                if (!isNaN(idade) && idade >= 12 && idade <= 100) {
+                    this.atualizarVisual('idade', idade);
+                }
             });
         }
-    }
-
-    configurarEscutaST() {
-        // Escutar mudanças no atributo ST
-        const inputST = document.getElementById('ST');
-        if (inputST) {
-            inputST.addEventListener('change', () => {
-                this.atualizarSTDoPersonagem();
-            });
-            
-            inputST.addEventListener('input', () => {
-                clearTimeout(this.stTimeout);
-                this.stTimeout = setTimeout(() => {
-                    this.atualizarSTDoPersonagem();
-                }, 500);
-            });
-        }
-        
-        // Também escutar eventos do sistema de atributos
-        document.addEventListener('atributosAtualizados', () => {
-            this.atualizarSTDoPersonagem();
-        });
     }
 
     // =============================================
@@ -282,7 +342,7 @@ class SistemaCaracteristicasFisicas {
 
         // Criar objeto da característica
         const caracteristicaObj = {
-            id: Date.now() + Math.random(),
+            id: Date.now(),
             tipo: tipo,
             nome: caracteristica.nome,
             pontos: caracteristica.pontos,
@@ -290,7 +350,6 @@ class SistemaCaracteristicasFisicas {
             descricao: caracteristica.descricao,
             pesoMultiplicador: caracteristica.pesoMultiplicador,
             alturaMaxima: caracteristica.alturaMaxima,
-            modificadores: caracteristica.modificadores,
             icone: caracteristica.icone,
             dataAdicao: new Date().toISOString()
         };
@@ -355,43 +414,6 @@ class SistemaCaracteristicasFisicas {
     // GERENCIAMENTO DE ALTURA E PESO
     // =============================================
 
-    atualizarSTDoPersonagem() {
-        // Tentar obter ST do input
-        const inputST = document.getElementById('ST');
-        let novoST = 10;
-        
-        if (inputST && inputST.value) {
-            const stVal = parseInt(inputST.value);
-            if (!isNaN(stVal) && stVal >= 1 && stVal <= 40) {
-                novoST = stVal;
-            }
-        }
-        
-        // Verificar se mudou
-        if (novoST !== this.stBase) {
-            this.stBase = novoST;
-            this.atualizarFaixasAlturaPeso();
-            this.atualizarTudo();
-        }
-    }
-
-    atualizarFaixasAlturaPeso() {
-        // Atualizar exibição das faixas baseadas no ST
-        const faixaAltura = this.obterFaixaAltura(this.stBase);
-        const faixaPeso = this.obterFaixaPeso(this.stBase);
-        
-        const elementoAltura = document.getElementById('alturaFaixa');
-        const elementoPeso = document.getElementById('pesoFaixa');
-        
-        if (elementoAltura) {
-            elementoAltura.textContent = `${faixaAltura.min}m - ${faixaAltura.max}m`;
-        }
-        
-        if (elementoPeso) {
-            elementoPeso.textContent = `${faixaPeso.min}kg - ${faixaPeso.max}kg`;
-        }
-    }
-
     obterFaixaAltura(st) {
         if (st >= 6 && st <= 16) {
             return this.alturaPorST[st];
@@ -451,6 +473,7 @@ class SistemaCaracteristicasFisicas {
         const nanismo = this.caracteristicasSelecionadas.find(c => c.tipo === 'nanismo');
         if (nanismo && nanismo.alturaMaxima && novaAltura > nanismo.alturaMaxima) {
             novaAltura = nanismo.alturaMaxima;
+            this.mostrarMensagem("Nanismo ativo: Altura limitada a 1.32m", 'aviso');
         }
         
         // Limites gerais
@@ -494,6 +517,20 @@ class SistemaCaracteristicasFisicas {
         this.definirPeso(this.peso + variacao);
     }
 
+    ajustarIdade(variacao) {
+        const inputIdade = document.getElementById('idade-personagem');
+        if (inputIdade) {
+            let idade = parseInt(inputIdade.value) || 25;
+            idade += variacao;
+            
+            if (idade < 12) idade = 12;
+            if (idade > 100) idade = 100;
+            
+            inputIdade.value = idade;
+            this.atualizarVisual('idade', idade);
+        }
+    }
+
     // =============================================
     // GERENCIAMENTO DE CARACTERÍSTICAS VISUAIS
     // =============================================
@@ -503,14 +540,14 @@ class SistemaCaracteristicasFisicas {
             this.visualSelecionado[tipo] = valor;
             this.salvarNoLocalStorage();
             
-            // Atualizar display visual se existir
+            // Atualizar display visual
             this.atualizarDisplayVisuais();
         }
     }
 
     gerarDescricaoVisual() {
         const vis = this.visualSelecionado;
-        return `${vis.idade} anos, pele ${vis['cor-pele'].toLowerCase()}, olhos ${vis['cor-olhos'].toLowerCase()}, cabelo ${vis['cor-cabelo'].toLowerCase()} ${vis['tipo-cabelo'].toLowerCase()}, rosto ${vis['tipo-rosto'].toLowerCase()}`;
+        return `${vis.idade} anos, pele ${vis['cor-pele'].toLowerCase()}, olhos ${vis['cor-olhos'].toLowerCase()}, cabelo ${vis['cor-cabelo'].toLowerCase()} ${vis['tipo-cabelo'].toLowerCase()}`;
     }
 
     // =============================================
@@ -565,6 +602,9 @@ class SistemaCaracteristicasFisicas {
     // =============================================
 
     atualizarTudo() {
+        // Atualizar ST primeiro
+        this.atualizarSTBase();
+        
         const conformidade = this.verificarConformidade();
         
         // 1. Atualizar status geral
@@ -588,8 +628,11 @@ class SistemaCaracteristicasFisicas {
         // 7. Atualizar desvantagens ativas
         this.atualizarDesvantagensAtivas();
         
-        // 8. Atualizar ST base
+        // 8. Atualizar ST base display
         this.atualizarElemento('stBase', this.stBase);
+        
+        // 9. Atualizar visuais
+        this.atualizarDisplayVisuais();
     }
 
     atualizarStatusGeral(conformidade) {
@@ -630,6 +673,9 @@ class SistemaCaracteristicasFisicas {
                         `Acima do máximo (${conformidade.faixaAltura.max}m)`;
             }
             statusAltura.textContent = status;
+            
+            // Cor do texto
+            statusAltura.style.color = conformidade.alturaValida ? '#27ae60' : '#e74c3c';
         }
 
         // Status do peso
@@ -651,6 +697,9 @@ class SistemaCaracteristicasFisicas {
                         `Acima do máximo (${conformidade.faixaPeso.max.toFixed(1)}kg)`;
             }
             statusPeso.textContent = status;
+            
+            // Cor do texto
+            statusPeso.style.color = conformidade.pesoValido ? '#27ae60' : '#e74c3c';
         }
     }
 
@@ -682,10 +731,13 @@ class SistemaCaracteristicasFisicas {
         if (modificador) {
             if (conformidade.nanismoAtivo) {
                 modificador.textContent = 'Nanismo Ativo';
+                modificador.style.color = '#e74c3c';
             } else if (conformidade.caracteristicaAtiva && conformidade.multiplicadorPeso !== 1.0) {
                 modificador.textContent = `${conformidade.caracteristicaAtiva.nome} (${conformidade.multiplicadorPeso}x)`;
+                modificador.style.color = '#f39c12';
             } else {
                 modificador.textContent = conformidade.dentroDaFaixa ? 'Dentro da faixa' : 'Fora da faixa';
+                modificador.style.color = conformidade.dentroDaFaixa ? '#27ae60' : '#e74c3c';
             }
         }
     }
@@ -753,9 +805,15 @@ class SistemaCaracteristicasFisicas {
                 if (jaSelecionada) {
                     botao.textContent = 'Remover';
                     botao.classList.add('active');
+                    botao.style.background = '#e74c3c';
+                    botao.style.color = 'white';
+                    botao.style.borderColor = '#c0392b';
                 } else {
                     botao.textContent = 'Adicionar';
                     botao.classList.remove('active');
+                    botao.style.background = '';
+                    botao.style.color = '';
+                    botao.style.borderColor = '';
                 }
             }
         });
@@ -798,14 +856,14 @@ class SistemaCaracteristicasFisicas {
     atualizarDisplayVisuais() {
         // Atualizar cada select visual
         Object.keys(this.visualSelecionado).forEach(tipo => {
-            const select = document.querySelector(`select[data-tipo="${tipo}"]`);
-            if (select) {
-                select.value = this.visualSelecionado[tipo];
-            }
-            
-            const input = document.getElementById(`input-${tipo}`);
-            if (input && input.type === 'number') {
-                input.value = this.visualSelecionado[tipo];
+            if (tipo === 'idade') {
+                const input = document.getElementById('idade-personagem');
+                if (input) input.value = this.visualSelecionado[tipo];
+            } else {
+                const select = document.querySelector(`select[data-tipo="${tipo}"]`);
+                if (select) {
+                    select.value = this.visualSelecionado[tipo];
+                }
             }
         });
         
@@ -991,21 +1049,17 @@ function inicializarSistemaCaracteristicasFisicas() {
 
 // INICIALIZAR QUANDO A SUB-ABA FOR ATIVA
 document.addEventListener('DOMContentLoaded', function() {
-    // Função para verificar sub-aba ativa
-    function verificarSubAbaAtiva() {
-        const subtabAtiva = document.querySelector('#subtab-caracteristicas-fisicas.active');
-        if (subtabAtiva) {
-            setTimeout(inicializarSistemaCaracteristicasFisicas, 100);
-        }
-    }
-    
     // Observar mudanças na aba principal
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 const tab = mutation.target;
                 if (tab.id === 'caracteristicas' && tab.classList.contains('active')) {
-                    setTimeout(verificarSubAbaAtiva, 100);
+                    // Verificar se é a sub-aba de características físicas
+                    const subtabAtiva = document.querySelector('#subtab-caracteristicas-fisicas.active');
+                    if (subtabAtiva) {
+                        setTimeout(inicializarSistemaCaracteristicasFisicas, 100);
+                    }
                 }
             }
         });
@@ -1039,6 +1093,12 @@ window.ajustarAltura = (variacao) => {
 window.ajustarPeso = (variacao) => {
     if (sistemaCaracteristicasFisicas) {
         sistemaCaracteristicasFisicas.ajustarPeso(variacao);
+    }
+};
+
+window.ajustarIdade = (variacao) => {
+    if (sistemaCaracteristicasFisicas) {
+        sistemaCaracteristicasFisicas.ajustarIdade(variacao);
     }
 };
 
