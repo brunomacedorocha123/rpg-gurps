@@ -1,5 +1,5 @@
 // ===========================================
-// ATRIBUTOS.JS - Sistema Completo de Atributos GURPS
+// ATRIBUTOS.JS - Sistema Completo de Atributos GURPS - CORRIGIDO
 // ===========================================
 
 // Tabelas de referência
@@ -94,8 +94,8 @@ function alterarAtributo(atributo, valor) {
     if (novoValor > 40) novoValor = 40;
     
     input.value = novoValor;
-    input.classList.add('pulse');
-    setTimeout(() => input.classList.remove('pulse'), 500);
+    input.classList.add('changed');
+    setTimeout(() => input.classList.remove('changed'), 500);
     
     atualizarAtributos();
 }
@@ -127,13 +127,13 @@ function atualizarAtributos() {
 }
 
 function calcularAtributosSecundarios(ST, DX, IQ, HT) {
-    if (!document.getElementById('PVBase')) return;
+    // Atualiza bases dos atributos secundários
+    document.getElementById('PVBase').textContent = ST;      // PV = ST
+    document.getElementById('PFBase').textContent = HT;      // PF = HT
+    document.getElementById('VontadeBase').textContent = IQ; // Vontade = IQ
+    document.getElementById('PercepcaoBase').textContent = IQ; // Percepção = IQ
     
-    document.getElementById('PVBase').textContent = ST;
-    document.getElementById('PFBase').textContent = HT;
-    document.getElementById('VontadeBase').textContent = IQ;
-    document.getElementById('PercepcaoBase').textContent = IQ;
-    
+    // Deslocamento = (HT + DX) / 4
     const deslocamentoBase = (HT + DX) / 4;
     document.getElementById('DeslocamentoBase').textContent = deslocamentoBase.toFixed(2);
     
@@ -143,8 +143,6 @@ function calcularAtributosSecundarios(ST, DX, IQ, HT) {
 }
 
 function calcularDanoBase(ST) {
-    if (!document.getElementById('danoGDP')) return;
-    
     let stKey = ST;
     if (ST > 40) stKey = 40;
     if (ST < 1) stKey = 1;
@@ -157,8 +155,6 @@ function calcularDanoBase(ST) {
 }
 
 function calcularCargas(ST) {
-    if (!document.getElementById('cargaNenhuma')) return;
-    
     let stKey = ST;
     if (ST > 20) stKey = 20;
     if (ST < 1) stKey = 1;
@@ -188,8 +184,16 @@ function calcularPontos() {
     
     personagemAtributos.pontos.gastos = totalGastos;
     
-    if (document.getElementById('pontosGastos')) {
-        document.getElementById('pontosGastos').textContent = totalGastos;
+    // Atualiza display dos pontos
+    const pontosElement = document.getElementById('pontosGastos');
+    if (pontosElement) {
+        pontosElement.textContent = totalGastos;
+        
+        // Adiciona classe se exceder pontos
+        pontosElement.classList.remove('excedido');
+        if (totalGastos > 150) {
+            pontosElement.classList.add('excedido');
+        }
     }
 }
 
@@ -199,51 +203,40 @@ function atualizarCustos() {
     const IQ = personagemAtributos.atributos.IQ;
     const HT = personagemAtributos.atributos.HT;
     
-    if (document.getElementById('custoST')) {
-        document.getElementById('custoST').textContent = (ST - 10) * 10;
-        document.getElementById('custoSTValor').textContent = (ST - 10) * 10 + " pontos";
-    }
-    if (document.getElementById('custoDX')) {
-        document.getElementById('custoDX').textContent = (DX - 10) * 20;
-        document.getElementById('custoDXValor').textContent = (DX - 10) * 20 + " pontos";
-    }
-    if (document.getElementById('custoIQ')) {
-        document.getElementById('custoIQ').textContent = (IQ - 10) * 20;
-        document.getElementById('custoIQValor').textContent = (IQ - 10) * 20 + " pontos";
-    }
-    if (document.getElementById('custoHT')) {
-        document.getElementById('custoHT').textContent = (HT - 10) * 10;
-        document.getElementById('custoHTValor').textContent = (HT - 10) * 10 + " pontos";
-    }
+    // Atualiza custos individuais
+    document.getElementById('custoST').textContent = (ST - 10) * 10;
+    document.getElementById('custoDX').textContent = (DX - 10) * 20;
+    document.getElementById('custoIQ').textContent = (IQ - 10) * 20;
+    document.getElementById('custoHT').textContent = (HT - 10) * 10;
 }
 
 function atualizarTotaisComBonus() {
     // PV: Base (ST) + Bônus
-    const pvBase = parseInt(document.getElementById('PVBase').textContent);
+    const pvBase = personagemAtributos.atributos.ST;
     const pvBonus = personagemAtributos.bonus.PV;
     const pvTotal = Math.max(pvBase + pvBonus, 1);
     document.getElementById('PVTotal').textContent = pvTotal;
     
     // PF: Base (HT) + Bônus
-    const pfBase = parseInt(document.getElementById('PFBase').textContent);
+    const pfBase = personagemAtributos.atributos.HT;
     const pfBonus = personagemAtributos.bonus.PF;
     const pfTotal = Math.max(pfBase + pfBonus, 1);
     document.getElementById('PFTotal').textContent = pfTotal;
     
     // Vontade: Base (IQ) + Bônus
-    const vontadeBase = parseInt(document.getElementById('VontadeBase').textContent);
+    const vontadeBase = personagemAtributos.atributos.IQ;
     const vontadeBonus = personagemAtributos.bonus.Vontade;
     const vontadeTotal = Math.max(vontadeBase + vontadeBonus, 1);
     document.getElementById('VontadeTotal').textContent = vontadeTotal;
     
     // Percepção: Base (IQ) + Bônus
-    const percepcaoBase = parseInt(document.getElementById('PercepcaoBase').textContent);
+    const percepcaoBase = personagemAtributos.atributos.IQ;
     const percepcaoBonus = personagemAtributos.bonus.Percepcao;
     const percepcaoTotal = Math.max(percepcaoBase + percepcaoBonus, 1);
     document.getElementById('PercepcaoTotal').textContent = percepcaoTotal;
     
-    // Deslocamento: Base + Bônus
-    const deslocamentoBase = parseFloat(document.getElementById('DeslocamentoBase').textContent);
+    // Deslocamento: Base ((HT+DX)/4) + Bônus
+    const deslocamentoBase = (personagemAtributos.atributos.HT + personagemAtributos.atributos.DX) / 4;
     const deslocamentoBonus = personagemAtributos.bonus.Deslocamento;
     const deslocamentoTotal = Math.max(deslocamentoBase + deslocamentoBonus, 0).toFixed(2);
     document.getElementById('DeslocamentoTotal').textContent = deslocamentoTotal;
@@ -252,22 +245,23 @@ function atualizarTotaisComBonus() {
 function atualizarBonus(atributo, valor) {
     const numValor = parseInt(valor) || 0;
     personagemAtributos.bonus[atributo] = numValor;
-    atualizarEstiloBonusInput(atributo, numValor);
-    atualizarTotaisComBonus();
-    salvarAtributosLocal();
-}
-
-function atualizarEstiloBonusInput(atributo, valor) {
-    const input = document.getElementById(`bonus${atributo}`);
+    
+    // Atualiza estilo do input
+    const input = document.getElementById('bonus' + atributo);
     if (input) {
         input.classList.remove('positivo', 'negativo');
-        
-        if (valor > 0) {
+        if (numValor > 0) {
             input.classList.add('positivo');
-        } else if (valor < 0) {
+        } else if (numValor < 0) {
             input.classList.add('negativo');
         }
     }
+    
+    // Atualiza totais
+    atualizarTotaisComBonus();
+    
+    // Salva localmente
+    salvarAtributosLocal();
 }
 
 // ===== EVENTOS PARA INTEGRAÇÃO =====
@@ -279,10 +273,10 @@ function dispararEventoAtributosAlterados() {
             DX: personagemAtributos.atributos.DX, 
             IQ: personagemAtributos.atributos.IQ,
             HT: personagemAtributos.atributos.HT,
-            PV: parseInt(document.getElementById('PVTotal').textContent),
-            PF: parseInt(document.getElementById('PFTotal').textContent),
-            Vontade: parseInt(document.getElementById('VontadeTotal').textContent),
-            Percepcao: parseInt(document.getElementById('PercepcaoTotal').textContent),
+            PV: personagemAtributos.atributos.ST + personagemAtributos.bonus.PV,
+            PF: personagemAtributos.atributos.HT + personagemAtributos.bonus.PF,
+            Vontade: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Vontade,
+            Percepcao: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Percepcao,
             Deslocamento: parseFloat(document.getElementById('DeslocamentoTotal').textContent)
         }
     });
@@ -297,17 +291,29 @@ function atualizarStatusAtributos() {
     
     const gastos = personagemAtributos.pontos.gastos;
     
-    statusElement.className = 'status-atributos mostrar';
+    // Limpa classes
+    statusElement.className = 'status-mensagem';
     
-    if (gastos < 0) {
-        statusElement.classList.add('status-erro');
-        statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ATENÇÃO: Você excedeu ${Math.abs(gastos)} pontos nos atributos!`;
-    } else if (gastos === 0) {
-        statusElement.classList.add('status-info');
-        statusElement.innerHTML = `<i class="fas fa-info-circle"></i> Atributos no valor padrão.`;
+    if (gastos > 150) {
+        statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ATENÇÃO: Você excedeu ${gastos - 150} pontos nos atributos!`;
+        statusElement.style.background = 'linear-gradient(145deg, rgba(139, 0, 0, 0.4), rgba(44, 32, 8, 0.9))';
+        statusElement.style.border = '2px solid #f44336';
+        statusElement.style.color = '#ffabab';
+    } else if (gastos === 150) {
+        statusElement.innerHTML = `<i class="fas fa-check-circle"></i> Perfeito! Você usou todos os pontos disponíveis.`;
+        statusElement.style.background = 'linear-gradient(145deg, rgba(46, 92, 58, 0.4), rgba(44, 32, 8, 0.9))';
+        statusElement.style.border = '2px solid #4CAF50';
+        statusElement.style.color = '#a5d6a7';
     } else if (gastos > 0) {
-        statusElement.classList.add('status-info');
-        statusElement.innerHTML = `<i class="fas fa-info-circle"></i> Gastou ${gastos} pontos nos atributos.`;
+        statusElement.innerHTML = `<i class="fas fa-info-circle"></i> Gastou ${gastos} pontos dos 150 disponíveis.`;
+        statusElement.style.background = 'linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(44, 32, 8, 0.9))';
+        statusElement.style.border = '2px solid var(--primary-gold)';
+        statusElement.style.color = 'var(--secondary-gold)';
+    } else {
+        statusElement.innerHTML = `<i class="fas fa-info-circle"></i> Atributos no valor padrão (0 pontos gastos).`;
+        statusElement.style.background = 'linear-gradient(145deg, rgba(212, 175, 55, 0.1), rgba(44, 32, 8, 0.9))';
+        statusElement.style.border = '1px solid var(--primary-gold)';
+        statusElement.style.color = 'var(--secondary-gold)';
     }
 }
 
@@ -354,29 +360,21 @@ function inicializarAtributos() {
 
 function configurarEventListeners() {
     // Event listeners para atributos principais
-    const inputsAtributos = ['ST', 'DX', 'IQ', 'HT'];
-    
-    inputsAtributos.forEach(inputId => {
+    ['ST', 'DX', 'IQ', 'HT'].forEach(inputId => {
         const input = document.getElementById(inputId);
         if (input) {
             input.addEventListener('input', () => {
                 clearTimeout(window.inputTimeout);
-                window.inputTimeout = setTimeout(() => {
-                    atualizarAtributos();
-                }, 300);
+                window.inputTimeout = setTimeout(atualizarAtributos, 300);
             });
             
-            input.addEventListener('change', () => {
-                atualizarAtributos();
-            });
+            input.addEventListener('change', atualizarAtributos);
         }
     });
     
     // Event listeners para bônus manuais
-    const inputsBonus = ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'];
-    
-    inputsBonus.forEach(atributo => {
-        const input = document.getElementById(`bonus${atributo}`);
+    ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
+        const input = document.getElementById('bonus' + atributo);
         if (input) {
             input.addEventListener('input', () => {
                 clearTimeout(window.bonusTimeout);
@@ -388,9 +386,6 @@ function configurarEventListeners() {
             input.addEventListener('change', () => {
                 atualizarBonus(atributo, input.value);
             });
-            
-            // Inicializa o estilo do input
-            atualizarEstiloBonusInput(atributo, input.value);
         }
     });
 }
@@ -403,13 +398,13 @@ function obterDadosAtributos() {
         DX: personagemAtributos.atributos.DX,
         IQ: personagemAtributos.atributos.IQ,
         HT: personagemAtributos.atributos.HT,
-        PV: parseInt(document.getElementById('PVTotal')?.textContent || 10),
-        PF: parseInt(document.getElementById('PFTotal')?.textContent || 10),
-        Vontade: parseInt(document.getElementById('VontadeTotal')?.textContent || 10),
-        Percepcao: parseInt(document.getElementById('PercepcaoTotal')?.textContent || 10),
-        Deslocamento: parseFloat(document.getElementById('DeslocamentoTotal')?.textContent || 5.00),
-        DanoGDP: document.getElementById('danoGDP')?.textContent || "1d-2",
-        DanoGEB: document.getElementById('danoGEB')?.textContent || "1d",
+        PV: personagemAtributos.atributos.ST + personagemAtributos.bonus.PV,
+        PF: personagemAtributos.atributos.HT + personagemAtributos.bonus.PF,
+        Vontade: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Vontade,
+        Percepcao: personagemAtributos.atributos.IQ + personagemAtributos.bonus.Percepcao,
+        Deslocamento: parseFloat(document.getElementById('DeslocamentoTotal').textContent || "5.00"),
+        DanoGDP: document.getElementById('danoGDP').textContent,
+        DanoGEB: document.getElementById('danoGEB').textContent,
         PontosGastos: personagemAtributos.pontos.gastos,
         Bonus: { ...personagemAtributos.bonus }
     };
@@ -438,30 +433,24 @@ function carregarDadosAtributos(dados) {
     if (dados.Bonus) {
         personagemAtributos.bonus = { ...personagemAtributos.bonus, ...dados.Bonus };
         
-        if (document.getElementById('bonusPV')) {
-            document.getElementById('bonusPV').value = personagemAtributos.bonus.PV;
-        }
-        if (document.getElementById('bonusPF')) {
-            document.getElementById('bonusPF').value = personagemAtributos.bonus.PF;
-        }
-        if (document.getElementById('bonusVontade')) {
-            document.getElementById('bonusVontade').value = personagemAtributos.bonus.Vontade;
-        }
-        if (document.getElementById('bonusPercepcao')) {
-            document.getElementById('bonusPercepcao').value = personagemAtributos.bonus.Percepcao;
-        }
-        if (document.getElementById('bonusDeslocamento')) {
-            document.getElementById('bonusDeslocamento').value = personagemAtributos.bonus.Deslocamento;
-        }
-        
-        // Atualiza estilos dos inputs
-        atualizarEstiloBonusInput('PV', personagemAtributos.bonus.PV);
-        atualizarEstiloBonusInput('PF', personagemAtributos.bonus.PF);
-        atualizarEstiloBonusInput('Vontade', personagemAtributos.bonus.Vontade);
-        atualizarEstiloBonusInput('Percepcao', personagemAtributos.bonus.Percepcao);
-        atualizarEstiloBonusInput('Deslocamento', personagemAtributos.bonus.Deslocamento);
+        // Atualiza inputs de bônus
+        ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
+            const input = document.getElementById('bonus' + atributo);
+            if (input && personagemAtributos.bonus[atributo] !== undefined) {
+                input.value = personagemAtributos.bonus[atributo];
+                
+                // Aplica estilo
+                input.classList.remove('positivo', 'negativo');
+                if (personagemAtributos.bonus[atributo] > 0) {
+                    input.classList.add('positivo');
+                } else if (personagemAtributos.bonus[atributo] < 0) {
+                    input.classList.add('negativo');
+                }
+            }
+        });
     }
     
+    // Força atualização completa
     atualizarAtributos();
 }
 
