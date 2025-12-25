@@ -57,7 +57,7 @@
             z-index: -1;
         }
 
-        /* HEADER */
+        /* HEADER PRINCIPAL */
         .header {
             background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
             border-bottom: 3px solid var(--primary-gold);
@@ -99,124 +99,188 @@
             font-size: 1.1rem;
             min-width: 250px;
             text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .character-name-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+            transform: scale(1.02);
         }
 
         .character-name-input::placeholder {
             color: rgba(212, 175, 55, 0.6);
         }
 
-        .points-display {
-            background: rgba(139, 0, 0, 0.2);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 2px solid var(--accent-red);
-            color: var(--text-light);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-        }
-
-        .points-value {
-            color: var(--secondary-gold);
-            font-size: 1.2rem;
-        }
-
-        /* CONTAINER PRINCIPAL */
-        .main-container {
-            display: flex;
-            min-height: calc(100vh - 140px);
-            margin: 20px;
-            gap: 20px;
-        }
-
-        /* COLUNA ESQUERDA - ABAS */
-        .tabs-column {
-            flex: 0 0 250px;
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
-            border: 2px solid var(--wood-dark);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 800px;
-        }
-
-        .tab-btn {
-            padding: 16px 20px;
+        .btn-voltar {
             background: linear-gradient(145deg, rgba(139, 0, 0, 0.1), rgba(44, 32, 8, 0.8));
+            color: var(--text-light);
             border: 2px solid var(--wood-light);
             border-radius: 8px;
-            color: var(--text-light);
+            padding: 10px 20px;
             font-family: 'Cinzel', serif;
             font-size: 1rem;
-            font-weight: bold;
-            text-align: left;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .tab-btn:hover {
+        .btn-voltar:hover {
             background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
             border-color: var(--primary-gold);
-            transform: translateX(5px);
+            transform: translateY(-2px);
         }
 
-        .tab-btn.active {
+        /* MENU DE ABAS - TOPO (COMO NA HOME) */
+        .main-nav {
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
+            border-bottom: 2px solid var(--wood-dark);
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-scroll-container {
+            overflow-x: auto;
+            padding: 5px 15px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-gold) var(--secondary-dark);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-scroll-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .nav-scroll-container::-webkit-scrollbar-track {
+            background: var(--secondary-dark);
+            border-radius: 4px;
+        }
+
+        .nav-scroll-container::-webkit-scrollbar-thumb {
+            background: var(--primary-gold);
+            border-radius: 4px;
+        }
+
+        .nav-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-gold);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            padding: 5px;
+            min-width: min-content;
+        }
+
+        .nav-btn {
+            padding: 14px 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: bold;
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.1), rgba(44, 32, 8, 0.8));
+            color: var(--text-light);
+            border: 2px solid var(--wood-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            min-width: 140px;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
+            border-color: var(--primary-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn.active {
             background: linear-gradient(145deg, var(--accent-red), #6b0000);
             border-color: var(--primary-gold);
             box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
         }
 
-        /* COLUNA DIREITA - CONTEÚDO DA ABA */
-        .content-column {
-            flex: 1;
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
-            border: 2px solid var(--wood-dark);
-            border-radius: 12px;
-            padding: 30px;
-            position: relative;
+        /* CONTEÚDO PRINCIPAL */
+        .main-content {
+            padding: 30px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .tab-content {
             display: none;
             animation: fadeIn 0.5s ease;
+            min-height: 500px;
         }
 
         .tab-content.active {
             display: block;
         }
 
-        .tab-title {
-            font-family: 'Uncial Antiqua', cursive;
-            color: var(--text-gold);
-            font-size: 2rem;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary-gold);
-            text-align: center;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* PLACEHOLDER PARA CONTEÚDO FUTURO */
+        /* PLACEHOLDER PARA CONTEÚDO */
         .content-placeholder {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             color: rgba(212, 175, 55, 0.5);
+            background: rgba(26, 18, 0, 0.3);
+            border-radius: 12px;
+            border: 2px dashed var(--wood-light);
         }
 
         .content-placeholder i {
             font-size: 4rem;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             display: block;
+            color: var(--primary-gold);
+            opacity: 0.7;
         }
 
         .content-placeholder h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-gold);
+            font-family: 'Uncial Antiqua', cursive;
+        }
+
+        .content-placeholder p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
 
         /* BARRA DE AÇÕES INFERIOR */
@@ -225,14 +289,21 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95));
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.98), rgba(26, 18, 0, 0.98));
             border-top: 3px solid var(--primary-gold);
-            padding: 15px 20px;
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 20px;
             z-index: 100;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .action-btn {
@@ -249,53 +320,66 @@
             gap: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            min-width: 160px;
+            justify-content: center;
         }
 
-        .btn-save {
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-cancelar {
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.2), rgba(44, 32, 8, 0.9));
+            color: var(--text-light);
+            border: 2px solid var(--wood-light);
+        }
+
+        .btn-cancelar:hover {
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.4), rgba(44, 32, 8, 1));
+            border-color: var(--primary-gold);
+        }
+
+        .btn-salvar {
             background: linear-gradient(145deg, var(--accent-green), #1e4028);
             color: white;
             border: 2px solid #4a7c59;
         }
 
-        .btn-save:hover {
+        .btn-salvar:hover {
             background: linear-gradient(145deg, #3a7c4a, #1e4028);
-            transform: translateY(-2px);
+            border-color: #5a9c69;
         }
 
-        .btn-cancel {
-            background: linear-gradient(145deg, rgba(139, 0, 0, 0.1), rgba(44, 32, 8, 0.8));
-            color: var(--text-light);
-            border: 2px solid var(--wood-light);
+        .btn-finalizar {
+            background: linear-gradient(145deg, var(--primary-gold), #b8941f);
+            color: var(--primary-dark);
+            border: 2px solid var(--secondary-gold);
         }
 
-        .btn-cancel:hover {
-            background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
-            border-color: var(--primary-gold);
+        .btn-finalizar:hover {
+            background: linear-gradient(145deg, #e6c158, #b8941f);
+            border-color: #ffd700;
         }
 
-        /* NOTIFICAÇÕES */
+        /* NOTIFICAÇÃO */
         #custom-toast {
             position: fixed;
             top: 20px;
             right: 20px;
             background: var(--secondary-dark);
             color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
+            padding: 20px 25px;
+            border-radius: 10px;
             border-left: 5px solid var(--primary-gold);
             box-shadow: var(--shadow);
             z-index: 10000;
             animation: slideIn 0.3s ease;
             font-family: 'Cinzel', serif;
-            max-width: 300px;
+            max-width: 350px;
             word-break: break-word;
             display: none;
-        }
-
-        /* ANIMAÇÕES */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            border: 1px solid var(--wood-light);
         }
 
         @keyframes slideIn {
@@ -308,251 +392,271 @@
             to { transform: translateX(100%); opacity: 0; }
         }
 
-        /* RESPONSIVO */
+        /* RESPONSIVIDADE */
         @media (max-width: 1024px) {
-            .main-container {
+            .header {
                 flex-direction: column;
-                margin: 15px;
+                text-align: center;
             }
             
-            .tabs-column {
-                flex: none;
-                max-height: none;
-                order: 2;
+            .character-header {
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .nav-btn {
+                min-width: 120px;
+                padding: 12px 15px;
+                font-size: 0.95rem;
             }
             
             .action-bar {
-                position: relative;
-                margin-top: 20px;
-                border-top: none;
-                border: 2px solid var(--wood-dark);
-                border-radius: 8px;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .action-group {
+                width: 100%;
+                justify-content: center;
             }
         }
 
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
+            .main-content {
+                padding: 20px 15px;
             }
             
-            .character-header {
-                flex-direction: column;
-                width: 100%;
+            .nav-scroll-container {
+                padding: 5px 10px;
+            }
+            
+            .nav-menu {
+                gap: 8px;
+            }
+            
+            .nav-btn {
+                min-width: 110px;
+                padding: 10px 12px;
+                font-size: 0.9rem;
             }
             
             .character-name-input {
                 min-width: 100%;
+                order: 1;
             }
             
-            .main-container {
-                margin: 10px;
+            .btn-voltar {
+                order: 2;
+                width: 100%;
+                justify-content: center;
             }
             
-            .tabs-column {
-                padding: 15px;
-            }
-            
-            .content-column {
-                padding: 20px;
+            .action-btn {
+                min-width: 140px;
+                padding: 10px 20px;
             }
         }
 
         @media (max-width: 480px) {
-            .tab-btn {
-                padding: 12px 15px;
+            .nav-btn {
+                min-width: 100px;
+                padding: 8px 10px;
+                font-size: 0.85rem;
+                gap: 5px;
+            }
+            
+            .nav-btn i {
                 font-size: 0.9rem;
-            }
-            
-            .tab-title {
-                font-size: 1.5rem;
-            }
-            
-            .action-bar {
-                flex-direction: column;
             }
             
             .action-btn {
                 width: 100%;
-                justify-content: center;
+                min-width: unset;
+            }
+            
+            .content-placeholder {
+                padding: 50px 15px;
+            }
+            
+            .content-placeholder i {
+                font-size: 3rem;
+            }
+            
+            .content-placeholder h3 {
+                font-size: 1.5rem;
+            }
+            
+            #custom-toast {
+                max-width: 280px;
+                right: 10px;
+                left: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- HEADER -->
+    <!-- HEADER PRINCIPAL -->
     <header class="header">
         <div class="logo">
             <i class="fas fa-dragon" style="color: var(--primary-gold); font-size: 1.8rem;"></i>
-            <h1>CRIAR PERSONAGEM</h1>
+            <h1>FORJAR PERSONAGEM</h1>
         </div>
         
         <div class="character-header">
             <input type="text" 
                    class="character-name-input" 
                    id="characterName" 
-                   placeholder="Nome do Personagem" 
-                   maxlength="50">
+                   placeholder="Nome do Herói" 
+                   maxlength="50"
+                   autocomplete="off">
             
-            <div class="points-display">
-                <i class="fas fa-coins"></i>
-                <span>Pontos:</span>
-                <span class="points-value" id="totalPoints">100</span>
-            </div>
-            
-            <button onclick="goBack()" class="action-btn btn-cancel">
+            <button class="btn-voltar" onclick="goBack()">
                 <i class="fas fa-arrow-left"></i> Voltar
             </button>
         </div>
     </header>
 
-    <!-- CONTAINER PRINCIPAL -->
-    <div class="main-container">
-        <!-- COLUNA ESQUERDA - ABAS -->
-        <div class="tabs-column">
-            <button class="tab-btn active" onclick="switchTab('dashboard')">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </button>
-            <button class="tab-btn" onclick="switchTab('atributos')">
-                <i class="fas fa-dumbbell"></i> Atributos
-            </button>
-            <button class="tab-btn" onclick="switchTab('caracteristicas')">
-                <i class="fas fa-user-tag"></i> Características
-            </button>
-            <button class="tab-btn" onclick="switchTab('vantagens')">
-                <i class="fas fa-star"></i> Vantagens/Desvantagens
-            </button>
-            <button class="tab-btn" onclick="switchTab('pericias')">
-                <i class="fas fa-book-open"></i> Perícias/Técnicas
-            </button>
-            <button class="tab-btn" onclick="switchTab('magia')">
-                <i class="fas fa-hat-wizard"></i> Magia
-            </button>
-            <button class="tab-btn" onclick="switchTab('combate')">
-                <i class="fas fa-fist-raised"></i> Combate
-            </button>
-            <button class="tab-btn" onclick="switchTab('equipamento')">
-                <i class="fas fa-shield-alt"></i> Equipamento
-            </button>
-            <button class="tab-btn" onclick="switchTab('resumo')">
-                <i class="fas fa-scroll"></i> Resumo do PC
-            </button>
-        </div>
-
-        <!-- COLUNA DIREITA - CONTEÚDO DAS ABAS -->
-        <div class="content-column">
-            <!-- DASHBOARD -->
-            <div id="dashboard" class="tab-content active">
-                <h2 class="tab-title">Dashboard</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <h3>Visão Geral do Personagem</h3>
-                    <p>Esta aba mostrará um resumo completo do seu personagem.</p>
-                    <p style="margin-top: 20px; color: rgba(212, 175, 55, 0.7);">
-                        <i class="fas fa-hammer"></i> Em construção...
-                    </p>
-                </div>
-            </div>
-
-            <!-- ATRIBUTOS -->
-            <div id="atributos" class="tab-content">
-                <h2 class="tab-title">Atributos</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-dumbbell"></i>
-                    <h3>Forja de Atributos</h3>
-                    <p>Aqui você definirá ST, DX, IQ, HT e atributos secundários.</p>
-                </div>
-            </div>
-
-            <!-- CARACTERÍSTICAS -->
-            <div id="caracteristicas" class="tab-content">
-                <h2 class="tab-title">Características</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-user-tag"></i>
-                    <h3>Traços de Personalidade</h3>
-                    <p>Defina aparência, história, motivações e traços de personalidade.</p>
-                </div>
-            </div>
-
-            <!-- VANTAGENS/DESVANTAGENS -->
-            <div id="vantagens" class="tab-content">
-                <h2 class="tab-title">Vantagens & Desvantagens</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-star"></i>
-                    <h3>Vantagens e Desvantagens</h3>
-                    <p>Escolha as vantagens e desvantagens do seu personagem.</p>
-                </div>
-            </div>
-
-            <!-- PERÍCIAS/TÉCNICAS -->
-            <div id="pericias" class="tab-content">
-                <h2 class="tab-title">Perícias & Técnicas</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-book-open"></i>
-                    <h3>Perícias e Técnicas</h3>
-                    <p>Adicione e gerencie todas as perícias do personagem.</p>
-                </div>
-            </div>
-
-            <!-- MAGIA -->
-            <div id="magia" class="tab-content">
-                <h2 class="tab-title">Magia</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-hat-wizard"></i>
-                    <h3>Sistema Mágico</h3>
-                    <p>Configure magias, poderes e habilidades sobrenaturais.</p>
-                </div>
-            </div>
-
-            <!-- COMBATE -->
-            <div id="combate" class="tab-content">
-                <h2 class="tab-title">Combate</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-fist-raised"></i>
-                    <h3>Proezas de Combate</h3>
-                    <p>Defina armas, defesas, manobras e táticas de combate.</p>
-                </div>
-            </div>
-
-            <!-- EQUIPAMENTO -->
-            <div id="equipamento" class="tab-content">
-                <h2 class="tab-title">Equipamento</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Inventário</h3>
-                    <p>Gerencie equipamentos, itens, riqueza e carga.</p>
-                </div>
-            </div>
-
-            <!-- RESUMO -->
-            <div id="resumo" class="tab-content">
-                <h2 class="tab-title">Resumo do PC</h2>
-                <div class="content-placeholder">
-                    <i class="fas fa-scroll"></i>
-                    <h3>Ficha Completa</h3>
-                    <p>Visualização final e exportação da ficha do personagem.</p>
-                </div>
+    <!-- MENU DE ABAS - TOPO -->
+    <nav class="main-nav">
+        <div class="nav-scroll-container">
+            <div class="nav-menu">
+                <button class="nav-btn" onclick="switchTab('dashboard')" id="tabDashboard">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+                <button class="nav-btn active" onclick="switchTab('atributos')" id="tabAtributos">
+                    <i class="fas fa-dumbbell"></i> Atributos
+                </button>
+                <button class="nav-btn" onclick="switchTab('caracteristicas')" id="tabCaracteristicas">
+                    <i class="fas fa-user-tag"></i> Características
+                </button>
+                <button class="nav-btn" onclick="switchTab('vantagens')" id="tabVantagens">
+                    <i class="fas fa-star"></i> Vant/Desv
+                </button>
+                <button class="nav-btn" onclick="switchTab('pericias')" id="tabPericias">
+                    <i class="fas fa-book-open"></i> Perícias
+                </button>
+                <button class="nav-btn" onclick="switchTab('magia')" id="tabMagia">
+                    <i class="fas fa-hat-wizard"></i> Magia
+                </button>
+                <button class="nav-btn" onclick="switchTab('combate')" id="tabCombate">
+                    <i class="fas fa-fist-raised"></i> Combate
+                </button>
+                <button class="nav-btn" onclick="switchTab('equipamento')" id="tabEquipamento">
+                    <i class="fas fa-shield-alt"></i> Equipamento
+                </button>
+                <button class="nav-btn" onclick="switchTab('resumo')" id="tabResumo">
+                    <i class="fas fa-scroll"></i> Resumo
+                </button>
             </div>
         </div>
-    </div>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="main-content">
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>Dashboard do Personagem</h3>
+                <p>Visão geral com todos os pontos gastos, atributos principais e status do personagem.</p>
+                <p style="margin-top: 20px; color: rgba(212, 175, 55, 0.7);">
+                    <i class="fas fa-hammer"></i> Será implementada por último
+                </p>
+            </div>
+        </div>
+
+        <!-- ATRIBUTOS -->
+        <div id="atributos" class="tab-content active">
+            <div class="content-placeholder">
+                <i class="fas fa-dumbbell"></i>
+                <h3>Forja de Atributos</h3>
+                <p>Aqui você definirá ST, DX, IQ, HT e todos os atributos secundários.</p>
+                <p style="margin-top: 20px; color: rgba(212, 175, 55, 0.7);">
+                    <i class="fas fa-code"></i> Sistema de atributos será implementado aqui
+                </p>
+            </div>
+        </div>
+
+        <!-- CARACTERÍSTICAS -->
+        <div id="caracteristicas" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-user-tag"></i>
+                <h3>Traços de Personalidade</h3>
+                <p>Defina aparência, história, motivações e características do personagem.</p>
+            </div>
+        </div>
+
+        <!-- VANTAGENS/DESVANTAGENS -->
+        <div id="vantagens" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-star"></i>
+                <h3>Vantagens e Desvantagens</h3>
+                <p>Escolha as vantagens, desvantagens e peculiaridades do seu herói.</p>
+            </div>
+        </div>
+
+        <!-- PERÍCIAS -->
+        <div id="pericias" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-book-open"></i>
+                <h3>Perícias e Técnicas</h3>
+                <p>Adicione e gerencie todas as perícias, habilidades e técnicas.</p>
+            </div>
+        </div>
+
+        <!-- MAGIA -->
+        <div id="magia" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-hat-wizard"></i>
+                <h3>Sistema Mágico</h3>
+                <p>Configure magias, poderes, mana e habilidades sobrenaturais.</p>
+            </div>
+        </div>
+
+        <!-- COMBATE -->
+        <div id="combate" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-fist-raised"></i>
+                <h3>Proezas de Combate</h3>
+                <p>Defina armas, defesas, manobras e táticas de combate.</p>
+            </div>
+        </div>
+
+        <!-- EQUIPAMENTO -->
+        <div id="equipamento" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Inventário</h3>
+                <p>Gerencie equipamentos, itens, riqueza e carga do personagem.</p>
+            </div>
+        </div>
+
+        <!-- RESUMO -->
+        <div id="resumo" class="tab-content">
+            <div class="content-placeholder">
+                <i class="fas fa-scroll"></i>
+                <h3>Ficha Completa</h3>
+                <p>Visualização final e exportação da ficha do personagem.</p>
+            </div>
+        </div>
+    </main>
 
     <!-- BARRA DE AÇÕES -->
     <div class="action-bar">
-        <div>
-            <button class="action-btn btn-cancel" onclick="cancelCreation()">
+        <div class="action-group">
+            <button class="action-btn btn-cancelar" onclick="cancelCreation()">
                 <i class="fas fa-times"></i> Cancelar
             </button>
-            <button class="action-btn btn-cancel" onclick="resetCharacter()">
+            <button class="action-btn btn-cancelar" onclick="resetCharacter()">
                 <i class="fas fa-redo"></i> Limpar Tudo
             </button>
         </div>
         
-        <div>
-            <button class="action-btn btn-save" onclick="saveDraft()">
+        <div class="action-group">
+            <button class="action-btn btn-salvar" onclick="saveDraft()">
                 <i class="fas fa-save"></i> Salvar Rascunho
             </button>
-            <button class="action-btn btn-save" style="background: linear-gradient(145deg, var(--primary-gold), #b8941f);" onclick="finalizeCharacter()">
+            <button class="action-btn btn-finalizar" onclick="finalizeCharacter()">
                 <i class="fas fa-check-double"></i> Finalizar Personagem
             </button>
         </div>
@@ -568,6 +672,7 @@
         let app, auth, db;
         let currentCharacterId = null;
         let currentUser = null;
+        let isInitialized = false;
 
         if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
             app = firebase.app();
@@ -592,6 +697,7 @@
                 currentUser = user;
                 console.log('✅ Usuário autenticado:', user.uid);
                 loadCharacterData();
+                isInitialized = true;
             } else {
                 console.log('❌ Usuário não autenticado');
                 showToast('🔒 Faça login para criar personagens', 'error');
@@ -605,28 +711,42 @@
         // SISTEMA DE ABAS
         // ===========================================
         function switchTab(tabId) {
-            // Remove active de todas as abas
+            if (!isInitialized) return;
+            
+            // Remove active de todas as abas e botões
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
 
             // Ativa a aba selecionada
-            document.getElementById(tabId).classList.add('active');
-            
-            // Encontra e ativa o botão correspondente
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            for (let btn of tabButtons) {
-                if (btn.onclick.toString().includes(tabId)) {
-                    btn.classList.add('active');
-                    break;
-                }
+            const tabElement = document.getElementById(tabId);
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+
+            // Ativa o botão correspondente
+            const tabBtn = document.getElementById(`tab${capitalizeFirstLetter(tabId)}`);
+            if (tabBtn) {
+                tabBtn.classList.add('active');
             }
 
             // Salva a última aba acessada
             localStorage.setItem('lastTab', tabId);
+            
+            // Rola para o topo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Dispara evento para inicialização específica da aba
+            if (typeof window[`init${capitalizeFirstLetter(tabId)}Tab`] === 'function') {
+                window[`init${capitalizeFirstLetter(tabId)}Tab`]();
+            }
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
         // ===========================================
@@ -648,30 +768,30 @@
                         
                         // Preenche dados básicos
                         document.getElementById('characterName').value = charData.name || '';
-                        document.getElementById('totalPoints').textContent = charData.totalPoints || 100;
                         
                         showToast('📜 Personagem carregado: ' + charData.name, 'success');
                         
                         // Carrega última aba acessada
-                        const lastTab = charData.lastTab || 'dashboard';
-                        switchTab(lastTab);
+                        const lastTab = charData.lastTab || 'atributos';
+                        setTimeout(() => switchTab(lastTab), 100);
                     } else {
                         showToast('❌ Personagem não encontrado ou acesso negado', 'error');
                         currentCharacterId = null;
+                        switchTab('atributos');
                     }
                 } catch (error) {
                     console.error('Erro ao carregar personagem:', error);
                     showToast('❌ Erro ao carregar personagem', 'error');
+                    switchTab('atributos');
                 }
             } else {
                 // NOVO PERSONAGEM
                 currentCharacterId = null;
                 document.getElementById('characterName').value = '';
-                document.getElementById('totalPoints').textContent = '100';
                 
-                // Restaura última aba acessada
-                const lastTab = localStorage.getItem('lastTab') || 'dashboard';
-                switchTab(lastTab);
+                // Restaura última aba acessada ou vai para atributos
+                const lastTab = localStorage.getItem('lastTab') || 'atributos';
+                setTimeout(() => switchTab(lastTab), 100);
             }
         }
 
@@ -694,8 +814,7 @@
             const characterData = {
                 name: characterName,
                 owner: currentUser.uid,
-                totalPoints: parseInt(document.getElementById('totalPoints').textContent),
-                lastTab: localStorage.getItem('lastTab') || 'dashboard',
+                lastTab: localStorage.getItem('lastTab') || 'atributos',
                 lastUpdated: new Date().toISOString(),
                 status: 'draft'
             };
@@ -762,17 +881,16 @@
         function resetCharacter() {
             if (confirm('Isso vai limpar TODOS os dados do personagem. Continuar?')) {
                 document.getElementById('characterName').value = '';
-                document.getElementById('totalPoints').textContent = '100';
                 currentCharacterId = null;
                 localStorage.removeItem('lastTab');
-                switchTab('dashboard');
                 showToast('🔄 Personagem resetado', 'info');
+                switchTab('atributos');
             }
         }
 
         function showToast(message, type = 'info') {
             const toast = document.getElementById('custom-toast');
-            toast.textContent = message;
+            toast.innerHTML = `<i class="fas fa-${getToastIcon(type)}"></i> ${message}`;
             toast.style.display = 'block';
             
             const bgColor = type === 'error' ? 'var(--accent-red)' : 
@@ -791,6 +909,15 @@
             }, 3000);
         }
 
+        function getToastIcon(type) {
+            switch(type) {
+                case 'success': return 'check-circle';
+                case 'error': return 'exclamation-circle';
+                case 'warning': return 'exclamation-triangle';
+                default: return 'info-circle';
+            }
+        }
+
         // ===========================================
         // AUTO-SAVE A CADA 30 SEGUNDOS
         // ===========================================
@@ -798,17 +925,33 @@
         document.getElementById('characterName').addEventListener('input', () => {
             clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(() => {
-                if (currentCharacterId) {
+                if (currentCharacterId && isInitialized) {
                     saveDraft();
                 }
-            }, 30000); // 30 segundos
+            }, 30000);
         });
 
         // ===========================================
-        // INICIALIZAÇÃO
+        // INICIALIZAÇÃO DAS ABAS ESPECÍFICAS
+        // ===========================================
+        // Funções placeholder que podem ser sobrescritas
+        window.initAtributosTab = function() {
+            console.log('⚔️ Inicializando aba de Atributos...');
+            // Aqui será chamado o sistema de atributos
+        };
+
+        // ===========================================
+        // INICIALIZAÇÃO GERAL
         // ===========================================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('⚔️ Editor de Personagem GURPS carregado');
+            console.log('🏰 Editor de Personagem GURPS carregado');
+            
+            // Adiciona classe para animação de entrada
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s ease';
+                document.body.style.opacity = '1';
+            }, 100);
         });
     </script>
 </body>
