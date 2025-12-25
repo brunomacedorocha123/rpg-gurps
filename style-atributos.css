@@ -657,3 +657,152 @@ input[type="number"] {
 .tabela-card > *:last-child {
     margin-bottom: 0;
 }
+
+/* =========================================== */
+/* ESTILOS PARA ATRIBUTOS SECUNDÁRIOS COM BOTÕES +/- */
+/* =========================================== */
+
+.secundario-ajuste {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.btn-secundario {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid var(--wood-light);
+    background: rgba(26, 18, 0, 0.7);
+    color: var(--text-light);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-secundario:hover {
+    border-color: var(--primary-gold);
+    transform: scale(1.1);
+}
+
+.btn-secundario.mais:hover {
+    background: rgba(46, 92, 58, 0.3);
+}
+
+.btn-secundario.menos:hover {
+    background: rgba(139, 0, 0, 0.3);
+}
+
+/* Ajuste no input de bônus secundário para ficar proporcional */
+.secundario-bonus {
+    width: 80px;
+    height: 40px;
+    background: rgba(26, 18, 0, 0.7);
+    border: 1px solid var(--wood-light);
+    border-radius: 5px;
+    color: var(--text-light);
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.secundario-bonus:focus {
+    outline: none;
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+/* Mantém os estilos de positivo/negativo */
+.secundario-bonus.positivo {
+    color: #4CAF50;
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.secundario-bonus.negativo {
+    color: #f44336;
+    border-color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+/* Animação para mudanças */
+.secundario-bonus.changed {
+    animation: pulse 0.3s ease;
+}
+
+/* Responsivo para telas menores */
+@media (max-width: 768px) {
+    .secundario-ajuste {
+        gap: 8px;
+        margin: 10px 0;
+    }
+    
+    .btn-secundario {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .secundario-bonus {
+        width: 70px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .secundario-ajuste {
+        gap: 6px;
+    }
+    
+    .btn-secundario {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .secundario-bonus {
+        width: 60px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Estilo para o total dos atributos secundários */
+.secundario-total {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--secondary-gold);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(212, 175, 55, 0.3);
+    text-align: center;
+    font-family: 'MedievalSharp', cursive;
+}
+
+/* Destaque para a base do atributo */
+.secundario-base {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    margin: 8px 0;
+    padding: 6px;
+    background: rgba(212, 175, 55, 0.05);
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+/* Ajuste no container de atributos secundários para mais espaço */
+.atributos-secundarios {
+    gap: 20px;
+}
+
+/* =========================================== */
+/* FIM DOS ESTILOS PARA ATRIBUTOS SECUNDÁRIOS */
+/* =========================================== */

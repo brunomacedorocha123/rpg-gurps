@@ -566,7 +566,7 @@
             </div>
         </div>
 
-      <!-- ATRIBUTOS -->
+    <!-- ATRIBUTOS -->
 <div id="atributos" class="tab-content active">
     <div class="atributos-container">
         <!-- HEADER SIMPLES -->
@@ -703,7 +703,18 @@
                     </div>
                 </div>
                 <div class="secundario-base">Base: <span id="PVBase">10</span></div>
-                <input type="number" id="bonusPV" class="secundario-bonus" value="0" placeholder="Bônus">
+                
+                <!-- BOTÕES +/- PARA PV -->
+                <div class="secundario-ajuste">
+                    <button class="btn-secundario menos" onclick="ajustarSecundario('PV', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="bonusPV" class="secundario-bonus" value="0" placeholder="Bônus">
+                    <button class="btn-secundario mais" onclick="ajustarSecundario('PV', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
                 <div class="secundario-total">Total: <span id="PVTotal">10</span></div>
             </div>
 
@@ -717,7 +728,18 @@
                     </div>
                 </div>
                 <div class="secundario-base">Base: <span id="PFBase">10</span></div>
-                <input type="number" id="bonusPF" class="secundario-bonus" value="0" placeholder="Bônus">
+                
+                <!-- BOTÕES +/- PARA PF -->
+                <div class="secundario-ajuste">
+                    <button class="btn-secundario menos" onclick="ajustarSecundario('PF', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="bonusPF" class="secundario-bonus" value="0" placeholder="Bônus">
+                    <button class="btn-secundario mais" onclick="ajustarSecundario('PF', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
                 <div class="secundario-total">Total: <span id="PFTotal">10</span></div>
             </div>
 
@@ -730,9 +752,20 @@
                         <div class="secundario-nome">Vontade</div>
                     </div>
                 </div>
-                <div class="secundario-base">Base: <span id="VontadeBase">10</span></div>
-                <input type="number" id="bonusVontade" class="secundario-bonus" value="0" placeholder="Bônus">
-                <div class="secundario-total">Total: <span id="VontadeTotal">10</span></div>
+                <div class="secundario-base">Base: <span id="VontadeBase">11</span></div>
+                
+                <!-- BOTÕES +/- PARA VONTADE -->
+                <div class="secundario-ajuste">
+                    <button class="btn-secundario menos" onclick="ajustarSecundario('Vontade', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="bonusVontade" class="secundario-bonus" value="0" placeholder="Bônus">
+                    <button class="btn-secundario mais" onclick="ajustarSecundario('Vontade', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="secundario-total">Total: <span id="VontadeTotal">11</span></div>
             </div>
 
             <!-- PERCEPÇÃO -->
@@ -744,9 +777,20 @@
                         <div class="secundario-nome">Percepção</div>
                     </div>
                 </div>
-                <div class="secundario-base">Base: <span id="PercepcaoBase">10</span></div>
-                <input type="number" id="bonusPercepcao" class="secundario-bonus" value="0" placeholder="Bônus">
-                <div class="secundario-total">Total: <span id="PercepcaoTotal">10</span></div>
+                <div class="secundario-base">Base: <span id="PercepcaoBase">11</span></div>
+                
+                <!-- BOTÕES +/- PARA PERCEPÇÃO -->
+                <div class="secundario-ajuste">
+                    <button class="btn-secundario menos" onclick="ajustarSecundario('Percepcao', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="bonusPercepcao" class="secundario-bonus" value="0" placeholder="Bônus">
+                    <button class="btn-secundario mais" onclick="ajustarSecundario('Percepcao', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="secundario-total">Total: <span id="PercepcaoTotal">11</span></div>
             </div>
 
             <!-- DESLOCAMENTO -->
@@ -759,7 +803,18 @@
                     </div>
                 </div>
                 <div class="secundario-base">Base: <span id="DeslocamentoBase">5.00</span></div>
-                <input type="number" id="bonusDeslocamento" class="secundario-bonus" value="0" step="0.25" placeholder="Bônus">
+                
+                <!-- BOTÕES +/- PARA DESLOCAMENTO -->
+                <div class="secundario-ajuste">
+                    <button class="btn-secundario menos" onclick="ajustarSecundario('Deslocamento', -0.25)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="bonusDeslocamento" class="secundario-bonus" value="0" step="0.25" placeholder="Bônus">
+                    <button class="btn-secundario mais" onclick="ajustarSecundario('Deslocamento', 0.25)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
                 <div class="secundario-total">Total: <span id="DeslocamentoTotal">5.00</span></div>
             </div>
         </div>
