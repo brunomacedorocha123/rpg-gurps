@@ -1,6 +1,6 @@
 /* =========================================== */
 /* STYLE-VANTAGENS.CSS - VERSÃO CORRIGIDA 100% FUNCIONAL */
-/* CORREÇÃO DOS BOTÕES DO MODAL */
+/* CORREÇÃO COMPLETA DO MODAL - BOTÕES E LAYOUT */
 /* =========================================== */
 
 /* VARIÁVEIS ESPECÍFICAS */
@@ -924,7 +924,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 10000; /* Aumentado para garantir sobreposição */
+    z-index: 10000;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -939,8 +939,8 @@
 .relacionamento-modal {
     width: 90%;
     max-width: 800px;
-    max-height: 90vh; /* Aumentado para dar mais espaço */
-    min-height: 500px; /* Altura mínima */
+    max-height: 95vh; /* AUMENTADO: Mais espaço para conteúdo */
+    min-height: 500px;
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.98), rgba(26, 18, 0, 0.98));
     border: 3px solid var(--primary-gold);
     border-radius: 12px;
@@ -959,7 +959,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0 !important; /* Não encolher */
+    flex-shrink: 0 !important;
     min-height: 70px;
 }
 
@@ -995,27 +995,59 @@
     transform: rotate(90deg);
 }
 
+/* CORREÇÃO CRÍTICA - MODAL BODY */
 .modal-body {
     padding: 20px;
     overflow-y: auto !important;
-    flex: 1 !important; /* Ocupa espaço disponível */
-    max-height: calc(90vh - 220px) !important; /* Ajustado para incluir footer */
-    min-height: 300px !important;
+    flex: 1 !important;
+    max-height: calc(95vh - 180px) !important; /* REDUZIDO: Mais espaço para footer */
+    min-height: 250px !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
+/* CORREÇÃO PARA OS STEPS */
 .modal-steps {
     display: flex;
     flex-direction: column;
     gap: 25px;
+    flex: 1 !important;
 }
 
 .modal-step {
     display: none;
     animation: fadeIn 0.3s ease;
+    flex: 1 !important;
 }
 
 .modal-step.active {
-    display: block;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+/* ESPECIAL: STEP 3 COM CAMPOS DE TEXTO */
+#step3 {
+    gap: 20px !important;
+}
+
+#step3 .form-group {
+    margin-bottom: 20px !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+}
+
+#step3 .form-control {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 12px !important;
+    font-size: 1rem !important;
+    min-height: 44px !important;
+}
+
+#step3 textarea.form-control {
+    min-height: 80px !important;
+    resize: vertical !important;
 }
 
 .modal-step h4 {
@@ -1026,12 +1058,14 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0 !important;
 }
 
 .modal-step p {
     color: var(--text-light);
     margin-bottom: 20px;
     line-height: 1.5;
+    flex-shrink: 0 !important;
 }
 
 .tipo-options {
@@ -1220,12 +1254,15 @@ textarea.form-control {
     margin-bottom: 10px;
 }
 
-#modalResumo {
-    margin-top: 25px;
+/* CORREÇÃO DO RESUMO - NÃO CORTAR */
+.modal-resumo {
+    margin-top: auto !important; /* Isso faz com que fique no final */
+    margin-bottom: 0 !important;
     padding: 15px;
     background: rgba(26, 18, 0, 0.6);
     border-radius: 8px;
     border: 1px solid rgba(212, 175, 55, 0.2);
+    flex-shrink: 0 !important; /* Não encolhe */
 }
 
 #modalResumo .resumo-info {
@@ -1288,7 +1325,7 @@ textarea.form-control {
     font-weight: bold;
 }
 
-/* ===== MODAL FOOTER - CORREÇÃO COMPLETA ===== */
+/* ===== MODAL FOOTER - CORREÇÃO DEFINITIVA ===== */
 .modal-footer {
     display: flex !important;
     visibility: visible !important;
@@ -1297,18 +1334,20 @@ textarea.form-control {
     z-index: 10002 !important;
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95)) !important;
     border-top: 3px solid var(--primary-gold) !important;
-    padding: 20px !important;
-    gap: 15px !important;
+    padding: 15px 20px !important;
+    gap: 10px !important;
     flex-wrap: wrap !important;
     justify-content: center !important;
-    min-height: 90px !important; /* Garante altura mínima */
-    flex-shrink: 0 !important; /* Não encolhe */
+    min-height: 80px !important;
+    flex-shrink: 0 !important;
     align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-/* BOTÕES DO MODAL - CORREÇÃO */
+/* BOTÕES DO MODAL - CORREÇÃO FINAL */
 .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-    padding: 12px 25px !important;
+    padding: 12px 20px !important;
     border-radius: 6px !important;
     font-family: 'Cinzel', serif !important;
     font-weight: bold !important;
@@ -1318,17 +1357,29 @@ textarea.form-control {
     visibility: visible !important;
     opacity: 1 !important;
     align-items: center !important;
+    justify-content: center !important;
     gap: 8px !important;
     border: none !important;
-    min-width: 140px !important;
-    justify-content: center !important;
-    flex: 1 !important;
-    max-width: 200px !important;
+    min-width: 120px !important;
     height: 48px !important;
     font-size: 0.95rem !important;
     z-index: 10003 !important;
     position: relative !important;
     box-sizing: border-box !important;
+    flex: 1 !important;
+    max-width: 180px !important;
+}
+
+/* ESPECIAL: Botões no step 1 (só Cancelar visível) */
+.modal[data-step="1"] .btn-voltar,
+.modal[data-step="1"] .btn-proximo,
+.modal[data-step="1"] .btn-confirmar {
+    display: none !important;
+}
+
+.modal[data-step="1"] .btn-cancelar {
+    display: flex !important;
+    max-width: 200px !important;
 }
 
 .btn-voltar {
@@ -1392,15 +1443,6 @@ textarea.form-control {
 .btn-confirmar:disabled {
     opacity: 0.5 !important;
     cursor: not-allowed !important;
-}
-
-/* Controle de visibilidade dos botões por step */
-.modal[data-step="1"] .btn-voltar {
-    display: none !important;
-}
-
-.modal[data-step="3"] .btn-proximo {
-    display: none !important;
 }
 
 /* ===== GRID DE CARDS ===== */
@@ -1649,14 +1691,18 @@ textarea.form-control {
     }
     
     .modal-footer {
-        flex-wrap: wrap !important;
-        gap: 10px !important;
+        gap: 8px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-        flex: 1 1 calc(50% - 10px) !important;
-        min-width: 120px !important;
+        flex: 1 1 calc(50% - 8px) !important;
+        min-width: 140px !important;
         max-width: none !important;
+    }
+    
+    .relacionamento-modal {
+        width: 95% !important;
+        max-height: 90vh !important;
     }
 }
 
@@ -1772,16 +1818,11 @@ textarea.form-control {
     }
     
     /* Correções específicas para mobile no modal */
-    .relacionamento-modal {
-        width: 95% !important;
-        max-height: 95vh !important;
-        margin: 10px !important;
-    }
-    
     .modal-footer {
         flex-direction: column !important;
-        gap: 10px !important;
-        min-height: 120px !important;
+        gap: 8px !important;
+        min-height: 140px !important;
+        padding: 12px 15px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
@@ -1789,10 +1830,25 @@ textarea.form-control {
         max-width: 100% !important;
         min-width: 100% !important;
         flex: 1 1 auto !important;
+        height: 44px !important;
     }
     
     .modal-body {
-        max-height: calc(95vh - 250px) !important;
+        max-height: calc(90vh - 200px) !important;
+        padding: 15px !important;
+    }
+    
+    #modalResumo .resumo-info {
+        grid-template-columns: 1fr;
+    }
+    
+    #modalResumo .resumo-item:nth-child(odd) {
+        border-right: none;
+        padding-right: 0;
+    }
+    
+    #modalResumo .resumo-item:nth-child(even) {
+        padding-left: 0;
     }
 }
 
@@ -1886,19 +1942,6 @@ textarea.form-control {
         justify-content: center;
     }
     
-    #modalResumo .resumo-info {
-        grid-template-columns: 1fr;
-    }
-    
-    #modalResumo .resumo-item:nth-child(odd) {
-        border-right: none;
-        padding-right: 0;
-    }
-    
-    #modalResumo .resumo-item:nth-child(even) {
-        padding-left: 0;
-    }
-    
     /* Ajustes finais para modal em telas muito pequenas */
     .modal-header {
         padding: 15px !important;
@@ -1910,13 +1953,20 @@ textarea.form-control {
     }
     
     .modal-body {
-        padding: 15px !important;
+        padding: 12px !important;
+        max-height: calc(90vh - 160px) !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-        height: 44px !important;
-        padding: 10px 20px !important;
+        height: 42px !important;
+        padding: 10px 15px !important;
         font-size: 0.9rem !important;
+        min-width: 100% !important;
+    }
+    
+    .modal-footer {
+        min-height: 160px !important;
+        padding: 10px !important;
     }
 }
 
@@ -1987,14 +2037,48 @@ textarea.form-control {
     box-sizing: border-box !important;
 }
 
-/* GARANTIR QUE O FOOTER SEMPRE FIQUE VISÍVEL */
+/* GARANTIR QUE TUDO FIQUE VISÍVEL */
+.relacionamento-modal {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+/* FORÇAR VISIBILIDADE DOS BOTÕES EM TODAS AS CONDIÇÕES */
+.btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* AJUSTE DE ESPAÇO PARA O CAMPO DE NOME NO STEP 3 */
+#step3 .form-group:first-child {
+    margin-top: 10px !important;
+}
+
+#step3 .form-control:focus {
+    border-color: var(--primary-gold) !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
+}
+
+/* GARANTIR QUE O MODAL NÃO CORTE NADA */
+.relacionamento-modal {
+    overflow: visible !important;
+}
+
+.modal-body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* BORDA VISÍVEL PARA DESTACAR O FOOTER */
 .modal-footer::before {
     content: '';
     position: absolute;
-    top: -3px;
+    top: -2px;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 2px;
     background: var(--primary-gold);
     z-index: 10004;
 }
