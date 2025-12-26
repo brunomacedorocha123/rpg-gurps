@@ -1898,3 +1898,47 @@ textarea.form-control {
 .modal-step.active {
     animation: slideInFromRight 0.3s ease;
 }
+
+/* ADICIONE AO FINAL DO SEU ARQUIVO CSS */
+
+/* GARANTIR QUE O MODAL SEJA VISÍVEL COMPLETAMENTE */
+.relacionamento-modal {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh; /* Máximo 90% da altura da tela */
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(90vh - 140px); /* Altura menos header e footer */
+}
+
+.modal-footer {
+    flex-shrink: 0;
+    background: rgba(26, 18, 0, 0.95);
+    border-top: 2px solid var(--primary-gold);
+    padding: 15px 20px;
+    display: flex !important; /* FORÇAR exibição */
+    gap: 10px;
+    z-index: 100;
+    position: relative;
+}
+
+/* GARANTIR QUE OS BOTÕES SEJAM VISÍVEIS */
+.btn-cancelar, .btn-confirmar {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 101 !important;
+}
+
+/* REMOVER QUALQUER OVERFLOW HIDDEN QUE ESTEJA ESCONDENDO */
+.modal.active {
+    overflow: visible !important;
+}
+
+.relacionamento-modal {
+    overflow: visible !important;
+}
