@@ -1,5 +1,6 @@
 /* =========================================== */
 /* STYLE-VANTAGENS.CSS - VERSÃO CORRIGIDA 100% FUNCIONAL */
+/* CORREÇÃO DOS BOTÕES DO MODAL */
 /* =========================================== */
 
 /* VARIÁVEIS ESPECÍFICAS */
@@ -923,7 +924,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 10000;
+    z-index: 10000; /* Aumentado para garantir sobreposição */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -938,9 +939,8 @@
 .relacionamento-modal {
     width: 90%;
     max-width: 800px;
-    height: auto; /* IMPORTANTE: Mudei de max-height para auto */
-    max-height: 85vh; /* Reduzi para garantir visibilidade */
-    min-height: 400px;
+    max-height: 90vh; /* Aumentado para dar mais espaço */
+    min-height: 500px; /* Altura mínima */
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.98), rgba(26, 18, 0, 0.98));
     border: 3px solid var(--primary-gold);
     border-radius: 12px;
@@ -959,7 +959,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0 !important;
+    flex-shrink: 0 !important; /* Não encolher */
     min-height: 70px;
 }
 
@@ -995,58 +995,27 @@
     transform: rotate(90deg);
 }
 
-/* CORREÇÃO CRÍTICA DO MODAL-BODY */
 .modal-body {
     padding: 20px;
     overflow-y: auto !important;
-    flex: 1 1 auto !important; /* FLEX IMPORTANTE */
-    max-height: none !important; /* REMOVI limite fixo */
-    min-height: 200px !important;
-    display: flex !important;
-    flex-direction: column !important;
+    flex: 1 !important; /* Ocupa espaço disponível */
+    max-height: calc(90vh - 220px) !important; /* Ajustado para incluir footer */
+    min-height: 300px !important;
 }
 
-/* CORREÇÃO DOS STEPS - VISÍVEIS */
 .modal-steps {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    flex: 1 !important;
+    gap: 25px;
 }
 
 .modal-step {
     display: none;
     animation: fadeIn 0.3s ease;
-    flex: 1 !important;
 }
 
 .modal-step.active {
-    display: block !important;
-}
-
-/* GARANTIR QUE OS CAMPOS DE TEXTO SEJAM VISÍVEIS */
-#step3 {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
-}
-
-#step3 .form-group {
-    margin-bottom: 15px !important;
-    width: 100% !important;
-}
-
-#step3 .form-control {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 12px !important;
-    font-size: 1rem !important;
-    min-height: 44px !important;
-}
-
-#step3 textarea.form-control {
-    min-height: 80px !important;
-    resize: vertical !important;
+    display: block;
 }
 
 .modal-step h4 {
@@ -1251,14 +1220,12 @@ textarea.form-control {
     margin-bottom: 10px;
 }
 
-/* RESUMO DO MODAL */
 #modalResumo {
     margin-top: 25px;
     padding: 15px;
     background: rgba(26, 18, 0, 0.6);
     border-radius: 8px;
     border: 1px solid rgba(212, 175, 55, 0.2);
-    flex-shrink: 0 !important; /* Não encolhe */
 }
 
 #modalResumo .resumo-info {
@@ -1321,7 +1288,7 @@ textarea.form-control {
     font-weight: bold;
 }
 
-/* ===== MODAL FOOTER - CORREÇÃO DEFINITIVA ===== */
+/* ===== MODAL FOOTER - CORREÇÃO COMPLETA ===== */
 .modal-footer {
     display: flex !important;
     visibility: visible !important;
@@ -1330,20 +1297,18 @@ textarea.form-control {
     z-index: 10002 !important;
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95)) !important;
     border-top: 3px solid var(--primary-gold) !important;
-    padding: 15px 20px !important;
-    gap: 10px !important;
+    padding: 20px !important;
+    gap: 15px !important;
     flex-wrap: wrap !important;
     justify-content: center !important;
-    min-height: 80px !important;
-    flex-shrink: 0 !important;
+    min-height: 90px !important; /* Garante altura mínima */
+    flex-shrink: 0 !important; /* Não encolhe */
     align-items: center !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
 }
 
-/* BOTÕES DO MODAL - CORREÇÃO FINAL */
+/* BOTÕES DO MODAL - CORREÇÃO */
 .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-    padding: 12px 20px !important;
+    padding: 12px 25px !important;
     border-radius: 6px !important;
     font-family: 'Cinzel', serif !important;
     font-weight: bold !important;
@@ -1353,40 +1318,17 @@ textarea.form-control {
     visibility: visible !important;
     opacity: 1 !important;
     align-items: center !important;
-    justify-content: center !important;
     gap: 8px !important;
     border: none !important;
-    min-width: 120px !important;
+    min-width: 140px !important;
+    justify-content: center !important;
+    flex: 1 !important;
+    max-width: 200px !important;
     height: 48px !important;
     font-size: 0.95rem !important;
     z-index: 10003 !important;
     position: relative !important;
     box-sizing: border-box !important;
-    flex: 1 !important;
-    max-width: 180px !important;
-}
-
-/* VISIBILIDADE DOS BOTÕES POR STEP */
-/* Step 1: Apenas Cancelar */
-.modal[data-step="1"] .btn-voltar,
-.modal[data-step="1"] .btn-proximo,
-.modal[data-step="1"] .btn-confirmar {
-    display: none !important;
-}
-
-.modal[data-step="1"] .btn-cancelar {
-    display: flex !important;
-    max-width: 200px !important;
-}
-
-/* Step 2: Voltar, Próximo, Cancelar */
-.modal[data-step="2"] .btn-confirmar {
-    display: none !important;
-}
-
-/* Step 3: Voltar, Confirmar, Cancelar */
-.modal[data-step="3"] .btn-proximo {
-    display: none !important;
 }
 
 .btn-voltar {
@@ -1450,6 +1392,15 @@ textarea.form-control {
 .btn-confirmar:disabled {
     opacity: 0.5 !important;
     cursor: not-allowed !important;
+}
+
+/* Controle de visibilidade dos botões por step */
+.modal[data-step="1"] .btn-voltar {
+    display: none !important;
+}
+
+.modal[data-step="3"] .btn-proximo {
+    display: none !important;
 }
 
 /* ===== GRID DE CARDS ===== */
@@ -1698,12 +1649,13 @@ textarea.form-control {
     }
     
     .modal-footer {
-        gap: 8px !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-        flex: 1 1 calc(50% - 8px) !important;
-        min-width: 140px !important;
+        flex: 1 1 calc(50% - 10px) !important;
+        min-width: 120px !important;
         max-width: none !important;
     }
 }
@@ -1822,13 +1774,13 @@ textarea.form-control {
     /* Correções específicas para mobile no modal */
     .relacionamento-modal {
         width: 95% !important;
-        max-height: 90vh !important;
+        max-height: 95vh !important;
         margin: 10px !important;
     }
     
     .modal-footer {
         flex-direction: column !important;
-        gap: 8px !important;
+        gap: 10px !important;
         min-height: 120px !important;
     }
     
@@ -1840,7 +1792,7 @@ textarea.form-control {
     }
     
     .modal-body {
-        padding: 15px !important;
+        max-height: calc(95vh - 250px) !important;
     }
 }
 
@@ -1958,7 +1910,7 @@ textarea.form-control {
     }
     
     .modal-body {
-        padding: 12px !important;
+        padding: 15px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
@@ -2030,24 +1982,19 @@ textarea.form-control {
     outline-offset: 2px !important;
 }
 
-/* CORREÇÃO FINAL - GARANTIR QUE O MODAL SEJA FUNCIONAL */
-.relacionamento-modal {
-    display: flex !important;
-    flex-direction: column !important;
+/* CORREÇÃO DE OVERFLOW NO MODAL */
+.relacionamento-modal * {
+    box-sizing: border-box !important;
 }
 
-/* GARANTIR QUE OS BOTÕES SEJAM CLICÁVEIS */
-.btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-    pointer-events: auto !important;
-}
-
-/* GARANTIR QUE O CAMPO DE NOME SEJA VISÍVEL */
-#step3 .form-group:first-of-type {
-    margin-top: 10px;
-}
-
-/* GARANTIR QUE O MODAL NÃO CORTE CONTEÚDO */
-.modal-body {
-    overflow-y: auto;
-    overflow-x: hidden;
+/* GARANTIR QUE O FOOTER SEMPRE FIQUE VISÍVEL */
+.modal-footer::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gold);
+    z-index: 10004;
 }
