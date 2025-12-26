@@ -1,6 +1,6 @@
 /* =========================================== */
-/* STYLE-VANTAGENS.CSS - VERSÃO CORRIGIDA 100% FUNCIONAL */
-/* CORREÇÃO DOS BOTÕES DO MODAL */
+/* STYLE-VANTAGENS.CSS - VERSÃO FINAL CORRIGIDA */
+/* MODAL COM SCROLL COMPLETO E VISÍVEL */
 /* =========================================== */
 
 /* VARIÁVEIS ESPECÍFICAS */
@@ -914,7 +914,7 @@
     font-weight: bold;
 }
 
-/* ===== MODAL DE RELACIONAMENTOS - CORREÇÃO COMPLETA ===== */
+/* ===== MODAL DE RELACIONAMENTOS - CORREÇÃO COMPLETA COM SCROLL ===== */
 
 .modal {
     display: none;
@@ -924,9 +924,10 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 10000; /* Aumentado para garantir sobreposição */
+    z-index: 10000;
     opacity: 0;
     transition: opacity 0.3s ease;
+    overflow: hidden;
 }
 
 .modal.active {
@@ -936,31 +937,35 @@
     opacity: 1;
 }
 
+/* CONTAINER PRINCIPAL DO MODAL */
 .relacionamento-modal {
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh; /* Aumentado para dar mais espaço */
-    min-height: 500px; /* Altura mínima */
+    width: 95%;
+    max-width: 900px;
+    max-height: 90vh !important;
+    min-height: 500px;
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.98), rgba(26, 18, 0, 0.98));
     border: 3px solid var(--primary-gold);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     display: flex !important;
     flex-direction: column !important;
     position: relative !important;
     z-index: 10001 !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
 }
 
+/* HEADER DO MODAL - FIXO */
 .modal-header {
     background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
-    padding: 20px;
+    padding: 20px 25px !important;
     border-bottom: 2px solid var(--primary-gold);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0 !important; /* Não encolher */
-    min-height: 70px;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    min-height: 70px !important;
+    position: relative !important;
+    z-index: 10002 !important;
 }
 
 .modal-header h3 {
@@ -995,23 +1000,32 @@
     transform: rotate(90deg);
 }
 
+/* CORPO DO MODAL - COM SCROLL INTELIGENTE */
 .modal-body {
-    padding: 20px;
+    padding: 25px !important;
     overflow-y: auto !important;
-    flex: 1 !important; /* Ocupa espaço disponível */
-    max-height: calc(90vh - 220px) !important; /* Ajustado para incluir footer */
-    min-height: 300px !important;
+    flex: 1 !important;
+    max-height: calc(90vh - 180px) !important; /* Altura dinâmica */
+    min-height: 400px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
 }
 
+/* Container dos steps */
 .modal-steps {
     display: flex;
     flex-direction: column;
     gap: 25px;
+    min-height: 100%;
 }
 
 .modal-step {
     display: none;
     animation: fadeIn 0.3s ease;
+    min-height: 300px; /* Altura mínima para cada step */
 }
 
 .modal-step.active {
@@ -1034,6 +1048,7 @@
     line-height: 1.5;
 }
 
+/* SISTEMA DE TIPO OPTIONS */
 .tipo-options {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1053,6 +1068,7 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    min-height: 120px;
 }
 
 .tipo-option:hover {
@@ -1087,8 +1103,9 @@
     line-height: 1.3;
 }
 
+/* FORMULÁRIOS DENTRO DO MODAL */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .form-group label {
@@ -1096,13 +1113,13 @@
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
     font-size: 0.95rem;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: bold;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 15px;
+    padding: 14px 16px;
     background: rgba(26, 18, 0, 0.8);
     border: 1px solid var(--wood-light);
     border-radius: 6px;
@@ -1110,6 +1127,7 @@
     font-family: 'MedievalSharp', cursive;
     font-size: 0.9rem;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .form-control:focus {
@@ -1119,26 +1137,42 @@
 }
 
 textarea.form-control {
-    min-height: 80px;
+    min-height: 100px;
     resize: vertical;
+    line-height: 1.5;
 }
 
+/* ESPECIAL PARA O INPUT DE NOME */
+#relNome {
+    font-size: 1rem;
+    padding: 15px 20px;
+    border: 2px solid var(--wood-light);
+}
+
+#relNome:focus {
+    border-color: var(--primary-gold);
+    background: rgba(26, 18, 0, 0.9);
+}
+
+/* CHECKBOX E RADIO GROUPS */
 .checkbox-group, .radio-group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 15px;
 }
 
 .checkbox-group label, .radio-group label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
-    padding: 8px 12px;
+    padding: 12px 15px;
     background: rgba(26, 18, 0, 0.6);
-    border-radius: 5px;
+    border-radius: 6px;
     border: 1px solid rgba(212, 175, 55, 0.1);
     transition: all 0.2s ease;
+    min-height: 50px;
 }
 
 .checkbox-group label:hover, .radio-group label:hover {
@@ -1149,14 +1183,14 @@ textarea.form-control {
 .checkbox-group input[type="checkbox"], 
 .radio-group input[type="radio"] {
     margin: 0;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
 }
 
 .checkbox-custom {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border: 2px solid var(--wood-light);
     border-radius: 4px;
     background: transparent;
@@ -1182,31 +1216,37 @@ textarea.form-control {
 .checkbox-text, .radio-text {
     flex: 1;
     color: var(--text-light);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
 .checkbox-text strong, .radio-text strong {
     color: var(--text-gold);
+    display: block;
+    margin-bottom: 2px;
 }
 
 .checkbox-text em, .radio-text em {
     font-style: italic;
     color: var(--text-light);
     opacity: 0.7;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
 }
 
+/* CONFIG CONTAINER */
 .config-container {
-    padding: 15px;
+    padding: 20px;
     background: rgba(26, 18, 0, 0.5);
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid rgba(212, 175, 55, 0.1);
+    margin-top: 15px;
 }
 
 .config-container h4 {
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
-    margin-bottom: 15px;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1215,40 +1255,57 @@ textarea.form-control {
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(26, 18, 0, 0.3);
+    border-radius: 6px;
 }
 
+/* RESUMO DO CUSTO */
 #modalResumo {
-    margin-top: 25px;
-    padding: 15px;
+    margin-top: 30px;
+    padding: 20px;
     background: rgba(26, 18, 0, 0.6);
-    border-radius: 8px;
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 10px;
+    border: 2px solid rgba(212, 175, 55, 0.2);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+#modalResumo h4 {
+    color: var(--text-gold);
+    font-family: 'Cinzel', serif;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 #modalResumo .resumo-info {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 15px;
 }
 
 #modalResumo .resumo-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
+    padding: 10px 0;
     border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    min-height: 40px;
 }
 
 #modalResumo .resumo-item:nth-child(odd) {
     border-right: 1px solid rgba(212, 175, 55, 0.1);
-    padding-right: 15px;
+    padding-right: 20px;
 }
 
 #modalResumo .resumo-item:nth-child(even) {
-    padding-left: 15px;
+    padding-left: 20px;
 }
 
 #modalResumo .resumo-total {
@@ -1256,60 +1313,64 @@ textarea.form-control {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0 0;
-    margin-top: 10px;
+    padding: 15px 0 0;
+    margin-top: 15px;
     border-top: 2px solid rgba(212, 175, 55, 0.3);
+    font-size: 1.1rem;
 }
 
 #modalResumo .resumo-item span:first-child {
     color: var(--text-light);
     font-size: 0.9rem;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 #modalResumo .resumo-item span:last-child {
     color: var(--text-gold);
     font-family: 'MedievalSharp', cursive;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    text-align: right;
+    min-width: 80px;
 }
 
 #modalResumo .resumo-total span:first-child {
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 #modalResumo .resumo-total span:last-child {
     color: var(--text-gold);
     font-family: 'MedievalSharp', cursive;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: bold;
 }
 
-/* ===== MODAL FOOTER - CORREÇÃO COMPLETA ===== */
+/* ===== FOOTER DO MODAL - VISÍVEL E ACESSÍVEL ===== */
 .modal-footer {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
     position: relative !important;
-    z-index: 10002 !important;
+    z-index: 10003 !important;
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95)) !important;
     border-top: 3px solid var(--primary-gold) !important;
-    padding: 20px !important;
+    padding: 20px 25px !important;
     gap: 15px !important;
     flex-wrap: wrap !important;
     justify-content: center !important;
-    min-height: 90px !important; /* Garante altura mínima */
-    flex-shrink: 0 !important; /* Não encolhe */
     align-items: center !important;
+    min-height: 90px !important;
+    flex-shrink: 0 !important;
 }
 
-/* BOTÕES DO MODAL - CORREÇÃO */
+/* BOTÕES DO MODAL - GRANDES E VISÍVEIS */
 .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-    padding: 12px 25px !important;
-    border-radius: 6px !important;
+    padding: 14px 25px !important;
+    border-radius: 8px !important;
     font-family: 'Cinzel', serif !important;
     font-weight: bold !important;
     cursor: pointer !important;
@@ -1318,34 +1379,38 @@ textarea.form-control {
     visibility: visible !important;
     opacity: 1 !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 10px !important;
     border: none !important;
-    min-width: 140px !important;
+    min-width: 150px !important;
     justify-content: center !important;
     flex: 1 !important;
-    max-width: 200px !important;
-    height: 48px !important;
-    font-size: 0.95rem !important;
-    z-index: 10003 !important;
+    max-width: 220px !important;
+    height: 52px !important;
+    font-size: 1rem !important;
+    z-index: 10004 !important;
     position: relative !important;
     box-sizing: border-box !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
 }
 
 .btn-voltar {
-    background: rgba(26, 18, 0, 0.8) !important;
+    background: rgba(26, 18, 0, 0.9) !important;
     border: 2px solid var(--wood-light) !important;
     color: var(--text-light) !important;
 }
 
 .btn-voltar:hover:not(:disabled) {
     border-color: var(--primary-gold) !important;
-    background: rgba(212, 175, 55, 0.1) !important;
+    background: rgba(212, 175, 55, 0.15) !important;
     transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2) !important;
 }
 
 .btn-voltar:disabled {
     opacity: 0.5 !important;
     cursor: not-allowed !important;
+    transform: none !important;
 }
 
 .btn-proximo {
@@ -1357,7 +1422,7 @@ textarea.form-control {
 .btn-proximo:hover:not(:disabled) {
     background: linear-gradient(145deg, var(--primary-gold), var(--secondary-gold)) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3) !important;
+    box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4) !important;
 }
 
 .btn-proximo:disabled {
@@ -1374,7 +1439,7 @@ textarea.form-control {
 .btn-cancelar:hover {
     background: linear-gradient(145deg, rgba(220, 50, 50, 0.9), rgba(198, 40, 40, 0.9)) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3) !important;
+    box-shadow: 0 6px 15px rgba(244, 67, 54, 0.3) !important;
 }
 
 .btn-confirmar {
@@ -1386,7 +1451,7 @@ textarea.form-control {
 .btn-confirmar:hover:not(:disabled) {
     background: linear-gradient(145deg, var(--vantagem-green-light), rgba(46, 125, 50, 0.9)) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important;
+    box-shadow: 0 6px 15px rgba(46, 125, 50, 0.4) !important;
 }
 
 .btn-confirmar:disabled {
@@ -1395,7 +1460,13 @@ textarea.form-control {
 }
 
 /* Controle de visibilidade dos botões por step */
-.modal[data-step="1"] .btn-voltar {
+.modal[data-step="1"] .btn-voltar,
+.modal[data-step="1"] .btn-proximo,
+.modal[data-step="1"] .btn-confirmar {
+    display: none !important;
+}
+
+.modal[data-step="2"] .btn-confirmar {
     display: none !important;
 }
 
@@ -1650,13 +1721,14 @@ textarea.form-control {
     
     .modal-footer {
         flex-wrap: wrap !important;
-        gap: 10px !important;
+        gap: 12px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-        flex: 1 1 calc(50% - 10px) !important;
-        min-width: 120px !important;
+        flex: 1 1 calc(50% - 12px) !important;
+        min-width: 140px !important;
         max-width: none !important;
+        height: 50px !important;
     }
 }
 
@@ -1771,17 +1843,34 @@ textarea.form-control {
         grid-template-columns: 1fr;
     }
     
-    /* Correções específicas para mobile no modal */
+    /* CORREÇÕES ESPECÍFICAS MOBILE PARA MODAL */
     .relacionamento-modal {
-        width: 95% !important;
+        width: 98% !important;
         max-height: 95vh !important;
         margin: 10px !important;
+        min-height: 450px;
+    }
+    
+    .modal-header {
+        padding: 15px 20px !important;
+        min-height: 60px !important;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.2rem !important;
+    }
+    
+    .modal-body {
+        padding: 20px !important;
+        max-height: calc(95vh - 200px) !important;
+        min-height: 350px !important;
     }
     
     .modal-footer {
         flex-direction: column !important;
         gap: 10px !important;
-        min-height: 120px !important;
+        min-height: 140px !important;
+        padding: 15px 20px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
@@ -1789,10 +1878,30 @@ textarea.form-control {
         max-width: 100% !important;
         min-width: 100% !important;
         flex: 1 1 auto !important;
+        height: 48px !important;
+        font-size: 0.95rem !important;
     }
     
-    .modal-body {
-        max-height: calc(95vh - 250px) !important;
+    #modalResumo .resumo-info {
+        grid-template-columns: 1fr;
+    }
+    
+    #modalResumo .resumo-item:nth-child(odd) {
+        border-right: none;
+        padding-right: 0;
+    }
+    
+    #modalResumo .resumo-item:nth-child(even) {
+        padding-left: 0;
+    }
+    
+    .form-group label {
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        padding: 12px 14px;
+        font-size: 0.85rem;
     }
 }
 
@@ -1886,47 +1995,93 @@ textarea.form-control {
         justify-content: center;
     }
     
-    #modalResumo .resumo-info {
-        grid-template-columns: 1fr;
+    /* CORREÇÕES FINAIS PARA TELAS MUITO PEQUENAS */
+    .relacionamento-modal {
+        width: 100% !important;
+        max-height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: 3px solid var(--primary-gold) !important;
     }
     
-    #modalResumo .resumo-item:nth-child(odd) {
-        border-right: none;
-        padding-right: 0;
-    }
-    
-    #modalResumo .resumo-item:nth-child(even) {
-        padding-left: 0;
-    }
-    
-    /* Ajustes finais para modal em telas muito pequenas */
     .modal-header {
-        padding: 15px !important;
-        min-height: 60px !important;
+        padding: 12px 15px !important;
+        min-height: 55px !important;
     }
     
     .modal-header h3 {
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important;
     }
     
     .modal-body {
         padding: 15px !important;
+        max-height: calc(100vh - 220px) !important;
+        min-height: 300px !important;
+    }
+    
+    .modal-footer {
+        padding: 12px 15px !important;
+        min-height: 130px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
         height: 44px !important;
-        padding: 10px 20px !important;
+        padding: 10px 15px !important;
         font-size: 0.9rem !important;
+        min-width: 100% !important;
+    }
+    
+    .tipo-option {
+        padding: 15px 10px;
+        min-height: 100px;
+    }
+    
+    .tipo-option i {
+        font-size: 1.5rem;
+    }
+    
+    .tipo-option span {
+        font-size: 0.85rem;
+    }
+    
+    .tipo-option small {
+        font-size: 0.75rem;
     }
 }
 
-/* SCROLLBAR PERSONALIZADA */
+/* ===== SCROLLBAR PERSONALIZADA E EFICIENTE ===== */
+
+/* Scrollbar para o modal-body */
+.modal-body::-webkit-scrollbar {
+    width: 10px !important;
+    background: rgba(26, 18, 0, 0.3) !important;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(26, 18, 0, 0.1) !important;
+    border-radius: 5px !important;
+    margin: 5px 0 !important;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(145deg, var(--primary-gold), #b8941f) !important;
+    border-radius: 5px !important;
+    border: 2px solid rgba(26, 18, 0, 0.3) !important;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(145deg, var(--secondary-gold), var(--primary-gold)) !important;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;
+}
+
+/* Scrollbar para cards */
 .caracteristica-card .card-content::-webkit-scrollbar {
     width: 6px;
+    background: rgba(26, 18, 0, 0.2);
 }
 
 .caracteristica-card .card-content::-webkit-scrollbar-track {
-    background: rgba(26, 18, 0, 0.3);
+    background: rgba(26, 18, 0, 0.1);
     border-radius: 3px;
 }
 
@@ -1939,25 +2094,14 @@ textarea.form-control {
     background: var(--secondary-gold);
 }
 
-.modal-body::-webkit-scrollbar {
-    width: 8px;
+/* Firefox scrollbar */
+.modal-body {
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--primary-gold) rgba(26, 18, 0, 0.1) !important;
 }
 
-.modal-body::-webkit-scrollbar-track {
-    background: rgba(26, 18, 0, 0.3);
-    border-radius: 4px;
-}
+/* ===== ANIMAÇÕES SUAVES ===== */
 
-.modal-body::-webkit-scrollbar-thumb {
-    background: var(--primary-gold);
-    border-radius: 4px;
-}
-
-.modal-body::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-gold);
-}
-
-/* ANIMAÇÕES ADICIONAIS */
 @keyframes slideInFromRight {
     from {
         transform: translateX(20px);
@@ -1969,32 +2113,80 @@ textarea.form-control {
     }
 }
 
-.modal-step.active {
-    animation: slideInFromRight 0.3s ease;
+@keyframes slideInFromBottom {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
-/* ESTILO DE FOCO PARA ACESSIBILIDADE */
+.modal-step.active {
+    animation: slideInFromRight 0.4s ease;
+}
+
+.relacionamento-modal {
+    animation: slideInFromBottom 0.4s ease;
+}
+
+/* ===== ESTILOS DE FOCO PARA ACESSIBILIDADE ===== */
+
 .btn-voltar:focus,
 .btn-proximo:focus,
 .btn-cancelar:focus,
-.btn-confirmar:focus {
+.btn-confirmar:focus,
+.form-control:focus,
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
     outline: 2px solid var(--primary-gold) !important;
     outline-offset: 2px !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3) !important;
 }
 
-/* CORREÇÃO DE OVERFLOW NO MODAL */
-.relacionamento-modal * {
+/* ===== ESTILOS DE SELEÇÃO ===== */
+
+::selection {
+    background: rgba(212, 175, 55, 0.3);
+    color: var(--text-gold);
+}
+
+/* ===== GARANTIR QUE TUDO ESTEJA DENTRO DO BOX-SIZING ===== */
+
+.relacionamento-modal *,
+.modal-header *,
+.modal-body *,
+.modal-footer * {
     box-sizing: border-box !important;
 }
 
-/* GARANTIR QUE O FOOTER SEMPRE FIQUE VISÍVEL */
-.modal-footer::before {
+/* ===== OVERLAY DO MODAL ===== */
+
+.modal::before {
     content: '';
-    position: absolute;
-    top: -3px;
+    position: fixed;
+    top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: var(--primary-gold);
-    z-index: 10004;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
 }
+
+/* ===== DEBUG - REMOVER EM PRODUÇÃO ===== */
+/*
+.modal {
+    border: 1px solid red;
+}
+.modal-body {
+    border: 1px solid lime;
+}
+.modal-footer {
+    border: 1px solid blue;
+}
+#relNome {
+    border: 2px solid yellow;
+}
+*/
