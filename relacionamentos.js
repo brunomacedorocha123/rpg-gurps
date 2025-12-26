@@ -1,14 +1,17 @@
 // ===========================================
-// SISTEMA DE RELACIONAMENTOS - GURPS CORRETO
+// SISTEMA DE RELACIONAMENTOS - VERSÃO REFORMULADA
 // ===========================================
 
 class SistemaRelacionamentos {
     constructor() {
-        console.log('🏗️ Sistema de Relacionamentos iniciado');
+        console.log('🏗️ Sistema de Relacionamentos REFORMULADO iniciado');
         
         this.relacionamentos = [];
+        this.tipoSelecionado = null;
+        this.stepAtual = 1;
+        this.dadosTemporarios = {};
         
-        // Configuração CORRETA GURPS
+        // Configuração GURPS CORRETA
         this.config = {
             aliados: {
                 custoBase: {
@@ -16,7 +19,30 @@ class SistemaRelacionamentos {
                     50: 2,   // 50% = 2 pontos
                     75: 3,   // 75% = 3 pontos
                     100: 5,  // 100% = 5 pontos
-                    150: 10  // 150% = 10 pontos (máximo)
+                    150: 10  // 150% = 10 pontos
+                },
+                modificadores: {
+                    invocavel: 2.0,   // ×2
+                    lacaio: 1.5,      // ×1.5
+                    habilidades: 1.5, // ×1.5
+                    afinidade: 0.75,  // ×0.75
+                    relutante: 0.5    // ×0.5
+                },
+                grupos: {
+                    1: 1,    // Individual
+                    6: 6,    // 6-10 membros
+                    11: 8,   // 11-20 membros
+                    21: 10,  // 21-50 membros
+                    51: 12   // 51-100 membros
+                }
+            },
+            inimigos: {
+                custoBase: {
+                    25: -1,
+                    50: -2,
+                    75: -3,
+                    100: -5,
+                    150: -10
                 }
             }
         };
@@ -25,14 +51,14 @@ class SistemaRelacionamentos {
     }
     
     init() {
-        console.log('🚀 Inicializando Relacionamentos...');
+        console.log('🚀 Inicializando Relacionamentos Reformulado...');
         
         this.setupElementos();
         this.setupEventListeners();
         this.carregarDoLocalStorage();
         this.atualizarLista();
         
-        console.log('✅ Sistema de Relacionamentos pronto');
+        console.log('✅ Sistema de Relacionamentos Reformulado pronto');
     }
     
     setupElementos() {
@@ -46,7 +72,18 @@ class SistemaRelacionamentos {
                 inimigos: document.getElementById('countInimigos'),
                 patronos: document.getElementById('countPatronos'),
                 total: document.getElementById('totalRelacionamentos')
-            }
+            },
+            // Botões do modal
+            btnVoltar: document.getElementById('btnVoltar'),
+            btnProximo: document.getElementById('btnProximo'),
+            btnCancelar: document.getElementById('btnCancelar'),
+            btnConfirmar: document.getElementById('btnConfirmar'),
+            // Resumo do modal
+            resumoTipo: document.getElementById('resumoTipo'),
+            resumoCustoBase: document.getElementById('resumoCustoBase'),
+            resumoMods: document.getElementById('resumoMods'),
+            resumoGrupo: document.getElementById('resumoGrupo'),
+            resumoTotal: document.getElementById('resumoTotal')
         };
     }
     
@@ -71,6 +108,13 @@ class SistemaRelacionamentos {
             });
         }
         
+        // Tecla ESC para fechar
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.elementos.modal?.classList.contains('active')) {
+                this.fecharModal();
+            }
+        });
+        
         // Seleção de tipo no modal
         document.querySelectorAll('.tipo-option').forEach(option => {
             option.addEventListener('click', (e) => {
@@ -78,9 +122,29 @@ class SistemaRelacionamentos {
             });
         });
         
-        // Botões Confirmar e Cancelar
-        document.getElementById('btnConfirmar')?.addEventListener('click', () => this.salvarAliado());
-        document.getElementById('btnCancelar')?.addEventListener('click', () => this.fecharModal());
+        // Botões do modal
+        if (this.elementos.btnVoltar) {
+            this.elementos.btnVoltar.addEventListener('click', () => this.voltarStep());
+        }
+        
+        if (this.elementos.btnProximo) {
+            this.elementos.btnProximo.addEventListener('click', () => this.proximoStep());
+        }
+        
+        if (this.elementos.btnCancelar) {
+            this.elementos.btnCancelar.addEventListener('click', () => this.fecharModal());
+        }
+        
+        if (this.elementos.btnConfirmar) {
+            this.elementos.btnConfirmar.addEventListener('click', () => this.salvarRelacionamento());
+        }
+        
+        // Botões de filtro
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.filtrarRelacionamentos(e.currentTarget.dataset.filter);
+            });
+        });
     }
     
     // ===========================================
@@ -90,6 +154,11 @@ class SistemaRelacionamentos {
     abrirModal() {
         console.log('📝 Abrindo modal de relacionamentos');
         
+        // Resetar dados temporários
+        this.dadosTemporarios = {};
+        this.tipoSelecionado = null;
+        this.stepAtual = 1;
+        
         // Mostrar modal
         if (this.elementos.modal) {
             this.elementos.modal.classList.add('active');
@@ -98,6 +167,10 @@ class SistemaRelacionamentos {
         
         // Resetar para step 1
         this.mudarStep(1);
+        this.desselecionarTipos();
+        
+        // Atualizar resumo
+        this.atualizarResumoModal();
     }
     
     fecharModal() {
@@ -108,8 +181,9 @@ class SistemaRelacionamentos {
             document.body.style.overflow = '';
         }
         
-        // Resetar seleção
-        this.desselecionarTipos();
+        // Resetar dados temporários
+        this.dadosTemporarios = {};
+        this.tipoSelecionado = null;
     }
     
     selecionarTipo(tipo) {
@@ -124,10 +198,14 @@ class SistemaRelacionamentos {
             option.classList.add('selected');
         }
         
+        this.tipoSelecionado = tipo;
+        this.dadosTemporarios.tipo = tipo;
+        
+        // Atualizar resumo
+        this.atualizarResumoModal();
+        
         // Ir para configuração
-        setTimeout(() => {
-            this.carregarConfiguracao(tipo);
-        }, 300);
+        this.proximoStep();
     }
     
     desselecionarTipos() {
@@ -137,10 +215,12 @@ class SistemaRelacionamentos {
     }
     
     // ===========================================
-    // CONFIGURAÇÃO DINÂMICA
+    // CONTROLE DE STEPS
     // ===========================================
     
     mudarStep(stepNum) {
+        this.stepAtual = stepNum;
+        
         // Esconder todos os steps
         document.querySelectorAll('.modal-step').forEach(step => {
             step.classList.remove('active');
@@ -153,310 +233,347 @@ class SistemaRelacionamentos {
         }
         
         // Mostrar botões certos
-        this.atualizarBotoes(stepNum);
-    }
-    
-    atualizarBotoes(stepAtual) {
-        const btnPrev = document.getElementById('btnPrev');
-        const btnNext = document.getElementById('btnNext');
-        const btnConfirmar = document.getElementById('btnConfirmar');
-        const btnCancelar = document.getElementById('btnCancelar');
+        this.atualizarBotoes();
         
-        if (stepAtual === 1) {
-            // Primeiro passo: escolher tipo
-            if (btnPrev) btnPrev.style.display = 'none';
-            if (btnNext) btnNext.style.display = 'none';
-            if (btnConfirmar) btnConfirmar.style.display = 'none';
-            if (btnCancelar) btnCancelar.style.display = 'inline-block';
-        } else if (stepAtual === 2) {
-            // Segundo passo: configuração
-            if (btnPrev) btnPrev.style.display = 'inline-block';
-            if (btnNext) btnNext.style.display = 'none';
-            if (btnConfirmar) btnConfirmar.style.display = 'inline-block';
-            if (btnCancelar) btnCancelar.style.display = 'inline-block';
+        // Carregar configuração se necessário
+        if (stepNum === 2 && this.tipoSelecionado) {
+            this.carregarConfiguracao(this.tipoSelecionado);
         }
     }
+    
+    atualizarBotoes() {
+        const btnVoltar = this.elementos.btnVoltar;
+        const btnProximo = this.elementos.btnProximo;
+        const btnCancelar = this.elementos.btnCancelar;
+        const btnConfirmar = this.elementos.btnConfirmar;
+        
+        if (this.stepAtual === 1) {
+            // Primeiro passo: escolher tipo
+            if (btnVoltar) btnVoltar.style.display = 'none';
+            if (btnProximo) btnProximo.style.display = 'none';
+            if (btnCancelar) btnCancelar.style.display = 'flex';
+            if (btnConfirmar) btnConfirmar.style.display = 'none';
+        } else if (this.stepAtual === 2) {
+            // Segundo passo: configuração
+            if (btnVoltar) btnVoltar.style.display = 'flex';
+            if (btnProximo) btnProximo.style.display = 'none';
+            if (btnCancelar) btnCancelar.style.display = 'flex';
+            if (btnConfirmar) btnConfirmar.style.display = 'flex';
+        } else if (this.stepAtual === 3) {
+            // Terceiro passo: detalhes
+            if (btnVoltar) btnVoltar.style.display = 'flex';
+            if (btnProximo) btnProximo.style.display = 'none';
+            if (btnCancelar) btnCancelar.style.display = 'flex';
+            if (btnConfirmar) btnConfirmar.style.display = 'flex';
+        }
+    }
+    
+    voltarStep() {
+        if (this.stepAtual > 1) {
+            this.mudarStep(this.stepAtual - 1);
+        }
+    }
+    
+    proximoStep() {
+        if (this.stepAtual < 3) {
+            this.mudarStep(this.stepAtual + 1);
+        }
+    }
+    
+    // ===========================================
+    // CONFIGURAÇÃO DINÂMICA
+    // ===========================================
     
     carregarConfiguracao(tipo) {
         console.log(`⚙️ Carregando configuração para: ${tipo}`);
         
-        const step2 = document.getElementById('step2');
-        if (!step2) return;
+        const configContainer = document.querySelector('#step2 .config-container');
+        if (!configContainer) return;
         
         if (tipo === 'aliado') {
-            step2.innerHTML = this.getHTMLConfigAliado();
-            this.setupControlesAliado();
-            this.mudarStep(2);
+            this.carregarConfigAliado(configContainer);
         } else {
-            // Para outros tipos, só mostra mensagem por enquanto
-            step2.innerHTML = `
-                <div class="config-placeholder">
-                    <i class="fas fa-tools"></i>
-                    <h4>Configuração de ${tipo}</h4>
-                    <p>Em desenvolvimento...</p>
-                    <button class="btn-cancelar" onclick="sistemaRelacionamentos.mudarStep(1)">
-                        <i class="fas fa-arrow-left"></i> Voltar
-                    </button>
-                </div>
-            `;
-            this.mudarStep(2);
+            this.carregarConfigOutros(tipo, configContainer);
+        }
+        
+        // Configurar listeners para atualização em tempo real
+        this.configurarListenersConfiguracao();
+    }
+    
+    carregarConfigAliado(container) {
+        const template = document.getElementById('template-aliado');
+        if (template) {
+            container.innerHTML = template.innerHTML;
+            
+            // Configurar listener para grupo
+            const isGroupCheckbox = container.querySelector('#isGroup');
+            const groupConfig = container.querySelector('#groupConfig');
+            
+            if (isGroupCheckbox && groupConfig) {
+                isGroupCheckbox.addEventListener('change', (e) => {
+                    groupConfig.style.display = e.target.checked ? 'block' : 'none';
+                    this.calcularECustos();
+                });
+            }
+            
+            // Configurar listeners para rádios e checkboxes
+            container.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+                input.addEventListener('change', () => this.calcularECustos());
+            });
+            
+            // Configurar listener para select do grupo
+            const groupSizeSelect = container.querySelector('#groupSize');
+            if (groupSizeSelect) {
+                groupSizeSelect.addEventListener('change', () => this.calcularECustos());
+            }
         }
     }
     
-    getHTMLConfigAliado() {
-        return `
-            <div class="ally-config">
-                <h4><i class="fas fa-shield-alt"></i> Configuração do Aliado</h4>
-                
-                <div class="form-group">
-                    <label for="allyName">Nome do Aliado:</label>
-                    <input type="text" id="allyName" class="form-control" 
-                           placeholder="Ex: Sir Galhard, Cavaleiro Leal">
-                </div>
-                
-                <div class="form-group">
-                    <label for="allyDescription">Descrição:</label>
-                    <textarea id="allyDescription" class="form-control" rows="3" 
-                              placeholder="Descreva o aliado, sua história, aparência..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-chart-line"></i> Poder do Aliado</label>
-                    <div class="radio-group">
-                        <label>
-                            <input type="radio" name="allyPower" value="25" checked>
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>25%</strong> dos seus pontos <em>(1 ponto)</em>
-                            </span>
-                        </label>
-                        <label>
-                            <input type="radio" name="allyPower" value="50">
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>50%</strong> dos seus pontos <em>(2 pontos)</em>
-                            </span>
-                        </label>
-                        <label>
-                            <input type="radio" name="allyPower" value="75">
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>75%</strong> dos seus pontos <em>(3 pontos)</em>
-                            </span>
-                        </label>
-                        <label>
-                            <input type="radio" name="allyPower" value="100">
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>100%</strong> dos seus pontos <em>(5 pontos)</em>
-                            </span>
-                        </label>
-                        <label>
-                            <input type="radio" name="allyPower" value="150">
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>150%</strong> dos seus pontos <em>(10 pontos)</em>
-                            </span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-calendar-alt"></i> Frequência de Aparição</label>
-                    <div class="radio-group">
-                        <label>
-                            <input type="radio" name="allyFrequency" value="15" checked>
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>Quase sempre</strong> (15 ou menos)
-                            </span>
-                        </label>
-                        <label>
-                            <input type="radio" name="allyFrequency" value="12">
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>Frequentemente</strong> (12 ou menos)
-                            </span>
-                        </label>
-                        <label>
-                            <input type="radio" name="allyFrequency" value="9">
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>Ocasionalmente</strong> (9 ou menos)
-                            </span>
-                        </label>
-                        <label>
-                            <input type="radio" name="allyFrequency" value="6">
-                            <span class="radio-custom"></span>
-                            <span class="radio-text">
-                                <strong>Raramente</strong> (6 ou menos)
-                            </span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-magic"></i> Modificadores Especiais</label>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" name="allyMods" value="invocavel">
-                            <span class="checkbox-custom"></span>
-                            <span class="checkbox-text">
-                                <strong>Invocável</strong> (+100%)
-                            </span>
-                        </label>
-                        <label>
-                            <input type="checkbox" name="allyMods" value="lacaio">
-                            <span class="checkbox-custom"></span>
-                            <span class="checkbox-text">
-                                <strong>Lacaio</strong> (+50%)
-                            </span>
-                        </label>
-                        <label>
-                            <input type="checkbox" name="allyMods" value="habilidades">
-                            <span class="checkbox-custom"></span>
-                            <span class="checkbox-text">
-                                <strong>Habilidades Especiais</strong> (+50%)
-                            </span>
-                        </label>
-                        <label>
-                            <input type="checkbox" name="allyMods" value="afinidade">
-                            <span class="checkbox-custom"></span>
-                            <span class="checkbox-text">
-                                <strong>Afinidade</strong> (-25%)
-                            </span>
-                        </label>
-                        <label>
-                            <input type="checkbox" name="allyMods" value="relutante">
-                            <span class="checkbox-custom"></span>
-                            <span class="checkbox-text">
-                                <strong>Relutante</strong> (-50%)
-                            </span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="isGroup">
-                        <span class="checkbox-custom"></span>
-                        <span class="checkbox-text">
-                            <strong>É um grupo de aliados?</strong>
-                        </span>
-                    </label>
-                    
-                    <div id="groupConfig" style="display: none; margin-top: 10px;">
-                        <label>Tamanho do Grupo:</label>
-                        <select id="groupSize" class="form-control">
-                            <option value="1">Individual (x1)</option>
-                            <option value="6">6-10 membros (x6)</option>
-                            <option value="11">11-20 membros (x8)</option>
-                            <option value="21">21-50 membros (x10)</option>
-                            <option value="51">51-100 membros (x12)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        `;
+    carregarConfigOutros(tipo, container) {
+        const template = document.getElementById('template-outros');
+        if (template) {
+            container.innerHTML = template.innerHTML;
+            
+            // Atualizar título
+            const h4 = container.querySelector('h4');
+            if (h4) {
+                h4.innerHTML = `<i class="fas fa-${this.getIcone(tipo)}"></i> Configuração de ${this.getNomeTipo(tipo)}`;
+            }
+            
+            // Configurar listener para select
+            const powerSelect = container.querySelector('#otherPower');
+            if (powerSelect) {
+                powerSelect.addEventListener('change', () => this.calcularECustos());
+            }
+        }
     }
     
-    setupControlesAliado() {
-        // Grupo
-        const isGroupCheckbox = document.getElementById('isGroup');
-        if (isGroupCheckbox) {
-            isGroupCheckbox.addEventListener('change', (e) => {
-                const groupConfig = document.getElementById('groupConfig');
-                if (groupConfig) {
-                    groupConfig.style.display = e.target.checked ? 'block' : 'none';
-                }
+    configurarListenersConfiguracao() {
+        // Listeners para inputs de nome e descrição no step 3
+        const relNome = document.getElementById('relNome');
+        const relDescricao = document.getElementById('relDescricao');
+        const relObservacoes = document.getElementById('relObservacoes');
+        
+        if (relNome) {
+            relNome.addEventListener('input', (e) => {
+                this.dadosTemporarios.nome = e.target.value;
+            });
+        }
+        
+        if (relDescricao) {
+            relDescricao.addEventListener('input', (e) => {
+                this.dadosTemporarios.descricao = e.target.value;
+            });
+        }
+        
+        if (relObservacoes) {
+            relObservacoes.addEventListener('input', (e) => {
+                this.dadosTemporarios.observacoes = e.target.value;
             });
         }
     }
     
     // ===========================================
-    // SALVAR ALIADO
+    // CÁLCULO DE CUSTOS
     // ===========================================
     
-    salvarAliado() {
-        // Coletar dados
-        const nome = document.getElementById('allyName')?.value.trim();
-        const descricao = document.getElementById('allyDescription')?.value.trim();
-        const poder = document.querySelector('input[name="allyPower"]:checked')?.value;
-        const frequencia = document.querySelector('input[name="allyFrequency"]:checked')?.value;
+    calcularECustos() {
+        if (!this.tipoSelecionado) return;
+        
+        let custoBase = 0;
+        let multiplicador = 1;
+        let multiplicadorGrupo = 1;
+        let modificadoresTexto = [];
+        
+        if (this.tipoSelecionado === 'aliado') {
+            // Poder
+            const powerRadio = document.querySelector('input[name="allyPower"]:checked');
+            if (powerRadio) {
+                const poder = parseInt(powerRadio.value);
+                custoBase = this.config.aliados.custoBase[poder] || 0;
+                this.dadosTemporarios.poder = poder;
+            }
+            
+            // Modificadores
+            const modCheckboxes = document.querySelectorAll('input[name="allyMods"]:checked');
+            modificadoresTexto = [];
+            
+            modCheckboxes.forEach(mod => {
+                const valorMod = this.config.aliados.modificadores[mod.value];
+                if (valorMod) {
+                    multiplicador *= valorMod;
+                    
+                    // Adicionar texto do modificador
+                    let texto = '';
+                    switch(mod.value) {
+                        case 'invocavel': texto = 'Invocável (×2)'; break;
+                        case 'lacaio': texto = 'Lacaio (×1.5)'; break;
+                        case 'habilidades': texto = 'Habilidades (×1.5)'; break;
+                        case 'afinidade': texto = 'Afinidade (×0.75)'; break;
+                        case 'relutante': texto = 'Relutante (×0.5)'; break;
+                    }
+                    modificadoresTexto.push(texto);
+                }
+            });
+            
+            this.dadosTemporarios.modificadores = Array.from(modCheckboxes).map(m => m.value);
+            
+            // Grupo
+            const isGroupCheckbox = document.getElementById('isGroup');
+            if (isGroupCheckbox?.checked) {
+                const groupSizeSelect = document.getElementById('groupSize');
+                if (groupSizeSelect) {
+                    const tamanho = parseInt(groupSizeSelect.value);
+                    
+                    // Encontrar o multiplicador correto
+                    for (const [limite, mult] of Object.entries(this.config.aliados.grupos)) {
+                        if (tamanho <= parseInt(limite)) {
+                            multiplicadorGrupo = mult;
+                            break;
+                        }
+                    }
+                    
+                    this.dadosTemporarios.grupo = true;
+                    this.dadosTemporarios.tamanhoGrupo = tamanho;
+                }
+            } else {
+                this.dadosTemporarios.grupo = false;
+                this.dadosTemporarios.tamanhoGrupo = 1;
+            }
+            
+        } else if (this.tipoSelecionado === 'inimigo') {
+            // Para inimigos, usar configuração básica
+            const powerSelect = document.getElementById('otherPower');
+            if (powerSelect) {
+                custoBase = parseInt(powerSelect.value) * -1; // Negativo para inimigos
+                this.dadosTemporarios.poder = parseInt(powerSelect.value);
+            }
+        } else {
+            // Para outros tipos
+            const powerSelect = document.getElementById('otherPower');
+            if (powerSelect) {
+                custoBase = parseInt(powerSelect.value);
+                this.dadosTemporarios.poder = parseInt(powerSelect.value);
+            }
+        }
+        
+        // Calcular custo final (arredondar para cima para valores inteiros)
+        const custoFinal = Math.ceil(custoBase * multiplicador * multiplicadorGrupo);
+        
+        // Atualizar dados temporários
+        this.dadosTemporarios.custoBase = custoBase;
+        this.dadosTemporarios.multiplicador = multiplicador;
+        this.dadosTemporarios.multiplicadorGrupo = multiplicadorGrupo;
+        this.dadosTemporarios.custoFinal = custoFinal;
+        
+        // Atualizar resumo no modal
+        this.atualizarResumoModal(custoBase, modificadoresTexto, multiplicadorGrupo, custoFinal);
+    }
+    
+    atualizarResumoModal(custoBase = 0, modificadoresTexto = [], multiplicadorGrupo = 1, custoFinal = 0) {
+        // Tipo
+        if (this.elementos.resumoTipo) {
+            this.elementos.resumoTipo.textContent = this.getNomeTipo(this.tipoSelecionado) || '-';
+        }
+        
+        // Custo Base
+        if (this.elementos.resumoCustoBase) {
+            this.elementos.resumoCustoBase.textContent = `${custoBase >= 0 ? '+' : ''}${custoBase} pts`;
+        }
+        
+        // Modificadores
+        if (this.elementos.resumoMods) {
+            if (modificadoresTexto.length > 0) {
+                this.elementos.resumoMods.textContent = modificadoresTexto.join(', ');
+            } else {
+                this.elementos.resumoMods.textContent = 'Nenhum';
+            }
+        }
+        
+        // Multiplicador Grupo
+        if (this.elementos.resumoGrupo) {
+            if (multiplicadorGrupo > 1) {
+                this.elementos.resumoGrupo.textContent = `×${multiplicadorGrupo}`;
+            } else {
+                this.elementos.resumoGrupo.textContent = '×1';
+            }
+        }
+        
+        // Total
+        if (this.elementos.resumoTotal) {
+            this.elementos.resumoTotal.textContent = `${custoFinal >= 0 ? '+' : ''}${custoFinal} pts`;
+            
+            // Colorir conforme o valor
+            if (custoFinal > 0) {
+                this.elementos.resumoTotal.style.color = '#4caf50';
+            } else if (custoFinal < 0) {
+                this.elementos.resumoTotal.style.color = '#f44336';
+            } else {
+                this.elementos.resumoTotal.style.color = 'var(--text-gold)';
+            }
+        }
+    }
+    
+    // ===========================================
+    // SALVAR RELACIONAMENTO
+    // ===========================================
+    
+    salvarRelacionamento() {
+        // Coletar dados finais
+        const nome = document.getElementById('relNome')?.value.trim();
+        const descricao = document.getElementById('relDescricao')?.value.trim();
+        const observacoes = document.getElementById('relObservacoes')?.value.trim();
         
         // Validação básica
         if (!nome) {
-            alert('Digite o nome do aliado');
+            alert('Digite o nome do relacionamento');
+            document.getElementById('relNome')?.focus();
             return;
         }
         
-        if (!poder) {
-            alert('Selecione o poder do aliado');
+        if (!this.tipoSelecionado) {
+            alert('Selecione um tipo de relacionamento');
             return;
         }
         
-        // Calcular custo base
-        let custoBase = this.config.aliados.custoBase[poder] || 0;
-        
-        // Aplicar modificadores
-        let multiplicador = 1;
-        const modificadores = document.querySelectorAll('input[name="allyMods"]:checked');
-        modificadores.forEach(mod => {
-            switch(mod.value) {
-                case 'invocavel': multiplicador += 1.0; break;    // +100%
-                case 'lacaio': multiplicador += 0.5; break;      // +50%
-                case 'habilidades': multiplicador += 0.5; break; // +50%
-                case 'afinidade': multiplicador -= 0.25; break;  // -25%
-                case 'relutante': multiplicador -= 0.5; break;   // -50%
-            }
-        });
-        
-        // Aplicar grupo
-        const isGroup = document.getElementById('isGroup')?.checked;
-        let tamanhoGrupo = 1;
-        if (isGroup) {
-            tamanhoGrupo = parseInt(document.getElementById('groupSize')?.value || 1);
-            let multiplicadorGrupo = 1;
-            if (tamanhoGrupo <= 5) multiplicadorGrupo = 1;
-            else if (tamanhoGrupo <= 10) multiplicadorGrupo = 6;
-            else if (tamanhoGrupo <= 20) multiplicadorGrupo = 8;
-            else if (tamanhoGrupo <= 50) multiplicadorGrupo = 10;
-            else if (tamanhoGrupo <= 100) multiplicadorGrupo = 12;
-            else multiplicadorGrupo = 12 + Math.floor(Math.log10(tamanhoGrupo/100)) * 6;
-            
-            multiplicador *= multiplicadorGrupo;
+        // Garantir que temos os dados de custo
+        if (!this.dadosTemporarios.custoFinal && this.dadosTemporarios.custoFinal !== 0) {
+            this.calcularECustos();
         }
         
-        // Calcular custo final (arredonda para cima)
-        let custoFinal = Math.ceil(custoBase * multiplicador);
-        
-        // Criar objeto aliado
-        const aliado = {
-            id: 'ally_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-            tipo: 'aliado',
+        // Criar objeto do relacionamento
+        const relacionamento = {
+            id: `${this.tipoSelecionado}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            tipo: this.tipoSelecionado,
             nome: nome,
-            descricao: descricao,
-            config: {
-                poder: parseInt(poder),
-                frequencia: parseInt(frequencia),
-                modificadores: Array.from(modificadores).map(m => m.value),
-                grupo: isGroup,
-                tamanhoGrupo: tamanhoGrupo
-            },
-            custo: custoFinal,
-            criadoEm: new Date().toISOString()
+            descricao: descricao || '',
+            observacoes: observacoes || '',
+            config: { ...this.dadosTemporarios },
+            custo: this.dadosTemporarios.custoFinal || 0,
+            criadoEm: new Date().toISOString(),
+            atualizadoEm: new Date().toISOString()
         };
         
+        // Limpar dados temporários de cálculo
+        delete relacionamento.config.custoBase;
+        delete relacionamento.config.multiplicador;
+        delete relacionamento.config.multiplicadorGrupo;
+        delete relacionamento.config.custoFinal;
+        
         // Adicionar à lista
-        this.relacionamentos.push(aliado);
+        this.relacionamentos.push(relacionamento);
         
         // Salvar e atualizar
         this.salvarNoLocalStorage();
         this.atualizarLista();
         this.fecharModal();
         
-        console.log('✅ Aliado salvo:', aliado);
-        alert('Aliado adicionado com sucesso! Custo: ' + custoFinal + ' pontos');
+        console.log('✅ Relacionamento salvo:', relacionamento);
+        
+        // Mostrar confirmação
+        const custo = relacionamento.custo;
+        const tipoNome = this.getNomeTipo(this.tipoSelecionado);
+        alert(`${tipoNome} "${nome}" adicionado com sucesso!\nCusto: ${custo >= 0 ? '+' : ''}${custo} pontos`);
     }
     
     // ===========================================
@@ -477,9 +594,7 @@ class SistemaRelacionamentos {
             `;
             
             // Zerar contadores
-            Object.values(this.elementos.contadores).forEach(el => {
-                if (el) el.textContent = '0';
-            });
+            this.atualizarContadores();
             return;
         }
         
@@ -498,46 +613,81 @@ class SistemaRelacionamentos {
             contadores[rel.tipo]++;
             totalPontos += rel.custo || 0;
             
-            html += `
-                <div class="relacionamento-item" data-id="${rel.id}">
-                    <div class="relacionamento-header">
-                        <div class="relacionamento-tipo ${rel.tipo}">
-                            <i class="fas fa-${this.getIcone(rel.tipo)}"></i>
-                            ${rel.tipo.toUpperCase()}
-                        </div>
-                        <div class="relacionamento-nome">
-                            ${rel.nome}
-                        </div>
-                        <div class="relacionamento-custo">
-                            ${rel.custo >= 0 ? '+' : ''}${rel.custo} pts
-                        </div>
-                    </div>
-                    
-                    <div class="relacionamento-descricao">
-                        ${rel.descricao || 'Sem descrição'}
-                    </div>
-                    
-                    ${this.getDetalhes(rel)}
-                    
-                    <div class="relacionamento-acoes">
-                        <button class="btn-edit" onclick="sistemaRelacionamentos.editar('${rel.id}')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button class="btn-delete" onclick="sistemaRelacionamentos.excluir('${rel.id}')">
-                            <i class="fas fa-trash"></i> Remover
-                        </button>
-                    </div>
-                </div>
-            `;
+            html += this.getHTMLRelacionamento(rel);
         });
         
         this.elementos.lista.innerHTML = html;
         
         // Atualizar contadores
-        Object.keys(contadores).forEach(tipo => {
-            const el = this.elementos.contadores[tipo];
-            if (el) el.textContent = contadores[tipo];
-        });
+        this.atualizarContadores(contadores, totalPontos);
+    }
+    
+    getHTMLRelacionamento(rel) {
+        const icone = this.getIcone(rel.tipo);
+        const tipoNome = this.getNomeTipo(rel.tipo);
+        const custoFormatado = rel.custo >= 0 ? `+${rel.custo}` : rel.custo;
+        
+        let detalhesHTML = '';
+        
+        if (rel.tipo === 'aliado' && rel.config) {
+            const poder = rel.config.poder ? `${rel.config.poder}%` : 'N/A';
+            const grupo = rel.config.grupo ? `Grupo: ${rel.config.tamanhoGrupo} membros` : null;
+            
+            detalhesHTML = `
+                <div class="relacionamento-detalhes">
+                    <span><i class="fas fa-chart-line"></i> Poder: ${poder}</span>
+                    ${grupo ? `<span><i class="fas fa-users"></i> ${grupo}</span>` : ''}
+                    ${rel.config.modificadores?.length > 0 ? `<span><i class="fas fa-magic"></i> ${rel.config.modificadores.length} mod.</span>` : ''}
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="relacionamento-item" data-id="${rel.id}" data-tipo="${rel.tipo}">
+                <div class="relacionamento-header">
+                    <div class="relacionamento-tipo ${rel.tipo}">
+                        <i class="fas fa-${icone}"></i>
+                        ${tipoNome.toUpperCase()}
+                    </div>
+                    <div class="relacionamento-nome">
+                        ${rel.nome}
+                    </div>
+                    <div class="relacionamento-custo">
+                        ${custoFormatado} pts
+                    </div>
+                </div>
+                
+                ${rel.descricao ? `<div class="relacionamento-descricao">${rel.descricao}</div>` : ''}
+                
+                ${detalhesHTML}
+                
+                ${rel.observacoes ? `<div class="relacionamento-observacoes"><small><i class="fas fa-info-circle"></i> ${rel.observacoes}</small></div>` : ''}
+                
+                <div class="relacionamento-acoes">
+                    <button class="btn-edit" onclick="sistemaRelacionamentos.editarRelacionamento('${rel.id}')">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button class="btn-delete" onclick="sistemaRelacionamentos.excluirRelacionamento('${rel.id}')">
+                        <i class="fas fa-trash"></i> Remover
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    atualizarContadores(contadores = null, totalPontos = 0) {
+        if (contadores) {
+            // Atualizar contadores específicos
+            Object.keys(contadores).forEach(tipo => {
+                const el = this.elementos.contadores[tipo];
+                if (el) el.textContent = contadores[tipo];
+            });
+        } else {
+            // Zerar todos os contadores
+            Object.values(this.elementos.contadores).forEach(el => {
+                if (el) el.textContent = '0';
+            });
+        }
         
         // Atualizar total
         if (this.elementos.contadores.total) {
@@ -548,8 +698,140 @@ class SistemaRelacionamentos {
         const totalResumo = document.getElementById('totalRelacionamentosResumo');
         if (totalResumo) {
             totalResumo.textContent = totalPontos >= 0 ? `+${totalPontos}` : totalPontos;
+            
+            // Atualizar total geral da aba
+            this.atualizarTotalGeral();
         }
     }
+    
+    atualizarTotalGeral() {
+        const totalAtributos = parseInt(document.getElementById('totalAtributos')?.textContent || 0);
+        const totalStatusRep = parseInt(document.getElementById('totalStatusRep')?.textContent || 0);
+        const totalRelacionamentos = parseInt(document.getElementById('totalRelacionamentosResumo')?.textContent || 0);
+        
+        const totalGeral = totalAtributos + totalStatusRep + totalRelacionamentos;
+        const totalGeralElement = document.getElementById('totalGeral');
+        
+        if (totalGeralElement) {
+            totalGeralElement.textContent = totalGeral >= 0 ? `+${totalGeral}` : totalGeral;
+        }
+    }
+    
+    // ===========================================
+    // FILTROS
+    // ===========================================
+    
+    filtrarRelacionamentos(filtro) {
+        // Atualizar botões de filtro ativos
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        const btnAtivo = document.querySelector(`.filter-btn[data-filter="${filtro}"]`);
+        if (btnAtivo) {
+            btnAtivo.classList.add('active');
+        }
+        
+        // Mostrar/ocultar relacionamentos
+        const todosItens = document.querySelectorAll('.relacionamento-item');
+        
+        todosItens.forEach(item => {
+            if (filtro === 'all' || item.dataset.tipo === filtro) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    // ===========================================
+    // CRUD OPERATIONS
+    // ===========================================
+    
+    editarRelacionamento(id) {
+        console.log('✏️ Editando relacionamento:', id);
+        
+        const relacionamento = this.relacionamentos.find(r => r.id === id);
+        if (!relacionamento) {
+            alert('Relacionamento não encontrado');
+            return;
+        }
+        
+        // Preencher modal com dados existentes
+        this.abrirModal();
+        
+        // Selecionar tipo
+        this.selecionarTipo(relacionamento.tipo);
+        
+        // Preencher dados
+        setTimeout(() => {
+            // Preencher step 3
+            const relNome = document.getElementById('relNome');
+            const relDescricao = document.getElementById('relDescricao');
+            const relObservacoes = document.getElementById('relObservacoes');
+            
+            if (relNome) relNome.value = relacionamento.nome;
+            if (relDescricao) relDescricao.value = relacionamento.descricao || '';
+            if (relObservacoes) relObservacoes.value = relacionamento.observacoes || '';
+            
+            // Para aliados, preencher configurações
+            if (relacionamento.tipo === 'aliado' && relacionamento.config) {
+                // Poder
+                const powerRadio = document.querySelector(`input[name="allyPower"][value="${relacionamento.config.poder}"]`);
+                if (powerRadio) powerRadio.checked = true;
+                
+                // Modificadores
+                if (relacionamento.config.modificadores) {
+                    relacionamento.config.modificadores.forEach(modValue => {
+                        const modCheckbox = document.querySelector(`input[name="allyMods"][value="${modValue}"]`);
+                        if (modCheckbox) modCheckbox.checked = true;
+                    });
+                }
+                
+                // Grupo
+                if (relacionamento.config.grupo) {
+                    const isGroupCheckbox = document.getElementById('isGroup');
+                    const groupSizeSelect = document.getElementById('groupSize');
+                    
+                    if (isGroupCheckbox) {
+                        isGroupCheckbox.checked = true;
+                        const groupConfig = document.getElementById('groupConfig');
+                        if (groupConfig) groupConfig.style.display = 'block';
+                    }
+                    
+                    if (groupSizeSelect && relacionamento.config.tamanhoGrupo) {
+                        groupSizeSelect.value = relacionamento.config.tamanhoGrupo;
+                    }
+                }
+                
+                // Calcular custos
+                setTimeout(() => this.calcularECustos(), 100);
+            }
+            
+            // Ir para step 3
+            this.mudarStep(3);
+            
+        }, 500);
+        
+        // Remover o relacionamento antigo quando salvar
+        this.relacionamentos = this.relacionamentos.filter(r => r.id !== id);
+    }
+    
+    excluirRelacionamento(id) {
+        if (!confirm('Tem certeza que deseja remover este relacionamento?')) {
+            return;
+        }
+        
+        this.relacionamentos = this.relacionamentos.filter(rel => rel.id !== id);
+        this.salvarNoLocalStorage();
+        this.atualizarLista();
+        
+        alert('Relacionamento removido com sucesso!');
+    }
+    
+    // ===========================================
+    // UTILITÁRIOS
+    // ===========================================
     
     getIcone(tipo) {
         switch(tipo) {
@@ -562,41 +844,15 @@ class SistemaRelacionamentos {
         }
     }
     
-    getDetalhes(rel) {
-        if (rel.tipo === 'aliado') {
-            const freqText = {
-                15: 'Quase sempre',
-                12: 'Frequentemente',
-                9: 'Ocasionalmente',
-                6: 'Raramente'
-            };
-            
-            return `
-                <div class="relacionamento-detalhes">
-                    <span><i class="fas fa-chart-line"></i> Poder: ${rel.config.poder}%</span>
-                    <span><i class="fas fa-calendar-alt"></i> ${freqText[rel.config.frequencia] || 'N/A'}</span>
-                    ${rel.config.grupo ? `<span><i class="fas fa-users"></i> Grupo: ${rel.config.tamanhoGrupo} membros</span>` : ''}
-                </div>
-            `;
+    getNomeTipo(tipo) {
+        switch(tipo) {
+            case 'aliado': return 'Aliado';
+            case 'inimigo': return 'Inimigo';
+            case 'contato': return 'Contato';
+            case 'patrono': return 'Patrono';
+            case 'dependente': return 'Dependente';
+            default: return tipo;
         }
-        return '';
-    }
-    
-    editar(id) {
-        console.log('✏️ Editando:', id);
-        // Implementar edição
-        alert('Edição em desenvolvimento...');
-    }
-    
-    excluir(id) {
-        if (!confirm('Tem certeza que deseja remover este relacionamento?')) {
-            return;
-        }
-        
-        this.relacionamentos = this.relacionamentos.filter(rel => rel.id !== id);
-        this.salvarNoLocalStorage();
-        this.atualizarLista();
-        alert('Relacionamento removido');
     }
     
     // ===========================================
@@ -606,11 +862,16 @@ class SistemaRelacionamentos {
     salvarNoLocalStorage() {
         const dados = {
             relacionamentos: this.relacionamentos,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            version: '2.0'
         };
         
-        localStorage.setItem('vantagensRelacionamentos', JSON.stringify(dados));
-        console.log('💾 Dados salvos');
+        try {
+            localStorage.setItem('vantagensRelacionamentos', JSON.stringify(dados));
+            console.log('💾 Dados salvos:', this.relacionamentos.length, 'relacionamentos');
+        } catch (error) {
+            console.error('❌ Erro ao salvar:', error);
+        }
     }
     
     carregarDoLocalStorage() {
@@ -618,12 +879,38 @@ class SistemaRelacionamentos {
             const dados = localStorage.getItem('vantagensRelacionamentos');
             if (dados) {
                 const parsed = JSON.parse(dados);
-                this.relacionamentos = parsed.relacionamentos || [];
-                console.log('📂 Dados carregados:', this.relacionamentos.length);
+                
+                // Migração de versão antiga se necessário
+                if (parsed.version === '2.0') {
+                    this.relacionamentos = parsed.relacionamentos || [];
+                } else {
+                    // Converter da versão antiga
+                    this.relacionamentos = this.migrarDadosAntigos(parsed.relacionamentos || []);
+                }
+                
+                console.log('📂 Dados carregados:', this.relacionamentos.length, 'relacionamentos');
             }
         } catch (error) {
             console.error('❌ Erro ao carregar:', error);
+            this.relacionamentos = [];
         }
+    }
+    
+    migrarDadosAntigos(dadosAntigos) {
+        return dadosAntigos.map(item => {
+            // Converter estrutura antiga para nova
+            return {
+                id: item.id || `${item.tipo}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                tipo: item.tipo,
+                nome: item.nome,
+                descricao: item.descricao || '',
+                observacoes: '',
+                config: item.config || {},
+                custo: item.custo || 0,
+                criadoEm: item.criadoEm || new Date().toISOString(),
+                atualizadoEm: new Date().toISOString()
+            };
+        });
     }
 }
 
@@ -635,13 +922,15 @@ let sistemaRelacionamentos = null;
 
 // Inicializa quando a DOM estiver pronta
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM carregado - inicializando relacionamentos');
+    console.log('📄 DOM carregado - inicializando sistema de relacionamentos');
     
     // Pequeno delay para garantir que tudo carregou
     setTimeout(() => {
-        sistemaRelacionamentos = new SistemaRelacionamentos();
-        window.sistemaRelacionamentos = sistemaRelacionamentos;
-    }, 500);
+        if (!sistemaRelacionamentos) {
+            sistemaRelacionamentos = new SistemaRelacionamentos();
+            window.sistemaRelacionamentos = sistemaRelacionamentos;
+        }
+    }, 100);
 });
 
 // Inicializa quando a aba de Vantagens é ativada
@@ -654,5 +943,8 @@ function onVantagensTabActivated() {
 
 // Exporta para uso global
 window.SistemaRelacionamentos = SistemaRelacionamentos;
-window.initSistemaRelacionamentos = () => sistemaRelacionamentos = new SistemaRelacionamentos();
+window.initSistemaRelacionamentos = () => {
+    sistemaRelacionamentos = new SistemaRelacionamentos();
+    window.sistemaRelacionamentos = sistemaRelacionamentos;
+};
 window.onVantagensTabActivated = onVantagensTabActivated;

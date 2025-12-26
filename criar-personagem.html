@@ -1418,7 +1418,7 @@ main.main-content {
             </div>
         </div>
                 <!-- ABA VANTAGENS -->
-<div id="vantagens" class="tab-content">
+<div id="vantagens" class="tab-content active">
     <div class="caracteristicas-container">
         <!-- SUB-ABAS INTERNAS -->
         <div class="subtabs-navigation">
@@ -1784,7 +1784,7 @@ main.main-content {
                         </div>
                     </div>
 
-                    <!-- CARD 3: RELACIONAMENTOS (NOVO) -->
+                    <!-- CARD 3: RELACIONAMENTOS (REFORMULADO) -->
                     <div class="caracteristica-card">
                         <div class="card-header">
                             <i class="fas fa-handshake"></i>
@@ -1886,11 +1886,11 @@ main.main-content {
     </div>
 </div>
 
-<!-- MODAL PARA RELACIONAMENTOS -->
+<!-- MODAL PARA RELACIONAMENTOS - REFORMULADO -->
 <div id="modalRelacionamento" class="modal">
     <div class="modal-content relacionamento-modal">
         <div class="modal-header">
-            <h3><i class="fas fa-handshake"></i> Adicionar Relacionamento</h3>
+            <h3><i class="fas fa-handshake"></i> Novo Relacionamento</h3>
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
@@ -1931,7 +1931,9 @@ main.main-content {
                 
                 <!-- Step 2: Configuração (dinâmico por tipo) -->
                 <div class="modal-step" id="step2">
-                    <!-- Conteúdo dinâmico via JS -->
+                    <div class="config-container">
+                        <!-- Dinâmico via JS -->
+                    </div>
                 </div>
                 
                 <!-- Step 3: Detalhes -->
@@ -1947,20 +1949,20 @@ main.main-content {
                     <div class="form-group">
                         <label for="relDescricao">Descrição Detalhada:</label>
                         <textarea id="relDescricao" class="form-control" rows="3" 
-                                  placeholder="Descreva o relacionamento, história, etc."></textarea>
+                                  placeholder="Descreva o relacionamento, história, aparência, etc."></textarea>
                     </div>
                     
                     <div class="form-group">
-                        <label>Observações:</label>
+                        <label for="relObservacoes">Observações (para o Mestre):</label>
                         <textarea id="relObservacoes" class="form-control" rows="2" 
                                   placeholder="Notas importantes para o Mestre"></textarea>
                     </div>
                 </div>
             </div>
             
-            <!-- Resumo e Custo -->
-            <div class="modal-resumo">
-                <h4><i class="fas fa-calculator"></i> Resumo</h4>
+            <!-- Resumo e Custo - SEMPRE VISÍVEL -->
+            <div class="modal-resumo" id="modalResumo">
+                <h4><i class="fas fa-calculator"></i> Resumo do Custo</h4>
                 <div class="resumo-info">
                     <div class="resumo-item">
                         <span>Tipo:</span>
@@ -1974,6 +1976,10 @@ main.main-content {
                         <span>Modificadores:</span>
                         <span id="resumoMods">+0 pts</span>
                     </div>
+                    <div class="resumo-item">
+                        <span>Multiplicador Grupo:</span>
+                        <span id="resumoGrupo">×1</span>
+                    </div>
                     <div class="resumo-total">
                         <span>Custo Total:</span>
                         <span id="resumoTotal">0 pts</span>
@@ -1982,18 +1988,147 @@ main.main-content {
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-prev" id="btnPrev">
-                <i class="fas fa-arrow-left"></i> Anterior
+            <button class="btn-voltar" id="btnVoltar">
+                <i class="fas fa-arrow-left"></i> Voltar
             </button>
-            <button class="btn-next" id="btnNext">
+            <button class="btn-proximo" id="btnProximo">
                 Próximo <i class="fas fa-arrow-right"></i>
             </button>
-            <button class="btn-save" id="btnSave">
-                <i class="fas fa-save"></i> Salvar Relacionamento
+            <button class="btn-cancelar" id="btnCancelar">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button class="btn-confirmar" id="btnConfirmar">
+                <i class="fas fa-check"></i> Confirmar
             </button>
         </div>
     </div>
 </div>
+
+<!-- TEMPLATE PARA CONFIGURAÇÃO DE ALIADO -->
+<template id="template-aliado">
+    <div class="ally-config">
+        <h4><i class="fas fa-shield-alt"></i> Configuração do Aliado</h4>
+        
+        <div class="form-group">
+            <label for="allyPower">Poder do Aliado:</label>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="allyPower" value="25" checked>
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">
+                        <strong>25%</strong> dos seus pontos <em>(1 ponto)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="radio" name="allyPower" value="50">
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">
+                        <strong>50%</strong> dos seus pontos <em>(2 pontos)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="radio" name="allyPower" value="75">
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">
+                        <strong>75%</strong> dos seus pontos <em>(3 pontos)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="radio" name="allyPower" value="100">
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">
+                        <strong>100%</strong> dos seus pontos <em>(5 pontos)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="radio" name="allyPower" value="150">
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">
+                        <strong>150%</strong> dos seus pontos <em>(10 pontos)</em>
+                    </span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-magic"></i> Modificadores Especiais</label>
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" name="allyMods" value="invocavel">
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                        <strong>Invocável</strong> (aparece quando chamado) <em>(×2)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="checkbox" name="allyMods" value="lacaio">
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                        <strong>Lacaio</strong> (obedece ordens) <em>(×1.5)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="checkbox" name="allyMods" value="habilidades">
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                        <strong>Habilidades Especiais</strong> <em>(×1.5)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="checkbox" name="allyMods" value="afinidade">
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                        <strong>Afinidade</strong> (vínculo especial) <em>(×0.75)</em>
+                    </span>
+                </label>
+                <label>
+                    <input type="checkbox" name="allyMods" value="relutante">
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                        <strong>Relutante</strong> (age contra vontade) <em>(×0.5)</em>
+                    </span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="isGroup">
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">
+                    <strong>É um grupo de aliados?</strong>
+                </span>
+            </label>
+            
+            <div id="groupConfig" style="display: none; margin-top: 10px;">
+                <label for="groupSize">Tamanho do Grupo:</label>
+                <select id="groupSize" class="form-control">
+                    <option value="1">Individual (×1)</option>
+                    <option value="6">6-10 membros (×6)</option>
+                    <option value="11">11-20 membros (×8)</option>
+                    <option value="21">21-50 membros (×10)</option>
+                    <option value="51">51-100 membros (×12)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- TEMPLATE PARA OUTROS TIPOS (simplificado) -->
+<template id="template-outros">
+    <div class="other-config">
+        <h4><i class="fas fa-cog"></i> Configuração Básica</h4>
+        <p>Este tipo de relacionamento ainda está em desenvolvimento.</p>
+        <div class="form-group">
+            <label for="otherPower">Poder/Influência:</label>
+            <select id="otherPower" class="form-control">
+                <option value="5">Baixo (5 pontos)</option>
+                <option value="10" selected>Médio (10 pontos)</option>
+                <option value="20">Alto (20 pontos)</option>
+            </select>
+        </div>
+    </div>
+</template>
                 <!-- PERÍCIAS -->
         <div id="pericias" class="tab-content">
             <div class="content-placeholder">
