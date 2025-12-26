@@ -3089,1213 +3089,323 @@
     <!-- NOTIFICAÇÃO -->
     <div id="custom-toast"></div>
 
-    <script>
-        // ===========================================
-        // INICIALIZAÇÃO FIREBASE
-        // ===========================================
-        let app, auth, db;
-        let currentCharacterId = null;
-        let currentUser = null;
-        let isInitialized = false;
+    <<script>
+    // ===========================================
+    // INICIALIZAÇÃO FIREBASE
+    // ===========================================
+    let app, auth, db;
+    let currentCharacterId = null;
+    let currentUser = null;
+    let isInitialized = false;
 
-        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            app = firebase.app();
-            auth = firebase.auth();
-            db = firebase.firestore();
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+        app = firebase.app();
+        auth = firebase.auth();
+        db = firebase.firestore();
+    } else {
+        const firebaseConfig = {
+            apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
+            authDomain: "gurpsroll.firebaseapp.com",
+            projectId: "gurpsroll"
+        };
+        app = firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+    }
+
+    // ===========================================
+    // VERIFICAÇÃO DE AUTENTICAÇÃO
+    // ===========================================
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            currentUser = user;
+            console.log('✅ Usuário autenticado:', user.uid);
+            loadCharacterData();
+            isInitialized = true;
         } else {
-            const firebaseConfig = {
-                apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
-                authDomain: "gurpsroll.firebaseapp.com",
-                projectId: "gurpsroll"
-            };
-            app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
+            console.log('❌ Usuário não autenticado');
+            showToast('🔒 Faça login para criar personagens', 'error');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
         }
+    });
 
-        // ===========================================
-        // VERIFICAÇÃO DE AUTENTICAÇÃO
-        // ===========================================
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                console.log('✅ Usuário autenticado:', user.uid);
-                loadCharacterData();
-                isInitialized = true;
-            } else {
-                console.log('❌ Usuário não autenticado');
-                showToast('🔒 Faça login para criar personagens', 'error');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1500);
-            }
+    // ===========================================
+    // SISTEMA DE ABAS
+    // ===========================================
+    function switchTab(tabId) {
+        if (!isInitialized) return;
+        
+        // Remove active de todas as abas e botões
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
         });
 
-        // ===========================================
-        // SISTEMA DE ABAS
-        // ===========================================
-        function switchTab(tabId) {
-            if (!isInitialized) return;
-            
-            // Remove active de todas as abas e botões
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Ativa a aba selecionada
-            const tabElement = document.getElementById(tabId);
-            if (tabElement) {
-                tabElement.classList.add('active');
-            }
-
-            // Ativa o botão correspondente
-            const tabBtn = document.getElementById(`tab${capitalizeFirstLetter(tabId)}`);
-            if (tabBtn) {
-                tabBtn.classList.add('active');
-            }
-
-            // Salva a última aba acessada
-            localStorage.setItem('lastTab', tabId);
-            
-            // Rola para o topo
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Dispara evento para inicialização específica da aba
-            if (typeof window[`init${capitalizeFirstLetter(tabId)}Tab`] === 'function') {
-                window[`init${capitalizeFirstLetter(tabId)}Tab`]();
-            }
+        // Ativa a aba selecionada
+        const tabElement = document.getElementById(tabId);
+        if (tabElement) {
+            tabElement.classList.add('active');
         }
 
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
+        // Ativa o botão correspondente
+        const tabBtn = document.getElementById(`tab${capitalizeFirstLetter(tabId)}`);
+        if (tabBtn) {
+            tabBtn.classList.add('active');
         }
 
-        // ===========================================
-        // CARREGAR DADOS DO PERSONAGEM
-        // ===========================================
-        async function loadCharacterData() {
-            // Verifica se tem ID de personagem na URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const charId = urlParams.get('id');
+        // Salva a última aba acessada
+        localStorage.setItem('lastTab', tabId);
+        
+        // Rola para o topo
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Dispara evento para inicialização específica da aba
+        if (typeof window[`init${capitalizeFirstLetter(tabId)}Tab`] === 'function') {
+            window[`init${capitalizeFirstLetter(tabId)}Tab`]();
+        }
+    }
 
-            if (charId) {
-                // CARREGAR PERSONAGEM EXISTENTE
-                try {
-                    const charDoc = await db.collection('characters').doc(charId).get();
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // ===========================================
+    // CARREGAR DADOS DO PERSONAGEM
+    // ===========================================
+    async function loadCharacterData() {
+        // Verifica se tem ID de personagem na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const charId = urlParams.get('id');
+
+        if (charId) {
+            // CARREGAR PERSONAGEM EXISTENTE
+            try {
+                const charDoc = await db.collection('characters').doc(charId).get();
+                
+                if (charDoc.exists && charDoc.data().owner === currentUser.uid) {
+                    currentCharacterId = charId;
+                    const charData = charDoc.data();
                     
-                    if (charDoc.exists && charDoc.data().owner === currentUser.uid) {
-                        currentCharacterId = charId;
-                        const charData = charDoc.data();
-                        
-                        // Preenche dados básicos
-                        document.getElementById('characterName').value = charData.name || '';
-                        
-                        showToast('📜 Personagem carregado: ' + charData.name, 'success');
-                        
-                        // Carrega última aba acessada
-                        const lastTab = charData.lastTab || 'atributos';
-                        setTimeout(() => switchTab(lastTab), 100);
-                    } else {
-                        showToast('❌ Personagem não encontrado ou acesso negado', 'error');
-                        currentCharacterId = null;
-                        switchTab('atributos');
-                    }
-                } catch (error) {
-                    console.error('Erro ao carregar personagem:', error);
-                    showToast('❌ Erro ao carregar personagem', 'error');
+                    // Preenche dados básicos
+                    document.getElementById('characterName').value = charData.name || '';
+                    
+                    showToast('📜 Personagem carregado: ' + charData.name, 'success');
+                    
+                    // Carrega última aba acessada
+                    const lastTab = charData.lastTab || 'atributos';
+                    setTimeout(() => switchTab(lastTab), 100);
+                } else {
+                    showToast('❌ Personagem não encontrado ou acesso negado', 'error');
+                    currentCharacterId = null;
                     switchTab('atributos');
                 }
-            } else {
-                // NOVO PERSONAGEM
-                currentCharacterId = null;
-                document.getElementById('characterName').value = '';
-                
-                // Restaura última aba acessada ou vai para atributos
-                const lastTab = localStorage.getItem('lastTab') || 'atributos';
-                setTimeout(() => switchTab(lastTab), 100);
-            }
-        }
-
-        // ===========================================
-        // SALVAR RASCUNHO
-        // ===========================================
-        async function saveDraft() {
-            if (!currentUser) {
-                showToast('❌ Faça login para salvar', 'error');
-                return;
-            }
-
-            const characterName = document.getElementById('characterName').value.trim();
-            if (!characterName) {
-                showToast('⚠️ Digite um nome para o personagem', 'warning');
-                document.getElementById('characterName').focus();
-                return;
-            }
-
-            const characterData = {
-                name: characterName,
-                owner: currentUser.uid,
-                lastTab: localStorage.getItem('lastTab') || 'atributos',
-                lastUpdated: new Date().toISOString(),
-                status: 'draft'
-            };
-
-            try {
-                if (currentCharacterId) {
-                    // Atualiza personagem existente
-                    await db.collection('characters').doc(currentCharacterId).update(characterData);
-                    showToast('💾 Rascunho atualizado', 'success');
-                } else {
-                    // Cria novo personagem
-                    const docRef = await db.collection('characters').add({
-                        ...characterData,
-                        createdAt: new Date().toISOString()
-                    });
-                    currentCharacterId = docRef.id;
-                    
-                    // Atualiza URL com o ID
-                    window.history.replaceState({}, '', `?id=${currentCharacterId}`);
-                    showToast('✅ Personagem criado e salvo', 'success');
-                }
             } catch (error) {
-                console.error('Erro ao salvar:', error);
-                showToast('❌ Erro ao salvar personagem', 'error');
-            }
-        }
-
-        // ===========================================
-        // FINALIZAR PERSONAGEM
-        // ===========================================
-        async function finalizeCharacter() {
-            if (!currentUser) {
-                showToast('❌ Faça login para finalizar', 'error');
-                return;
-            }
-
-            const characterName = document.getElementById('characterName').value.trim();
-            if (!characterName) {
-                showToast('⚠️ Digite um nome para o personagem', 'warning');
-                return;
-            }
-
-            showToast('🎉 Personagem finalizado com sucesso!', 'success');
-            
-            // Redireciona para a página do personagem após 2 segundos
-            setTimeout(() => {
-                window.location.href = 'modo-personagem.html';
-            }, 2000);
-        }
-
-        // ===========================================
-        // FUNÇÕES AUXILIARES
-        // ===========================================
-        function goBack() {
-            window.location.href = 'modo-personagem.html';
-        }
-
-        function cancelCreation() {
-            if (confirm('Tem certeza que deseja cancelar? Todo progresso não salvo será perdido.')) {
-                window.location.href = 'modo-personagem.html';
-            }
-        }
-
-        function resetCharacter() {
-            if (confirm('Isso vai limpar TODOS os dados do personagem. Continuar?')) {
-                document.getElementById('characterName').value = '';
-                currentCharacterId = null;
-                localStorage.removeItem('lastTab');
-                showToast('🔄 Personagem resetado', 'info');
+                console.error('Erro ao carregar personagem:', error);
+                showToast('❌ Erro ao carregar personagem', 'error');
                 switchTab('atributos');
             }
+        } else {
+            // NOVO PERSONAGEM
+            currentCharacterId = null;
+            document.getElementById('characterName').value = '';
+            
+            // Restaura última aba acessada ou vai para atributos
+            const lastTab = localStorage.getItem('lastTab') || 'atributos';
+            setTimeout(() => switchTab(lastTab), 100);
+        }
+    }
+
+    // ===========================================
+    // SALVAR RASCUNHO
+    // ===========================================
+    async function saveDraft() {
+        if (!currentUser) {
+            showToast('❌ Faça login para salvar', 'error');
+            return;
         }
 
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('custom-toast');
-            toast.innerHTML = `<i class="fas fa-${getToastIcon(type)}"></i> ${message}`;
-            toast.style.display = 'block';
-            
-            const bgColor = type === 'error' ? 'var(--accent-red)' : 
-                           type === 'success' ? 'var(--accent-green)' : 
-                           type === 'warning' ? 'var(--primary-gold)' : 
-                           'var(--secondary-dark)';
-            
-            toast.style.background = bgColor;
-            toast.style.animation = 'slideIn 0.3s ease';
-            
+        const characterName = document.getElementById('characterName').value.trim();
+        if (!characterName) {
+            showToast('⚠️ Digite um nome para o personagem', 'warning');
+            document.getElementById('characterName').focus();
+            return;
+        }
+
+        const characterData = {
+            name: characterName,
+            owner: currentUser.uid,
+            lastTab: localStorage.getItem('lastTab') || 'atributos',
+            lastUpdated: new Date().toISOString(),
+            status: 'draft'
+        };
+
+        try {
+            if (currentCharacterId) {
+                // Atualiza personagem existente
+                await db.collection('characters').doc(currentCharacterId).update(characterData);
+                showToast('💾 Rascunho atualizado', 'success');
+            } else {
+                // Cria novo personagem
+                const docRef = await db.collection('characters').add({
+                    ...characterData,
+                    createdAt: new Date().toISOString()
+                });
+                currentCharacterId = docRef.id;
+                
+                // Atualiza URL com o ID
+                window.history.replaceState({}, '', `?id=${currentCharacterId}`);
+                showToast('✅ Personagem criado e salvo', 'success');
+            }
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            showToast('❌ Erro ao salvar personagem', 'error');
+        }
+    }
+
+    // ===========================================
+    // FINALIZAR PERSONAGEM
+    // ===========================================
+    async function finalizeCharacter() {
+        if (!currentUser) {
+            showToast('❌ Faça login para finalizar', 'error');
+            return;
+        }
+
+        const characterName = document.getElementById('characterName').value.trim();
+        if (!characterName) {
+            showToast('⚠️ Digite um nome para o personagem', 'warning');
+            return;
+        }
+
+        showToast('🎉 Personagem finalizado com sucesso!', 'success');
+        
+        // Redireciona para a página do personagem após 2 segundos
+        setTimeout(() => {
+            window.location.href = 'modo-personagem.html';
+        }, 2000);
+    }
+
+    // ===========================================
+    // FUNÇÕES AUXILIARES
+    // ===========================================
+    function goBack() {
+        window.location.href = 'modo-personagem.html';
+    }
+
+    function cancelCreation() {
+        if (confirm('Tem certeza que deseja cancelar? Todo progresso não salvo será perdido.')) {
+            window.location.href = 'modo-personagem.html';
+        }
+    }
+
+    function resetCharacter() {
+        if (confirm('Isso vai limpar TODOS os dados do personagem. Continuar?')) {
+            document.getElementById('characterName').value = '';
+            currentCharacterId = null;
+            localStorage.removeItem('lastTab');
+            showToast('🔄 Personagem resetado', 'info');
+            switchTab('atributos');
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('custom-toast');
+        toast.innerHTML = `<i class="fas fa-${getToastIcon(type)}"></i> ${message}`;
+        toast.style.display = 'block';
+        
+        const bgColor = type === 'error' ? 'var(--accent-red)' : 
+                       type === 'success' ? 'var(--accent-green)' : 
+                       type === 'warning' ? 'var(--primary-gold)' : 
+                       'var(--secondary-dark)';
+        
+        toast.style.background = bgColor;
+        toast.style.animation = 'slideIn 0.3s ease';
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 300);
-            }, 3000);
-        }
+                toast.style.display = 'none';
+            }, 300);
+        }, 3000);
+    }
 
-        function getToastIcon(type) {
-            switch(type) {
-                case 'success': return 'check-circle';
-                case 'error': return 'exclamation-circle';
-                case 'warning': return 'exclamation-triangle';
-                default: return 'info-circle';
+    function getToastIcon(type) {
+        switch(type) {
+            case 'success': return 'check-circle';
+            case 'error': return 'exclamation-circle';
+            case 'warning': return 'exclamation-triangle';
+            default: return 'info-circle';
+        }
+    }
+
+    // ===========================================
+    // AUTO-SAVE A CADA 30 SEGUNDOS
+    // ===========================================
+    let autoSaveTimer;
+    document.getElementById('characterName').addEventListener('input', () => {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            if (currentCharacterId && isInitialized) {
+                saveDraft();
             }
+        }, 30000);
+    });
+
+    // ===========================================
+    // FUNÇÕES PARA INICIALIZAÇÃO DAS ABAS
+    // ===========================================
+    window.initAtributosTab = function() {
+        console.log('⚔️ Inicializando aba de Atributos...');
+        // Esta função será chamada pelo atributos.js
+        if (typeof window.inicializarAtributos === 'function') {
+            window.inicializarAtributos();
         }
+    };
 
-        // ===========================================
-        // AUTO-SAVE A CADA 30 SEGUNDOS
-        // ===========================================
-        let autoSaveTimer;
-        document.getElementById('characterName').addEventListener('input', () => {
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(() => {
-                if (currentCharacterId && isInitialized) {
-                    saveDraft();
-                }
-            }, 30000);
-        });
-
-        // ===========================================
-        // INICIALIZAÇÃO DAS ABAS ESPECÍFICAS
-        // ===========================================
-        // Funções placeholder que podem ser sobrescritas
-        window.initAtributosTab = function() {
-            console.log('⚔️ Inicializando aba de Atributos...');
-            iniciarSistemaAtributos();
-        };
-
-        window.initCaracteristicasTab = function() {
-            console.log('👤 Inicializando aba de Características...');
-            iniciarSistemaCaracteristicas();
-        };
-
-        window.initVantagensTab = function() {
-            console.log('⭐ Inicializando aba de Vantagens...');
-            iniciarSistemaVantagens();
-        };
-
-        // ===========================================
-        // SISTEMA DE ATRIBUTOS
-        // ===========================================
-        function iniciarSistemaAtributos() {
-            console.log('🔄 Inicializando sistema de atributos...');
-            
-            // Inicializa valores iniciais
-            atualizarAtributosSecundarios();
-            atualizarTabelasReferencia();
-            
-            // Adiciona eventos aos inputs
-            document.querySelectorAll('.input-atributo').forEach(input => {
-                input.addEventListener('change', function() {
-                    const atributo = this.id;
-                    const valor = parseInt(this.value) || 10;
-                    calcularCustoAtributo(atributo, valor);
-                    atualizarAtributosSecundarios();
-                    atualizarTabelasReferencia();
-                });
-            });
-            
-            // Adiciona eventos aos botões de bonus
-            document.querySelectorAll('.secundario-bonus').forEach(input => {
-                input.addEventListener('change', function() {
-                    atualizarAtributosSecundarios();
-                });
-            });
-            
-            showToast('✅ Sistema de atributos inicializado', 'success');
+    window.initCaracteristicasTab = function() {
+        console.log('👤 Inicializando aba de Características...');
+        // Esta função será chamada pelo caracteristicas-main.js
+        if (typeof window.iniciarSistemaCaracteristicas === 'function') {
+            window.iniciarSistemaCaracteristicas();
         }
+    };
 
-        function alterarAtributo(atributo, delta) {
-            const input = document.getElementById(atributo);
-            let valor = parseInt(input.value) || 10;
-            valor += delta;
-            
-            // Limites
-            const min = parseInt(input.min) || 1;
-            const max = parseInt(input.max) || 40;
-            valor = Math.max(min, Math.min(max, valor));
-            
-            input.value = valor;
-            calcularCustoAtributo(atributo, valor);
-            atualizarAtributosSecundarios();
-            atualizarTabelasReferencia();
+    window.initVantagensTab = function() {
+        console.log('⭐ Inicializando aba de Vantagens...');
+        // Esta função será chamada pelo vantagens-main.js
+        if (typeof window.iniciarSistemaVantagens === 'function') {
+            window.iniciarSistemaVantagens();
         }
+    };
 
-        function calcularCustoAtributo(atributo, valor) {
-            let custo = 0;
-            
-            // Cálculo padrão GURPS: cada ponto acima de 10 custa 10, cada ponto abaixo de 10 dá 10
-            if (valor > 10) {
-                custo = (valor - 10) * 10;
-            } else if (valor < 10) {
-                custo = (valor - 10) * 10; // Negativo (desvantagem)
-            }
-            
-            document.getElementById(`custo${atributo}`).textContent = custo;
-            calcularPontosTotais();
-            return custo;
-        }
-
-        function ajustarSecundario(tipo, delta) {
-            const inputId = tipo === 'Deslocamento' ? 'bonusDeslocamento' : `bonus${tipo}`;
-            const input = document.getElementById(inputId);
-            let valor = parseFloat(input.value) || 0;
-            
-            const step = tipo === 'Deslocamento' ? 0.25 : 1;
-            valor += delta * step;
-            valor = Math.round(valor / step) * step; // Arredonda para o step mais próximo
-            
-            input.value = valor;
-            atualizarAtributosSecundarios();
-        }
-
-        function atualizarAtributosSecundarios() {
-            // Valores base dos atributos principais
-            const ST = parseInt(document.getElementById('ST').value) || 10;
-            const DX = parseInt(document.getElementById('DX').value) || 10;
-            const IQ = parseInt(document.getElementById('IQ').value) || 10;
-            const HT = parseInt(document.getElementById('HT').value) || 10;
-            
-            // Atualiza bases
-            document.getElementById('PVBase').textContent = ST;
-            document.getElementById('PFBase').textContent = HT;
-            document.getElementById('VontadeBase').textContent = IQ + 1;
-            document.getElementById('PercepcaoBase').textContent = IQ + 1;
-            
-            // Velocidade base = (DX + HT) / 4
-            const velocidadeBase = (DX + HT) / 4;
-            document.getElementById('DeslocamentoBase').textContent = velocidadeBase.toFixed(2);
-            
-            // Calcula totais com bônus
-            const bonusPV = parseInt(document.getElementById('bonusPV').value) || 0;
-            const bonusPF = parseInt(document.getElementById('bonusPF').value) || 0;
-            const bonusVontade = parseInt(document.getElementById('bonusVontade').value) || 0;
-            const bonusPercepcao = parseInt(document.getElementById('bonusPercepcao').value) || 0;
-            const bonusDeslocamento = parseFloat(document.getElementById('bonusDeslocamento').value) || 0;
-            
-            document.getElementById('PVTotal').textContent = ST + bonusPV;
-            document.getElementById('PFTotal').textContent = HT + bonusPF;
-            document.getElementById('VontadeTotal').textContent = (IQ + 1) + bonusVontade;
-            document.getElementById('PercepcaoTotal').textContent = (IQ + 1) + bonusPercepcao;
-            document.getElementById('DeslocamentoTotal').textContent = (velocidadeBase + bonusDeslocamento).toFixed(2);
-            
-            // Atualiza referências
-            document.getElementById('currentST').textContent = ST;
-            document.getElementById('currentST2').textContent = ST;
-        }
-
-        function atualizarTabelasReferencia() {
-            const ST = parseInt(document.getElementById('ST').value) || 10;
-            
-            // Tabela de Dano
-            const tabelaDano = {
-                1: '1d-5', 2: '1d-5', 3: '1d-4', 4: '1d-4', 5: '1d-3',
-                6: '1d-3', 7: '1d-2', 8: '1d-2', 9: '1d-1', 10: '1d',
-                11: '1d+1', 12: '1d+2', 13: '2d-1', 14: '2d', 15: '2d+1',
-                16: '2d+2', 17: '3d-1', 18: '3d', 19: '3d+1', 20: '3d+2'
-            };
-            
-            let danoGDP = '1d-2';
-            let danoGEB = '1d';
-            
-            if (ST >= 1 && ST <= 20) {
-                const danoValor = Math.max(1, Math.min(20, ST));
-                danoGEB = tabelaDano[danoValor] || '1d';
-                
-                // GDP é geralmente 2 pontos menor que GEB
-                const gdpValor = Math.max(1, danoValor - 2);
-                danoGDP = tabelaDano[gdpValor] || '1d-2';
-            }
-            
-            document.getElementById('danoGDP').textContent = danoGDP;
-            document.getElementById('danoGEB').textContent = danoGEB;
-            
-            // Tabela de Carga
-            const cargaNenhuma = ST;
-            const cargaLeve = ST * 2;
-            const cargaMedia = ST * 3;
-            const cargaPesada = ST * 6;
-            const cargaMuitoPesada = ST * 10;
-            
-            document.getElementById('cargaNenhuma').textContent = cargaNenhuma.toFixed(1);
-            document.getElementById('cargaLeve').textContent = cargaLeve.toFixed(1);
-            document.getElementById('cargaMedia').textContent = cargaMedia.toFixed(1);
-            document.getElementById('cargaPesada').textContent = cargaPesada.toFixed(1);
-            document.getElementById('cargaMuitoPesada').textContent = cargaMuitoPesada.toFixed(1);
-        }
-
-        function calcularPontosTotais() {
-            let total = 0;
-            
-            // Soma custos dos atributos principais
-            total += parseInt(document.getElementById('custoST').textContent) || 0;
-            total += parseInt(document.getElementById('custoDX').textContent) || 0;
-            total += parseInt(document.getElementById('custoIQ').textContent) || 0;
-            total += parseInt(document.getElementById('custoHT').textContent) || 0;
-            
-            document.getElementById('pontosGastos').textContent = total;
-            
-            // Atualiza status
-            const status = document.getElementById('statusAtributos');
-            if (total > 100) {
-                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>ATENÇÃO: Pontos gastos (' + total + ') acima do limite recomendado (100)</span>';
-                status.style.background = 'rgba(139, 0, 0, 0.3)';
-                status.style.borderColor = 'var(--accent-red)';
-            } else if (total > 50) {
-                status.innerHTML = '<i class="fas fa-info-circle"></i> <span>Personagem experiente (' + total + ' pontos gastos)</span>';
-                status.style.background = 'rgba(212, 175, 55, 0.2)';
-                status.style.borderColor = 'var(--primary-gold)';
-            } else {
-                status.innerHTML = '<i class="fas fa-check-circle"></i> <span>Sistema de atributos inicializado. Ajuste os valores conforme necessário.</span>';
-                status.style.background = 'rgba(44, 32, 8, 0.8)';
-                status.style.borderColor = 'var(--primary-gold)';
-            }
-        }
-
-        // ===========================================
-        // SISTEMA DE CARACTERÍSTICAS
-        // ===========================================
-        function iniciarSistemaCaracteristicas() {
-            console.log('🔄 Inicializando sistema de características...');
-            
-            // Inicializa subtabs
-            document.querySelectorAll('.subtab-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const subtabId = this.getAttribute('data-subtab');
-                    
-                    // Remove active de todas
-                    document.querySelectorAll('.subtab-btn').forEach(b => {
-                        b.classList.remove('active');
-                    });
-                    document.querySelectorAll('.subtab-pane').forEach(p => {
-                        p.classList.remove('active');
-                    });
-                    
-                    // Ativa a selecionada
-                    this.classList.add('active');
-                    document.getElementById('subtab-' + subtabId).classList.add('active');
-                });
-            });
-            
-            // Inicializa aparência física
-            const selectAparencia = document.getElementById('nivelAparencia');
-            if (selectAparencia) {
-                selectAparencia.addEventListener('change', function() {
-                    const valor = parseInt(this.value);
-                    const texto = this.options[this.selectedIndex].text;
-                    const partes = texto.split(' [');
-                    
-                    document.getElementById('pontosAparencia').textContent = valor + ' pts';
-                    document.getElementById('displayAparencia').innerHTML = `
-                        <strong>${partes[0]}</strong>
-                        <br><small>Reação: ${valor >= 0 ? '+' : ''}${Math.floor(valor/4)}</small>
-                        <br><small>${getDescricaoAparencia(valor)}</small>
-                    `;
-                    calcularPontosCaracteristicas();
-                });
-            }
-            
-            // Inicializa riqueza
-            const selectRiqueza = document.getElementById('nivelRiqueza');
-            if (selectRiqueza) {
-                selectRiqueza.addEventListener('change', function() {
-                    const valor = parseInt(this.value);
-                    const texto = this.options[this.selectedIndex].text;
-                    const partes = texto.split(' [');
-                    
-                    document.getElementById('pontosRiqueza').textContent = valor + ' pts';
-                    document.getElementById('displayRiqueza').innerHTML = `
-                        <strong>${partes[0]}</strong>
-                        <br><small>Multiplicador: ${getMultiplicadorRiqueza(valor)}x</small>
-                        <br><small>${getDescricaoRiqueza(valor)}</small>
-                    `;
-                    
-                    // Atualiza renda mensal
-                    const rendaBase = 1000;
-                    const multiplicador = getMultiplicadorRiqueza(valor);
-                    document.getElementById('rendaMensal').textContent = `$${(rendaBase * multiplicador).toLocaleString()}`;
-                    
-                    calcularPontosCaracteristicas();
-                });
-            }
-            
-            // Inicializa características físicas
-            document.querySelectorAll('.btn-add-caracteristica').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const tipo = this.getAttribute('data-tipo');
-                    adicionarCaracteristicaFisica(tipo);
-                });
-            });
-            
-            // Inicializa controles de altura e peso
-            const alturaInput = document.getElementById('altura');
-            const pesoInput = document.getElementById('peso');
-            
-            if (alturaInput) {
-                alturaInput.addEventListener('change', function() {
-                    atualizarStatusAlturaPeso();
-                });
-            }
-            
-            if (pesoInput) {
-                pesoInput.addEventListener('change', function() {
-                    atualizarStatusAlturaPeso();
-                });
-            }
-            
-            // Inicializa controles visuais
-            document.querySelectorAll('.select-visual').forEach(select => {
-                select.addEventListener('change', atualizarDescricaoVisual);
-            });
-            
-            const idadeInput = document.getElementById('idade-personagem');
-            if (idadeInput) {
-                idadeInput.addEventListener('change', atualizarDescricaoVisual);
-            }
-            
-            showToast('✅ Sistema de características inicializado', 'success');
-        }
-
-        function getDescricaoAparencia(pontos) {
-            const descricoes = {
-                '-24': 'Aparência terrível, penalidade social severa',
-                '-20': 'Muito feio, causa desconforto',
-                '-16': 'Feiura notável',
-                '-8': 'Pouco atraente',
-                '-4': 'Sem atrativos especiais',
-                '0': 'Aparência comum, sem modificadores',
-                '4': 'Boa aparência, recebe atenção positiva',
-                '12': 'Muito atraente, impressiona à primeira vista',
-                '16': 'Beleza notável, destaca-se em multidões',
-                '20': 'Extremamente belo, quase sobrenatural'
-            };
-            return descricoes[pontos] || 'Aparência padrão';
-        }
-
-        function getMultiplicadorRiqueza(pontos) {
-            const multiplicadores = {
-                '-25': 0.1,
-                '-15': 0.2,
-                '-10': 0.5,
-                '0': 1,
-                '10': 2,
-                '20': 5,
-                '30': 10,
-                '50': 20
-            };
-            return multiplicadores[pontos] || 1;
-        }
-
-        function getDescricaoRiqueza(pontos) {
-            const descricoes = {
-                '-25': 'Pobreza extrema, depende de caridade',
-                '-15': 'Vive no limite, sem reservas',
-                '-10': 'Luta para sobreviver',
-                '0': 'Recursos suficientes para necessidades básicas',
-                '10': 'Vida confortável, pequenos luxos',
-                '20': 'Rico, vida de luxo',
-                '30': 'Muito rico, influência econômica',
-                '50': 'Fortuna colossal, poder ilimitado'
-            };
-            return descricoes[pontos] || 'Nível de recursos padrão';
-        }
-
-        function calcularPontosCaracteristicas() {
-            let total = 0;
-            
-            // Aparência
-            const pontosAparencia = parseInt(document.getElementById('nivelAparencia').value) || 0;
-            total += pontosAparencia;
-            
-            // Riqueza
-            const pontosRiqueza = parseInt(document.getElementById('nivelRiqueza').value) || 0;
-            total += pontosRiqueza;
-            
-            // Atualiza display
-            document.getElementById('pontosAparencia').textContent = pontosAparencia + ' pts';
-            document.getElementById('pontosRiqueza').textContent = pontosRiqueza + ' pts';
-            
-            console.log('Pontos totais características:', total);
-        }
-
-        function adicionarCaracteristicaFisica(tipo) {
-            const caracteristicas = {
-                'magro': { nome: 'Magro', pontos: -5, descricao: 'Peso: 67% do normal' },
-                'acima-peso': { nome: 'Acima do Peso', pontos: -1, descricao: 'Peso: 130% do normal' },
-                'gordo': { nome: 'Gordo', pontos: -3, descricao: 'Peso: 150% do normal' },
-                'muito-gordo': { nome: 'Muito Gordo', pontos: -5, descricao: 'Peso: 200% do normal' },
-                'nanismo': { nome: 'Nanismo', pontos: -15, descricao: 'Altura máxima: 1.32m' },
-                'gigantismo': { nome: 'Gigantismo', pontos: 0, descricao: 'MT +1, +1 Deslocamento' }
-            };
-            
-            const caract = caracteristicas[tipo];
-            if (!caract) return;
-            
-            const container = document.getElementById('caracteristicasSelecionadas');
-            const desvantagensContainer = document.getElementById('listaDesvantagens');
-            const desvantagensAtivas = document.getElementById('desvantagensAtivas');
-            
-            // Verifica se já existe
-            const existing = container.querySelector(`[data-tipo="${tipo}"]`);
-            if (existing) {
-                showToast('⚠️ Esta característica já foi adicionada', 'warning');
-                return;
-            }
-            
-            // Cria elemento
-            const elemento = document.createElement('div');
-            elemento.className = 'caracteristica-selecionada';
-            elemento.setAttribute('data-tipo', tipo);
-            elemento.innerHTML = `
-                <div class="caracteristica-info">
-                    <strong>${caract.nome}</strong>
-                    <small>${caract.pontos} pts | ${caract.descricao}</small>
-                </div>
-                <button class="btn-remover-caracteristica" onclick="removerCaracteristicaFisica('${tipo}')">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            container.appendChild(elemento);
-            
-            // Adiciona à lista de desvantagens ativas
-            if (caract.pontos < 0) {
-                desvantagensAtivas.style.display = 'block';
-                
-                const desvElement = document.createElement('div');
-                desvElement.className = 'desvantagem-item';
-                desvElement.setAttribute('data-tipo', tipo);
-                desvElement.innerHTML = `
-                    <span class="desvantagem-nome">${caract.nome}</span>
-                    <span class="desvantagem-pontos">${caract.pontos} pts</span>
-                `;
-                
-                desvantagensContainer.appendChild(desvElement);
-            }
-            
-            // Atualiza pontos
-            const pontosAtuais = parseInt(document.getElementById('pontosCaracteristicas').textContent) || 0;
-            document.getElementById('pontosCaracteristicas').textContent = (pontosAtuais + caract.pontos) + ' pts';
-            
-            // Aplica efeitos
-            aplicarEfeitoCaracteristica(tipo, caract);
-            
-            showToast(`✅ ${caract.nome} adicionado`, 'success');
-        }
-
-        function removerCaracteristicaFisica(tipo) {
-            const container = document.getElementById('caracteristicasSelecionadas');
-            const elemento = container.querySelector(`[data-tipo="${tipo}"]`);
-            const desvElement = document.getElementById('listaDesvantagens')?.querySelector(`[data-tipo="${tipo}"]`);
-            
-            if (!elemento) return;
-            
-            // Remove dos pontos
-            const caracteristicas = {
-                'magro': -5, 'acima-peso': -1, 'gordo': -3, 
-                'muito-gordo': -5, 'nanismo': -15, 'gigantismo': 0
-            };
-            
-            const pontos = caracteristicas[tipo] || 0;
-            const pontosAtuais = parseInt(document.getElementById('pontosCaracteristicas').textContent) || 0;
-            document.getElementById('pontosCaracteristicas').textContent = (pontosAtuais - pontos) + ' pts';
-            
-            // Remove elementos
-            elemento.remove();
-            if (desvElement) desvElement.remove();
-            
-            // Remove efeitos
-            removerEfeitoCaracteristica(tipo);
-            
-            // Esconde container de desvantagens se vazio
-            const desvantagensAtivas = document.getElementById('desvantagensAtivas');
-            const listaDesv = document.getElementById('listaDesvantagens');
-            if (listaDesv && listaDesv.children.length === 0) {
-                desvantagensAtivas.style.display = 'none';
-            }
-            
-            showToast('🗑️ Característica removida', 'info');
-        }
-
-        function aplicarEfeitoCaracteristica(tipo, caract) {
-            // Implemente os efeitos reais das características aqui
-            console.log(`Aplicando efeito: ${tipo}`, caract);
-            
-            switch(tipo) {
-                case 'magro':
-                    // Ajusta peso para 67% do normal
-                    ajustarPesoPorcentagem(0.67);
-                    break;
-                case 'acima-peso':
-                    ajustarPesoPorcentagem(1.3);
-                    break;
-                case 'gordo':
-                    ajustarPesoPorcentagem(1.5);
-                    break;
-                case 'muito-gordo':
-                    ajustarPesoPorcentagem(2.0);
-                    break;
-                case 'nanismo':
-                    // Limita altura máxima
-                    const alturaInput = document.getElementById('altura');
-                    if (parseFloat(alturaInput.value) > 1.32) {
-                        alturaInput.value = 1.32;
-                        atualizarStatusAlturaPeso();
-                    }
-                    alturaInput.max = 1.32;
-                    break;
-                case 'gigantismo':
-                    // Ajusta deslocamento
-                    const bonusDeslocamento = document.getElementById('bonusDeslocamento');
-                    bonusDeslocamento.value = (parseFloat(bonusDeslocamento.value) || 0) + 1;
-                    atualizarAtributosSecundarios();
-                    break;
-            }
-        }
-
-        function removerEfeitoCaracteristica(tipo) {
-            console.log(`Removendo efeito: ${tipo}`);
-            
-            switch(tipo) {
-                case 'nanismo':
-                    document.getElementById('altura').max = 2.50;
-                    break;
-                case 'gigantismo':
-                    const bonusDeslocamento = document.getElementById('bonusDeslocamento');
-                    bonusDeslocamento.value = Math.max(0, (parseFloat(bonusDeslocamento.value) || 0) - 1);
-                    atualizarAtributosSecundarios();
-                    break;
-            }
-        }
-
-        function ajustarPesoPorcentagem(porcentagem) {
-            const pesoInput = document.getElementById('peso');
-            const ST = parseInt(document.getElementById('ST').value) || 10;
-            const pesoIdeal = ST * 7; // Peso médio para ST
-            pesoInput.value = Math.round(pesoIdeal * porcentagem);
-            atualizarStatusAlturaPeso();
-        }
-
-        function ajustarAltura(delta) {
-            const input = document.getElementById('altura');
-            let valor = parseFloat(input.value) || 1.70;
-            valor += delta;
-            valor = Math.max(parseFloat(input.min) || 1.20, Math.min(parseFloat(input.max) || 2.50, valor));
-            input.value = valor.toFixed(2);
-            atualizarStatusAlturaPeso();
-        }
-
-        function ajustarPeso(delta) {
-            const input = document.getElementById('peso');
-            let valor = parseInt(input.value) || 70;
-            valor += delta;
-            valor = Math.max(parseInt(input.min) || 20, Math.min(parseInt(input.max) || 200, valor));
-            input.value = valor;
-            atualizarStatusAlturaPeso();
-        }
-
-        function ajustarIdade(delta) {
-            const input = document.getElementById('idade-personagem');
-            let valor = parseInt(input.value) || 25;
-            valor += delta;
-            valor = Math.max(parseInt(input.min) || 12, Math.min(parseInt(input.max) || 100, valor));
-            input.value = valor;
-            atualizarDescricaoVisual();
-        }
-
-        function atualizarStatusAlturaPeso() {
-            const altura = parseFloat(document.getElementById('altura').value) || 1.70;
-            const peso = parseInt(document.getElementById('peso').value) || 70;
-            const ST = parseInt(document.getElementById('ST').value) || 10;
-            
-            // Cálculo do IMC
-            const imc = peso / (altura * altura);
-            
-            // Faixas de altura/peso para ST (GURPS)
-            const alturaMinima = 1.45 + (ST - 10) * 0.025;
-            const alturaMaxima = 1.80 + (ST - 10) * 0.025;
-            const pesoMinimo = 45 + (ST - 10) * 2.5;
-            const pesoMaximo = 90 + (ST - 10) * 2.5;
-            
-            // Atualiza displays
-            document.getElementById('stBase').textContent = ST;
-            document.getElementById('alturaFaixa').textContent = alturaMinima.toFixed(2) + 'm - ' + alturaMaxima.toFixed(2) + 'm';
-            document.getElementById('pesoFaixa').textContent = pesoMinimo + 'kg - ' + pesoMaximo + 'kg';
-            
-            // Status da altura
-            let statusAltura = '';
-            if (altura < alturaMinima) {
-                statusAltura = 'Abaixo da faixa (ST muito alto para altura)';
-            } else if (altura > alturaMaxima) {
-                statusAltura = 'Acima da faixa (ST muito baixo para altura)';
-            } else {
-                statusAltura = 'Dentro da faixa normal';
-            }
-            
-            // Status do peso
-            let statusPeso = '';
-            if (peso < pesoMinimo) {
-                statusPeso = 'Abaixo do peso';
-            } else if (peso > pesoMaximo) {
-                statusPeso = 'Acima do peso';
-            } else {
-                statusPeso = 'Peso normal';
-            }
-            
-            document.getElementById('statusAltura').textContent = statusAltura;
-            document.getElementById('statusPeso').textContent = statusPeso;
-            
-            // Status geral
-            let statusGeral = 'Normal';
-            let statusClass = 'normal';
-            
-            if (altura < alturaMinima || altura > alturaMaxima || 
-                peso < pesoMinimo || peso > pesoMaximo) {
-                statusGeral = 'Fora da faixa recomendada';
-                statusClass = 'warning';
-            }
-            
-            document.getElementById('statusFisico').textContent = statusGeral;
-            document.getElementById('statusFisico').className = 'status-badge ' + statusClass;
-            document.getElementById('modificadorPeso').textContent = statusPeso;
-            
-            // Atualiza cor dos status
-            const statusAlturaElem = document.getElementById('statusAltura');
-            const statusPesoElem = document.getElementById('statusPeso');
-            
-            statusAlturaElem.style.color = altura >= alturaMinima && altura <= alturaMaxima ? 
-                'rgba(212, 175, 55, 0.8)' : 'var(--accent-red)';
-            
-            statusPesoElem.style.color = peso >= pesoMinimo && peso <= pesoMaximo ? 
-                'rgba(212, 175, 55, 0.8)' : 'var(--accent-red)';
-            
-            // Atualiza descrição visual
-            atualizarDescricaoVisual();
-        }
-
-        function atualizarDescricaoVisual() {
-            const idade = document.getElementById('idade-personagem').value || 25;
-            const corPele = document.querySelector('[data-tipo="cor-pele"]').value;
-            const corOlhos = document.querySelector('[data-tipo="cor-olhos"]').value;
-            const corCabelo = document.querySelector('[data-tipo="cor-cabelo"]').value;
-            const tipoCabelo = document.querySelector('[data-tipo="tipo-cabelo"]').value;
-            
-            const descricao = `${idade} anos, pele ${corPele.toLowerCase()}, olhos ${corOlhos.toLowerCase()}, cabelo ${corCabelo.toLowerCase()} ${tipoCabelo.toLowerCase()}`;
-            document.getElementById('descricaoVisual').textContent = descricao;
-        }
-
-        // ===========================================
-        // SISTEMA DE VANTAGENS
-        // ===========================================
-        function iniciarSistemaVantagens() {
-            console.log('🔄 Inicializando sistema de vantagens...');
-            
-            // Inicializa subtabs
-            document.querySelectorAll('.subtab-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const subtabId = this.getAttribute('data-subtab');
-                    
-                    // Remove active de todas
-                    document.querySelectorAll('.subtab-btn').forEach(b => {
-                        b.classList.remove('active');
-                    });
-                    document.querySelectorAll('.subtab-pane').forEach(p => {
-                        p.classList.remove('active');
-                    });
-                    
-                    // Ativa a selecionada
-                    this.classList.add('active');
-                    document.getElementById('subtab-' + subtabId).classList.add('active');
-                });
-            });
-            
-            // Inicializa controles de atributos complementares
-            document.querySelectorAll('.atributo-item').forEach(item => {
-                const botoesDirecao = item.querySelectorAll('.btn-vantagem, .btn-desvantagem');
-                const botoesNivel = item.querySelectorAll('.btn-nivel');
-                const nivelDisplay = item.querySelector('.nivel-display');
-                const statusDirecao = item.querySelector('.status-direcao');
-                const custoDisplay = item.querySelector('.custo-valor');
-                
-                botoesDirecao.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const direcao = this.getAttribute('data-direcao');
-                        const tipo = item.getAttribute('data-tipo');
-                        const custoPorNivel = parseInt(item.getAttribute('data-custo')) || 5;
-                        const fator = parseFloat(item.getAttribute('data-fator')) || 1;
-                        
-                        // Ativa os botões de nível
-                        botoesNivel.forEach(b => b.disabled = false);
-                        
-                        // Atualiza status
-                        statusDirecao.textContent = direcao === 'positivo' ? 'Vantagem' : 'Desvantagem';
-                        statusDirecao.className = `status-direcao ${direcao}`;
-                        
-                        // Reinicia nível
-                        nivelDisplay.textContent = direcao === 'positivo' ? '0' : '0';
-                        atualizarCustoAtributo(item, 0, custoPorNivel, fator, direcao);
-                        
-                        // Atualiza eventos dos botões de nível
-                        botoesNivel[0].onclick = () => ajustarNivelAtributo(item, -1, custoPorNivel, fator, direcao);
-                        botoesNivel[1].onclick = () => ajustarNivelAtributo(item, 1, custoPorNivel, fator, direcao);
-                    });
-                });
-            });
-            
-            // Inicializa controles de status
-            document.querySelectorAll('[name="status-direcao"], [name="reputacao-direcao"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const nome = this.name;
-                    const direcao = this.value;
-                    const tipo = nome === 'status-direcao' ? 'status' : 'reputacao';
-                    
-                    atualizarControlesStatus(tipo, direcao);
-                });
-            });
-            
-            // Inicializa botões de nível de status
-            document.querySelectorAll('.btn-nivel-status').forEach(btn => {
-                const isMais = btn.classList.contains('mais');
-                const tipo = btn.closest('.status-item').getAttribute('data-tipo');
-                
-                btn.addEventListener('click', function() {
-                    if (this.disabled) return;
-                    
-                    const contador = this.closest('.nivel-contador');
-                    const nivelValor = contador.querySelector('.nivel-valor');
-                    const custoTotal = contador.closest('.status-controles').querySelector('.custo-total');
-                    const radioGroup = contador.closest('.status-controles').querySelector('.direcao-selecao');
-                    const radioSelecionado = radioGroup.querySelector('input:checked');
-                    
-                    if (!radioSelecionado) return;
-                    
-                    const direcao = radioSelecionado.value;
-                    if (direcao === 'neutro') return;
-                    
-                    let nivel = parseInt(nivelValor.textContent) || 0;
-                    const incremento = isMais ? 1 : -1;
-                    const maxNiveis = 4; // Máximo de níveis
-                    
-                    // Limites
-                    if (isMais && nivel >= maxNiveis) {
-                        showToast(`⚠️ Máximo de ${maxNiveis} níveis atingido`, 'warning');
-                        return;
-                    }
-                    
-                    if (!isMais && nivel <= 0) return;
-                    
-                    nivel += incremento;
-                    nivel = Math.max(0, Math.min(maxNiveis, nivel));
-                    nivelValor.textContent = nivel;
-                    
-                    // Calcula custo
-                    const custoPorNivel = parseInt(contador.closest('.status-item').getAttribute('data-custo')) || 5;
-                    let custo = nivel * custoPorNivel;
-                    
-                    if (direcao === 'negativo') {
-                        custo = -custo; // Desvantagem dá pontos
-                    }
-                    
-                    custoTotal.textContent = custo;
-                    
-                    // Atualiza descrição
-                    atualizarDescricaoStatus(tipo, nivel, direcao);
-                    
-                    // Atualiza totais
-                    calcularTotaisVantagens();
-                });
-            });
-            
-            showToast('✅ Sistema de vantagens inicializado', 'success');
-        }
-
-        function ajustarNivelAtributo(item, delta, custoPorNivel, fator, direcao) {
-            const nivelDisplay = item.querySelector('.nivel-display');
-            const statusDirecao = item.querySelector('.status-direcao');
-            const custoDisplay = item.querySelector('.custo-valor');
-            const botoesNivel = item.querySelectorAll('.btn-nivel');
-            
-            let nivel = parseFloat(nivelDisplay.textContent) || 0;
-            let novoNivel = nivel + (delta * fator);
-            
-            // Limites mínimos
-            if (novoNivel < 0) novoNivel = 0;
-            
-            // Para atributos com fator decimal, formata corretamente
-            if (fator !== 1) {
-                novoNivel = Math.round(novoNivel / fator) * fator;
-                nivelDisplay.textContent = novoNivel.toFixed(2);
-            } else {
-                nivelDisplay.textContent = novoNivel;
-            }
-            
-            // Atualiza custo
-            atualizarCustoAtributo(item, novoNivel, custoPorNivel, fator, direcao);
-            
-            // Habilita/desabilita botões
-            botoesNivel[0].disabled = novoNivel <= 0;
-            
-            // Atualiza totais
-            calcularTotaisVantagens();
-        }
-
-        function atualizarCustoAtributo(item, nivel, custoPorNivel, fator, direcao) {
-            const custoDisplay = item.querySelector('.custo-valor');
-            let custo = (nivel / fator) * custoPorNivel;
-            
-            if (direcao === 'negativo') {
-                custo = -Math.abs(custo); // Desvantagem dá pontos negativos
-            }
-            
-            custoDisplay.textContent = Math.round(custo);
-        }
-
-        function atualizarControlesStatus(tipo, direcao) {
-            const statusItem = document.querySelector(`[data-tipo="${tipo}"]`);
-            if (!statusItem) return;
-            
-            const botoesNivel = statusItem.querySelectorAll('.btn-nivel-status');
-            const nivelValor = statusItem.querySelector('.nivel-valor');
-            const custoTotal = statusItem.querySelector('.custo-total');
-            
-            if (direcao === 'neutro') {
-                // Desabilita controles
-                botoesNivel.forEach(btn => btn.disabled = true);
-                nivelValor.textContent = '0';
-                custoTotal.textContent = '0';
-                atualizarDescricaoStatus(tipo, 0, 'neutro');
-            } else {
-                // Habilita controles
-                botoesNivel.forEach(btn => btn.disabled = false);
-                nivelValor.textContent = '0';
-                custoTotal.textContent = '0';
-                atualizarDescricaoStatus(tipo, 0, direcao);
-            }
-            
-            calcularTotaisVantagens();
-        }
-
-        function atualizarDescricaoStatus(tipo, nivel, direcao) {
-            const descElement = document.getElementById(`desc${capitalizeFirstLetter(tipo)}`);
-            if (!descElement) return;
-            
-            let descricao = '';
-            
-            if (direcao === 'neutro') {
-                descricao = tipo === 'status' ? 
-                    'Status padrão, sem modificadores' : 
-                    'Reputação padrão, sem modificadores';
-            } else if (direcao === 'positivo') {
-                if (tipo === 'status') {
-                    const statusNiveis = [
-                        'Status padrão',
-                        'Status acima da média (ex: oficial júnior)',
-                        'Status elevado (ex: oficial sênior)',
-                        'Status alto (ex: nobre menor)',
-                        'Status muito alto (ex: nobre maior)'
-                    ];
-                    descricao = statusNiveis[Math.min(nivel, 4)];
-                } else {
-                    const reputacaoNiveis = [
-                        'Reputação padrão',
-                        'Pequena reputação local',
-                        'Reputação regional',
-                        'Reputação nacional',
-                        'Reputação lendária'
-                    ];
-                    descricao = reputacaoNiveis[Math.min(nivel, 4)];
-                }
-            } else {
-                if (tipo === 'status') {
-                    const statusNiveis = [
-                        'Status padrão',
-                        'Status abaixo da média',
-                        'Status baixo (ex: servo)',
-                        'Status muito baixo (ex: escravo)',
-                        'Status pária'
-                    ];
-                    descricao = statusNiveis[Math.min(nivel, 4)];
-                } else {
-                    const reputacaoNiveis = [
-                        'Reputação padrão',
-                        'Pequena má reputação local',
-                        'Má reputação regional',
-                        'Má reputação nacional',
-                        'Reputação infame'
-                    ];
-                    descricao = reputacaoNiveis[Math.min(nivel, 4)];
+    // ===========================================
+    // INICIALIZAÇÃO GERAL
+    // ===========================================
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🏰 Editor de Personagem GURPS carregado');
+        
+        // Adiciona classe para animação de entrada
+        document.body.style.opacity = '0';
+        setTimeout(() => {
+            document.body.style.transition = 'opacity 0.5s ease';
+            document.body.style.opacity = '1';
+        }, 100);
+        
+        // Inicializa sistemas específicos se as abas correspondentes estiverem ativas
+        setTimeout(() => {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                const tabId = activeTab.id;
+                if (typeof window[`init${capitalizeFirstLetter(tabId)}Tab`] === 'function') {
+                    window[`init${capitalizeFirstLetter(tabId)}Tab`]();
                 }
             }
-            
-            descElement.textContent = descricao;
-        }
-
-        function calcularTotaisVantagens() {
-            let totalAtributos = 0;
-            let totalStatusRep = 0;
-            
-            // Soma atributos complementares
-            document.querySelectorAll('.atributo-item .custo-valor').forEach(custo => {
-                totalAtributos += parseInt(custo.textContent) || 0;
-            });
-            
-            // Soma status e reputação
-            document.querySelectorAll('.status-item .custo-total').forEach(custo => {
-                totalStatusRep += parseInt(custo.textContent) || 0;
-            });
-            
-            // Atualiza displays
-            document.getElementById('totalAtributos').textContent = totalAtributos;
-            document.getElementById('totalStatusRep').textContent = totalStatusRep;
-            document.getElementById('totalGeral').textContent = totalAtributos + totalStatusRep;
-            
-            // Atualiza badges
-            document.getElementById('pontosAtributos').textContent = totalAtributos + ' pts';
-            document.getElementById('pontosStatus').textContent = totalStatusRep + ' pts';
-        }
-
-        // ===========================================
-        // INICIALIZAÇÃO GERAL
-        // ===========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🏰 Editor de Personagem GURPS carregado');
-            
-            // Adiciona classe para animação de entrada
-            document.body.style.opacity = '0';
-            setTimeout(() => {
-                document.body.style.transition = 'opacity 0.5s ease';
-                document.body.style.opacity = '1';
-            }, 100);
-            
-            // Inicializa sistemas específicos se as abas correspondentes estiverem ativas
-            setTimeout(() => {
-                const activeTab = document.querySelector('.tab-content.active');
-                if (activeTab) {
-                    const tabId = activeTab.id;
-                    if (typeof window[`init${capitalizeFirstLetter(tabId)}Tab`] === 'function') {
-                        window[`init${capitalizeFirstLetter(tabId)}Tab`]();
-                    }
-                }
-            }, 500);
-        });
-
-        // Funções auxiliares para sistemas externos
-        window.getCharacterData = function() {
-            return {
-                name: document.getElementById('characterName').value,
-                attributes: {
-                    ST: parseInt(document.getElementById('ST').value) || 10,
-                    DX: parseInt(document.getElementById('DX').value) || 10,
-                    IQ: parseInt(document.getElementById('IQ').value) || 10,
-                    HT: parseInt(document.getElementById('HT').value) || 10
-                },
-                points: {
-                    attributes: parseInt(document.getElementById('pontosGastos').textContent) || 0,
-                    characteristics: parseInt(document.getElementById('pontosCaracteristicas').textContent) || 0,
-                    advantages: parseInt(document.getElementById('totalGeral').textContent) || 0
-                }
-            };
-        };
-    </script>
+        }, 500);
+    });
+</script>
 </body>
 </html>
