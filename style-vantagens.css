@@ -939,8 +939,8 @@
 .relacionamento-modal {
     width: 90%;
     max-width: 800px;
-    max-height: 90vh; /* Aumentado para dar mais espaço */
-    min-height: 500px; /* Altura mínima */
+    max-height: 85vh !important; /* REDUZIDO: Para dar espaço para os botões */
+    min-height: 450px !important; /* REDUZIDO: Altura mínima menor */
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.98), rgba(26, 18, 0, 0.98));
     border: 3px solid var(--primary-gold);
     border-radius: 12px;
@@ -954,19 +954,19 @@
 
 .modal-header {
     background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
-    padding: 20px;
+    padding: 15px 20px !important; /* REDUZIDO: Menos padding */
     border-bottom: 2px solid var(--primary-gold);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0 !important; /* Não encolher */
-    min-height: 70px;
+    min-height: 60px !important; /* REDUZIDO: Menor altura */
 }
 
 .modal-header h3 {
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
-    font-size: 1.4rem;
+    font-size: 1.3rem !important; /* REDUZIDO: Fonte menor */
     margin: 0;
     display: flex;
     align-items: center;
@@ -977,11 +977,11 @@
     background: none;
     border: none;
     color: var(--text-light);
-    font-size: 2rem;
+    font-size: 1.8rem !important; /* REDUZIDO: Ícone menor */
     cursor: pointer;
     transition: all 0.2s ease;
-    width: 40px;
-    height: 40px;
+    width: 35px !important; /* REDUZIDO: Menor */
+    height: 35px !important; /* REDUZIDO: Menor */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -995,18 +995,19 @@
     transform: rotate(90deg);
 }
 
+/* CORREÇÃO CRÍTICA: AUMENTAR ESPAÇO PARA OS BOTÕES */
 .modal-body {
-    padding: 20px;
+    padding: 15px 20px !important; /* REDUZIDO: Menos padding vertical */
     overflow-y: auto !important;
     flex: 1 !important; /* Ocupa espaço disponível */
-    max-height: calc(90vh - 220px) !important; /* Ajustado para incluir footer */
-    min-height: 300px !important;
+    max-height: calc(85vh - 140px) !important; /* AUMENTADO: Mais espaço para footer */
+    min-height: 250px !important; /* REDUZIDO: Menor altura mínima */
 }
 
 .modal-steps {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 20px !important; /* REDUZIDO: Menor gap */
 }
 
 .modal-step {
@@ -1021,8 +1022,8 @@
 .modal-step h4 {
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
-    margin-bottom: 15px;
+    font-size: 1.1rem !important; /* REDUZIDO: Fonte menor */
+    margin-bottom: 12px !important; /* REDUZIDO: Menor margem */
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1030,29 +1031,30 @@
 
 .modal-step p {
     color: var(--text-light);
-    margin-bottom: 20px;
+    margin-bottom: 15px !important; /* REDUZIDO: Menor margem */
     line-height: 1.5;
+    font-size: 0.9rem !important; /* REDUZIDO: Fonte menor */
 }
 
 .tipo-options {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 15px;
-    margin-top: 20px;
+    gap: 12px !important; /* REDUZIDO: Menor gap */
+    margin-top: 15px !important; /* REDUZIDO: Menor margem */
 }
 
 .tipo-option {
     background: rgba(26, 18, 0, 0.7);
     border: 2px solid var(--wood-light);
     border-radius: 8px;
-    padding: 20px 15px;
+    padding: 15px 12px !important; /* REDUZIDO: Menos padding */
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px !important; /* REDUZIDO: Menor gap */
 }
 
 .tipo-option:hover {
@@ -1068,7 +1070,7 @@
 }
 
 .tipo-option i {
-    font-size: 2rem;
+    font-size: 1.8rem !important; /* REDUZIDO: Ícone menor */
     color: var(--text-gold);
     margin-bottom: 5px;
 }
@@ -1077,38 +1079,38 @@
     color: var(--text-light);
     font-family: 'Cinzel', serif;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 0.9rem !important; /* REDUZIDO: Fonte menor */
 }
 
 .tipo-option small {
     color: var(--text-light);
     opacity: 0.7;
-    font-size: 0.8rem;
+    font-size: 0.75rem !important; /* REDUZIDO: Fonte menor */
     line-height: 1.3;
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px !important; /* REDUZIDO: Menor margem */
 }
 
 .form-group label {
     display: block;
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
-    margin-bottom: 8px;
+    font-size: 0.9rem !important; /* REDUZIDO: Fonte menor */
+    margin-bottom: 6px !important; /* REDUZIDO: Menor margem */
     font-weight: bold;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 15px;
+    padding: 10px 12px !important; /* REDUZIDO: Menos padding */
     background: rgba(26, 18, 0, 0.8);
     border: 1px solid var(--wood-light);
     border-radius: 6px;
     color: var(--text-light);
     font-family: 'MedievalSharp', cursive;
-    font-size: 0.9rem;
+    font-size: 0.85rem !important; /* REDUZIDO: Fonte menor */
     transition: all 0.2s ease;
 }
 
@@ -1119,26 +1121,27 @@
 }
 
 textarea.form-control {
-    min-height: 80px;
+    min-height: 70px !important; /* REDUZIDO: Menor altura */
     resize: vertical;
 }
 
 .checkbox-group, .radio-group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px !important; /* REDUZIDO: Menor gap */
 }
 
 .checkbox-group label, .radio-group label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px !important; /* REDUZIDO: Menor gap */
     cursor: pointer;
-    padding: 8px 12px;
+    padding: 6px 10px !important; /* REDUZIDO: Menos padding */
     background: rgba(26, 18, 0, 0.6);
     border-radius: 5px;
     border: 1px solid rgba(212, 175, 55, 0.1);
     transition: all 0.2s ease;
+    font-size: 0.85rem !important; /* REDUZIDO: Fonte menor */
 }
 
 .checkbox-group label:hover, .radio-group label:hover {
@@ -1149,14 +1152,14 @@ textarea.form-control {
 .checkbox-group input[type="checkbox"], 
 .radio-group input[type="radio"] {
     margin: 0;
-    width: 16px;
-    height: 16px;
+    width: 14px !important; /* REDUZIDO: Menor */
+    height: 14px !important; /* REDUZIDO: Menor */
     cursor: pointer;
 }
 
 .checkbox-custom {
-    width: 18px;
-    height: 18px;
+    width: 16px !important; /* REDUZIDO: Menor */
+    height: 16px !important; /* REDUZIDO: Menor */
     border: 2px solid var(--wood-light);
     border-radius: 4px;
     background: transparent;
@@ -1175,14 +1178,14 @@ textarea.form-control {
 .checkbox-group input[type="checkbox"]:checked + .checkbox-custom::after {
     content: '✓';
     color: var(--primary-dark);
-    font-size: 12px;
+    font-size: 10px !important; /* REDUZIDO: Menor */
     font-weight: bold;
 }
 
 .checkbox-text, .radio-text {
     flex: 1;
     color: var(--text-light);
-    font-size: 0.85rem;
+    font-size: 0.8rem !important; /* REDUZIDO: Fonte menor */
 }
 
 .checkbox-text strong, .radio-text strong {
@@ -1193,62 +1196,66 @@ textarea.form-control {
     font-style: italic;
     color: var(--text-light);
     opacity: 0.7;
-    font-size: 0.8rem;
+    font-size: 0.75rem !important; /* REDUZIDO: Fonte menor */
 }
 
 .config-container {
-    padding: 15px;
+    padding: 12px !important; /* REDUZIDO: Menos padding */
     background: rgba(26, 18, 0, 0.5);
     border-radius: 8px;
     border: 1px solid rgba(212, 175, 55, 0.1);
+    font-size: 0.85rem !important; /* REDUZIDO: Fonte menor */
 }
 
 .config-container h4 {
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
-    margin-bottom: 15px;
+    margin-bottom: 12px !important; /* REDUZIDO: Menor margem */
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px !important; /* REDUZIDO: Menor gap */
+    font-size: 1rem !important; /* REDUZIDO: Fonte menor */
 }
 
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px !important; /* REDUZIDO: Menor gap */
     cursor: pointer;
-    margin-bottom: 10px;
+    margin-bottom: 8px !important; /* REDUZIDO: Menor margem */
+    font-size: 0.85rem !important; /* REDUZIDO: Fonte menor */
 }
 
 #modalResumo {
-    margin-top: 25px;
-    padding: 15px;
+    margin-top: 20px !important; /* REDUZIDO: Menor margem */
+    padding: 12px !important; /* REDUZIDO: Menos padding */
     background: rgba(26, 18, 0, 0.6);
     border-radius: 8px;
     border: 1px solid rgba(212, 175, 55, 0.2);
+    font-size: 0.85rem !important; /* REDUZIDO: Fonte menor */
 }
 
 #modalResumo .resumo-info {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px !important; /* REDUZIDO: Menor gap */
 }
 
 #modalResumo .resumo-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
+    padding: 6px 0 !important; /* REDUZIDO: Menos padding */
     border-bottom: 1px solid rgba(212, 175, 55, 0.1);
 }
 
 #modalResumo .resumo-item:nth-child(odd) {
     border-right: 1px solid rgba(212, 175, 55, 0.1);
-    padding-right: 15px;
+    padding-right: 10px !important; /* REDUZIDO: Menos padding */
 }
 
 #modalResumo .resumo-item:nth-child(even) {
-    padding-left: 15px;
+    padding-left: 10px !important; /* REDUZIDO: Menos padding */
 }
 
 #modalResumo .resumo-total {
@@ -1256,14 +1263,14 @@ textarea.form-control {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0 0;
-    margin-top: 10px;
+    padding: 10px 0 0 !important; /* REDUZIDO: Menos padding */
+    margin-top: 8px !important; /* REDUZIDO: Menor margem */
     border-top: 2px solid rgba(212, 175, 55, 0.3);
 }
 
 #modalResumo .resumo-item span:first-child {
     color: var(--text-light);
-    font-size: 0.9rem;
+    font-size: 0.85rem !important; /* REDUZIDO: Fonte menor */
     font-weight: 500;
 }
 
@@ -1271,24 +1278,24 @@ textarea.form-control {
     color: var(--text-gold);
     font-family: 'MedievalSharp', cursive;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 0.9rem !important; /* REDUZIDO: Fonte menor */
 }
 
 #modalResumo .resumo-total span:first-child {
     color: var(--text-gold);
     font-family: 'Cinzel', serif;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.95rem !important; /* REDUZIDO: Fonte menor */
 }
 
 #modalResumo .resumo-total span:last-child {
     color: var(--text-gold);
     font-family: 'MedievalSharp', cursive;
-    font-size: 1.4rem;
+    font-size: 1.2rem !important; /* REDUZIDO: Fonte menor */
     font-weight: bold;
 }
 
-/* ===== MODAL FOOTER - CORREÇÃO COMPLETA ===== */
+/* ===== MODAL FOOTER - CORREÇÃO DOS BOTÕES SEM CORTES ===== */
 .modal-footer {
     display: flex !important;
     visibility: visible !important;
@@ -1297,18 +1304,18 @@ textarea.form-control {
     z-index: 10002 !important;
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.95)) !important;
     border-top: 3px solid var(--primary-gold) !important;
-    padding: 20px !important;
-    gap: 15px !important;
+    padding: 12px 15px !important; /* REDUZIDO: Menos padding */
+    gap: 10px !important; /* REDUZIDO: Menor gap */
     flex-wrap: wrap !important;
     justify-content: center !important;
-    min-height: 90px !important; /* Garante altura mínima */
+    min-height: 70px !important; /* REDUZIDO: Menor altura */
     flex-shrink: 0 !important; /* Não encolhe */
     align-items: center !important;
 }
 
-/* BOTÕES DO MODAL - CORREÇÃO */
+/* BOTÕES DO MODAL - REDIMENSIONADOS PARA CABER */
 .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-    padding: 12px 25px !important;
+    padding: 10px 15px !important; /* REDUZIDO: Menos padding */
     border-radius: 6px !important;
     font-family: 'Cinzel', serif !important;
     font-weight: bold !important;
@@ -1318,14 +1325,14 @@ textarea.form-control {
     visibility: visible !important;
     opacity: 1 !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 6px !important; /* REDUZIDO: Menor gap */
     border: none !important;
-    min-width: 140px !important;
+    min-width: 120px !important; /* REDUZIDO: Menor largura */
     justify-content: center !important;
     flex: 1 !important;
-    max-width: 200px !important;
-    height: 48px !important;
-    font-size: 0.95rem !important;
+    max-width: 170px !important; /* REDUZIDO: Menor largura */
+    height: 42px !important; /* REDUZIDO: Menor altura */
+    font-size: 0.9rem !important; /* REDUZIDO: Fonte menor */
     z-index: 10003 !important;
     position: relative !important;
     box-sizing: border-box !important;
@@ -1650,13 +1657,15 @@ textarea.form-control {
     
     .modal-footer {
         flex-wrap: wrap !important;
-        gap: 10px !important;
+        gap: 8px !important;
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-        flex: 1 1 calc(50% - 10px) !important;
-        min-width: 120px !important;
+        flex: 1 1 calc(50% - 8px) !important;
+        min-width: 110px !important; /* REDUZIDO: Menor */
         max-width: none !important;
+        height: 40px !important; /* REDUZIDO: Menor */
+        padding: 8px 12px !important; /* REDUZIDO: Menos padding */
     }
 }
 
@@ -1774,14 +1783,15 @@ textarea.form-control {
     /* Correções específicas para mobile no modal */
     .relacionamento-modal {
         width: 95% !important;
-        max-height: 95vh !important;
+        max-height: 90vh !important; /* REDUZIDO: Para mobile */
         margin: 10px !important;
     }
     
     .modal-footer {
         flex-direction: column !important;
-        gap: 10px !important;
-        min-height: 120px !important;
+        gap: 8px !important;
+        min-height: 110px !important; /* REDUZIDO: Menor */
+        padding: 10px 12px !important; /* REDUZIDO: Menos padding */
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
@@ -1789,10 +1799,14 @@ textarea.form-control {
         max-width: 100% !important;
         min-width: 100% !important;
         flex: 1 1 auto !important;
+        height: 40px !important; /* REDUZIDO: Menor */
+        padding: 8px 12px !important; /* REDUZIDO: Menos padding */
+        font-size: 0.85rem !important; /* REDUZIDO: Fonte menor */
     }
     
     .modal-body {
-        max-height: calc(95vh - 250px) !important;
+        max-height: calc(90vh - 180px) !important; /* AUMENTADO: Mais espaço */
+        padding: 12px 15px !important; /* REDUZIDO: Menos padding */
     }
 }
 
@@ -1901,22 +1915,28 @@ textarea.form-control {
     
     /* Ajustes finais para modal em telas muito pequenas */
     .modal-header {
-        padding: 15px !important;
-        min-height: 60px !important;
+        padding: 12px 15px !important; /* REDUZIDO: Menos padding */
+        min-height: 55px !important; /* REDUZIDO: Menor */
     }
     
     .modal-header h3 {
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important; /* REDUZIDO: Menor */
     }
     
     .modal-body {
-        padding: 15px !important;
+        padding: 10px 12px !important; /* REDUZIDO: Menos padding */
     }
     
     .btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
-        height: 44px !important;
-        padding: 10px 20px !important;
-        font-size: 0.9rem !important;
+        height: 38px !important; /* REDUZIDO: Menor */
+        padding: 8px 10px !important; /* REDUZIDO: Menos padding */
+        font-size: 0.8rem !important; /* REDUZIDO: Menor */
+        min-width: 100% !important;
+    }
+    
+    .modal-footer {
+        min-height: 100px !important; /* REDUZIDO: Menor */
+        padding: 8px 10px !important; /* REDUZIDO: Menos padding */
     }
 }
 
@@ -1997,4 +2017,34 @@ textarea.form-control {
     height: 3px;
     background: var(--primary-gold);
     z-index: 10004;
+}
+
+/* =========================================== */
+/* CORREÇÃO EXTRA - BOTÕES SEM CORTES */
+/* =========================================== */
+
+/* GARANTIR QUE O MODAL NÃO FIQUE MUITO ALTO */
+.relacionamento-modal {
+    max-height: 92vh !important; /* Aumentado um pouco, mas não demais */
+}
+
+/* AUMENTAR ESPAÇO ENTRE BOTÕES E BORDA INFERIOR */
+.modal-footer {
+    padding-bottom: 15px !important; /* Padding extra na parte inferior */
+}
+
+/* BOTÕES UM POUCO MENORES PARA CABER MELHOR */
+.btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar {
+    margin: 2px 0 !important; /* Pequena margem entre botões */
+}
+
+/* GARANTIR QUE O SCROLL NÃO CORTE BOTÕES */
+@media (max-height: 700px) {
+    .relacionamento-modal {
+        max-height: 85vh !important; /* Menor em telas pequenas */
+    }
+    
+    .modal-body {
+        max-height: calc(85vh - 140px) !important;
+    }
 }
