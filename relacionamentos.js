@@ -1,10 +1,10 @@
 // ===========================================
-// SISTEMA DE RELACIONAMENTOS - VERSÃO REFORMULADA
+// SISTEMA DE RELACIONAMENTOS - VERSÃO 100% FUNCIONAL
 // ===========================================
 
 class SistemaRelacionamentos {
     constructor() {
-        console.log('🏗️ Sistema de Relacionamentos REFORMULADO iniciado');
+        console.log('🏗️ Sistema de Relacionamentos FUNCIONAL iniciado');
         
         this.relacionamentos = [];
         this.tipoSelecionado = null;
@@ -51,14 +51,14 @@ class SistemaRelacionamentos {
     }
     
     init() {
-        console.log('🚀 Inicializando Relacionamentos Reformulado...');
+        console.log('🚀 Inicializando Relacionamentos...');
         
         this.setupElementos();
         this.setupEventListeners();
         this.carregarDoLocalStorage();
         this.atualizarLista();
         
-        console.log('✅ Sistema de Relacionamentos Reformulado pronto');
+        console.log('✅ Sistema de Relacionamentos pronto');
     }
     
     setupElementos() {
@@ -85,6 +85,9 @@ class SistemaRelacionamentos {
             resumoGrupo: document.getElementById('resumoGrupo'),
             resumoTotal: document.getElementById('resumoTotal')
         };
+        
+        // Inicializar botões
+        this.atualizarBotoes();
     }
     
     setupEventListeners() {
@@ -159,6 +162,9 @@ class SistemaRelacionamentos {
         this.tipoSelecionado = null;
         this.stepAtual = 1;
         
+        // Limpar inputs
+        this.limparInputsModal();
+        
         // Mostrar modal
         if (this.elementos.modal) {
             this.elementos.modal.classList.add('active');
@@ -171,6 +177,36 @@ class SistemaRelacionamentos {
         
         // Atualizar resumo
         this.atualizarResumoModal();
+    }
+    
+    limparInputsModal() {
+        // Limpar inputs do step 3
+        const relNome = document.getElementById('relNome');
+        const relDescricao = document.getElementById('relDescricao');
+        const relObservacoes = document.getElementById('relObservacoes');
+        
+        if (relNome) relNome.value = '';
+        if (relDescricao) relDescricao.value = '';
+        if (relObservacoes) relObservacoes.value = '';
+        
+        // Limpar configuração de aliado se existir
+        const powerRadios = document.querySelectorAll('input[name="allyPower"]');
+        if (powerRadios.length > 0) {
+            powerRadios[0].checked = true; // Seleciona o primeiro
+        }
+        
+        const modCheckboxes = document.querySelectorAll('input[name="allyMods"]');
+        modCheckboxes.forEach(cb => cb.checked = false);
+        
+        const isGroupCheckbox = document.getElementById('isGroup');
+        if (isGroupCheckbox) {
+            isGroupCheckbox.checked = false;
+            const groupConfig = document.getElementById('groupConfig');
+            if (groupConfig) groupConfig.style.display = 'none';
+        }
+        
+        const groupSizeSelect = document.getElementById('groupSize');
+        if (groupSizeSelect) groupSizeSelect.value = '1';
     }
     
     fecharModal() {
@@ -215,7 +251,7 @@ class SistemaRelacionamentos {
     }
     
     // ===========================================
-    // CONTROLE DE STEPS
+    // CONTROLE DE STEPS E BOTÕES
     // ===========================================
     
     mudarStep(stepNum) {
@@ -247,24 +283,27 @@ class SistemaRelacionamentos {
         const btnCancelar = this.elementos.btnCancelar;
         const btnConfirmar = this.elementos.btnConfirmar;
         
-        if (this.stepAtual === 1) {
-            // Primeiro passo: escolher tipo
-            if (btnVoltar) btnVoltar.style.display = 'none';
-            if (btnProximo) btnProximo.style.display = 'none';
-            if (btnCancelar) btnCancelar.style.display = 'flex';
-            if (btnConfirmar) btnConfirmar.style.display = 'none';
-        } else if (this.stepAtual === 2) {
-            // Segundo passo: configuração
-            if (btnVoltar) btnVoltar.style.display = 'flex';
-            if (btnProximo) btnProximo.style.display = 'none';
-            if (btnCancelar) btnCancelar.style.display = 'flex';
-            if (btnConfirmar) btnConfirmar.style.display = 'flex';
-        } else if (this.stepAtual === 3) {
-            // Terceiro passo: detalhes
-            if (btnVoltar) btnVoltar.style.display = 'flex';
-            if (btnProximo) btnProximo.style.display = 'none';
-            if (btnCancelar) btnCancelar.style.display = 'flex';
-            if (btnConfirmar) btnConfirmar.style.display = 'flex';
+        // Resetar todos para flex
+        if (btnVoltar) btnVoltar.style.display = 'flex';
+        if (btnProximo) btnProximo.style.display = 'flex';
+        if (btnCancelar) btnCancelar.style.display = 'flex';
+        if (btnConfirmar) btnConfirmar.style.display = 'flex';
+        
+        // Ajustar conforme step
+        switch(this.stepAtual) {
+            case 1: // Escolher tipo
+                if (btnVoltar) btnVoltar.style.display = 'none';
+                if (btnProximo) btnProximo.style.display = 'none';
+                if (btnConfirmar) btnConfirmar.style.display = 'none';
+                break;
+                
+            case 2: // Configuração
+                if (btnConfirmar) btnConfirmar.style.display = 'none';
+                break;
+                
+            case 3: // Detalhes
+                if (btnProximo) btnProximo.style.display = 'none';
+                break;
         }
     }
     
@@ -298,6 +337,9 @@ class SistemaRelacionamentos {
         
         // Configurar listeners para atualização em tempo real
         this.configurarListenersConfiguracao();
+        
+        // Calcular custos iniciais
+        setTimeout(() => this.calcularECustos(), 100);
     }
     
     carregarConfigAliado(container) {
@@ -326,6 +368,12 @@ class SistemaRelacionamentos {
             if (groupSizeSelect) {
                 groupSizeSelect.addEventListener('change', () => this.calcularECustos());
             }
+            
+            // Inicializar com valores padrão
+            this.dadosTemporarios.poder = 25; // Valor padrão
+            this.dadosTemporarios.modificadores = [];
+            this.dadosTemporarios.grupo = false;
+            this.dadosTemporarios.tamanhoGrupo = 1;
         }
     }
     
@@ -344,6 +392,7 @@ class SistemaRelacionamentos {
             const powerSelect = container.querySelector('#otherPower');
             if (powerSelect) {
                 powerSelect.addEventListener('change', () => this.calcularECustos());
+                this.dadosTemporarios.poder = parseInt(powerSelect.value);
             }
         }
     }
@@ -412,7 +461,7 @@ class SistemaRelacionamentos {
                         case 'afinidade': texto = 'Afinidade (×0.75)'; break;
                         case 'relutante': texto = 'Relutante (×0.5)'; break;
                     }
-                    modificadoresTexto.push(texto);
+                    if (texto) modificadoresTexto.push(texto);
                 }
             });
             
@@ -479,6 +528,7 @@ class SistemaRelacionamentos {
         // Custo Base
         if (this.elementos.resumoCustoBase) {
             this.elementos.resumoCustoBase.textContent = `${custoBase >= 0 ? '+' : ''}${custoBase} pts`;
+            this.elementos.resumoCustoBase.style.color = custoBase >= 0 ? '#4caf50' : '#f44336';
         }
         
         // Modificadores
@@ -506,10 +556,13 @@ class SistemaRelacionamentos {
             // Colorir conforme o valor
             if (custoFinal > 0) {
                 this.elementos.resumoTotal.style.color = '#4caf50';
+                this.elementos.resumoTotal.style.fontWeight = 'bold';
             } else if (custoFinal < 0) {
                 this.elementos.resumoTotal.style.color = '#f44336';
+                this.elementos.resumoTotal.style.fontWeight = 'bold';
             } else {
                 this.elementos.resumoTotal.style.color = 'var(--text-gold)';
+                this.elementos.resumoTotal.style.fontWeight = 'bold';
             }
         }
     }
@@ -537,7 +590,7 @@ class SistemaRelacionamentos {
         }
         
         // Garantir que temos os dados de custo
-        if (!this.dadosTemporarios.custoFinal && this.dadosTemporarios.custoFinal !== 0) {
+        if (typeof this.dadosTemporarios.custoFinal === 'undefined') {
             this.calcularECustos();
         }
         
@@ -554,7 +607,7 @@ class SistemaRelacionamentos {
             atualizadoEm: new Date().toISOString()
         };
         
-        // Limpar dados temporários de cálculo
+        // Limpar dados temporários de cálculo do objeto salvo
         delete relacionamento.config.custoBase;
         delete relacionamento.config.multiplicador;
         delete relacionamento.config.multiplicadorGrupo;
@@ -631,13 +684,15 @@ class SistemaRelacionamentos {
         
         if (rel.tipo === 'aliado' && rel.config) {
             const poder = rel.config.poder ? `${rel.config.poder}%` : 'N/A';
-            const grupo = rel.config.grupo ? `Grupo: ${rel.config.tamanhoGrupo} membros` : null;
+            const grupo = rel.config.grupo && rel.config.tamanhoGrupo > 1 ? 
+                `Grupo: ${rel.config.tamanhoGrupo} membros` : null;
+            const modCount = rel.config.modificadores?.length || 0;
             
             detalhesHTML = `
                 <div class="relacionamento-detalhes">
                     <span><i class="fas fa-chart-line"></i> Poder: ${poder}</span>
                     ${grupo ? `<span><i class="fas fa-users"></i> ${grupo}</span>` : ''}
-                    ${rel.config.modificadores?.length > 0 ? `<span><i class="fas fa-magic"></i> ${rel.config.modificadores.length} mod.</span>` : ''}
+                    ${modCount > 0 ? `<span><i class="fas fa-magic"></i> ${modCount} mod.</span>` : ''}
                 </div>
             `;
         }
@@ -705,15 +760,19 @@ class SistemaRelacionamentos {
     }
     
     atualizarTotalGeral() {
-        const totalAtributos = parseInt(document.getElementById('totalAtributos')?.textContent || 0);
-        const totalStatusRep = parseInt(document.getElementById('totalStatusRep')?.textContent || 0);
-        const totalRelacionamentos = parseInt(document.getElementById('totalRelacionamentosResumo')?.textContent || 0);
-        
-        const totalGeral = totalAtributos + totalStatusRep + totalRelacionamentos;
-        const totalGeralElement = document.getElementById('totalGeral');
-        
-        if (totalGeralElement) {
-            totalGeralElement.textContent = totalGeral >= 0 ? `+${totalGeral}` : totalGeral;
+        try {
+            const totalAtributos = parseInt(document.getElementById('totalAtributos')?.textContent || 0);
+            const totalStatusRep = parseInt(document.getElementById('totalStatusRep')?.textContent || 0);
+            const totalRelacionamentos = parseInt(document.getElementById('totalRelacionamentosResumo')?.textContent || 0);
+            
+            const totalGeral = totalAtributos + totalStatusRep + totalRelacionamentos;
+            const totalGeralElement = document.getElementById('totalGeral');
+            
+            if (totalGeralElement) {
+                totalGeralElement.textContent = totalGeral >= 0 ? `+${totalGeral}` : totalGeral;
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar total geral:', error);
         }
     }
     
@@ -776,36 +835,38 @@ class SistemaRelacionamentos {
             
             // Para aliados, preencher configurações
             if (relacionamento.tipo === 'aliado' && relacionamento.config) {
-                // Poder
-                const powerRadio = document.querySelector(`input[name="allyPower"][value="${relacionamento.config.poder}"]`);
-                if (powerRadio) powerRadio.checked = true;
-                
-                // Modificadores
-                if (relacionamento.config.modificadores) {
-                    relacionamento.config.modificadores.forEach(modValue => {
-                        const modCheckbox = document.querySelector(`input[name="allyMods"][value="${modValue}"]`);
-                        if (modCheckbox) modCheckbox.checked = true;
-                    });
-                }
-                
-                // Grupo
-                if (relacionamento.config.grupo) {
-                    const isGroupCheckbox = document.getElementById('isGroup');
-                    const groupSizeSelect = document.getElementById('groupSize');
+                setTimeout(() => {
+                    // Poder
+                    const powerRadio = document.querySelector(`input[name="allyPower"][value="${relacionamento.config.poder}"]`);
+                    if (powerRadio) powerRadio.checked = true;
                     
-                    if (isGroupCheckbox) {
-                        isGroupCheckbox.checked = true;
-                        const groupConfig = document.getElementById('groupConfig');
-                        if (groupConfig) groupConfig.style.display = 'block';
+                    // Modificadores
+                    if (relacionamento.config.modificadores) {
+                        relacionamento.config.modificadores.forEach(modValue => {
+                            const modCheckbox = document.querySelector(`input[name="allyMods"][value="${modValue}"]`);
+                            if (modCheckbox) modCheckbox.checked = true;
+                        });
                     }
                     
-                    if (groupSizeSelect && relacionamento.config.tamanhoGrupo) {
-                        groupSizeSelect.value = relacionamento.config.tamanhoGrupo;
+                    // Grupo
+                    if (relacionamento.config.grupo) {
+                        const isGroupCheckbox = document.getElementById('isGroup');
+                        const groupSizeSelect = document.getElementById('groupSize');
+                        
+                        if (isGroupCheckbox) {
+                            isGroupCheckbox.checked = true;
+                            const groupConfig = document.getElementById('groupConfig');
+                            if (groupConfig) groupConfig.style.display = 'block';
+                        }
+                        
+                        if (groupSizeSelect && relacionamento.config.tamanhoGrupo) {
+                            groupSizeSelect.value = relacionamento.config.tamanhoGrupo;
+                        }
                     }
-                }
-                
-                // Calcular custos
-                setTimeout(() => this.calcularECustos(), 100);
+                    
+                    // Calcular custos
+                    setTimeout(() => this.calcularECustos(), 200);
+                }, 300);
             }
             
             // Ir para step 3
