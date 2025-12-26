@@ -34,13 +34,6 @@ class SistemaRelacionamentos {
                     afinidade: { nome: 'Afinidade', valor: -0.25 }, // -25%
                     relutante: { nome: 'Relutante', valor: -0.5 }   // -50%
                 }
-            },
-            inimigos: {
-                custoPorPoder: {
-                    5: -5,   // Inimigo fraco
-                    10: -10, // Inimigo médio
-                    20: -20  // Inimigo poderoso
-                }
             }
         };
         
@@ -54,12 +47,34 @@ class SistemaRelacionamentos {
     init() {
         console.log('🚀 SistemaRelacionamentos.init()');
         
+        // Verificar se estamos na aba correta
+        if (!this.estaNaAbaCorreta()) {
+            console.log('⏳ Aguardando aba de Vantagens ficar ativa...');
+            return;
+        }
+        
         this.setupElementos();
+        
+        // Se não encontrou elementos, tenta novamente em 500ms
+        if (!this.elementos.btnAdicionar || !this.elementos.modal) {
+            console.log('⏳ Elementos não encontrados, tentando novamente...');
+            setTimeout(() => this.init(), 500);
+            return;
+        }
+        
         this.setupEventListeners();
         this.carregarDoLocalStorage();
         this.atualizarContadores();
         
         console.log('✅ Sistema de Relacionamentos inicializado');
+    }
+    
+    estaNaAbaCorreta() {
+        const vantagensTab = document.getElementById('vantagens');
+        if (!vantagensTab) return false;
+        
+        // Verifica se a aba de vantagens está ativa
+        return vantagensTab.classList.contains('active');
     }
     
     setupElementos() {
@@ -92,13 +107,20 @@ class SistemaRelacionamentos {
             resumoTotal: document.getElementById('resumoTotal')
         };
         
-        console.log('🔍 Elementos carregados:', this.elementos);
+        console.log('🔍 Elementos encontrados:', {
+            btnAdicionar: !!this.elementos.btnAdicionar,
+            modal: !!this.elementos.modal,
+            lista: !!this.elementos.lista
+        });
     }
     
     setupEventListeners() {
         // Botão para abrir modal
         if (this.elementos.btnAdicionar) {
+            console.log('🔗 Adicionando evento ao botão');
             this.elementos.btnAdicionar.addEventListener('click', () => this.abrirModal());
+        } else {
+            console.error('❌ Botão btnAdicionar não encontrado!');
         }
         
         // Fechar modal
@@ -169,6 +191,10 @@ class SistemaRelacionamentos {
         if (this.elementos.modal) {
             this.elementos.modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            console.log('✅ Modal aberto');
+        } else {
+            console.error('❌ Modal não encontrado');
+            return;
         }
         
         // Resetar para step 1
@@ -211,7 +237,7 @@ class SistemaRelacionamentos {
         // Preparar dados temporários para este tipo
         this.prepararDadosTipo(tipo);
         
-        // Ir para próximo step após pequeno delay
+        // Ir para próximo step
         setTimeout(() => {
             this.proximoStep();
         }, 300);
@@ -314,6 +340,8 @@ class SistemaRelacionamentos {
         const btnNext = this.elementos.btnNext;
         const btnSave = this.elementos.btnSave;
         
+        if (!btnPrev || !btnNext || !btnSave) return;
+        
         // Step 1: Apenas próximo
         if (stepAtual === 1) {
             btnPrev.style.display = 'none';
@@ -349,12 +377,12 @@ class SistemaRelacionamentos {
         
         // Validação antes de avançar
         if (stepAtual === 1 && !this.tipoSelecionado) {
-            this.mostrarMensagem('Por favor, selecione um tipo de relacionamento', 'warning');
+            alert('Por favor, selecione um tipo de relacionamento');
             return;
         }
         
         if (stepAtual === 2 && !this.validarConfiguracao()) {
-            this.mostrarMensagem('Por favor, complete a configuração', 'warning');
+            alert('Por favor, complete a configuração');
             return;
         }
         
@@ -392,15 +420,15 @@ class SistemaRelacionamentos {
                 break;
                 
             case 'contato':
-                conteudoHTML = this.getHTMLConfigContato();
+                conteudoHTML = `<div class="contato-config"><p>Configuração de Contato em breve...</p></div>`;
                 break;
                 
             case 'patrono':
-                conteudoHTML = this.getHTMLConfigPatrono();
+                conteudoHTML = `<div class="patrono-config"><p>Configuração de Patrono em breve...</p></div>`;
                 break;
                 
             case 'dependente':
-                conteudoHTML = this.getHTMLConfigDependente();
+                conteudoHTML = `<div class="dependente-config"><p>Configuração de Dependente em breve...</p></div>`;
                 break;
                 
             default:
@@ -414,6 +442,7 @@ class SistemaRelacionamentos {
     }
     
     getHTMLConfigAliado() {
+        const config = this.dadosTemporarios.config || {};
         return `
             <div class="ally-config">
                 <h4><i class="fas fa-shield-alt"></i> Configuração do Aliado</h4>
@@ -422,7 +451,7 @@ class SistemaRelacionamentos {
                     <h5><i class="fas fa-chart-line"></i> Poder do Aliado</h5>
                     <div class="radio-group">
                         <label>
-                            <input type="radio" name="allyPower" value="25" ${this.dadosTemporarios.config.poder == 25 ? 'checked' : ''}>
+                            <input type="radio" name="allyPower" value="25" ${config.poder == 25 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>25%</strong> dos seus pontos <em>(1 ponto)</em>
@@ -430,7 +459,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="radio" name="allyPower" value="50" ${this.dadosTemporarios.config.poder == 50 ? 'checked' : ''}>
+                            <input type="radio" name="allyPower" value="50" ${config.poder == 50 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>50%</strong> dos seus pontos <em>(2 pontos)</em>
@@ -438,7 +467,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="radio" name="allyPower" value="75" ${this.dadosTemporarios.config.poder == 75 ? 'checked' : ''}>
+                            <input type="radio" name="allyPower" value="75" ${config.poder == 75 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>75%</strong> dos seus pontos <em>(3 pontos)</em>
@@ -446,7 +475,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="radio" name="allyPower" value="100" ${!this.dadosTemporarios.config.poder || this.dadosTemporarios.config.poder == 100 ? 'checked' : ''}>
+                            <input type="radio" name="allyPower" value="100" ${!config.poder || config.poder == 100 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>100%</strong> dos seus pontos <em>(5 pontos)</em>
@@ -454,7 +483,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="radio" name="allyPower" value="150" ${this.dadosTemporarios.config.poder == 150 ? 'checked' : ''}>
+                            <input type="radio" name="allyPower" value="150" ${config.poder == 150 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>150%</strong> dos seus pontos <em>(10 pontos)</em>
@@ -468,7 +497,7 @@ class SistemaRelacionamentos {
                     <h5><i class="fas fa-calendar-alt"></i> Frequência de Aparição</h5>
                     <div class="radio-group">
                         <label>
-                            <input type="radio" name="allyFrequency" value="6" ${this.dadosTemporarios.config.frequencia == 6 ? 'checked' : ''}>
+                            <input type="radio" name="allyFrequency" value="6" ${config.frequencia == 6 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>Quase sempre</strong> <em>(x1 custo)</em>
@@ -476,7 +505,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="radio" name="allyFrequency" value="9" ${this.dadosTemporarios.config.frequencia == 9 ? 'checked' : ''}>
+                            <input type="radio" name="allyFrequency" value="9" ${config.frequencia == 9 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>Frequentemente</strong> <em>(x1/2 custo)</em>
@@ -484,7 +513,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="radio" name="allyFrequency" value="12" ${!this.dadosTemporarios.config.frequencia || this.dadosTemporarios.config.frequencia == 12 ? 'checked' : ''}>
+                            <input type="radio" name="allyFrequency" value="12" ${!config.frequencia || config.frequencia == 12 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>Ocasionalmente</strong> <em>(x1/3 custo)</em>
@@ -492,7 +521,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="radio" name="allyFrequency" value="15" ${this.dadosTemporarios.config.frequencia == 15 ? 'checked' : ''}>
+                            <input type="radio" name="allyFrequency" value="15" ${config.frequencia == 15 ? 'checked' : ''}>
                             <span class="radio-custom"></span>
                             <span class="radio-text">
                                 <strong>Raramente</strong> <em>(x1/5 custo)</em>
@@ -506,7 +535,7 @@ class SistemaRelacionamentos {
                     <h5><i class="fas fa-magic"></i> Modificadores Especiais</h5>
                     <div class="checkbox-group">
                         <label>
-                            <input type="checkbox" name="allyMods" value="invocavel" ${this.dadosTemporarios.config.modificadores.includes('invocavel') ? 'checked' : ''}>
+                            <input type="checkbox" name="allyMods" value="invocavel" ${config.modificadores && config.modificadores.includes('invocavel') ? 'checked' : ''}>
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">
                                 <strong>Invocável</strong> <em>(+100%)</em>
@@ -514,7 +543,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="checkbox" name="allyMods" value="lacaio" ${this.dadosTemporarios.config.modificadores.includes('lacaio') ? 'checked' : ''}>
+                            <input type="checkbox" name="allyMods" value="lacaio" ${config.modificadores && config.modificadores.includes('lacaio') ? 'checked' : ''}>
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">
                                 <strong>Lacaio</strong> <em>(+50%)</em>
@@ -522,7 +551,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="checkbox" name="allyMods" value="habilidades" ${this.dadosTemporarios.config.modificadores.includes('habilidades') ? 'checked' : ''}>
+                            <input type="checkbox" name="allyMods" value="habilidades" ${config.modificadores && config.modificadores.includes('habilidades') ? 'checked' : ''}>
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">
                                 <strong>Habilidades Especiais</strong> <em>(+50%)</em>
@@ -530,7 +559,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="checkbox" name="allyMods" value="afinidade" ${this.dadosTemporarios.config.modificadores.includes('afinidade') ? 'checked' : ''}>
+                            <input type="checkbox" name="allyMods" value="afinidade" ${config.modificadores && config.modificadores.includes('afinidade') ? 'checked' : ''}>
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">
                                 <strong>Afinidade</strong> <em>(-25%)</em>
@@ -538,7 +567,7 @@ class SistemaRelacionamentos {
                             </span>
                         </label>
                         <label>
-                            <input type="checkbox" name="allyMods" value="relutante" ${this.dadosTemporarios.config.modificadores.includes('relutante') ? 'checked' : ''}>
+                            <input type="checkbox" name="allyMods" value="relutante" ${config.modificadores && config.modificadores.includes('relutante') ? 'checked' : ''}>
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">
                                 <strong>Relutante</strong> <em>(-50%)</em>
@@ -550,7 +579,7 @@ class SistemaRelacionamentos {
                 
                 <div class="config-section">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="isGroup" ${this.dadosTemporarios.config.grupo ? 'checked' : ''}>
+                        <input type="checkbox" id="isGroup" ${config.grupo ? 'checked' : ''}>
                         <span class="checkbox-custom"></span>
                         <span class="checkbox-text">
                             <strong>É um grupo de aliados?</strong>
@@ -558,14 +587,14 @@ class SistemaRelacionamentos {
                         </span>
                     </label>
                     
-                    <div id="groupConfig" style="display: ${this.dadosTemporarios.config.grupo ? 'block' : 'none'}; margin-top: 15px;">
+                    <div id="groupConfig" style="display: ${config.grupo ? 'block' : 'none'}; margin-top: 15px;">
                         <label>Tamanho do Grupo:</label>
                         <select id="groupSize" class="form-control">
-                            <option value="1" ${this.dadosTemporarios.config.tamanhoGrupo == 1 ? 'selected' : ''}>Individual (x1)</option>
-                            <option value="6" ${this.dadosTemporarios.config.tamanhoGrupo == 6 ? 'selected' : ''}>6-10 membros (x6)</option>
-                            <option value="11" ${this.dadosTemporarios.config.tamanhoGrupo == 11 ? 'selected' : ''}>11-20 membros (x8)</option>
-                            <option value="21" ${this.dadosTemporarios.config.tamanhoGrupo == 21 ? 'selected' : ''}>21-50 membros (x10)</option>
-                            <option value="51" ${this.dadosTemporarios.config.tamanhoGrupo == 51 ? 'selected' : ''}>51-100 membros (x12)</option>
+                            <option value="1" ${!config.tamanhoGrupo || config.tamanhoGrupo == 1 ? 'selected' : ''}>Individual (x1)</option>
+                            <option value="6" ${config.tamanhoGrupo == 6 ? 'selected' : ''}>6-10 membros (x6)</option>
+                            <option value="11" ${config.tamanhoGrupo == 11 ? 'selected' : ''}>11-20 membros (x8)</option>
+                            <option value="21" ${config.tamanhoGrupo == 21 ? 'selected' : ''}>21-50 membros (x10)</option>
+                            <option value="51" ${config.tamanhoGrupo == 51 ? 'selected' : ''}>51-100 membros (x12)</option>
                         </select>
                         <small class="form-text">Multiplicador aplicado ao custo base</small>
                     </div>
@@ -578,12 +607,10 @@ class SistemaRelacionamentos {
         return `
             <div class="enemy-config">
                 <h4><i class="fas fa-skull-crossbones"></i> Configuração do Inimigo</h4>
-                <p>Em breve...</p>
+                <p>Configuração de Inimigo em breve...</p>
             </div>
         `;
     }
-    
-    // ... outras funções getHTMLConfig...
     
     setupControlesConfiguracao(tipo) {
         // Configura event listeners específicos para o tipo
@@ -591,7 +618,6 @@ class SistemaRelacionamentos {
             case 'aliado':
                 this.setupControlesAliado();
                 break;
-            // ... outros casos
         }
     }
     
@@ -599,6 +625,7 @@ class SistemaRelacionamentos {
         // Poder
         document.querySelectorAll('input[name="allyPower"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
+                if (!this.dadosTemporarios.config) this.dadosTemporarios.config = {};
                 this.dadosTemporarios.config.poder = parseInt(e.target.value);
                 this.atualizarResumoModal();
             });
@@ -607,6 +634,7 @@ class SistemaRelacionamentos {
         // Frequência
         document.querySelectorAll('input[name="allyFrequency"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
+                if (!this.dadosTemporarios.config) this.dadosTemporarios.config = {};
                 this.dadosTemporarios.config.frequencia = parseInt(e.target.value);
                 this.atualizarResumoModal();
             });
@@ -623,6 +651,7 @@ class SistemaRelacionamentos {
         const isGroupCheckbox = document.getElementById('isGroup');
         if (isGroupCheckbox) {
             isGroupCheckbox.addEventListener('change', (e) => {
+                if (!this.dadosTemporarios.config) this.dadosTemporarios.config = {};
                 this.dadosTemporarios.config.grupo = e.target.checked;
                 const groupConfig = document.getElementById('groupConfig');
                 if (groupConfig) {
@@ -636,6 +665,7 @@ class SistemaRelacionamentos {
         const groupSize = document.getElementById('groupSize');
         if (groupSize) {
             groupSize.addEventListener('change', (e) => {
+                if (!this.dadosTemporarios.config) this.dadosTemporarios.config = {};
                 this.dadosTemporarios.config.tamanhoGrupo = parseInt(e.target.value);
                 this.atualizarResumoModal();
             });
@@ -643,6 +673,7 @@ class SistemaRelacionamentos {
     }
     
     atualizarModificadoresAliado() {
+        if (!this.dadosTemporarios.config) this.dadosTemporarios.config = {};
         const checkboxes = document.querySelectorAll('input[name="allyMods"]:checked');
         this.dadosTemporarios.config.modificadores = Array.from(checkboxes).map(cb => cb.value);
         this.atualizarResumoModal();
@@ -654,6 +685,8 @@ class SistemaRelacionamentos {
     
     calcularCustoAliado() {
         const config = this.dadosTemporarios.config;
+        if (!config) return 0;
+        
         let custo = 0;
         
         // 1. Custo base pelo poder
@@ -667,17 +700,19 @@ class SistemaRelacionamentos {
         
         // 3. Modificadores (percentuais)
         let multModificadores = 1;
-        config.modificadores.forEach(modKey => {
-            const mod = this.config.aliados.modificadores[modKey];
-            if (mod) {
-                multModificadores += mod.valor;
-            }
-        });
+        if (config.modificadores) {
+            config.modificadores.forEach(modKey => {
+                const mod = this.config.aliados.modificadores[modKey];
+                if (mod) {
+                    multModificadores += mod.valor;
+                }
+            });
+        }
         
         custo *= multModificadores;
         
         // 4. Multiplicador de grupo
-        if (config.grupo) {
+        if (config.grupo && config.tamanhoGrupo) {
             const multGrupo = this.calcularMultiplicadorGrupo(config.tamanhoGrupo);
             custo *= multGrupo;
         }
@@ -725,16 +760,20 @@ class SistemaRelacionamentos {
             const custo = this.calcularCustoAliado();
             custoTotal = custo;
             
-            // Para display no resumo (isso é simplificado)
-            custoBase = this.config.aliados.custoPorPoder[this.dadosTemporarios.config.poder] || 0;
+            // Para display no resumo
+            if (this.dadosTemporarios.config && this.dadosTemporarios.config.poder) {
+                custoBase = this.config.aliados.custoPorPoder[this.dadosTemporarios.config.poder] || 0;
+            }
             
             // Calcular valor dos modificadores
-            this.dadosTemporarios.config.modificadores.forEach(modKey => {
-                const mod = this.config.aliados.modificadores[modKey];
-                if (mod) {
-                    custoMods += mod.valor * 100; // Converter para percentual
-                }
-            });
+            if (this.dadosTemporarios.config && this.dadosTemporarios.config.modificadores) {
+                this.dadosTemporarios.config.modificadores.forEach(modKey => {
+                    const mod = this.config.aliados.modificadores[modKey];
+                    if (mod) {
+                        custoMods += mod.valor * 100; // Converter para percentual
+                    }
+                });
+            }
         }
         
         // Atualizar displays
@@ -749,7 +788,7 @@ class SistemaRelacionamentos {
         }
         
         if (this.elementos.resumoTotal) {
-            this.elementos.resumoTotal.textContent = `${custoTotal} pts`;
+            this.elementos.resumoTotal.textContent = `${custoTotal.toFixed(2)} pts`;
             this.dadosTemporarios.custoTotal = custoTotal;
         }
     }
@@ -771,7 +810,7 @@ class SistemaRelacionamentos {
     
     validarConfigAliado() {
         const config = this.dadosTemporarios.config;
-        return config.poder && config.frequencia;
+        return config && config.poder && config.frequencia;
     }
     
     validarDados() {
@@ -790,7 +829,7 @@ class SistemaRelacionamentos {
     
     salvarRelacionamento() {
         if (!this.validarDados()) {
-            this.mostrarMensagem('Por favor, complete todos os campos obrigatórios', 'warning');
+            alert('Por favor, complete todos os campos obrigatórios');
             return;
         }
         
@@ -826,7 +865,7 @@ class SistemaRelacionamentos {
         
         // Fechar modal e mostrar mensagem
         this.fecharModal();
-        this.mostrarMensagem('Relacionamento adicionado com sucesso!', 'success');
+        alert('Relacionamento adicionado com sucesso!');
         
         console.log('💾 Relacionamento salvo:', relacionamento);
     }
@@ -906,7 +945,7 @@ class SistemaRelacionamentos {
                         ${rel.nome || 'Sem nome'}
                     </div>
                     <div class="relacionamento-custo">
-                        ${rel.custoTotal >= 0 ? '+' : ''}${rel.custoTotal} pts
+                        ${rel.custoTotal >= 0 ? '+' : ''}${rel.custoTotal.toFixed(2)} pts
                     </div>
                 </div>
                 
@@ -929,7 +968,7 @@ class SistemaRelacionamentos {
     }
     
     getDetalhesRelacionamento(rel) {
-        if (rel.tipo === 'aliado') {
+        if (rel.tipo === 'aliado' && rel.config) {
             const freq = this.config.aliados.frequencias[rel.config.frequencia];
             return `
                 <div class="relacionamento-detalhes">
@@ -963,6 +1002,7 @@ class SistemaRelacionamentos {
     editarRelacionamento(id) {
         console.log(`✏️ Editando relacionamento: ${id}`);
         // Implementar edição
+        alert('Edição em breve...');
     }
     
     excluirRelacionamento(id) {
@@ -976,7 +1016,7 @@ class SistemaRelacionamentos {
         this.atualizarContadores();
         this.atualizarPontosTotais();
         
-        this.mostrarMensagem('Relacionamento removido', 'info');
+        alert('Relacionamento removido');
     }
     
     // ===========================================
@@ -1015,17 +1055,14 @@ class SistemaRelacionamentos {
         });
         
         if (this.elementos.contadores.total) {
-            this.elementos.contadores.total.textContent = `${total >= 0 ? '+' : ''}${total} pts`;
+            this.elementos.contadores.total.textContent = `${total >= 0 ? '+' : ''}${total.toFixed(2)} pts`;
         }
         
         // Atualizar também no resumo geral da aba
         const totalRelacionamentosResumo = document.getElementById('totalRelacionamentosResumo');
         if (totalRelacionamentosResumo) {
-            totalRelacionamentosResumo.textContent = total >= 0 ? `+${total}` : total;
+            totalRelacionamentosResumo.textContent = total >= 0 ? `+${total.toFixed(2)}` : total.toFixed(2);
         }
-        
-        // Disparar evento para atualizar pontos totais
-        this.dispatchAlteracao();
     }
     
     // ===========================================
@@ -1082,24 +1119,6 @@ class SistemaRelacionamentos {
     }
     
     // ===========================================
-    // UTILITÁRIOS
-    // ===========================================
-    
-    mostrarMensagem(texto, tipo = 'info') {
-        // Usar sistema de notificação existente ou criar um simples
-        if (typeof window.showToast === 'function') {
-            window.showToast(texto, tipo);
-        } else {
-            alert(texto);
-        }
-    }
-    
-    dispatchAlteracao() {
-        const evento = new Event('vantagensAlteradas');
-        document.dispatchEvent(evento);
-    }
-    
-    // ===========================================
     // MÉTODOS PÚBLICOS
     // ===========================================
     
@@ -1125,52 +1144,93 @@ class SistemaRelacionamentos {
             this.atualizarListaRelacionamentos();
             this.atualizarContadores();
             this.atualizarPontosTotais();
-            this.mostrarMensagem('Todos os relacionamentos foram removidos', 'info');
+            alert('Todos os relacionamentos foram removidos');
         }
     }
 }
 
 // ===========================================
-// INICIALIZAÇÃO GLOBAL
+// INICIALIZAÇÃO GLOBAL DIRETA
 // ===========================================
 
 let sistemaRelacionamentos = null;
 
+// Função para inicialização manual
 function initSistemaRelacionamentos() {
+    console.log('🎯 initSistemaRelacionamentos() chamada');
+    
     if (!sistemaRelacionamentos) {
         sistemaRelacionamentos = new SistemaRelacionamentos();
     }
     return sistemaRelacionamentos;
 }
 
-// Inicialização automática
-document.addEventListener('DOMContentLoaded', function() {
-    // Verifica se estamos na aba de vantagens e na sub-aba correta
-    const vantagensTab = document.getElementById('vantagens');
-    if (vantagensTab && vantagensTab.classList.contains('active')) {
-        const subAbaAtributos = document.getElementById('subtab-atributos-relacoes');
-        if (subAbaAtributos && subAbaAtributos.classList.contains('active')) {
-            console.log('📍 Inicializando sistema de relacionamentos...');
-            setTimeout(() => {
-                initSistemaRelacionamentos();
-            }, 500);
+// ===========================================
+// INICIALIZAÇÃO AUTOMÁTICA SIMPLES
+// ===========================================
+
+// Espera a página carregar completamente
+window.addEventListener('load', function() {
+    console.log('📄 Página completamente carregada - inicializando relacionamentos');
+    
+    // Pequeno delay para garantir que tudo está pronto
+    setTimeout(function() {
+        // Verifica se estamos na aba de Vantagens
+        const vantagensTab = document.getElementById('vantagens');
+        if (vantagensTab && vantagensTab.classList.contains('active')) {
+            console.log('🎯 Aba Vantagens está ativa - inicializando sistema');
+            initSistemaRelacionamentos();
+        } else {
+            console.log('⏳ Aguardando aba Vantagens ficar ativa...');
+            
+            // Observa mudanças na aba
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class' && 
+                        vantagensTab.classList.contains('active') && 
+                        !sistemaRelacionamentos) {
+                        console.log('🔄 Aba Vantagens tornou-se ativa - inicializando agora');
+                        setTimeout(() => {
+                            initSistemaRelacionamentos();
+                        }, 300);
+                    }
+                });
+            });
+            
+            if (vantagensTab) {
+                observer.observe(vantagensTab, { attributes: true });
+            }
         }
-    }
+    }, 1000); // 1 segundo para garantir que tudo carregou
 });
 
-// Observa mudanças na sub-aba
+// Também inicializa quando o usuário clicar na aba
 document.addEventListener('click', function(e) {
-    if (e.target.matches('.subtab-btn') && e.target.dataset.subtab === 'atributos-relacoes') {
-        console.log('🎯 Sub-aba atributos & relações ativada');
+    if (e.target.closest('.tab-btn') && e.target.closest('.tab-btn').dataset.tab === 'vantagens') {
+        console.log('🎯 Usuário clicou na aba Vantagens');
         setTimeout(() => {
             if (!sistemaRelacionamentos) {
                 initSistemaRelacionamentos();
             }
-        }, 300);
+        }, 500);
     }
 });
 
 // Exporta para uso global
 window.SistemaRelacionamentos = SistemaRelacionamentos;
 window.initSistemaRelacionamentos = initSistemaRelacionamentos;
-window.sistemaRelacionamentos = null;
+window.sistemaRelacionamentos = sistemaRelacionamentos;
+
+// Função para debug/teste
+window.testeRelacionamentos = function() {
+    console.log('🧪 TESTANDO RELACIONAMENTOS');
+    console.log('- Sistema criado:', !!sistemaRelacionamentos);
+    console.log('- Botão encontrado:', !!document.getElementById('btnAddRelacionamento'));
+    console.log('- Modal encontrado:', !!document.getElementById('modalRelacionamento'));
+    
+    const btn = document.getElementById('btnAddRelacionamento');
+    if (btn) {
+        console.log('🎯 Clicando no botão...');
+        btn.click();
+    }
+};
