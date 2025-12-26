@@ -1,5 +1,5 @@
 // ===========================================
-// SISTEMA DE RELACIONAMENTOS - VERSÃO 100% FUNCIONAL
+// SISTEMA DE RELACIONAMENTOS - VERSÃO COMPLETA CORRIGIDA
 // ===========================================
 
 class SistemaRelacionamentos {
@@ -10,6 +10,7 @@ class SistemaRelacionamentos {
         this.tipoSelecionado = null;
         this.stepAtual = 1;
         this.dadosTemporarios = {};
+        this.relacionamentoEmEdicao = null;
         
         // Configuração GURPS CORRETA
         this.config = {
@@ -161,6 +162,7 @@ class SistemaRelacionamentos {
         this.dadosTemporarios = {};
         this.tipoSelecionado = null;
         this.stepAtual = 1;
+        this.relacionamentoEmEdicao = null;
         
         // Limpar inputs
         this.limparInputsModal();
@@ -169,6 +171,9 @@ class SistemaRelacionamentos {
         if (this.elementos.modal) {
             this.elementos.modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // GARANTIR VISIBILIDADE DO MODAL E BOTÕES
+            this.forcarVisibilidadeModal();
         }
         
         // Resetar para step 1
@@ -177,6 +182,64 @@ class SistemaRelacionamentos {
         
         // Atualizar resumo
         this.atualizarResumoModal();
+    }
+    
+    forcarVisibilidadeModal() {
+        // Esperar um tick para garantir que o DOM foi atualizado
+        setTimeout(() => {
+            const modal = this.elementos.modal;
+            if (!modal) return;
+            
+            // Garantir que o modal está visível
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            modal.style.zIndex = '1000';
+            
+            // Garantir que o conteúdo do modal está visível
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.display = 'block';
+                modalContent.style.visibility = 'visible';
+                modalContent.style.opacity = '1';
+            }
+            
+            // GARANTIR QUE O FOOTER E BOTÕES ESTEJAM VISÍVEIS
+            this.forcarVisibilidadeBotoes();
+        }, 50);
+    }
+    
+    forcarVisibilidadeBotoes() {
+        const modal = this.elementos.modal;
+        if (!modal) return;
+        
+        // Forçar visibilidade do footer
+        const footer = modal.querySelector('.modal-footer');
+        if (footer) {
+            footer.style.display = 'flex';
+            footer.style.visibility = 'visible';
+            footer.style.opacity = '1';
+            footer.style.position = 'relative';
+            footer.style.zIndex = '1001';
+            footer.style.background = 'rgba(26, 18, 0, 0.95)';
+            footer.style.borderTop = '2px solid var(--primary-gold)';
+            footer.style.padding = '15px 20px';
+        }
+        
+        // Forçar visibilidade de todos os botões
+        const botoes = modal.querySelectorAll('.btn-voltar, .btn-proximo, .btn-cancelar, .btn-confirmar');
+        botoes.forEach(btn => {
+            if (btn) {
+                btn.style.display = 'flex';
+                btn.style.visibility = 'visible';
+                btn.style.opacity = '1';
+                btn.style.position = 'relative';
+                btn.style.zIndex = '1002';
+            }
+        });
+        
+        // Atualizar botões conforme step atual
+        this.atualizarBotoes();
     }
     
     limparInputsModal() {
@@ -215,11 +278,15 @@ class SistemaRelacionamentos {
         if (this.elementos.modal) {
             this.elementos.modal.classList.remove('active');
             document.body.style.overflow = '';
+            
+            // Resetar estilos forçados
+            this.elementos.modal.style.display = 'none';
         }
         
         // Resetar dados temporários
         this.dadosTemporarios = {};
         this.tipoSelecionado = null;
+        this.relacionamentoEmEdicao = null;
     }
     
     selecionarTipo(tipo) {
@@ -275,6 +342,9 @@ class SistemaRelacionamentos {
         if (stepNum === 2 && this.tipoSelecionado) {
             this.carregarConfiguracao(this.tipoSelecionado);
         }
+        
+        // Forçar visibilidade dos botões após mudar de step
+        setTimeout(() => this.forcarVisibilidadeBotoes(), 100);
     }
     
     atualizarBotoes() {
@@ -295,15 +365,29 @@ class SistemaRelacionamentos {
                 if (btnVoltar) btnVoltar.style.display = 'none';
                 if (btnProximo) btnProximo.style.display = 'none';
                 if (btnConfirmar) btnConfirmar.style.display = 'none';
+                // Cancelar permanece visível
                 break;
                 
             case 2: // Configuração
                 if (btnConfirmar) btnConfirmar.style.display = 'none';
+                // Cancelar, Voltar e Próximo permanecem visíveis
                 break;
                 
             case 3: // Detalhes
                 if (btnProximo) btnProximo.style.display = 'none';
+                // Cancelar, Voltar e Confirmar permanecem visíveis
                 break;
+        }
+        
+        // Forçar visibilidade imediata
+        if (btnCancelar) {
+            btnCancelar.style.visibility = 'visible';
+            btnCancelar.style.opacity = '1';
+        }
+        
+        if (this.stepAtual === 3 && btnConfirmar) {
+            btnConfirmar.style.visibility = 'visible';
+            btnConfirmar.style.opacity = '1';
         }
     }
     
@@ -596,14 +680,14 @@ class SistemaRelacionamentos {
         
         // Criar objeto do relacionamento
         const relacionamento = {
-            id: `${this.tipoSelecionado}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: this.relacionamentoEmEdicao || `${this.tipoSelecionado}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             tipo: this.tipoSelecionado,
             nome: nome,
             descricao: descricao || '',
             observacoes: observacoes || '',
             config: { ...this.dadosTemporarios },
             custo: this.dadosTemporarios.custoFinal || 0,
-            criadoEm: new Date().toISOString(),
+            criadoEm: this.relacionamentoEmEdicao ? this.obterDataExistente(this.relacionamentoEmEdicao) : new Date().toISOString(),
             atualizadoEm: new Date().toISOString()
         };
         
@@ -612,6 +696,11 @@ class SistemaRelacionamentos {
         delete relacionamento.config.multiplicador;
         delete relacionamento.config.multiplicadorGrupo;
         delete relacionamento.config.custoFinal;
+        
+        // Se estiver editando, remover o antigo
+        if (this.relacionamentoEmEdicao) {
+            this.relacionamentos = this.relacionamentos.filter(r => r.id !== this.relacionamentoEmEdicao);
+        }
         
         // Adicionar à lista
         this.relacionamentos.push(relacionamento);
@@ -626,7 +715,13 @@ class SistemaRelacionamentos {
         // Mostrar confirmação
         const custo = relacionamento.custo;
         const tipoNome = this.getNomeTipo(this.tipoSelecionado);
-        alert(`${tipoNome} "${nome}" adicionado com sucesso!\nCusto: ${custo >= 0 ? '+' : ''}${custo} pontos`);
+        const acao = this.relacionamentoEmEdicao ? 'atualizado' : 'adicionado';
+        alert(`${tipoNome} "${nome}" ${acao} com sucesso!\nCusto: ${custo >= 0 ? '+' : ''}${custo} pontos`);
+    }
+    
+    obterDataExistente(id) {
+        const existente = this.relacionamentos.find(r => r.id === id);
+        return existente ? existente.criadoEm : new Date().toISOString();
     }
     
     // ===========================================
@@ -816,66 +911,77 @@ class SistemaRelacionamentos {
             return;
         }
         
+        // Guardar ID para edição
+        this.relacionamentoEmEdicao = id;
+        
         // Preencher modal com dados existentes
         this.abrirModal();
         
         // Selecionar tipo
-        this.selecionarTipo(relacionamento.tipo);
-        
-        // Preencher dados
         setTimeout(() => {
-            // Preencher step 3
-            const relNome = document.getElementById('relNome');
-            const relDescricao = document.getElementById('relDescricao');
-            const relObservacoes = document.getElementById('relObservacoes');
+            this.selecionarTipo(relacionamento.tipo);
             
-            if (relNome) relNome.value = relacionamento.nome;
-            if (relDescricao) relDescricao.value = relacionamento.descricao || '';
-            if (relObservacoes) relObservacoes.value = relacionamento.observacoes || '';
-            
-            // Para aliados, preencher configurações
-            if (relacionamento.tipo === 'aliado' && relacionamento.config) {
-                setTimeout(() => {
-                    // Poder
-                    const powerRadio = document.querySelector(`input[name="allyPower"][value="${relacionamento.config.poder}"]`);
-                    if (powerRadio) powerRadio.checked = true;
-                    
-                    // Modificadores
-                    if (relacionamento.config.modificadores) {
-                        relacionamento.config.modificadores.forEach(modValue => {
-                            const modCheckbox = document.querySelector(`input[name="allyMods"][value="${modValue}"]`);
-                            if (modCheckbox) modCheckbox.checked = true;
-                        });
-                    }
-                    
-                    // Grupo
-                    if (relacionamento.config.grupo) {
-                        const isGroupCheckbox = document.getElementById('isGroup');
-                        const groupSizeSelect = document.getElementById('groupSize');
+            // Preencher dados
+            setTimeout(() => {
+                // Preencher step 3
+                const relNome = document.getElementById('relNome');
+                const relDescricao = document.getElementById('relDescricao');
+                const relObservacoes = document.getElementById('relObservacoes');
+                
+                if (relNome) relNome.value = relacionamento.nome;
+                if (relDescricao) relDescricao.value = relacionamento.descricao || '';
+                if (relObservacoes) relObservacoes.value = relacionamento.observacoes || '';
+                
+                // Para aliados, preencher configurações
+                if (relacionamento.tipo === 'aliado' && relacionamento.config) {
+                    setTimeout(() => {
+                        // Poder
+                        const powerRadio = document.querySelector(`input[name="allyPower"][value="${relacionamento.config.poder}"]`);
+                        if (powerRadio) powerRadio.checked = true;
                         
-                        if (isGroupCheckbox) {
-                            isGroupCheckbox.checked = true;
-                            const groupConfig = document.getElementById('groupConfig');
-                            if (groupConfig) groupConfig.style.display = 'block';
+                        // Modificadores
+                        if (relacionamento.config.modificadores) {
+                            relacionamento.config.modificadores.forEach(modValue => {
+                                const modCheckbox = document.querySelector(`input[name="allyMods"][value="${modValue}"]`);
+                                if (modCheckbox) modCheckbox.checked = true;
+                            });
                         }
                         
-                        if (groupSizeSelect && relacionamento.config.tamanhoGrupo) {
-                            groupSizeSelect.value = relacionamento.config.tamanhoGrupo;
+                        // Grupo
+                        if (relacionamento.config.grupo) {
+                            const isGroupCheckbox = document.getElementById('isGroup');
+                            const groupSizeSelect = document.getElementById('groupSize');
+                            
+                            if (isGroupCheckbox) {
+                                isGroupCheckbox.checked = true;
+                                const groupConfig = document.getElementById('groupConfig');
+                                if (groupConfig) groupConfig.style.display = 'block';
+                            }
+                            
+                            if (groupSizeSelect && relacionamento.config.tamanhoGrupo) {
+                                groupSizeSelect.value = relacionamento.config.tamanhoGrupo;
+                            }
                         }
-                    }
-                    
-                    // Calcular custos
-                    setTimeout(() => this.calcularECustos(), 200);
-                }, 300);
-            }
-            
-            // Ir para step 3
-            this.mudarStep(3);
-            
-        }, 500);
-        
-        // Remover o relacionamento antigo quando salvar
-        this.relacionamentos = this.relacionamentos.filter(r => r.id !== id);
+                        
+                        // Calcular custos
+                        setTimeout(() => this.calcularECustos(), 200);
+                    }, 300);
+                } else if (relacionamento.config && relacionamento.config.poder) {
+                    // Para outros tipos
+                    setTimeout(() => {
+                        const powerSelect = document.getElementById('otherPower');
+                        if (powerSelect) {
+                            powerSelect.value = relacionamento.config.poder;
+                            this.calcularECustos();
+                        }
+                    }, 300);
+                }
+                
+                // Ir para step 3
+                this.mudarStep(3);
+                
+            }, 500);
+        }, 100);
     }
     
     excluirRelacionamento(id) {
@@ -965,7 +1071,7 @@ class SistemaRelacionamentos {
                 tipo: item.tipo,
                 nome: item.nome,
                 descricao: item.descricao || '',
-                observacoes: '',
+                observacoes: item.observacoes || '',
                 config: item.config || {},
                 custo: item.custo || 0,
                 criadoEm: item.criadoEm || new Date().toISOString(),
