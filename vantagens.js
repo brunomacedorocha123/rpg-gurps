@@ -1,4 +1,4 @@
-// vantagens.js - SISTEMA DE VANTAGENS
+// vantagens.js - SISTEMA DE VANTAGENS (VERSÃO CORRIGIDA)
 class VantagensSystem {
     constructor() {
         this.vantagensAdquiridas = [];
@@ -8,16 +8,21 @@ class VantagensSystem {
 
     init() {
         this.carregarCatalogoNaTela();
-        this.setupEventListeners();
+        this.setupGlobalEventListeners();
         this.atualizarListaAdquiridas();
         this.atualizarContadores();
     }
 
     carregarCatalogoNaTela() {
         const container = document.querySelector('.lista-vantagens-scroll');
-        if (!container) return;
+        if (!container) {
+            console.error('Container .lista-vantagens-scroll não encontrado!');
+            return;
+        }
         
         const vantagens = filtrarVantagens(this.filtroAtual);
+        console.log('Vantagens carregadas:', vantagens.length);
+        
         container.innerHTML = '';
         
         if (vantagens.length === 0) {
@@ -37,6 +42,9 @@ class VantagensSystem {
         });
         
         this.atualizarContadorVantagens(vantagens.length);
+        
+        // Adicionar eventos aos botões recém-criados
+        this.setupButtonsEvents();
     }
 
     criarElementoVantagem(vantagem) {
@@ -46,10 +54,11 @@ class VantagensSystem {
         div.dataset.categorias = `${vantagem.categoria},${vantagem.tipo}`;
         
         const tipoTexto = vantagem.tipo === 'opcoes' ? 'Com Opções' : `${vantagem.custoBase} pts`;
+        const icone = vantagem.icone || 'fa-star';
         
         div.innerHTML = `
             <div class="vantagem-info">
-                <i class="fas ${vantagem.icone}"></i>
+                <i class="fas ${icone}"></i>
                 <div>
                     <strong>${vantagem.nome}</strong>
                     <small>${this.formatarCategoria(vantagem.categoria)} • ${tipoTexto}</small>
@@ -63,19 +72,14 @@ class VantagensSystem {
         return div;
     }
 
-    formatarCategoria(cat) {
-        const categorias = {
-            'mental': 'Mental',
-            'fisica': 'Física',
-            'social': 'Social'
-        };
-        return categorias[cat] || cat;
-    }
-
-    setupEventListeners() {
+    setupGlobalEventListeners() {
+        console.log('Configurando event listeners globais...');
+        
         // Filtros
-        document.querySelectorAll('.filtro-btn').forEach(btn => {
+        const filtros = document.querySelectorAll('.filtro-btn');
+        filtros.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                console.log('Filtro clicado:', e.target.dataset.filtro);
                 document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.filtroAtual = e.target.dataset.filtro;
@@ -83,45 +87,83 @@ class VantagensSystem {
             });
         });
 
-        // Botões de adicionar
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.btn-adicionar')) {
-                const btn = e.target.closest('.btn-adicionar');
-                const idVantagem = btn.dataset.vantagem;
-                this.abrirModalVantagem(idVantagem);
-            }
-            
-            // Remover vantagem adquirida
-            if (e.target.closest('.btn-remover-vantagem')) {
-                const btn = e.target.closest('.btn-remover-vantagem');
-                const index = parseInt(btn.dataset.index);
-                this.removerVantagem(index);
-            }
-        });
-
         // Busca
         const buscaInput = document.getElementById('buscaVantagens');
         if (buscaInput) {
             buscaInput.addEventListener('input', (e) => {
+                console.log('Buscando:', e.target.value);
                 this.filtrarPorTexto(e.target.value);
             });
         }
+
+        // Delegation para elementos dinâmicos
+        document.addEventListener('click', (e) => {
+            console.log('Click detectado no:', e.target.tagName, e.target.className);
+            
+            // Botão de adicionar vantagem
+            if (e.target.closest('.btn-adicionar')) {
+                const btn = e.target.closest('.btn-adicionar');
+                const idVantagem = btn.dataset.vantagem;
+                console.log('Botão adicionar clicado para:', idVantagem);
+                this.abrirModalVantagem(idVantagem);
+            }
+            
+            // Botão de remover vantagem adquirida
+            if (e.target.closest('.btn-remover-vantagem')) {
+                const btn = e.target.closest('.btn-remover-vantagem');
+                const index = parseInt(btn.dataset.index);
+                console.log('Botão remover clicado no índice:', index);
+                this.removerVantagem(index);
+            }
+            
+            // Fechar modal
+            if (e.target.classList.contains('modal-close') || 
+                e.target.classList.contains('btn-cancelar')) {
+                console.log('Fechando modal...');
+                this.fecharModal();
+            }
+            
+            // Confirmar no modal
+            if (e.target.classList.contains('btn-confirmar')) {
+                console.log('Confirmando vantagem...');
+                this.confirmarVantagem();
+            }
+        });
 
         // Fechar modal ao clicar fora
         window.addEventListener('click', (e) => {
             const modal = document.getElementById('modalVantagem');
             if (e.target === modal) {
-                modal.style.display = 'none';
+                this.fecharModal();
             }
         });
     }
 
+    setupButtonsEvents() {
+        // Adicionar eventos específicos aos botões de adicionar
+        const botoesAdicionar = document.querySelectorAll('.btn-adicionar');
+        console.log('Botões adicionar encontrados:', botoesAdicionar.length);
+        
+        botoesAdicionar.forEach(btn => {
+            // Remover listener antigo se existir
+            btn.replaceWith(btn.cloneNode(true));
+        });
+    }
+
     abrirModalVantagem(idVantagem) {
+        console.log('Abrindo modal para:', idVantagem);
+        
         const vantagem = getVantagemPorId(idVantagem);
-        if (!vantagem) return;
+        if (!vantagem) {
+            console.error('Vantagem não encontrada:', idVantagem);
+            return;
+        }
         
         const modal = document.getElementById('modalVantagem');
-        if (!modal) return;
+        if (!modal) {
+            console.error('Modal #modalVantagem não encontrado!');
+            return;
+        }
         
         let conteudoModal = '';
         
@@ -137,13 +179,16 @@ class VantagensSystem {
                 case 'opcoes-multiplas': // Abençoado e Adaptabilidade Cultural
                     conteudoModal = this.criarModalOpcoesMultiplas(vantagem);
                     break;
+                default:
+                    conteudoModal = this.criarModalSimples(vantagem);
             }
         }
         
         modal.querySelector('.vantagem-modal').innerHTML = conteudoModal;
-        modal.style.display = 'block';
+        modal.style.display = 'flex';
+        modal.classList.add('active');
         
-        this.setupModalEvents(vantagem);
+        console.log('Modal aberto com sucesso');
     }
 
     criarModalSimples(vantagem) {
@@ -265,7 +310,7 @@ class VantagensSystem {
                     <span class="radio-custom"></span>
                     <span class="radio-text">
                         <strong>${opcao.nome}</strong>
-                        <small>${opcao.desc} (${opcao.custo} pts)</small>
+                        <small>${opcao.desc.substring(0, 100)}... (${opcao.custo} pts)</small>
                     </span>
                 </label>
             `;
@@ -304,103 +349,20 @@ class VantagensSystem {
         `;
     }
 
-    setupModalEvents(vantagem) {
+    fecharModal() {
         const modal = document.getElementById('modalVantagem');
-        const modalContent = modal.querySelector('.vantagem-modal');
-        
-        // Fechar modal
-        modalContent.querySelector('.modal-close').addEventListener('click', () => {
+        if (modal) {
             modal.style.display = 'none';
-        });
-        
-        modalContent.querySelector('.btn-cancelar').addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-        
-        // Confirmar adição
-        const btnConfirmar = modalContent.querySelector('.btn-confirmar');
-        btnConfirmar.addEventListener('click', () => {
-            this.adicionarVantagem(vantagem);
-            modal.style.display = 'none';
-        });
-        
-        // Para Aptidão Mágica - calculadora de custo
-        if (vantagem.configuracao && vantagem.configuracao.tipo === 'niveis-com-limites') {
-            this.setupCalculadoraCusto(vantagem);
-        }
-        
-        // Para opções múltiplas - atualizar custo
-        if (vantagem.configuracao && vantagem.configuracao.tipo === 'opcoes-multiplas') {
-            this.setupOpcoesMultiplas(vantagem);
+            modal.classList.remove('active');
         }
     }
 
-    setupCalculadoraCusto(vantagem) {
-        const atualizarCusto = () => {
-            const nivelSelecionado = document.querySelector('input[name="nivel"]:checked');
-            if (!nivelSelecionado) return;
-            
-            const custoBase = parseInt(nivelSelecionado.dataset.custo);
-            
-            // Calcular limitações
-            let percentTotal = 0;
-            document.querySelectorAll('input[name="limitacao"]:checked').forEach(check => {
-                percentTotal += parseInt(check.dataset.percent);
-            });
-            
-            // Calcular custo final
-            let custoFinal = custoBase;
-            if (percentTotal < 0) {
-                custoFinal = Math.max(1, Math.floor(custoBase * (100 + percentTotal) / 100));
-            }
-            
-            // Atualizar display
-            document.getElementById('custoBaseCalc').textContent = custoBase;
-            document.getElementById('custoLimitacoesCalc').textContent = `${percentTotal}%`;
-            document.getElementById('custoTotalCalc').textContent = custoFinal;
-            
-            // Atualizar botão
-            const btnConfirmar = document.getElementById('btnConfirmarVantagem');
-            btnConfirmar.textContent = `Adicionar por ${custoFinal} pts`;
-            btnConfirmar.dataset.custoFinal = custoFinal;
-        };
-        
-        // Ouvir mudanças
-        document.querySelectorAll('input[name="nivel"]').forEach(radio => {
-            radio.addEventListener('change', atualizarCusto);
-        });
-        
-        document.querySelectorAll('input[name="limitacao"]').forEach(check => {
-            check.addEventListener('change', atualizarCusto);
-        });
-        
-        atualizarCusto();
-    }
-
-    setupOpcoesMultiplas(vantagem) {
-        const atualizarCusto = () => {
-            const opcaoSelecionada = document.querySelector('input[name="opcao"]:checked');
-            if (!opcaoSelecionada) return;
-            
-            const custo = parseInt(opcaoSelecionada.dataset.custo);
-            document.getElementById('custoFinalOpcao').textContent = custo;
-            
-            const btnConfirmar = document.getElementById('btnConfirmarVantagem');
-            btnConfirmar.textContent = `Adicionar por ${custo} pts`;
-            btnConfirmar.dataset.custoFinal = custo;
-            btnConfirmar.dataset.opcaoId = opcaoSelecionada.value;
-        };
-        
-        document.querySelectorAll('input[name="opcao"]').forEach(radio => {
-            radio.addEventListener('change', atualizarCusto);
-        });
-        
-        atualizarCusto();
-    }
-
-    adicionarVantagem(vantagem) {
+    confirmarVantagem() {
         const modal = document.getElementById('modalVantagem');
-        const modalContent = modal.querySelector('.vantagem-modal');
+        const vantagemId = modal.querySelector('.modal-header h3').textContent.split(' ')[0].toLowerCase();
+        
+        const vantagem = getVantagemPorId(vantagemId);
+        if (!vantagem) return;
         
         let detalhes = {
             nome: vantagem.nome,
@@ -411,55 +373,30 @@ class VantagensSystem {
         
         let custoFinal = 0;
         
-        // Determinar custo baseado no tipo de vantagem
         if (!vantagem.configuracao) {
             // Vantagem simples
             custoFinal = vantagem.custoBase;
             detalhes.tipo = 'simples';
-            detalhes.descricao = vantagem.descricao;
-            
+            detalhes.descricao = vantagem.descricao.substring(0, 60) + '...';
         } else if (vantagem.configuracao.tipo === 'niveis-com-limites') {
             // Aptidão Mágica
-            const nivelSelecionado = modalContent.querySelector('input[name="nivel"]:checked');
+            const nivelSelecionado = modal.querySelector('input[name="nivel"]:checked');
             const nivel = nivelSelecionado.value;
-            const custoBase = parseInt(nivelSelecionado.dataset.custo);
+            custoFinal = parseInt(nivelSelecionado.dataset.custo);
             
-            // Limitações selecionadas
-            const limitacoes = [];
-            modalContent.querySelectorAll('input[name="limitacao"]:checked').forEach(check => {
-                limitacoes.push({
-                    id: check.value,
-                    percent: parseInt(check.dataset.percent)
-                });
-            });
-            
-            // Calcular custo final
-            let percentTotal = limitacoes.reduce((sum, l) => sum + l.percent, 0);
-            custoFinal = custoBase;
-            if (percentTotal < 0) {
-                custoFinal = Math.max(1, Math.floor(custoBase * (100 + percentTotal) / 100));
-            }
-            
-            detalhes.tipo = 'nivel-com-limites';
+            detalhes.tipo = 'nivel';
             detalhes.nivel = nivel;
-            detalhes.custoBase = custoBase;
-            detalhes.limitacoes = limitacoes;
-            detalhes.percentTotal = percentTotal;
-            detalhes.descricao = `Aptidão Mágica ${nivel}` + 
-                (limitacoes.length > 0 ? ` com ${limitacoes.map(l => l.id).join(', ')}` : '');
-                
+            detalhes.descricao = `${vantagem.nome} ${nivel}`;
         } else if (vantagem.configuracao.tipo === 'opcoes-multiplas') {
-            // Abençoado ou Adaptabilidade Cultural
-            const opcaoSelecionada = modalContent.querySelector('input[name="opcao"]:checked');
+            // Abençoado ou Adaptabilidade
+            const opcaoSelecionada = modal.querySelector('input[name="opcao"]:checked');
             const opcaoId = opcaoSelecionada.value;
             custoFinal = parseInt(opcaoSelecionada.dataset.custo);
             
             const opcaoData = vantagem.configuracao.opcoes.find(o => o.id === opcaoId);
-            
-            detalhes.tipo = 'opcao-multipla';
-            detalhes.opcaoId = opcaoId;
+            detalhes.tipo = 'opcao';
             detalhes.opcaoNome = opcaoData.nome;
-            detalhes.descricao = opcaoData.desc;
+            detalhes.descricao = opcaoData.nome;
         }
         
         detalhes.custo = custoFinal;
@@ -468,8 +405,8 @@ class VantagensSystem {
         this.vantagensAdquiridas.push(detalhes);
         this.atualizarListaAdquiridas();
         this.atualizarContadores();
+        this.fecharModal();
         
-        // Feedback visual
         this.mostrarFeedback(`✅ ${vantagem.nome} adicionada por ${custoFinal} pts`);
     }
 
@@ -484,11 +421,14 @@ class VantagensSystem {
 
     atualizarListaAdquiridas() {
         const container = document.querySelector('.vantagens-escolhidas-scroll');
-        if (!container) return;
+        if (!container) {
+            console.error('Container .vantagens-escolhidas-scroll não encontrado!');
+            return;
+        }
         
         if (this.vantagensAdquiridas.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
+                <div class="lista-vazia">
                     <i class="fas fa-star"></i>
                     <p>Nenhuma vantagem selecionada</p>
                     <small>Clique no botão "+" para adicionar</small>
@@ -552,7 +492,12 @@ class VantagensSystem {
         if (!container) return;
         
         const vantagens = filtrarVantagens(this.filtroAtual);
-        const textoLower = texto.toLowerCase();
+        const textoLower = texto.toLowerCase().trim();
+        
+        if (!textoLower) {
+            this.carregarCatalogoNaTela();
+            return;
+        }
         
         const filtradas = vantagens.filter(v => 
             v.nome.toLowerCase().includes(textoLower) ||
@@ -581,7 +526,7 @@ class VantagensSystem {
     }
 
     mostrarFeedback(mensagem) {
-        // Criar ou reusar elemento de feedback
+        // Criar elemento de feedback
         let feedbackEl = document.getElementById('feedback-vantagens');
         if (!feedbackEl) {
             feedbackEl = document.createElement('div');
@@ -598,30 +543,32 @@ class VantagensSystem {
         }, 3000);
     }
 
-    // Método para exportar dados (útil para salvar no personagem)
-    exportarDados() {
-        return {
-            vantagens: this.vantagensAdquiridas,
-            totalPontos: this.vantagensAdquiridas.reduce((sum, v) => sum + v.custo, 0)
+    formatarCategoria(cat) {
+        const categorias = {
+            'mental': 'Mental',
+            'fisica': 'Física',
+            'social': 'Social'
         };
-    }
-
-    // Método para importar dados (útil para carregar personagem)
-    importarDados(dados) {
-        if (dados && dados.vantagens) {
-            this.vantagensAdquiridas = dados.vantagens;
-            this.atualizarListaAdquiridas();
-            this.atualizarContadores();
-        }
+        return categorias[cat] || cat;
     }
 }
+
+// DEBUG: Verificar se está carregando
+console.log('vantagens.js carregado');
 
 // Inicializar sistema quando o DOM carregar
 document.addEventListener('DOMContentLoaded', () => {
-    window.vantagensSystem = new VantagensSystem();
+    console.log('DOM carregado, iniciando sistema de vantagens...');
+    
+    // Verificar se o catálogo está disponível
+    if (typeof filtrarVantagens === 'undefined') {
+        console.error('catalogo-vantagens.js não carregou!');
+        return;
+    }
+    
+    // Esperar um pouco para garantir que tudo está pronto
+    setTimeout(() => {
+        window.vantagensSystem = new VantagensSystem();
+        console.log('Sistema de vantagens iniciado:', window.vantagensSystem);
+    }, 100);
 });
-
-// Expor para uso global
-if (typeof window !== 'undefined') {
-    window.VantagensSystem = VantagensSystem;
-}
