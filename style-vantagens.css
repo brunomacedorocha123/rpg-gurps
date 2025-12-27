@@ -3288,3 +3288,267 @@ textarea.form-control {
 .desvantagem-adquirida-item:hover .desvantagem-adquirida-info strong {
     color: #f44336;
 }
+
+/* =========================================== */
+/* CORREÇÕES PARA DESVANTAGENS */
+/* =========================================== */
+
+/* Estilos para os filtros de desvantagens */
+.filtro-btn-desvantagens {
+    padding: 6px 12px;
+    background: rgba(26, 18, 0, 0.7);
+    border: 1px solid var(--wood-light);
+    border-radius: 4px;
+    color: var(--text-light);
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.filtro-btn-desvantagens:hover {
+    border-color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.filtro-btn-desvantagens.active {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: #f44336;
+    color: #f44336;
+}
+
+/* Cores específicas para filtros de desvantagens */
+.filtro-btn-desvantagens[data-filtro="mental"] {
+    border-left: 3px solid #2196f3;
+}
+
+.filtro-btn-desvantagens[data-filtro="fisica"] {
+    border-left: 3px solid #4caf50;
+}
+
+.filtro-btn-desvantagens[data-filtro="social"] {
+    border-left: 3px solid #ff9800;
+}
+
+.filtro-btn-desvantagens[data-filtro="supernatural"] {
+    border-left: 3px solid #9c27b0;
+}
+
+.filtro-btn-desvantagens[data-filtro="simples"] {
+    border-left: 3px solid #607d8b;
+}
+
+.filtro-btn-desvantagens[data-filtro="opcoes"] {
+    border-left: 3px solid #ff5722;
+}
+
+.filtro-btn-desvantagens[data-filtro="selecao"] {
+    border-left: 3px solid #9c27b0;
+}
+
+.filtro-btn-desvantagens.active[data-filtro="mental"] {
+    background: rgba(33, 150, 243, 0.2);
+    border-color: #2196f3;
+    color: #2196f3;
+}
+
+.filtro-btn-desvantagens.active[data-filtro="fisica"] {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
+    color: #4caf50;
+}
+
+.filtro-btn-desvantagens.active[data-filtro="social"] {
+    background: rgba(255, 152, 0, 0.2);
+    border-color: #ff9800;
+    color: #ff9800;
+}
+
+.filtro-btn-desvantagens.active[data-filtro="supernatural"] {
+    background: rgba(156, 39, 176, 0.2);
+    border-color: #9c27b0;
+    color: #9c27b0;
+}
+
+.filtro-btn-desvantagens.active[data-filtro="simples"] {
+    background: rgba(96, 125, 139, 0.2);
+    border-color: #607d8b;
+    color: #607d8b;
+}
+
+.filtro-btn-desvantagens.active[data-filtro="opcoes"] {
+    background: rgba(255, 87, 34, 0.2);
+    border-color: #ff5722;
+    color: #ff5722;
+}
+
+.filtro-btn-desvantagens.active[data-filtro="selecao"] {
+    background: rgba(156, 39, 176, 0.2);
+    border-color: #9c27b0;
+    color: #9c27b0;
+}
+
+/* Botão de adicionar desvantagem específico */
+.btn-adicionar-desvantagem {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.btn-adicionar-desvantagem:hover {
+    border-color: rgba(244, 67, 54, 0.5);
+    background: rgba(244, 67, 54, 0.2);
+    transform: rotate(90deg);
+    color: #ff5252;
+}
+
+/* Botões do modal de desvantagens */
+.desvantagem-modal .modal-close,
+.desvantagem-modal .btn-cancelar-desvantagem {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    color: #f44336;
+}
+
+.desvantagem-modal .modal-close:hover,
+.desvantagem-modal .btn-cancelar-desvantagem:hover {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: #f44336;
+}
+
+.desvantagem-modal .btn-confirmar-desvantagem {
+    background: linear-gradient(145deg, rgba(244, 67, 54, 0.9), rgba(198, 40, 40, 0.9));
+    border: 2px solid rgba(244, 67, 54, 0.5);
+    color: white;
+}
+
+.desvantagem-modal .btn-confirmar-desvantagem:hover:not(:disabled) {
+    background: linear-gradient(145deg, rgba(255, 87, 75, 0.9), rgba(244, 67, 54, 0.9));
+}
+
+/* Estilos para os botões do modal - garantir que funcionem */
+.desvantagem-modal .btn-cancelar-desvantagem,
+.desvantagem-modal .btn-confirmar-desvantagem {
+    padding: 12px 25px !important;
+    border-radius: 6px !important;
+    font-family: 'Cinzel', serif !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    border: none !important;
+    min-width: 140px !important;
+    flex: 1 !important;
+    max-width: 200px !important;
+    height: 48px !important;
+    font-size: 0.95rem !important;
+}
+
+/* Estilo para seção de fobias no modal */
+.fobias-section {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 1px solid rgba(244, 67, 54, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.fobia-option {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 6px;
+    border: 1px solid rgba(244, 67, 54, 0.1);
+    background: rgba(26, 18, 0, 0.6);
+    transition: all 0.2s ease;
+}
+
+.fobia-option:hover {
+    border-color: rgba(244, 67, 54, 0.3);
+    background: rgba(26, 18, 0, 0.8);
+}
+
+.fobia-option input:checked ~ .checkbox-text {
+    color: #f44336;
+    font-weight: 600;
+}
+
+/* Estilo para opções de alcoolismo no modal */
+.opcao-alcoolismo {
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+    background: rgba(244, 67, 54, 0.05);
+}
+
+.opcao-alcoolismo:hover {
+    border-color: rgba(244, 67, 54, 0.4);
+    background: rgba(244, 67, 54, 0.1);
+}
+
+/* Display de custo negativo */
+.custo-display.negativo {
+    background: rgba(244, 67, 54, 0.1);
+    border: 2px solid #f44336;
+    color: #f44336;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Feedback específico para desvantagens */
+#feedback-desvantagens.feedback-message {
+    background: linear-gradient(145deg, rgba(244, 67, 54, 0.9), rgba(198, 40, 40, 0.9));
+    border: 2px solid rgba(244, 67, 54, 0.5);
+    color: white;
+}
+
+/* Responsividade para os filtros de desvantagens */
+@media (max-width: 768px) {
+    .filtro-btn-desvantagens {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: calc(50% - 6px);
+    }
+    
+    .filtros-rapidos {
+        gap: 6px;
+        padding: 10px 15px;
+    }
+}
+
+/* Scrollbar para fobias */
+.fobias-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.fobias-section::-webkit-scrollbar-track {
+    background: rgba(26, 18, 0, 0.3);
+    border-radius: 3px;
+}
+
+.fobias-section::-webkit-scrollbar-thumb {
+    background: #f44336;
+    border-radius: 3px;
+}
+
+.fobias-section::-webkit-scrollbar-thumb:hover {
+    background: #ff5252;
+}

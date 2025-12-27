@@ -1969,71 +1969,71 @@ main.main-content {
         </div>
       </div>
 
-      <!-- SUB-ABA 3: CATÁLOGO DE DESVANTAGENS -->
-      <div id="subtab-catalogo-desvantagens" class="subtab-pane">
-        <div class="catalogo-simples">
-          <div class="catalogo-grid-duplo">
-            <!-- CARD ESQUERDO: DESVANTAGENS DISPONÍVEIS -->
-            <div class="catalogo-card disponiveis-card">
-              <div class="card-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>Desvantagens Disponíveis</h3>
-                <div class="search-small">
-                  <i class="fas fa-search"></i>
-                  <input type="text" id="buscaDesvantagens" placeholder="Buscar desvantagem...">
-                </div>
-              </div>
-              
-              <div class="filtros-rapidos">
-                <button class="filtro-btn active" data-filtro="todos">Todas</button>
-                <button class="filtro-btn" data-filtro="mental">Mental</button>
-                <button class="filtro-btn" data-filtro="fisica">Física</button>
-                <button class="filtro-btn" data-filtro="social">Social</button>
-                <button class="filtro-btn" data-filtro="supernatural">Sobrenatural</button>
-                <button class="filtro-btn" data-filtro="simples">Simples</button>
-                <button class="filtro-btn" data-filtro="opcoes">Com Opções</button>
-              </div>
-              
-              <div class="lista-desvantagens-scroll">
-                <!-- DESVANTAGENS SERÃO INSERIDAS AQUI VIA JS -->
-                <div class="loading-state">
-                  <i class="fas fa-spinner fa-spin"></i>
-                  <p>Carregando catálogo de desvantagens...</p>
-                </div>
-              </div>
-              
-              <div class="lista-status">
-                <small>Mostrando <span id="contador-desvantagens">0</span> desvantagens</small>
-              </div>
-            </div>
-            
-            <!-- CARD DIREITO: DESVANTAGENS ADQUIRIDAS -->
-            <div class="catalogo-card adquiridas-card">
-              <div class="card-header">
-                <i class="fas fa-times-circle"></i>
-                <h3>Desvantagens Adquiridas</h3>
-                <span class="pontos-badge negativo" id="total-pontos-desvantagens">0 pts</span>
-              </div>
-              
-              <div class="desvantagens-escolhidas-scroll">
-                <div class="lista-vazia">
-                  <i class="fas fa-exclamation-triangle"></i>
-                  <p>Nenhuma desvantagem selecionada</p>
-                  <small>Clique no botão "+" para adicionar</small>
-                </div>
-              </div>
-              
-              <div class="resumo-escolhidas">
-                <div class="resumo-item">
-                  <span>Total:</span>
-                  <span id="total-desvantagens">0 desvantagens</span>
-                </div>
-                <div class="resumo-item">
-                  <span>Pontos:</span>
-                  <span id="pontos-desvantagens">0 pontos</span>
-                </div>
-              </div>
-            </div>
+     <!-- SUB-ABA 3: CATÁLOGO DE DESVANTAGENS -->
+<div id="subtab-catalogo-desvantagens" class="subtab-pane">
+  <div class="catalogo-simples">
+    <div class="catalogo-grid-duplo">
+      <!-- CARD ESQUERDO: DESVANTAGENS DISPONÍVEIS -->
+      <div class="catalogo-card disponiveis-card">
+        <div class="card-header">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Desvantagens Disponíveis</h3>
+          <div class="search-small">
+            <i class="fas fa-search"></i>
+            <input type="text" id="buscaDesvantagens" placeholder="Buscar desvantagem...">
+          </div>
+        </div>
+        
+        <!-- CORREÇÃO: adicionar -desvantagens na classe -->
+        <div class="filtros-rapidos">
+          <button class="filtro-btn-desvantagens active" data-filtro="todos">Todas</button>
+          <button class="filtro-btn-desvantagens" data-filtro="mental">Mental</button>
+          <button class="filtro-btn-desvantagens" data-filtro="fisica">Física</button>
+          <button class="filtro-btn-desvantagens" data-filtro="social">Social</button>
+          <button class="filtro-btn-desvantagens" data-filtro="supernatural">Sobrenatural</button>
+          <button class="filtro-btn-desvantagens" data-filtro="simples">Simples</button>
+          <button class="filtro-btn-desvantagens" data-filtro="opcoes">Com Opções</button>
+          <button class="filtro-btn-desvantagens" data-filtro="selecao">Seleção</button>
+        </div>
+        
+        <div class="lista-desvantagens-scroll">
+          <!-- DESVANTAGENS SERÃO INSERIDAS AQUI VIA JS -->
+          <div class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando catálogo de desvantagens...</p>
+          </div>
+        </div>
+        
+        <div class="lista-status">
+          <small>Mostrando <span id="contador-desvantagens">0</span> desvantagens</small>
+        </div>
+      </div>
+      
+      <!-- CARD DIREITO: DESVANTAGENS ADQUIRIDAS -->
+      <div class="catalogo-card adquiridas-card">
+        <div class="card-header">
+          <i class="fas fa-times-circle"></i>
+          <h3>Desvantagens Adquiridas</h3>
+          <span class="pontos-badge negativo" id="total-pontos-desvantagens">0 pts</span>
+        </div>
+        
+        <div class="desvantagens-escolhidas-scroll">
+          <div class="lista-vazia">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Nenhuma desvantagem selecionada</p>
+            <small>Clique no botão "+" para adicionar</small>
+          </div>
+        </div>
+        
+        <!-- CORREÇÃO: usar IDs que batem com o JavaScript -->
+        <div class="resumo-escolhidas">
+          <div class="resumo-item">
+            <span>Total:</span>
+            <span id="total-desvantagens">0 desvantagens</span>
+          </div>
+          <div class="resumo-item">
+            <span>Pontos:</span>
+            <span id="custo-desvantagens" class="negativo">0 pontos</span>
           </div>
         </div>
       </div>
