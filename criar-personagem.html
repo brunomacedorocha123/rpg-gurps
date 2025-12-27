@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="style-caracteristicas.css">
     <link rel="stylesheet" href="style-vantagens.css">
     <link rel="stylesheet" href="style-peculiaridades.css">
+    <link rel="stylesheet" href="style-pericias.css">
    <style>
 * {
     margin: 0;
@@ -2562,15 +2563,219 @@ body::before {
             </div>
         </template>
 
-        <!-- CONTINUA NA PARTE 3... -->
-                 <!-- PERÍCIAS -->
-        <div id="pericias" class="tab-content">
-            <div class="content-placeholder">
-                <i class="fas fa-book-open"></i>
-                <h3>Perícias e Técnicas</h3>
-                <p>Adicione e gerencie todas as perícias, habilidades e técnicas.</p>
+        <!-- ABA PERÍCIAS -->
+<div id="pericias" class="tab-content">
+    <div class="pericias-container">
+        <!-- CABEÇALHO -->
+        <div class="pericias-header">
+            <h2><i class="fas fa-book-open"></i> Perícias e Técnicas</h2>
+            <div class="pontos-badge" id="pontos-pericias-total">[0 pts]</div>
+        </div>
+        
+        <!-- SUB-ABAS -->
+        <div class="subtabs-navigation-pericias">
+            <button class="subtab-btn-pericias active" data-subtab="pericias">
+                <i class="fas fa-graduation-cap"></i> Perícias
+            </button>
+            <button class="subtab-btn-pericias" data-subtab="tecnicas">
+                <i class="fas fa-tools"></i> Técnicas
+            </button>
+        </div>
+        
+        <!-- CONTEÚDO DAS SUB-ABAS -->
+        <div class="subtabs-content-pericias">
+            
+            <!-- SUB-ABA 1: PERÍCIAS -->
+            <div id="subtab-pericias" class="subtab-pane-pericias active">
+                <!-- BARRA DE AÇÕES -->
+                <div class="pericias-actions-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="busca-pericias" placeholder="Buscar perícia...">
+                    </div>
+                </div>
+                
+                <!-- CARDS DE ESTATÍSTICAS -->
+                <div class="stats-cards-grid">
+                    <div class="stat-card" data-filtro="todas" onclick="filtrarPor('todas')">
+                        <div class="stat-categoria">Todas</div>
+                        <div class="stat-valor" id="qtd-total">0</div>
+                        <div class="stat-pontos" id="pts-total">(0 pts)</div>
+                    </div>
+                    <div class="stat-card" data-filtro="dx" onclick="filtrarPor('dx')">
+                        <div class="stat-categoria">DX</div>
+                        <div class="stat-valor" id="qtd-dx">0</div>
+                        <div class="stat-pontos" id="pts-dx">(0 pts)</div>
+                    </div>
+                    <div class="stat-card" data-filtro="iq" onclick="filtrarPor('iq')">
+                        <div class="stat-categoria">IQ</div>
+                        <div class="stat-valor" id="qtd-iq">0</div>
+                        <div class="stat-pontos" id="pts-iq">(0 pts)</div>
+                    </div>
+                    <div class="stat-card" data-filtro="ht" onclick="filtrarPor('ht')">
+                        <div class="stat-categoria">HT</div>
+                        <div class="stat-valor" id="qtd-ht">0</div>
+                        <div class="stat-pontos" id="pts-ht">(0 pts)</div>
+                    </div>
+                    <div class="stat-card" data-filtro="perc" onclick="filtrarPor('perc')">
+                        <div class="stat-categoria">PER</div>
+                        <div class="stat-valor" id="qtd-perc">0</div>
+                        <div class="stat-pontos" id="pts-perc">(0 pts)</div>
+                    </div>
+                    <div class="stat-card" data-filtro="combate" onclick="filtrarPor('combate')">
+                        <div class="stat-categoria">Combate</div>
+                        <div class="stat-valor" id="qtd-combate">0</div>
+                        <div class="stat-pontos" id="pts-combate">(0 pts)</div>
+                    </div>
+                </div>
+                
+                <!-- FILTROS RÁPIDOS -->
+                <div class="filtros-rapidos">
+                    <button class="filtro-btn active" data-filtro="todas">Todas</button>
+                    <button class="filtro-btn" data-filtro="dx">DX</button>
+                    <button class="filtro-btn" data-filtro="iq">IQ</button>
+                    <button class="filtro-btn" data-filtro="ht">HT</button>
+                    <button class="filtro-btn" data-filtro="perc">PER</button>
+                    <button class="filtro-btn" data-filtro="combate">Combate</button>
+                    <button class="filtro-btn" data-filtro="facil">Fácil</button>
+                    <button class="filtro-btn" data-filtro="media">Média</button>
+                    <button class="filtro-btn" data-filtro="dificil">Difícil</button>
+                </div>
+                
+                <!-- LAYOUT DUPLO: CATÁLOGO E APRENDIDAS -->
+                <div class="catalogo-grid-duplo">
+                    <!-- COLUNA ESQUERDA: CATÁLOGO -->
+                    <div class="catalogo-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-book"></i> Catálogo</h3>
+                            <div class="lista-status">
+                                <small>Mostrando <span id="contador-pericias">0</span> perícias</small>
+                            </div>
+                        </div>
+                        <div class="lista-pericias-scroll" id="lista-pericias">
+                            <!-- Perícias serão inseridas aqui via JS -->
+                            <div class="empty-state">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <h4>Carregando catálogo...</h4>
+                                <p>Aguarde enquanto as perícias são carregadas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- COLUNA DIREITA: APRENDIDAS -->
+                    <div class="catalogo-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-check-circle"></i> Aprendidas</h3>
+                            <span class="pontos-badge" id="pontos-aprendidas">0 pts</span>
+                        </div>
+                        <div class="lista-pericias-scroll" id="pericias-aprendidas">
+                            <!-- Perícias aprendidas serão inseridas aqui via JS -->
+                            <div class="nenhuma-pericia-aprendida">
+                                <i class="fas fa-graduation-cap"></i>
+                                <div>Nenhuma perícia aprendida</div>
+                                <small>As perícias que você aprender aparecerão aqui</small>
+                            </div>
+                        </div>
+                        <div class="resumo-escolhidas">
+                            <div class="resumo-item">
+                                <span>Total:</span>
+                                <span id="total-pericias">0</span>
+                            </div>
+                            <div class="resumo-item">
+                                <span>Pontos:</span>
+                                <span id="pontos-total">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SUB-ABA 2: TÉCNICAS -->
+            <div id="subtab-tecnicas" class="subtab-pane-pericias">
+                <!-- MENSAGEM INFORMATIVA -->
+                <div style="
+                    background: rgba(44, 32, 8, 0.6);
+                    border: 2px solid var(--wood-light);
+                    border-radius: 10px;
+                    padding: 25px;
+                    text-align: center;
+                    margin-bottom: 25px;
+                ">
+                    <h3 style="color: var(--text-gold); margin-bottom: 15px;">
+                        <i class="fas fa-tools"></i> Técnicas Especiais
+                    </h3>
+                    <p style="color: rgba(245, 245, 220, 0.8); line-height: 1.6;">
+                        Técnicas são variações especializadas de perícias. Elas permitem que você melhore 
+                        habilidades específicas além do limite normal, pagando pontos de habilidade.
+                    </p>
+                    <div style="
+                        background: rgba(212, 175, 55, 0.1);
+                        border: 1px solid var(--primary-gold);
+                        border-radius: 6px;
+                        padding: 10px;
+                        margin-top: 15px;
+                        font-size: 0.9rem;
+                        color: rgba(212, 175, 55, 0.8);
+                    ">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Como funciona:</strong> Cada ponto investido melhora o nível da técnica, 
+                        mas nunca pode exceder o nível da perícia base.
+                    </div>
+                </div>
+                
+                <!-- LAYOUT DUPLO PARA TÉCNICAS -->
+                <div class="catalogo-grid-duplo">
+                    <!-- CATÁLOGO DE TÉCNICAS -->
+                    <div class="catalogo-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-bullseye"></i> Técnicas Disponíveis</h3>
+                        </div>
+                        <div class="lista-pericias-scroll" id="lista-tecnicas">
+                            <!-- Técnicas serão inseridas aqui via JS -->
+                            <div class="empty-state">
+                                <i class="fas fa-tools"></i>
+                                <h4>Técnicas Especiais</h4>
+                                <p>Selecione técnicas para aprimorar suas habilidades</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- TÉCNICAS APRENDIDAS -->
+                    <div class="catalogo-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-star"></i> Técnicas Aprendidas</h3>
+                            <span class="pontos-badge" id="pontos-tecnicas">0 pts</span>
+                        </div>
+                        <div class="lista-pericias-scroll" id="tecnicas-aprendidas">
+                            <!-- Técnicas aprendidas serão inseridas aqui via JS -->
+                            <div class="nenhuma-pericia-aprendida">
+                                <i class="fas fa-tools"></i>
+                                <div>Nenhuma técnica aprendida</div>
+                                <small>As técnicas que você adquirir aparecerão aqui</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- MODAL PARA PERÍCIAS -->
+<div class="modal-pericia-overlay">
+    <div class="modal-pericia">
+        <!-- Conteúdo será inserido dinamicamente via JS -->
+    </div>
+</div>
+
+<!-- MODAL PARA ESPECIALIZAÇÃO -->
+<div class="modal-especializacao-overlay">
+    <div class="modal-especializacao">
+        <!-- Conteúdo será inserido dinamicamente via JS -->
+    </div>
+</div>
+
+<!-- MODAL PARA TÉCNICAS (será criado dinamicamente) -->
 
         <!-- MAGIA -->
         <div id="magia" class="tab-content">
