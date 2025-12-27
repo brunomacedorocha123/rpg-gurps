@@ -1445,1486 +1445,856 @@ main.main-content {
                 </div>
             </div>
         </div>
-                <!-- ABA VANTAGENS & DESVANTAGENS -->
-<div id="vantagens-desvantagens" class="tab-content">
-    <div class="caracteristicas-container">
-        <!-- SUB-ABAS PRINCIPAIS -->
-        <div class="subtabs-navigation">
-            <button class="subtab-btn active" data-subtab="atributos-relacoes">
-                <i class="fas fa-user-cog"></i> Atributos & Relações
-            </button>
-            <button class="subtab-btn" data-subtab="catalogo-vantagens">
-                <i class="fas fa-star"></i> Catálogo de Vantagens
-            </button>
-            <button class="subtab-btn" data-subtab="catalogo-desvantagens">
-                <i class="fas fa-exclamation-triangle"></i> Catálogo de Desvantagens
-            </button>
-            <button class="subtab-btn" data-subtab="minhas-vantagens">
-                <i class="fas fa-check-circle"></i> Minhas Escolhas
-            </button>
-        </div>
+                <!-- ABA VANTAGENS -->
+<div id="vantagens" class="tab-content active">
+  <div class="caracteristicas-container">
+    <!-- SUB-ABAS INTERNAS -->
+    <div class="subtabs-navigation">
+      <button class="subtab-btn active" data-subtab="atributos-relacoes">
+        <i class="fas fa-user-cog"></i> Atributos & Relações
+      </button>
+      <button class="subtab-btn" data-subtab="catalogo-geral">
+        <i class="fas fa-book"></i> Catálogo Geral
+      </button>
+      <button class="subtab-btn" data-subtab="catalogo-desvantagens">
+        <i class="fas fa-exclamation-triangle"></i> Desvantagens
+      </button>
+    </div>
 
-        <!-- CONTEÚDO DAS SUB-ABAS -->
-        <div class="subtabs-content">
+    <!-- CONTEÚDO DAS SUB-ABAS -->
+    <div class="subtabs-content">
+      <!-- SUB-ABA 1: ATRIBUTOS & RELAÇÕES -->
+      <div id="subtab-atributos-relacoes" class="subtab-pane active">
+        <div class="caracteristicas-grid">
+          <!-- CARD 1: ATRIBUTOS COMPLEMENTARES -->
+          <div class="caracteristica-card">
+            <div class="card-header">
+              <i class="fas fa-heart-plus"></i>
+              <h3>Atributos Complementares</h3>
+              <span class="pontos-badge" id="pontosAtributos">0 pts</span>
+            </div>
             
-            <!-- SUB-ABA 1: ATRIBUTOS & RELAÇÕES (JÁ EXISTENTE) -->
-            <div id="subtab-atributos-relacoes" class="subtab-pane active">
-                <div class="caracteristicas-grid">
-                    <!-- CARD 1: ATRIBUTOS COMPLEMENTARES -->
-                    <div class="caracteristica-card">
-                        <div class="card-header">
-                            <i class="fas fa-heart-plus"></i>
-                            <h3>Atributos Complementares</h3>
-                            <span class="pontos-badge" id="pontosAtributos">0 pts</span>
-                        </div>
-                        
-                        <div class="card-content">
-                            <!-- FORÇA DE VONTADE -->
-                            <div class="atributo-item" data-tipo="forca-vontade" data-custo="5">
-                                <div class="atributo-info">
-                                    <div class="atributo-header">
-                                        <i class="fas fa-brain"></i>
-                                        <div class="atributo-detalhes">
-                                            <strong>Força de Vontade</strong>
-                                            <small>Custo: ±5 pts por nível</small>
-                                        </div>
-                                    </div>
-                                    <div class="atributo-controles">
-                                        <div class="botoes-direcao">
-                                            <button class="btn-vantagem" data-direcao="positivo">
-                                                <i class="fas fa-plus"></i> Vantagem
-                                            </button>
-                                            <button class="btn-desvantagem" data-direcao="negativo">
-                                                <i class="fas fa-minus"></i> Desvantagem
-                                            </button>
-                                        </div>
-                                        <div class="contador-nivel">
-                                            <button class="btn-nivel menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <span class="nivel-display">0</span>
-                                            <button class="btn-nivel mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                            <span class="status-direcao neutro">Neutro</span>
-                                        </div>
-                                        <div class="custo-display">
-                                            <span class="custo-label">Custo:</span>
-                                            <span class="custo-valor">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- PERCEPÇÃO -->
-                            <div class="atributo-item" data-tipo="percepcao" data-custo="5">
-                                <div class="atributo-info">
-                                    <div class="atributo-header">
-                                        <i class="fas fa-eye"></i>
-                                        <div class="atributo-detalhes">
-                                            <strong>Percepção</strong>
-                                            <small>Custo: ±5 pts por nível</small>
-                                        </div>
-                                    </div>
-                                    <div class="atributo-controles">
-                                        <div class="botoes-direcao">
-                                            <button class="btn-vantagem" data-direcao="positivo">
-                                                <i class="fas fa-plus"></i> Vantagem
-                                            </button>
-                                            <button class="btn-desvantagem" data-direcao="negativo">
-                                                <i class="fas fa-minus"></i> Desvantagem
-                                            </button>
-                                        </div>
-                                        <div class="contador-nivel">
-                                            <button class="btn-nivel menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <span class="nivel-display">0</span>
-                                            <button class="btn-nivel mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                            <span class="status-direcao neutro">Neutro</span>
-                                        </div>
-                                        <div class="custo-display">
-                                            <span class="custo-label">Custo:</span>
-                                            <span class="custo-valor">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- PONTOS DE VIDA -->
-                            <div class="atributo-item" data-tipo="pv" data-custo="2">
-                                <div class="atributo-info">
-                                    <div class="atributo-header">
-                                        <i class="fas fa-heartbeat"></i>
-                                        <div class="atributo-detalhes">
-                                            <strong>Pontos de Vida</strong>
-                                            <small>Custo: ±2 pts por nível</small>
-                                        </div>
-                                    </div>
-                                    <div class="atributo-controles">
-                                        <div class="botoes-direcao">
-                                            <button class="btn-vantagem" data-direcao="positivo">
-                                                <i class="fas fa-plus"></i> Vantagem
-                                            </button>
-                                            <button class="btn-desvantagem" data-direcao="negativo">
-                                                <i class="fas fa-minus"></i> Desvantagem
-                                            </button>
-                                        </div>
-                                        <div class="contador-nivel">
-                                            <button class="btn-nivel menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <span class="nivel-display">0</span>
-                                            <button class="btn-nivel mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                            <span class="status-direcao neutro">Neutro</span>
-                                        </div>
-                                        <div class="custo-display">
-                                            <span class="custo-label">Custo:</span>
-                                            <span class="custo-valor">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- PONTOS DE FADIGA -->
-                            <div class="atributo-item" data-tipo="pf" data-custo="3">
-                                <div class="atributo-info">
-                                    <div class="atributo-header">
-                                        <i class="fas fa-wind"></i>
-                                        <div class="atributo-detalhes">
-                                            <strong>Pontos de Fadiga</strong>
-                                            <small>Custo: ±3 pts por nível</small>
-                                        </div>
-                                    </div>
-                                    <div class="atributo-controles">
-                                        <div class="botoes-direcao">
-                                            <button class="btn-vantagem" data-direcao="positivo">
-                                                <i class="fas fa-plus"></i> Vantagem
-                                            </button>
-                                            <button class="btn-desvantagem" data-direcao="negativo">
-                                                <i class="fas fa-minus"></i> Desvantagem
-                                            </button>
-                                        </div>
-                                        <div class="contador-nivel">
-                                            <button class="btn-nivel menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <span class="nivel-display">0</span>
-                                            <button class="btn-nivel mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                            <span class="status-direcao neutro">Neutro</span>
-                                        </div>
-                                        <div class="custo-display">
-                                            <span class="custo-label">Custo:</span>
-                                            <span class="custo-valor">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- VELOCIDADE BÁSICA -->
-                            <div class="atributo-item" data-tipo="velocidade" data-custo="5" data-fator="0.25">
-                                <div class="atributo-info">
-                                    <div class="atributo-header">
-                                        <i class="fas fa-tachometer-alt"></i>
-                                        <div class="atributo-detalhes">
-                                            <strong>Velocidade Básica</strong>
-                                            <small>Custo: ±5 pts por 0.25</small>
-                                        </div>
-                                    </div>
-                                    <div class="atributo-controles">
-                                        <div class="botoes-direcao">
-                                            <button class="btn-vantagem" data-direcao="positivo">
-                                                <i class="fas fa-plus"></i> Vantagem
-                                            </button>
-                                            <button class="btn-desvantagem" data-direcao="negativo">
-                                                <i class="fas fa-minus"></i> Desvantagem
-                                            </button>
-                                        </div>
-                                        <div class="contador-nivel">
-                                            <button class="btn-nivel menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <span class="nivel-display">0.00</span>
-                                            <button class="btn-nivel mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                            <span class="status-direcao neutro">Neutro</span>
-                                        </div>
-                                        <div class="custo-display">
-                                            <span class="custo-label">Custo:</span>
-                                            <span class="custo-valor">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- DESLOCAMENTO BÁSICO -->
-                            <div class="atributo-item" data-tipo="deslocamento" data-custo="5" data-fator="1">
-                                <div class="atributo-info">
-                                    <div class="atributo-header">
-                                        <i class="fas fa-running"></i>
-                                        <div class="atributo-detalhes">
-                                            <strong>Deslocamento Básico</strong>
-                                            <small>Custo: ±5 pts por 1m</small>
-                                        </div>
-                                    </div>
-                                    <div class="atributo-controles">
-                                        <div class="botoes-direcao">
-                                            <button class="btn-vantagem" data-direcao="positivo">
-                                                <i class="fas fa-plus"></i> Vantagem
-                                            </button>
-                                            <button class="btn-desvantagem" data-direcao="negativo">
-                                                <i class="fas fa-minus"></i> Desvantagem
-                                            </button>
-                                        </div>
-                                        <div class="contador-nivel">
-                                            <button class="btn-nivel menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <span class="nivel-display">0</span>
-                                            <button class="btn-nivel mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                            <span class="status-direcao neutro">Neutro</span>
-                                        </div>
-                                        <div class="custo-display">
-                                            <span class="custo-label">Custo:</span>
-                                            <span class="custo-valor">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="card-content">
+              <!-- FORÇA DE VONTADE -->
+              <div class="atributo-item" data-tipo="forca-vontade" data-custo="5">
+                <div class="atributo-info">
+                  <div class="atributo-header">
+                    <i class="fas fa-brain"></i>
+                    <div class="atributo-detalhes">
+                      <strong>Força de Vontade</strong>
+                      <small>Custo: ±5 pts por nível</small>
                     </div>
-
-                    <!-- CARD 2: STATUS & REPUTAÇÃO -->
-                    <div class="caracteristica-card">
-                        <div class="card-header">
-                            <i class="fas fa-crown"></i>
-                            <h3>Status & Reputação</h3>
-                            <span class="pontos-badge" id="pontosStatus">0 pts</span>
-                        </div>
-                        
-                        <div class="card-content">
-                            <!-- STATUS -->
-                            <div class="status-item" data-tipo="status" data-custo="5">
-                                <div class="status-header">
-                                    <h4><i class="fas fa-user-tie"></i> Status</h4>
-                                    <small>±5 pts por nível (máx. 4 níveis)</small>
-                                </div>
-                                
-                                <div class="status-controles">
-                                    <div class="direcao-selecao">
-                                        <label class="radio-label">
-                                            <input type="radio" name="status-direcao" value="positivo">
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">Positivo (Vantagem)</span>
-                                        </label>
-                                        <label class="radio-label">
-                                            <input type="radio" name="status-direcao" value="negativo">
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">Negativo (Desvantagem)</span>
-                                        </label>
-                                        <label class="radio-label">
-                                            <input type="radio" name="status-direcao" value="neutro" checked>
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">Neutro</span>
-                                        </label>
-                                    </div>
-                                    
-                                    <div class="niveis-status">
-                                        <div class="nivel-contador">
-                                            <button class="btn-nivel-status menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <div class="nivel-info">
-                                                <span class="nivel-valor">0</span>
-                                                <small>Níveis</small>
-                                            </div>
-                                            <button class="btn-nivel-status mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <div class="nivel-descricao">
-                                            <p id="descStatus">Status padrão, sem modificadores</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="status-custo">
-                                        <span>Custo Total:</span>
-                                        <span id="custoStatus" class="custo-total">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- REPUTAÇÃO -->
-                            <div class="status-item" data-tipo="reputacao" data-custo="5">
-                                <div class="status-header">
-                                    <h4><i class="fas fa-star"></i> Reputação</h4>
-                                    <small>±5 pts por nível (máx. 4 níveis)</small>
-                                </div>
-                                
-                                <div class="status-controles">
-                                    <div class="direcao-selecao">
-                                        <label class="radio-label">
-                                            <input type="radio" name="reputacao-direcao" value="positivo">
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">Positiva (Vantagem)</span>
-                                        </label>
-                                        <label class="radio-label">
-                                            <input type="radio" name="reputacao-direcao" value="negativo">
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">Negativa (Desvantagem)</span>
-                                        </label>
-                                        <label class="radio-label">
-                                            <input type="radio" name="reputacao-direcao" value="neutro" checked>
-                                            <span class="radio-custom"></span>
-                                            <span class="radio-text">Neutra</span>
-                                        </label>
-                                    </div>
-                                    
-                                    <div class="niveis-status">
-                                        <div class="nivel-contador">
-                                            <button class="btn-nivel-status menos" disabled>
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <div class="nivel-info">
-                                                <span class="nivel-valor">0</span>
-                                                <small>Níveis</small>
-                                            </div>
-                                            <button class="btn-nivel-status mais" disabled>
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <div class="nivel-descricao">
-                                            <p id="descReputacao">Reputação padrão, sem modificadores</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="status-custo">
-                                        <span>Custo Total:</span>
-                                        <span id="custoReputacao" class="custo-total">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                  </div>
+                  <div class="atributo-controles">
+                    <div class="botoes-direcao">
+                      <button class="btn-vantagem" data-direcao="positivo">
+                        <i class="fas fa-plus"></i> Vantagem
+                      </button>
+                      <button class="btn-desvantagem" data-direcao="negativo">
+                        <i class="fas fa-minus"></i> Desvantagem
+                      </button>
                     </div>
-
-                    <!-- CARD 3: RELACIONAMENTOS -->
-                    <div class="caracteristica-card">
-                        <div class="card-header">
-                            <i class="fas fa-handshake"></i>
-                            <h3>Relacionamentos</h3>
-                            <span class="pontos-badge" id="pontosRelacionamentos">0 pts</span>
-                        </div>
-                        
-                        <div class="card-content">
-                            <!-- Barra de ferramentas -->
-                            <div class="relacionamentos-toolbar">
-                                <button id="btnAddRelacionamento" class="btn-add">
-                                    <i class="fas fa-plus"></i> Adicionar Relacionamento
-                                </button>
-                                <div class="filter-buttons">
-                                    <button class="filter-btn active" data-filter="all">Todos</button>
-                                    <button class="filter-btn" data-filter="aliado">Aliados</button>
-                                    <button class="filter-btn" data-filter="contato">Contatos</button>
-                                    <button class="filter-btn" data-filter="inimigo">Inimigos</button>
-                                    <button class="filter-btn" data-filter="patrono">Patronos</button>
-                                    <button class="filter-btn" data-filter="dependente">Dependentes</button>
-                                </div>
-                            </div>
-                            
-                            <!-- Lista de relacionamentos -->
-                            <div class="relacionamentos-lista" id="relacionamentosLista">
-                                <div class="empty-state">
-                                    <i class="fas fa-users"></i>
-                                    <p>Nenhum relacionamento adicionado</p>
-                                    <small>Clique em "Adicionar Relacionamento" para começar</small>
-                                </div>
-                            </div>
-                            
-                            <!-- Resumo rápido -->
-                            <div class="relacionamentos-resumo">
-                                <div class="resumo-item">
-                                    <span>Aliados:</span>
-                                    <span id="countAliados">0</span>
-                                </div>
-                                <div class="resumo-item">
-                                    <span>Contatos:</span>
-                                    <span id="countContatos">0</span>
-                                </div>
-                                <div class="resumo-item">
-                                    <span>Inimigos:</span>
-                                    <span id="countInimigos">0</span>
-                                </div>
-                                <div class="resumo-item">
-                                    <span>Patronos:</span>
-                                    <span id="countPatronos">0</span>
-                                </div>
-                                <div class="resumo-total">
-                                    <span>Custo Total:</span>
-                                    <span id="totalRelacionamentos">0 pts</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="contador-nivel">
+                      <button class="btn-nivel menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="nivel-display">0</span>
+                      <button class="btn-nivel mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
+                      <span class="status-direcao neutro">Neutro</span>
                     </div>
+                    <div class="custo-display">
+                      <span class="custo-label">Custo:</span>
+                      <span class="custo-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PERCEPÇÃO -->
+              <div class="atributo-item" data-tipo="percepcao" data-custo="5">
+                <div class="atributo-info">
+                  <div class="atributo-header">
+                    <i class="fas fa-eye"></i>
+                    <div class="atributo-detalhes">
+                      <strong>Percepção</strong>
+                      <small>Custo: ±5 pts por nível</small>
+                    </div>
+                  </div>
+                  <div class="atributo-controles">
+                    <div class="botoes-direcao">
+                      <button class="btn-vantagem" data-direcao="positivo">
+                        <i class="fas fa-plus"></i> Vantagem
+                      </button>
+                      <button class="btn-desvantagem" data-direcao="negativo">
+                        <i class="fas fa-minus"></i> Desvantagem
+                      </button>
+                    </div>
+                    <div class="contador-nivel">
+                      <button class="btn-nivel menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="nivel-display">0</span>
+                      <button class="btn-nivel mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
+                      <span class="status-direcao neutro">Neutro</span>
+                    </div>
+                    <div class="custo-display">
+                      <span class="custo-label">Custo:</span>
+                      <span class="custo-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PONTOS DE VIDA -->
+              <div class="atributo-item" data-tipo="pv" data-custo="2">
+                <div class="atributo-info">
+                  <div class="atributo-header">
+                    <i class="fas fa-heartbeat"></i>
+                    <div class="atributo-detalhes">
+                      <strong>Pontos de Vida</strong>
+                      <small>Custo: ±2 pts por nível</small>
+                    </div>
+                  </div>
+                  <div class="atributo-controles">
+                    <div class="botoes-direcao">
+                      <button class="btn-vantagem" data-direcao="positivo">
+                        <i class="fas fa-plus"></i> Vantagem
+                      </button>
+                      <button class="btn-desvantagem" data-direcao="negativo">
+                        <i class="fas fa-minus"></i> Desvantagem
+                      </button>
+                    </div>
+                    <div class="contador-nivel">
+                      <button class="btn-nivel menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="nivel-display">0</span>
+                      <button class="btn-nivel mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
+                      <span class="status-direcao neutro">Neutro</span>
+                    </div>
+                    <div class="custo-display">
+                      <span class="custo-label">Custo:</span>
+                      <span class="custo-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PONTOS DE FADIGA -->
+              <div class="atributo-item" data-tipo="pf" data-custo="3">
+                <div class="atributo-info">
+                  <div class="atributo-header">
+                    <i class="fas fa-wind"></i>
+                    <div class="atributo-detalhes">
+                      <strong>Pontos de Fadiga</strong>
+                      <small>Custo: ±3 pts por nível</small>
+                    </div>
+                  </div>
+                  <div class="atributo-controles">
+                    <div class="botoes-direcao">
+                      <button class="btn-vantagem" data-direcao="positivo">
+                        <i class="fas fa-plus"></i> Vantagem
+                      </button>
+                      <button class="btn-desvantagem" data-direcao="negativo">
+                        <i class="fas fa-minus"></i> Desvantagem
+                      </button>
+                    </div>
+                    <div class="contador-nivel">
+                      <button class="btn-nivel menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="nivel-display">0</span>
+                      <button class="btn-nivel mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
+                      <span class="status-direcao neutro">Neutro</span>
+                    </div>
+                    <div class="custo-display">
+                      <span class="custo-label">Custo:</span>
+                      <span class="custo-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- VELOCIDADE BÁSICA -->
+              <div class="atributo-item" data-tipo="velocidade" data-custo="5" data-fator="0.25">
+                <div class="atributo-info">
+                  <div class="atributo-header">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <div class="atributo-detalhes">
+                      <strong>Velocidade Básica</strong>
+                      <small>Custo: ±5 pts por 0.25</small>
+                    </div>
+                  </div>
+                  <div class="atributo-controles">
+                    <div class="botoes-direcao">
+                      <button class="btn-vantagem" data-direcao="positivo">
+                        <i class="fas fa-plus"></i> Vantagem
+                      </button>
+                      <button class="btn-desvantagem" data-direcao="negativo">
+                        <i class="fas fa-minus"></i> Desvantagem
+                      </button>
+                    </div>
+                    <div class="contador-nivel">
+                      <button class="btn-nivel menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="nivel-display">0.00</span>
+                      <button class="btn-nivel mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
+                      <span class="status-direcao neutro">Neutro</span>
+                    </div>
+                    <div class="custo-display">
+                      <span class="custo-label">Custo:</span>
+                      <span class="custo-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DESLOCAMENTO BÁSICO -->
+              <div class="atributo-item" data-tipo="deslocamento" data-custo="5" data-fator="1">
+                <div class="atributo-info">
+                  <div class="atributo-header">
+                    <i class="fas fa-running"></i>
+                    <div class="atributo-detalhes">
+                      <strong>Deslocamento Básico</strong>
+                      <small>Custo: ±5 pts por 1m</small>
+                    </div>
+                  </div>
+                  <div class="atributo-controles">
+                    <div class="botoes-direcao">
+                      <button class="btn-vantagem" data-direcao="positivo">
+                        <i class="fas fa-plus"></i> Vantagem
+                      </button>
+                      <button class="btn-desvantagem" data-direcao="negativo">
+                        <i class="fas fa-minus"></i> Desvantagem
+                      </button>
+                    </div>
+                    <div class="contador-nivel">
+                      <button class="btn-nivel menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="nivel-display">0</span>
+                      <button class="btn-nivel mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
+                      <span class="status-direcao neutro">Neutro</span>
+                    </div>
+                    <div class="custo-display">
+                      <span class="custo-label">Custo:</span>
+                      <span class="custo-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 2: STATUS & REPUTAÇÃO -->
+          <div class="caracteristica-card">
+            <div class="card-header">
+              <i class="fas fa-crown"></i>
+              <h3>Status & Reputação</h3>
+              <span class="pontos-badge" id="pontosStatus">0 pts</span>
+            </div>
+            
+            <div class="card-content">
+              <!-- STATUS -->
+              <div class="status-item" data-tipo="status" data-custo="5">
+                <div class="status-header">
+                  <h4><i class="fas fa-user-tie"></i> Status</h4>
+                  <small>±5 pts por nível (máx. 4 níveis)</small>
                 </div>
                 
-                <!-- RESUMO DOS PONTOS -->
-                <div class="resumo-pontos">
-                    <div class="resumo-card">
-                        <div class="resumo-header">
-                            <i class="fas fa-calculator"></i>
-                            <h3>Resumo de Pontos</h3>
-                        </div>
-                        <div class="resumo-content">
-                            <div class="resumo-item">
-                                <span>Atributos Complementares:</span>
-                                <span id="totalAtributos">0</span>
-                            </div>
-                            <div class="resumo-item">
-                                <span>Status & Reputação:</span>
-                                <span id="totalStatusRep">0</span>
-                            </div>
-                            <div class="resumo-item">
-                                <span>Relacionamentos:</span>
-                                <span id="totalRelacionamentosResumo">0</span>
-                            </div>
-                            <div class="resumo-total">
-                                <span>TOTAL GASTO:</span>
-                                <span id="totalGeral">0</span>
-                            </div>
-                        </div>
+                <div class="status-controles">
+                  <div class="direcao-selecao">
+                    <label class="radio-label">
+                      <input type="radio" name="status-direcao" value="positivo">
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">Positivo (Vantagem)</span>
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" name="status-direcao" value="negativo">
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">Negativo (Desvantagem)</span>
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" name="status-direcao" value="neutro" checked>
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">Neutro</span>
+                    </label>
+                  </div>
+                  
+                  <div class="niveis-status">
+                    <div class="nivel-contador">
+                      <button class="btn-nivel-status menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <div class="nivel-info">
+                        <span class="nivel-valor">0</span>
+                        <small>Níveis</small>
+                      </div>
+                      <button class="btn-nivel-status mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
                     </div>
+                    
+                    <div class="nivel-descricao">
+                      <p id="descStatus">Status padrão, sem modificadores</p>
+                    </div>
+                  </div>
+                  
+                  <div class="status-custo">
+                    <span>Custo Total:</span>
+                    <span id="custoStatus" class="custo-total">0</span>
+                  </div>
                 </div>
-            </div>
-
-            <!-- SUB-ABA 2: CATÁLOGO DE VANTAGENS -->
-            <div id="subtab-catalogo-vantagens" class="subtab-pane">
-                <div class="catalogo-completo">
-                    <div class="catalogo-header">
-                        <h2><i class="fas fa-star"></i> Catálogo de Vantagens</h2>
-                        <div class="catalogo-controls">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" id="buscaVantagens" placeholder="Buscar vantagens...">
-                            </div>
-                            <div class="filtros-catalogo">
-                                <select id="filtroCategoriaVantagens" class="filtro-select">
-                                    <option value="all">Todas as Categorias</option>
-                                    <option value="mental">Mental</option>
-                                    <option value="fisica">Física</option>
-                                    <option value="social">Social</option>
-                                    <option value="exotica">Exótica</option>
-                                    <option value="supers">Supers</option>
-                                </select>
-                                <select id="filtroCustoVantagens" class="filtro-select">
-                                    <option value="all">Qualquer Custo</option>
-                                    <option value="baixo">Até 10 pontos</option>
-                                    <option value="medio">11-25 pontos</option>
-                                    <option value="alto">26+ pontos</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="catalogo-grid">
-                        <!-- COLUNA ESQUERDA: LISTA DE VANTAGENS -->
-                        <div class="lista-catalogo">
-                            <div class="catalogo-stats">
-                                <span><strong id="totalVantagens">0</strong> vantagens encontradas</span>
-                                <span><strong id="pontosVantagens">0</strong> pontos em vantagens</span>
-                            </div>
-                            
-                            <div class="vantagens-lista">
-                                <!-- VANTAGENS MENTAIS -->
-                                <div class="categoria-vantagens" data-categoria="mental">
-                                    <h3><i class="fas fa-brain"></i> Vantagens Mentais</h3>
-                                    <div class="vantagens-grid">
-                                        <!-- Aptidão Mágica -->
-                                        <div class="vantagem-card" data-id="aptidao-magica" data-custo="5" data-categorias="mental,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-hat-wizard"></i>
-                                                <h4>Aptidão Mágica</h4>
-                                                <span class="custo-badge">+5/nível</span>
-                                            </div>
-                                            <p>Melhora todas as habilidades mágicas. Cada nível fornece +1 para todas as rolagens de magia.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="aptidao-magica">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Abençoado -->
-                                        <div class="vantagem-card" data-id="abençoado" data-custo="10" data-categorias="mental,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-hands-praying"></i>
-                                                <h4>Abençoado</h4>
-                                                <span class="custo-badge">+10/nível</span>
-                                            </div>
-                                            <p>Você recebe proteção divina e sorte incomum em situações perigosas.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="abençoado">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Sorte -->
-                                        <div class="vantagem-card" data-id="sorte" data-custo="15" data-categorias="mental,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-clover"></i>
-                                                <h4>Sorte</h4>
-                                                <span class="custo-badge">+15/nível</span>
-                                            </div>
-                                            <p>Você pode rerrolar más rolagens. O número de rerrolagens depende do nível.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="sorte">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Intuição -->
-                                        <div class="vantagem-card" data-id="intuição" data-custo="15" data-categorias="mental">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-lightbulb"></i>
-                                                <h4>Intuição</h4>
-                                                <span class="custo-badge">+15</span>
-                                            </div>
-                                            <p>Permite que o Mestre dê dicas úteis sobre situações perigosas ou enigmas.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="intuição">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- VANTAGENS FÍSICAS -->
-                                <div class="categoria-vantagens" data-categoria="fisica">
-                                    <h3><i class="fas fa-dumbbell"></i> Vantagens Físicas</h3>
-                                    <div class="vantagens-grid">
-                                        <!-- Ambidestria -->
-                                        <div class="vantagem-card" data-id="ambidestria" data-custo="5" data-categorias="fisica">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-hands"></i>
-                                                <h4>Ambidestria</h4>
-                                                <span class="custo-badge">+5</span>
-                                            </div>
-                                            <p>Pode usar ambas as mãos igualmente bem, sem penalidade para a mão não-dominante.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="ambidestria">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Imunidade -->
-                                        <div class="vantagem-card" data-id="imunidade" data-custo="variavel" data-categorias="fisica,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-shield-virus"></i>
-                                                <h4>Imunidade</h4>
-                                                <span class="custo-badge">Variável</span>
-                                            </div>
-                                            <p>Imune a certos tipos de dano ou condições. Custo depende do tipo de imunidade.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="imunidade">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Resistência -->
-                                        <div class="vantagem-card" data-id="resistencia" data-custo="3" data-categorias="fisica,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-shield-alt"></i>
-                                                <h4>Resistência</h4>
-                                                <span class="custo-badge">+3/nível</span>
-                                            </div>
-                                            <p>Resistência aumentada a venenos, doenças ou elementos específicos.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="resistencia">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- VANTAGENS SOCIAIS -->
-                                <div class="categoria-vantagens" data-categoria="social">
-                                    <h3><i class="fas fa-users"></i> Vantagens Sociais</h3>
-                                    <div class="vantagens-grid">
-                                        <!-- Carisma -->
-                                        <div class="vantagem-card" data-id="carisma" data-custo="5" data-categorias="social,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-user-friends"></i>
-                                                <h4>Carisma</h4>
-                                                <span class="custo-badge">+5/nível</span>
-                                            </div>
-                                            <p>Afeta reações de NPCs e pode fornecer bônus em habilidades sociais.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="carisma">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Adaptabilidade Cultural -->
-                                        <div class="vantagem-card" data-id="adaptabilidade-cultural" data-custo="10" data-categorias="social,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-globe-americas"></i>
-                                                <h4>Adaptabilidade Cultural</h4>
-                                                <span class="custo-badge">+10</span>
-                                            </div>
-                                            <p>Aprende rapidamente costumes locais e não sofre penalidades em culturas estrangeiras.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="adaptabilidade-cultural">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Empatia -->
-                                        <div class="vantagem-card" data-id="empatia" data-custo="15" data-categorias="social">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-heart"></i>
-                                                <h4>Empatia</h4>
-                                                <span class="custo-badge">+15</span>
-                                            </div>
-                                            <p>Consegue sentir emoções e intenções das pessoas com quem interage.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="empatia">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- VANTAGENS EXÓTICAS/SUPERS -->
-                                <div class="categoria-vantagens" data-categoria="exotica">
-                                    <h3><i class="fas fa-bolt"></i> Vantagens Exóticas</h3>
-                                    <div class="vantagens-grid">
-                                        <!-- Visão Noturna -->
-                                        <div class="vantagem-card" data-id="visao-noturna" data-custo="5" data-categorias="exotica">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-eye"></i>
-                                                <h4>Visão Noturna</h4>
-                                                <span class="custo-badge">+5/nível</span>
-                                            </div>
-                                            <p>Pode enxergar no escuro. Cada nível aumenta o alcance da visão.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="visao-noturna">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Regeneração -->
-                                        <div class="vantagem-card" data-id="regeneracao" data-custo="variavel" data-categorias="exotica,opcoes">
-                                            <div class="vantagem-card-header">
-                                                <i class="fas fa-heart-circle-plus"></i>
-                                                <h4>Regeneração</h4>
-                                                <span class="custo-badge">Variável</span>
-                                            </div>
-                                            <p>Recupera Pontos de Vida automaticamente. Velocidade depende do nível.</p>
-                                            <div class="vantagem-card-footer">
-                                                <button class="btn-info" data-info="regeneracao">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-vantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- COLUNA DIREITA: RESUMO DAS VANTAGENS ESCOLHIDAS -->
-                        <div class="resumo-escolhas">
-                            <div class="resumo-header">
-                                <h3><i class="fas fa-check-circle"></i> Minhas Vantagens</h3>
-                                <div class="resumo-stats">
-                                    <span id="totalMinhasVantagens">0</span> vantagens
-                                    <span id="custoTotalVantagens">0</span> pontos
-                                </div>
-                            </div>
-                            
-                            <div class="vantagens-escolhidas" id="vantagensEscolhidasLista">
-                                <div class="lista-vazia">
-                                    <i class="fas fa-star"></i>
-                                    <p>Nenhuma vantagem selecionada</p>
-                                    <small>Adicione vantagens clicando nos botões "+"</small>
-                                </div>
-                            </div>
-                            
-                            <div class="resumo-detalhes">
-                                <h4>Resumo por Categoria</h4>
-                                <div class="categoria-resumo">
-                                    <div class="cat-item">
-                                        <span>Mental:</span>
-                                        <span id="catMental">0</span>
-                                    </div>
-                                    <div class="cat-item">
-                                        <span>Física:</span>
-                                        <span id="catFisica">0</span>
-                                    </div>
-                                    <div class="cat-item">
-                                        <span>Social:</span>
-                                        <span id="catSocial">0</span>
-                                    </div>
-                                    <div class="cat-item">
-                                        <span>Exótica:</span>
-                                        <span id="catExotica">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+              </div>
+              
+              <!-- REPUTAÇÃO -->
+              <div class="status-item" data-tipo="reputacao" data-custo="5">
+                <div class="status-header">
+                  <h4><i class="fas fa-star"></i> Reputação</h4>
+                  <small>±5 pts por nível (máx. 4 níveis)</small>
                 </div>
-            </div>
-
-            <!-- SUB-ABA 3: CATÁLOGO DE DESVANTAGENS -->
-            <div id="subtab-catalogo-desvantagens" class="subtab-pane">
-                <div class="catalogo-completo">
-                    <div class="catalogo-header">
-                        <h2><i class="fas fa-exclamation-triangle"></i> Catálogo de Desvantagens</h2>
-                        <div class="catalogo-controls">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" id="buscaDesvantagens" placeholder="Buscar desvantagens...">
-                            </div>
-                            <div class="filtros-catalogo">
-                                <select id="filtroCategoriaDesvantagens" class="filtro-select">
-                                    <option value="all">Todas as Categorias</option>
-                                    <option value="fisica">Defeitos Físicos</option>
-                                    <option value="mental">Defeitos Mentais</option>
-                                    <option value="social">Problemas Sociais</option>
-                                    <option value="comportamental">Comportamentais</option>
-                                </select>
-                                <select id="filtroLimiteDesvantagens" class="filtro-select">
-                                    <option value="all">Qualquer Limite</option>
-                                    <option value="baixa">Até -10 pontos</option>
-                                    <option value="media">-11 a -25 pontos</option>
-                                    <option value="alta">-26+ pontos</option>
-                                </select>
-                            </div>
-                        </div>
+                
+                <div class="status-controles">
+                  <div class="direcao-selecao">
+                    <label class="radio-label">
+                      <input type="radio" name="reputacao-direcao" value="positivo">
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">Positiva (Vantagem)</span>
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" name="reputacao-direcao" value="negativo">
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">Negativa (Desvantagem)</span>
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" name="reputacao-direcao" value="neutro" checked>
+                      <span class="radio-custom"></span>
+                      <span class="radio-text">Neutra</span>
+                    </label>
+                  </div>
+                  
+                  <div class="niveis-status">
+                    <div class="nivel-contador">
+                      <button class="btn-nivel-status menos" disabled>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <div class="nivel-info">
+                        <span class="nivel-valor">0</span>
+                        <small>Níveis</small>
+                      </div>
+                      <button class="btn-nivel-status mais" disabled>
+                        <i class="fas fa-plus"></i>
+                      </button>
                     </div>
-
-                    <div class="catalogo-grid">
-                        <!-- COLUNA ESQUERDA: LISTA DE DESVANTAGENS -->
-                        <div class="lista-catalogo">
-                            <div class="catalogo-stats">
-                                <span><strong id="totalDesvantagens">0</strong> desvantagens encontradas</span>
-                                <span><strong id="pontosDesvantagens">0</strong> pontos em desvantagens</span>
-                            </div>
-                            
-                            <div class="desvantagens-lista">
-                                <!-- DEFEITOS FÍSICOS -->
-                                <div class="categoria-desvantagens" data-categoria="fisica">
-                                    <h3><i class="fas fa-user-injured"></i> Defeitos Físicos</h3>
-                                    <div class="desvantagens-grid">
-                                        <!-- Cego -->
-                                        <div class="desvantagem-card" data-id="cego" data-custo="-25" data-categorias="fisica">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-eye-slash"></i>
-                                                <h4>Cego</h4>
-                                                <span class="custo-badge negativo">-25</span>
-                                            </div>
-                                            <p>Totalmente cego. Penalidades severas em todas as ações visuais.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="cego">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Surdo -->
-                                        <div class="desvantagem-card" data-id="surdo" data-custo="-20" data-categorias="fisica">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-deaf"></i>
-                                                <h4>Surdo</h4>
-                                                <span class="custo-badge negativo">-20</span>
-                                            </div>
-                                            <p>Totalmente surdo. Não pode ouvir sons e tem penalidades em percepção.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="surdo">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Manco -->
-                                        <div class="desvantagem-card" data-id="manco" data-custo="-15" data-categorias="fisica">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-crutch"></i>
-                                                <h4>Manco</h4>
-                                                <span class="custo-badge negativo">-15</span>
-                                            </div>
-                                            <p>Dificuldade de locomoção. Penalidades em movimento e habilidades físicas.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="manco">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Doença Crônica -->
-                                        <div class="desvantagem-card" data-id="doenca-cronica" data-custo="variavel" data-categorias="fisica,opcoes">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-virus"></i>
-                                                <h4>Doença Crônica</h4>
-                                                <span class="custo-badge negativo">Variável</span>
-                                            </div>
-                                            <p>Sofre de uma doença que afeta periodicamente suas capacidades.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="doenca-cronica">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- DEFEITOS MENTAIS -->
-                                <div class="categoria-desvantagens" data-categoria="mental">
-                                    <h3><i class="fas fa-brain"></i> Defeitos Mentais</h3>
-                                    <div class="desvantagens-grid">
-                                        <!-- Fobia -->
-                                        <div class="desvantagem-card" data-id="fobia" data-custo="variavel" data-categorias="mental,opcoes">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-ghost"></i>
-                                                <h4>Fobia</h4>
-                                                <span class="custo-badge negativo">Variável</span>
-                                            </div>
-                                            <p>Medo irracional de algo específico. Custo depende da frequência do encontro.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="fobia">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Código de Honra -->
-                                        <div class="desvantagem-card" data-id="codigo-honra" data-custo="variavel" data-categorias="mental,opcoes">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-scroll"></i>
-                                                <h4>Código de Honra</h4>
-                                                <span class="custo-badge negativo">Variável</span>
-                                            </div>
-                                            <p>Seguir um código rígido de conduta, mesmo quando inconveniente.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="codigo-honra">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Curioso -->
-                                        <div class="desvantagem-card" data-id="curioso" data-custo="-5" data-categorias="mental">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-question-circle"></i>
-                                                <h4>Curioso</h4>
-                                                <span class="custo-badge negativo">-5</span>
-                                            </div>
-                                            <p>Incapacidade de resistir a investigar coisas interessantes ou misteriosas.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="curioso">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Alcoolismo -->
-                                        <div class="desvantagem-card" data-id="alcoolismo" data-custo="-15" data-categorias="mental">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-wine-bottle"></i>
-                                                <h4>Alcoolismo</h4>
-                                                <span class="custo-badge negativo">-15</span>
-                                            </div>
-                                            <p>Dependência de álcool. Sofre penalidades quando não bebe.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="alcoolismo">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- PROBLEMAS SOCIAIS -->
-                                <div class="categoria-desvantagens" data-categoria="social">
-                                    <h3><i class="fas fa-users-slash"></i> Problemas Sociais</h3>
-                                    <div class="desvantagens-grid">
-                                        <!-- Odioso -->
-                                        <div class="desvantagem-card" data-id="odioso" data-custo="-5" data-categorias="social,opcoes">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-angry"></i>
-                                                <h4>Odioso</h4>
-                                                <span class="custo-badge negativo">-5</span>
-                                            </div>
-                                            <p>Desagrada automaticamente um grupo específico de pessoas.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="odioso">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Dívida -->
-                                        <div class="desvantagem-card" data-id="divida" data-custo="variavel" data-categorias="social,opcoes">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-money-bill-wave"></i>
-                                                <h4>Dívida</h4>
-                                                <span class="custo-badge negativo">Variável</span>
-                                            </div>
-                                            <p>Deve dinheiro a alguém que pode cobrar a qualquer momento.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="divida">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Segredo -->
-                                        <div class="desvantagem-card" data-id="segredo" data-custo="variavel" data-categorias="social,opcoes">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-user-secret"></i>
-                                                <h4>Segredo</h4>
-                                                <span class="custo-badge negativo">Variável</span>
-                                            </div>
-                                            <p>Um segredo que, se revelado, traria consequências graves.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="segredo">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Estigma Social -->
-                                        <div class="desvantagem-card" data-id="estigma-social" data-custo="-5" data-categorias="social">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-user-slash"></i>
-                                                <h4>Estigma Social</h4>
-                                                <span class="custo-badge negativo">-5</span>
-                                            </div>
-                                            <p>Membro de um grupo social desprezado ou discriminado.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="estigma-social">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- COMPORTAMENTAIS -->
-                                <div class="categoria-desvantagens" data-categoria="comportamental">
-                                    <h3><i class="fas fa-exclamation"></i> Desvantagens Comportamentais</h3>
-                                    <div class="desvantagens-grid">
-                                        <!-- Impulsivo -->
-                                        <div class="desvantagem-card" data-id="impulsivo" data-custo="-10" data-categorias="comportamental">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-bolt"></i>
-                                                <h4>Impulsivo</h4>
-                                                <span class="custo-badge negativo">-10</span>
-                                            </div>
-                                            <p>Toma decisões rápidas sem pensar nas consequências.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="impulsivo">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Gula -->
-                                        <div class="desvantagem-card" data-id="gula" data-custo="-5" data-categorias="comportamental">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-utensils"></i>
-                                                <h4>Gula</h4>
-                                                <span class="custo-badge negativo">-5</span>
-                                            </div>
-                                            <p>Come em excesso quando a comida está disponível.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="gula">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Gênio Ruim -->
-                                        <div class="desvantagem-card" data-id="genio-ruim" data-custo="-10" data-categorias="comportamental">
-                                            <div class="desvantagem-card-header">
-                                                <i class="fas fa-poo"></i>
-                                                <h4>Gênio Ruim</h4>
-                                                <span class="custo-badge negativo">-10</span>
-                                            </div>
-                                            <p>Facilmente irritável e briguento quando contrariado.</p>
-                                            <div class="desvantagem-card-footer">
-                                                <button class="btn-info" data-info="genio-ruim">
-                                                    <i class="fas fa-info-circle"></i> Detalhes
-                                                </button>
-                                                <button class="btn-adicionar-desvantagem">
-                                                    <i class="fas fa-plus"></i> Adicionar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- COLUNA DIREITA: RESUMO DAS DESVANTAGENS ESCOLHIDAS -->
-                        <div class="resumo-escolhas">
-                            <div class="resumo-header">
-                                <h3><i class="fas fa-exclamation-circle"></i> Minhas Desvantagens</h3>
-                                <div class="resumo-stats">
-                                    <span id="totalMinhasDesvantagens">0</span> desvantagens
-                                    <span id="custoTotalDesvantagens">0</span> pontos
-                                </div>
-                            </div>
-                            
-                            <div class="desvantagens-escolhidas" id="desvantagensEscolhidasLista">
-                                <div class="lista-vazia">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <p>Nenhuma desvantagem selecionada</p>
-                                    <small>Adicione desvantagens clicando nos botões "+"</small>
-                                </div>
-                            </div>
-                            
-                            <div class="resumo-detalhes">
-                                <h4>Limite de Desvantagens</h4>
-                                <div class="limite-info">
-                                    <div class="limite-bar">
-                                        <div class="limite-fill" id="limiteFill" style="width: 0%"></div>
-                                    </div>
-                                    <div class="limite-texto">
-                                        <span>Usado:</span>
-                                        <span id="limiteUsado">0</span> / 
-                                        <span id="limiteMaximo">-50</span> pontos
-                                    </div>
-                                </div>
-                                
-                                <div class="categoria-resumo">
-                                    <div class="cat-item">
-                                        <span>Física:</span>
-                                        <span id="catDesvFisica">0</span>
-                                    </div>
-                                    <div class="cat-item">
-                                        <span>Mental:</span>
-                                        <span id="catDesvMental">0</span>
-                                    </div>
-                                    <div class="cat-item">
-                                        <span>Social:</span>
-                                        <span id="catDesvSocial">0</span>
-                                    </div>
-                                    <div class="cat-item">
-                                        <span>Comportamental:</span>
-                                        <span id="catDesvComportamental">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    
+                    <div class="nivel-descricao">
+                      <p id="descReputacao">Reputação padrão, sem modificadores</p>
                     </div>
+                  </div>
+                  
+                  <div class="status-custo">
+                    <span>Custo Total:</span>
+                    <span id="custoReputacao" class="custo-total">0</span>
+                  </div>
                 </div>
+              </div>
             </div>
+          </div>
 
-            <!-- SUB-ABA 4: MINHAS ESCOLHAS (RESUMO COMPLETO) -->
-            <div id="subtab-minhas-vantagens" class="subtab-pane">
-                <div class="resumo-completo">
-                    <div class="resumo-header-main">
-                        <h2><i class="fas fa-clipboard-check"></i> Minhas Escolhas - Resumo Completo</h2>
-                        <div class="resumo-total-global">
-                            <span>Saldo Total:</span>
-                            <span id="saldoTotal" class="saldo-positivo">0 pontos</span>
-                        </div>
-                    </div>
-
-                    <div class="resumo-grid">
-                        <!-- COLUNA 1: ATRIBUTOS E RELAÇÕES -->
-                        <div class="resumo-col">
-                            <div class="resumo-card">
-                                <div class="resumo-card-header">
-                                    <i class="fas fa-user-cog"></i>
-                                    <h3>Atributos & Relações</h3>
-                                    <span class="pontos-badge" id="resumoAtributosTotal">0 pts</span>
-                                </div>
-                                
-                                <div class="resumo-card-content">
-                                    <h4>Atributos Complementares</h4>
-                                    <div class="resumo-lista">
-                                        <div class="resumo-item">
-                                            <span>Força de Vontade:</span>
-                                            <span id="resumoForcaVontade">0</span>
-                                        </div>
-                                        <div class="resumo-item">
-                                            <span>Percepção:</span>
-                                            <span id="resumoPercepcao">0</span>
-                                        </div>
-                                        <div class="resumo-item">
-                                            <span>Pontos de Vida:</span>
-                                            <span id="resumoPV">0</span>
-                                        </div>
-                                        <div class="resumo-item">
-                                            <span>Pontos de Fadiga:</span>
-                                            <span id="resumoPF">0</span>
-                                        </div>
-                                        <div class="resumo-item">
-                                            <span>Velocidade Básica:</span>
-                                            <span id="resumoVelocidade">0.00</span>
-                                        </div>
-                                        <div class="resumo-item">
-                                            <span>Deslocamento Básico:</span>
-                                            <span id="resumoDeslocamento">0m</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <h4>Status & Reputação</h4>
-                                    <div class="resumo-lista">
-                                        <div class="resumo-item">
-                                            <span>Status:</span>
-                                            <span id="resumoStatus">Neutro</span>
-                                        </div>
-                                        <div class="resumo-item">
-                                            <span>Reputação:</span>
-                                            <span id="resumoReputacao">Neutra</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <h4>Relacionamentos</h4>
-                                    <div class="relacionamentos-resumo-compacto">
-                                        <div class="resumo-item">
-                                            <span>Total de Relacionamentos:</span>
-                                            <span id="resumoTotalRelacionamentos">0</span>
-                                        </div>
-                                        <div class="resumo-item">
-                                            <span>Custo Total:</span>
-                                            <span id="resumoCustoRelacionamentos">0 pts</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- COLUNA 2: VANTAGENS -->
-                        <div class="resumo-col">
-                            <div class="resumo-card vantagens-card">
-                                <div class="resumo-card-header">
-                                    <i class="fas fa-star"></i>
-                                    <h3>Vantagens Adquiridas</h3>
-                                    <span class="pontos-badge positivo" id="resumoTotalVantagens">0 pts</span>
-                                </div>
-                                
-                                <div class="resumo-card-content">
-                                    <div class="resumo-categorias">
-                                        <div class="cat-badge">
-                                            <span>Mental</span>
-                                            <span id="resumoCatMental">0</span>
-                                        </div>
-                                        <div class="cat-badge">
-                                            <span>Física</span>
-                                            <span id="resumoCatFisica">0</span>
-                                        </div>
-                                        <div class="cat-badge">
-                                            <span>Social</span>
-                                            <span id="resumoCatSocial">0</span>
-                                        </div>
-                                        <div class="cat-badge">
-                                            <span>Exótica</span>
-                                            <span id="resumoCatExotica">0</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="vantagens-lista-resumo" id="vantagensListaResumo">
-                                        <div class="lista-vazia">
-                                            <i class="fas fa-star"></i>
-                                            <p>Nenhuma vantagem selecionada</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="resumo-total">
-                                        <span>Total em Vantagens:</span>
-                                        <span id="resumoTotalVantagensCusto">0 pontos</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- COLUNA 3: DESVANTAGENS -->
-                        <div class="resumo-col">
-                            <div class="resumo-card desvantagens-card">
-                                <div class="resumo-card-header">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <h3>Desvantagens Adquiridas</h3>
-                                    <span class="pontos-badge negativo" id="resumoTotalDesvantagens">0 pts</span>
-                                </div>
-                                
-                                <div class="resumo-card-content">
-                                    <div class="limite-info-resumo">
-                                        <div class="limite-bar">
-                                            <div class="limite-fill" id="limiteFillResumo" style="width: 0%"></div>
-                                        </div>
-                                        <div class="limite-texto">
-                                            <span>Limite:</span>
-                                            <span id="limiteAtualResumo">0</span> / 
-                                            <span id="limiteMaximoResumo">-50</span> pts
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="resumo-categorias">
-                                        <div class="cat-badge">
-                                            <span>Física</span>
-                                            <span id="resumoCatDesvFisica">0</span>
-                                        </div>
-                                        <div class="cat-badge">
-                                            <span>Mental</span>
-                                            <span id="resumoCatDesvMental">0</span>
-                                        </div>
-                                        <div class="cat-badge">
-                                            <span>Social</span>
-                                            <span id="resumoCatDesvSocial">0</span>
-                                        </div>
-                                        <div class="cat-badge">
-                                            <span>Comportamental</span>
-                                            <span id="resumoCatDesvComportamental">0</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="desvantagens-lista-resumo" id="desvantagensListaResumo">
-                                        <div class="lista-vazia">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <p>Nenhuma desvantagem selecionada</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="resumo-total">
-                                        <span>Total em Desvantagens:</span>
-                                        <span id="resumoTotalDesvantagensCusto">0 pontos</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- RESUMO FINAL -->
-                    <div class="resumo-final">
-                        <div class="saldo-final">
-                            <div class="saldo-item">
-                                <span>Pontos de Vantagens:</span>
-                                <span class="saldo-positivo" id="saldoVantagens">+0</span>
-                            </div>
-                            <div class="saldo-item">
-                                <span>Pontos de Desvantagens:</span>
-                                <span class="saldo-negativo" id="saldoDesvantagens">-0</span>
-                            </div>
-                            <div class="saldo-item">
-                                <span>Atributos & Relações:</span>
-                                <span id="saldoAtributos">0</span>
-                            </div>
-                            <div class="saldo-total">
-                                <span>SALDO TOTAL:</span>
-                                <span id="saldoTotalFinal" class="saldo-neutro">0 pontos</span>
-                            </div>
-                        </div>
-                        
-                        <div class="resumo-acoes">
-                            <button class="btn-imprimir">
-                                <i class="fas fa-print"></i> Imprimir Resumo
-                            </button>
-                            <button class="btn-limpar-tudo">
-                                <i class="fas fa-trash"></i> Limpar Todas as Escolhas
-                            </button>
-                        </div>
-                    </div>
+          <!-- CARD 3: RELACIONAMENTOS -->
+          <div class="caracteristica-card">
+            <div class="card-header">
+              <i class="fas fa-handshake"></i>
+              <h3>Relacionamentos</h3>
+              <span class="pontos-badge" id="pontosRelacionamentos">0 pts</span>
+            </div>
+            
+            <div class="card-content">
+              <div class="relacionamentos-toolbar">
+                <button id="btnAddRelacionamento" class="btn-add">
+                  <i class="fas fa-plus"></i> Adicionar Relacionamento
+                </button>
+                <div class="filter-buttons">
+                  <button class="filter-btn active" data-filter="all">Todos</button>
+                  <button class="filter-btn" data-filter="aliado">Aliados</button>
+                  <button class="filter-btn" data-filter="contato">Contatos</button>
+                  <button class="filter-btn" data-filter="inimigo">Inimigos</button>
+                  <button class="filter-btn" data-filter="patrono">Patronos</button>
+                  <button class="filter-btn" data-filter="dependente">Dependentes</button>
                 </div>
+              </div>
+              
+              <div class="relacionamentos-lista" id="relacionamentosLista">
+                <div class="empty-state">
+                  <i class="fas fa-users"></i>
+                  <p>Nenhum relacionamento adicionado</p>
+                  <small>Clique em "Adicionar Relacionamento" para começar</small>
+                </div>
+              </div>
+              
+              <div class="relacionamentos-resumo">
+                <div class="resumo-item">
+                  <span>Aliados:</span>
+                  <span id="countAliados">0</span>
+                </div>
+                <div class="resumo-item">
+                  <span>Contatos:</span>
+                  <span id="countContatos">0</span>
+                </div>
+                <div class="resumo-item">
+                  <span>Inimigos:</span>
+                  <span id="countInimigos">0</span>
+                </div>
+                <div class="resumo-item">
+                  <span>Patronos:</span>
+                  <span id="countPatronos">0</span>
+                </div>
+                <div class="resumo-total">
+                  <span>Custo Total:</span>
+                  <span id="totalRelacionamentos">0 pts</span>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+        
+        <!-- RESUMO DOS PONTOS -->
+        <div class="resumo-pontos">
+          <div class="resumo-card">
+            <div class="resumo-header">
+              <i class="fas fa-calculator"></i>
+              <h3>Resumo de Pontos</h3>
+            </div>
+            <div class="resumo-content">
+              <div class="resumo-item">
+                <span>Atributos Complementares:</span>
+                <span id="totalAtributos">0</span>
+              </div>
+              <div class="resumo-item">
+                <span>Status & Reputação:</span>
+                <span id="totalStatusRep">0</span>
+              </div>
+              <div class="resumo-item">
+                <span>Relacionamentos:</span>
+                <span id="totalRelacionamentosResumo">0</span>
+              </div>
+              <div class="resumo-total">
+                <span>TOTAL GASTO:</span>
+                <span id="totalGeral">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-ABA 2: CATÁLOGO GERAL DE VANTAGENS -->
+      <div id="subtab-catalogo-geral" class="subtab-pane">
+        <div class="catalogo-simples">
+          <div class="catalogo-grid-duplo">
+            <!-- CARD ESQUERDO: VANTAGENS DISPONÍVEIS -->
+            <div class="catalogo-card disponiveis-card">
+              <div class="card-header">
+                <i class="fas fa-book-open"></i>
+                <h3>Vantagens Disponíveis</h3>
+                <div class="search-small">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="buscaVantagens" placeholder="Buscar vantagem...">
+                </div>
+              </div>
+              
+              <div class="filtros-rapidos">
+                <button class="filtro-btn active" data-filtro="todos">Todas</button>
+                <button class="filtro-btn" data-filtro="mental">Mental</button>
+                <button class="filtro-btn" data-filtro="fisica">Física</button>
+                <button class="filtro-btn" data-filtro="social">Social</button>
+                <button class="filtro-btn" data-filtro="supers">Supers</button>
+                <button class="filtro-btn" data-filtro="simples">Simples</button>
+                <button class="filtro-btn" data-filtro="opcoes">Com Opções</button>
+              </div>
+              
+              <div class="lista-vantagens-scroll">
+                <!-- VANTAGENS SERÃO INSERIDAS AQUI VIA JS -->
+                <div class="loading-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Carregando catálogo de vantagens...</p>
+                </div>
+              </div>
+              
+              <div class="lista-status">
+                <small>Mostrando <span id="contador-vantagens">0</span> vantagens</small>
+              </div>
+            </div>
+            
+            <!-- CARD DIREITO: VANTAGENS ADQUIRIDAS -->
+            <div class="catalogo-card adquiridas-card">
+              <div class="card-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>Vantagens Adquiridas</h3>
+                <span class="pontos-badge" id="total-pontos-vantagens">0 pts</span>
+              </div>
+              
+              <div class="vantagens-escolhidas-scroll">
+                <div class="lista-vazia">
+                  <i class="fas fa-star"></i>
+                  <p>Nenhuma vantagem selecionada</p>
+                  <small>Clique no botão "+" para adicionar</small>
+                </div>
+              </div>
+              
+              <div class="resumo-escolhidas">
+                <div class="resumo-item">
+                  <span>Total:</span>
+                  <span id="total-vantagens">0 vantagens</span>
+                </div>
+                <div class="resumo-item">
+                  <span>Custo:</span>
+                  <span id="custo-vantagens">0 pontos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-ABA 3: CATÁLOGO DE DESVANTAGENS -->
+      <div id="subtab-catalogo-desvantagens" class="subtab-pane">
+        <div class="catalogo-simples">
+          <div class="catalogo-grid-duplo">
+            <!-- CARD ESQUERDO: DESVANTAGENS DISPONÍVEIS -->
+            <div class="catalogo-card disponiveis-card">
+              <div class="card-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Desvantagens Disponíveis</h3>
+                <div class="search-small">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="buscaDesvantagens" placeholder="Buscar desvantagem...">
+                </div>
+              </div>
+              
+              <div class="filtros-rapidos">
+                <button class="filtro-btn active" data-filtro="todos">Todas</button>
+                <button class="filtro-btn" data-filtro="mental">Mental</button>
+                <button class="filtro-btn" data-filtro="fisica">Física</button>
+                <button class="filtro-btn" data-filtro="social">Social</button>
+                <button class="filtro-btn" data-filtro="supernatural">Sobrenatural</button>
+                <button class="filtro-btn" data-filtro="simples">Simples</button>
+                <button class="filtro-btn" data-filtro="opcoes">Com Opções</button>
+              </div>
+              
+              <div class="lista-desvantagens-scroll">
+                <!-- DESVANTAGENS SERÃO INSERIDAS AQUI VIA JS -->
+                <div class="loading-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Carregando catálogo de desvantagens...</p>
+                </div>
+              </div>
+              
+              <div class="lista-status">
+                <small>Mostrando <span id="contador-desvantagens">0</span> desvantagens</small>
+              </div>
+            </div>
+            
+            <!-- CARD DIREITO: DESVANTAGENS ADQUIRIDAS -->
+            <div class="catalogo-card adquiridas-card">
+              <div class="card-header">
+                <i class="fas fa-times-circle"></i>
+                <h3>Desvantagens Adquiridas</h3>
+                <span class="pontos-badge negativo" id="total-pontos-desvantagens">0 pts</span>
+              </div>
+              
+              <div class="desvantagens-escolhidas-scroll">
+                <div class="lista-vazia">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <p>Nenhuma desvantagem selecionada</p>
+                  <small>Clique no botão "+" para adicionar</small>
+                </div>
+              </div>
+              
+              <div class="resumo-escolhidas">
+                <div class="resumo-item">
+                  <span>Total:</span>
+                  <span id="total-desvantagens">0 desvantagens</span>
+                </div>
+                <div class="resumo-item">
+                  <span>Pontos:</span>
+                  <span id="pontos-desvantagens">0 pontos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
-<!-- MODAL PARA DETALHES DE VANTAGEM/DESVANTAGEM -->
-<div id="modalDetalhes" class="modal">
-    <div class="modal-content detalhes-modal">
-        <div class="modal-header">
-            <h3 id="modalTitulo"></h3>
-            <span id="modalCusto" class="custo-modal"></span>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="detalhes-info">
-                <div class="info-item">
-                    <span><i class="fas fa-tag"></i> Categoria:</span>
-                    <span id="modalCategoria"></span>
-                </div>
-                <div class="info-item">
-                    <span><i class="fas fa-calculator"></i> Custo:</span>
-                    <span id="modalCustoDetalhado"></span>
-                </div>
-                <div class="info-item">
-                    <span><i class="fas fa-book"></i> Referência:</span>
-                    <span id="modalReferencia"></span>
-                </div>
-            </div>
-            
-            <div class="detalhes-descricao">
-                <h4><i class="fas fa-align-left"></i> Descrição</h4>
-                <p id="modalDescricao"></p>
-            </div>
-            
-            <div class="detalhes-opcoes" id="modalOpcoes" style="display: none;">
-                <h4><i class="fas fa-cog"></i> Opções Disponíveis</h4>
-                <div class="opcoes-lista" id="opcoesLista">
-                    <!-- Dinâmico via JS -->
-                </div>
-            </div>
-            
-            <div class="detalhes-notas">
-                <h4><i class="fas fa-sticky-note"></i> Notas do Sistema</h4>
-                <p id="modalNotas"></p>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancelar" id="btnCancelarDetalhes">
-                <i class="fas fa-times"></i> Fechar
-            </button>
-            <button class="btn-confirmar" id="btnConfirmarDetalhes">
-                <i class="fas fa-check"></i> Adicionar ao Personagem
-            </button>
-        </div>
-    </div>
+<!-- MODAL PARA VANTAGENS -->
+<div id="modalVantagem" class="modal">
+  <div class="modal-content vantagem-modal">
+    <!-- CONTEÚDO DINÂMICO VIA JS -->
+  </div>
 </div>
 
-<!-- MODAL PARA RELACIONAMENTOS (JÁ EXISTENTE - MANTIDO) -->
+<!-- MODAL PARA DESVANTAGENS -->
+<div id="modalDesvantagem" class="modal">
+  <div class="modal-content desvantagem-modal">
+    <!-- CONTEÚDO DINÂMICO VIA JS -->
+  </div>
+</div>
+
+<!-- MODAL PARA RELACIONAMENTOS -->
 <div id="modalRelacionamento" class="modal">
-    <!-- Código existente do modal de relacionamentos -->
-    <!-- Mantido igual ao que você já tem -->
+  <div class="modal-content relacionamento-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-handshake"></i> Novo Relacionamento</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-steps">
+        <div class="modal-step active" id="step1">
+          <h4><i class="fas fa-user-tag"></i> Tipo de Relacionamento</h4>
+          <p>Selecione o tipo de relacionamento que deseja adicionar:</p>
+          
+          <div class="tipo-options">
+            <div class="tipo-option" data-tipo="aliado">
+              <i class="fas fa-shield-alt"></i>
+              <span>Aliado</span>
+              <small>Companheiro leal que acompanha o personagem</small>
+            </div>
+            <div class="tipo-option" data-tipo="contato">
+              <i class="fas fa-network-wired"></i>
+              <span>Contato</span>
+              <small>Fonte de informação ou influência</small>
+            </div>
+            <div class="tipo-option" data-tipo="inimigo">
+              <i class="fas fa-skull-crossbones"></i>
+              <span>Inimigo</span>
+              <small>Opositor que causa problemas</small>
+            </div>
+            <div class="tipo-option" data-tipo="patrono">
+              <i class="fas fa-crown"></i>
+              <span>Patrono</span>
+              <small>Protetor ou benfeitor poderoso</small>
+            </div>
+            <div class="tipo-option" data-tipo="dependente">
+              <i class="fas fa-heart"></i>
+              <span>Dependente</span>
+              <small>Pessoa sob proteção do personagem</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-step" id="step2">
+          <div class="config-container">
+            <!-- Dinâmico via JS -->
+          </div>
+        </div>
+        
+        <div class="modal-step" id="step3">
+          <h4><i class="fas fa-edit"></i> Detalhes do Relacionamento</h4>
+          
+          <div class="form-group">
+            <label for="relNome">Nome/Descrição:</label>
+            <input type="text" id="relNome" class="form-control"
+                placeholder="Ex: Sir Galhard, Cavaleiro Leal">
+          </div>
+          
+          <div class="form-group">
+            <label for="relDescricao">Descrição Detalhada:</label>
+            <textarea id="relDescricao" class="form-control" rows="3"
+                 placeholder="Descreva o relacionamento, história, aparência, etc."></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="relObservacoes">Observações (para o Mestre):</label>
+            <textarea id="relObservacoes" class="form-control" rows="2"
+                 placeholder="Notas importantes para o Mestre"></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-resumo" id="modalResumo">
+        <h4><i class="fas fa-calculator"></i> Resumo do Custo</h4>
+        <div class="resumo-info">
+          <div class="resumo-item">
+            <span>Tipo:</span>
+            <span id="resumoTipo">-</span>
+          </div>
+          <div class="resumo-item">
+            <span>Custo Base:</span>
+            <span id="resumoCustoBase">0 pts</span>
+          </div>
+          <div class="resumo-item">
+            <span>Modificadores:</span>
+            <span id="resumoMods">+0 pts</span>
+          </div>
+          <div class="resumo-item">
+            <span>Multiplicador Grupo:</span>
+            <span id="resumoGrupo">×1</span>
+          </div>
+          <div class="resumo-total">
+            <span>Custo Total:</span>
+            <span id="resumoTotal">0 pts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-voltar" id="btnVoltar">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+      <button class="btn-proximo" id="btnProximo">
+        Próximo <i class="fas fa-arrow-right"></i>
+      </button>
+      <button class="btn-cancelar" id="btnCancelar">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+      <button class="btn-confirmar" id="btnConfirmar">
+        <i class="fas fa-check"></i> Confirmar
+      </button>
+    </div>
+  </div>
 </div>
 
-<!-- TEMPLATE PARA VANTAGEM/DESVANTAGEM NA LISTA DE ESCOLHAS -->
-<template id="template-escolha">
-    <div class="escolha-item" data-id="{id}" data-tipo="{tipo}">
-        <div class="escolha-info">
-            <i class="{icone}"></i>
-            <div class="escolha-texto">
-                <strong>{nome}</strong>
-                <small>{categoria} • {custo}</small>
-            </div>
-        </div>
-        <div class="escolha-controles">
-            <span class="escolha-custo {classeCusto}">{pontos}</span>
-            <button class="btn-remover-escolha" data-id="{id}">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
+<!-- TEMPLATE PARA CONFIGURAÇÃO DE ALIADO -->
+<template id="template-aliado">
+  <div class="ally-config">
+    <h4><i class="fas fa-shield-alt"></i> Configuração do Aliado</h4>
+    
+    <div class="form-group">
+      <label for="allyPower">Poder do Aliado:</label>
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="allyPower" value="25" checked>
+          <span class="radio-custom"></span>
+          <span class="radio-text">
+            <strong>25%</strong> dos seus pontos <em>(1 ponto)</em>
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="allyPower" value="50">
+          <span class="radio-custom"></span>
+          <span class="radio-text">
+            <strong>50%</strong> dos seus pontos <em>(2 pontos)</em>
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="allyPower" value="75">
+          <span class="radio-custom"></span>
+          <span class="radio-text">
+            <strong>75%</strong> dos seus pontos <em>(3 pontos)</em>
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="allyPower" value="100">
+          <span class="radio-custom"></span>
+          <span class="radio-text">
+            <strong>100%</strong> dos seus pontos <em>(5 pontos)</em>
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="allyPower" value="150">
+          <span class="radio-custom"></span>
+          <span class="radio-text">
+            <strong>150%</strong> dos seus pontos <em>(10 pontos)</em>
+          </span>
+        </label>
+      </div>
     </div>
+    
+    <div class="form-group">
+      <label><i class="fas fa-magic"></i> Modificadores Especiais</label>
+      <div class="checkbox-group">
+        <label>
+          <input type="checkbox" name="allyMods" value="invocavel">
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">
+            <strong>Invocável</strong> (aparece quando chamado) <em>(×2)</em>
+          </span>
+        </label>
+        <label>
+          <input type="checkbox" name="allyMods" value="lacaio">
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">
+            <strong>Lacaio</strong> (obedece ordens) <em>(×1.5)</em>
+          </span>
+        </label>
+        <label>
+          <input type="checkbox" name="allyMods" value="habilidades">
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">
+            <strong>Habilidades Especiais</strong> <em>(×1.5)</em>
+          </span>
+        </label>
+        <label>
+          <input type="checkbox" name="allyMods" value="afinidade">
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">
+            <strong>Afinidade</strong> (vínculo especial) <em>(×0.75)</em>
+          </span>
+        </label>
+        <label>
+          <input type="checkbox" name="allyMods" value="relutante">
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">
+            <strong>Relutante</strong> (age contra vontade) <em>(×0.5)</em>
+          </span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="isGroup">
+        <span class="checkbox-custom"></span>
+        <span class="checkbox-text">
+          <strong>É um grupo de aliados?</strong>
+        </span>
+      </label>
+      
+      <div id="groupConfig" style="display: none; margin-top: 10px;">
+        <label for="groupSize">Tamanho do Grupo:</label>
+        <select id="groupSize" class="form-control">
+          <option value="1">Individual (×1)</option>
+          <option value="6">6-10 membros (×6)</option>
+          <option value="11">11-20 membros (×8)</option>
+          <option value="21">21-50 membros (×10)</option>
+          <option value="51">51-100 membros (×12)</option>
+        </select>
+      </div>
+    </div>
+  </div>
 </template>
 
-<!-- TEMPLATE PARA DETALHES DE OPÇÕES -->
-<template id="template-opcao">
-    <div class="opcao-item" data-valor="{valor}">
-        <label class="opcao-label">
-            <input type="radio" name="opcao-selecionada" value="{valor}">
-            <span class="opcao-custom"></span>
-            <span class="opcao-texto">
-                <strong>{nome}</strong>
-                <small>{custo}</small>
-            </span>
-        </label>
-        <div class="opcao-descricao">
-            <p>{descricao}</p>
-        </div>
+<!-- TEMPLATE PARA OUTROS TIPOS -->
+<template id="template-outros">
+  <div class="other-config">
+    <h4><i class="fas fa-cog"></i> Configuração Básica</h4>
+    <p>Este tipo de relacionamento ainda está em desenvolvimento.</p>
+    <div class="form-group">
+      <label for="otherPower">Poder/Influência:</label>
+      <select id="otherPower" class="form-control">
+        <option value="5">Baixo (5 pontos)</option>
+        <option value="10" selected>Médio (10 pontos)</option>
+        <option value="20">Alto (20 pontos)</option>
+      </select>
     </div>
+  </div>
 </template>
+
                 <!-- PERÍCIAS -->
         <div id="pericias" class="tab-content">
             <div class="content-placeholder">
