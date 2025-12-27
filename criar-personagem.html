@@ -1432,9 +1432,9 @@ main.main-content {
 
         <!-- CONTEÚDO DAS SUB-ABAS -->
         <div class="subtabs-content">
-            <!-- SUB-ABA 1: ATRIBUTOS & RELAÇÕES -->
+            <!-- SUB-ABA 1: ATRIBUTOS & RELAÇÕES (JÁ EXISTENTE) -->
             <div id="subtab-atributos-relacoes" class="subtab-pane active">
-                <!-- GRID COM 3 CARDS AGORA -->
+                <!-- [SEU CÓDIGO ORIGINAL AQUI - MANTIDO IGUAL] -->
                 <div class="caracteristicas-grid">
                     <!-- CARD 1: ATRIBUTOS COMPLEMENTARES -->
                     <div class="caracteristica-card">
@@ -1874,19 +1874,192 @@ main.main-content {
                 </div>
             </div>
 
-            <!-- SUB-ABA 2: CATÁLOGO GERAL -->
+            <!-- SUB-ABA 2: CATÁLOGO GERAL DE VANTAGENS -->
             <div id="subtab-catalogo-geral" class="subtab-pane">
-                <div class="content-placeholder">
-                    <i class="fas fa-book"></i>
-                    <h3>Catálogo Geral</h3>
-                    <p>Sistema completo de Vantagens e Desvantagens (Físicas, Mental/Sobrenatural, Social, Supers)</p>
+                <div class="catalogo-simples">
+                    <!-- DOIS CARDS LADO A LADO -->
+                    <div class="catalogo-grid-duplo">
+                        <!-- CARD ESQUERDO: VANTAGENS DISPONÍVEIS -->
+                        <div class="catalogo-card disponiveis-card">
+                            <div class="card-header">
+                                <i class="fas fa-book-open"></i>
+                                <h3>Vantagens Disponíveis</h3>
+                                <div class="search-small">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="buscaVantagens" placeholder="Buscar...">
+                                </div>
+                            </div>
+                            
+                            <!-- FILTROS RÁPIDOS -->
+                            <div class="filtros-rapidos">
+                                <button class="filtro-btn active" data-filtro="todos">Todas</button>
+                                <button class="filtro-btn" data-filtro="mental">Mental</button>
+                                <button class="filtro-btn" data-filtro="fisica">Física</button>
+                                <button class="filtro-btn" data-filtro="social">Social</button>
+                                <button class="filtro-btn" data-filtro="supers">Supers</button>
+                                <button class="filtro-btn" data-filtro="simples">Simples</button>
+                                <button class="filtro-btn" data-filtro="opcoes">Com Opções</button>
+                            </div>
+                            
+                            <!-- LISTA DE VANTAGENS COM SCROLL -->
+                            <div class="lista-vantagens-scroll">
+                                <!-- VANTAGENS SERÃO INSERIDAS AQUI VIA JS -->
+                                <div class="vantagem-linha" data-id="aptidao-magica" data-categorias="mental,opcoes">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-hat-wizard"></i>
+                                        <div>
+                                            <strong>Aptidão Mágica</strong>
+                                            <small>Mental • Com Opções</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="aptidao-magica">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="vantagem-linha" data-id="ambidestria" data-categorias="fisica,simples">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-hands"></i>
+                                        <div>
+                                            <strong>Ambidestria</strong>
+                                            <small>Física • 5 pontos</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="ambidestria">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="vantagem-linha" data-id="abençoado" data-categorias="mental,opcoes">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-hands-praying"></i>
+                                        <div>
+                                            <strong>Abençoado</strong>
+                                            <small>Mental • Com Opções</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="abençoado">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="vantagem-linha" data-id="adaptabilidade-cultural" data-categorias="social,opcoes">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-globe-americas"></i>
+                                        <div>
+                                            <strong>Adaptabilidade Cultural</strong>
+                                            <small>Social • Com Opções</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="adaptabilidade-cultural">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- EXEMPLOS ADICIONAIS -->
+                                <div class="vantagem-linha" data-id="sentidos-aguçados" data-categorias="mental,simples">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-ear-listen"></i>
+                                        <div>
+                                            <strong>Sentidos Aguçados</strong>
+                                            <small>Mental • 2 pts/nível</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="sentidos-aguçados">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="vantagem-linha" data-id="imunidade" data-categorias="fisica,opcoes">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-shield-virus"></i>
+                                        <div>
+                                            <strong>Imunidade</strong>
+                                            <small>Física • Com Opções</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="imunidade">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="vantagem-linha" data-id="carisma" data-categorias="social,opcoes">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-user-friends"></i>
+                                        <div>
+                                            <strong>Carisma</strong>
+                                            <small>Social • 5 pts/nível</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="carisma">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="vantagem-linha" data-id="sorte" data-categorias="mental,opcoes">
+                                    <div class="vantagem-info">
+                                        <i class="fas fa-clover"></i>
+                                        <div>
+                                            <strong>Sorte</strong>
+                                            <small>Mental • Com Opções</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn-adicionar" data-vantagem="sorte">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="lista-status">
+                                <small>Mostrando <span id="contador-vantagens">8</span> vantagens</small>
+                            </div>
+                        </div>
+                        
+                        <!-- CARD DIREITO: VANTAGENS ADQUIRIDAS -->
+                        <div class="catalogo-card adquiridas-card">
+                            <div class="card-header">
+                                <i class="fas fa-check-circle"></i>
+                                <h3>Vantagens Adquiridas</h3>
+                                <span class="pontos-badge" id="total-pontos-vantagens">0 pts</span>
+                            </div>
+                            
+                            <!-- LISTA DAS VANTAGENS ESCOLHIDAS -->
+                            <div class="vantagens-escolhidas-scroll">
+                                <div class="lista-vazia">
+                                    <i class="fas fa-star"></i>
+                                    <p>Nenhuma vantagem selecionada</p>
+                                    <small>Clique no botão "+" para adicionar</small>
+                                </div>
+                                <!-- AQUI SERÃO ADICIONADAS AS VANTAGENS VIA JS -->
+                            </div>
+                            
+                            <!-- RESUMO -->
+                            <div class="resumo-escolhidas">
+                                <div class="resumo-item">
+                                    <span>Total:</span>
+                                    <span id="total-vantagens">0 vantagens</span>
+                                </div>
+                                <div class="resumo-item">
+                                    <span>Custo:</span>
+                                    <span id="custo-vantagens">0 pontos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL PARA RELACIONAMENTOS - REFORMULADO -->
+<!-- MODAL PARA VANTAGENS -->
+<div id="modalVantagem" class="modal">
+    <div class="modal-content vantagem-modal">
+        <!-- CONTEÚDO DINÂMICO VIA JS -->
+    </div>
+</div>
+
+<!-- MODAL PARA RELACIONAMENTOS - JÁ EXISTENTE -->
 <div id="modalRelacionamento" class="modal">
     <div class="modal-content relacionamento-modal">
         <div class="modal-header">
@@ -2199,15 +2372,18 @@ main.main-content {
     <!-- NOTIFICAÇÃO -->
     <div id="custom-toast"></div>
      
-    <script src="atributos.js"></script>
-    <script src="caracteristicas-main.js"></script>
-    <script src="caracteristicas-fisicas.js"></script>
-    <script src="caracteristicas-aparencia.js"></script>
-    <script src="caracteristicas-riqueza.js"></script>
-    <script src="caracteristicas-idiomas.js"></script>
-    <script src="vantagens-main.js"></script>
-    <script src="vantagens-atributos.js"></script>
-    <script src="relacionamentos.js"></script>
+   <script src="atributos.js"></script>
+<script src="caracteristicas-main.js"></script>
+<script src="caracteristicas-fisicas.js"></script>
+<script src="caracteristicas-aparencia.js"></script>
+<script src="caracteristicas-riqueza.js"></script>
+<script src="caracteristicas-idiomas.js"></script>
+<script src="vantagens-atributos.js"></script> <!-- Se ainda precisar -->
+<script src="relacionamentos.js"></script>
+
+<!-- CATÁLOGO PRIMEIRO, DEPOIS O SISTEMA QUE USA O CATÁLOGO -->
+<script src="catalogo-vantagens.js"></script>
+<script src="vantagens.js"></script>
     <script>
     // ===========================================
     // INICIALIZAÇÃO FIREBASE
