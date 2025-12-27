@@ -2877,8 +2877,120 @@ textarea.form-control {
 }
 
 /* =========================================== */
-/* ESTILOS ESPECÍFICOS PARA DESVANTAGENS - CORES CLARAS */
+/* ESTILOS ESPECÍFICOS PARA DESVANTAGENS - COM BOTÕES IGUAIS ÀS VANTAGENS */
 /* =========================================== */
+
+/* CONTAINER DOS FILTROS - IDÊNTICO AO DAS VANTAGENS */
+.filtros-rapidos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 15px 20px;
+    background: rgba(26, 18, 0, 0.6);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    flex-shrink: 0;
+}
+
+/* BOTÕES DE FILTRO - ESTILO IDÊNTICO AO DAS VANTAGENS */
+.filtro-btn-desvantagens {
+    padding: 6px 12px;
+    background: rgba(26, 18, 0, 0.7);
+    border: 1px solid var(--wood-light);
+    border-radius: 4px;
+    color: var(--text-light);
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+/* HOVER IGUAL ÀS VANTAGENS */
+.filtro-btn-desvantagens:hover {
+    border-color: var(--primary-gold);
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--text-gold);
+}
+
+/* ESTADO ATIVO IGUAL ÀS VANTAGENS */
+.filtro-btn-desvantagens.active {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: var(--primary-gold);
+    color: var(--text-gold);
+    font-weight: 600;
+}
+
+/* BORDA LATERAL COLORIDA - MESMA DAS VANTAGENS */
+.filtro-btn-desvantagens[data-filtro="mental"] {
+    border-left: 3px solid #64b5f6; /* Azul claro */
+}
+
+.filtro-btn-desvantagens[data-filtro="fisica"] {
+    border-left: 3px solid #81c784; /* Verde claro */
+}
+
+.filtro-btn-desvantagens[data-filtro="social"] {
+    border-left: 3px solid #ffb74d; /* Laranja claro */
+}
+
+.filtro-btn-desvantagens[data-filtro="supernatural"] {
+    border-left: 3px solid #ba68c8; /* Roxo claro */
+}
+
+.filtro-btn-desvantagens[data-filtro="simples"] {
+    border-left: 3px solid #90a4ae; /* Cinza azulado */
+}
+
+.filtro-btn-desvantagens[data-filtro="opcoes"] {
+    border-left: 3px solid #ff8a65; /* Salmão */
+}
+
+.filtro-btn-desvantagens[data-filtro="selecao"] {
+    border-left: 3px solid #ce93d8; /* Roxo rosado */
+}
+
+/* ESTADO ATIVO COM CORES ESPECÍFICAS - IGUAL ÀS VANTAGENS */
+.filtro-btn-desvantagens.active[data-filtro="mental"] {
+    background: rgba(100, 181, 246, 0.2);
+    border-color: #64b5f6;
+    color: #bbdefb; /* Azul bem claro */
+}
+
+.filtro-btn-desvantagens.active[data-filtro="fisica"] {
+    background: rgba(129, 199, 132, 0.2);
+    border-color: #81c784;
+    color: #c8e6c9; /* Verde bem claro */
+}
+
+.filtro-btn-desvantagens.active[data-filtro="social"] {
+    background: rgba(255, 183, 77, 0.2);
+    border-color: #ffb74d;
+    color: #ffe0b2; /* Laranja bem claro */
+}
+
+.filtro-btn-desvantagens.active[data-filtro="supernatural"] {
+    background: rgba(186, 104, 200, 0.2);
+    border-color: #ba68c8;
+    color: #e1bee7; /* Roxo bem claro */
+}
+
+.filtro-btn-desvantagens.active[data-filtro="simples"] {
+    background: rgba(144, 164, 174, 0.2);
+    border-color: #90a4ae;
+    color: #cfd8dc; /* Cinza bem claro */
+}
+
+.filtro-btn-desvantagens.active[data-filtro="opcoes"] {
+    background: rgba(255, 138, 101, 0.2);
+    border-color: #ff8a65;
+    color: #ffccbc; /* Salmão bem claro */
+}
+
+.filtro-btn-desvantagens.active[data-filtro="selecao"] {
+    background: rgba(206, 147, 216, 0.2);
+    border-color: #ce93d8;
+    color: #f3e5f5; /* Roxo bem claro */
+}
 
 /* LISTA DE DESVANTAGENS */
 .lista-desvantagens-scroll {
@@ -3156,35 +3268,6 @@ textarea.form-control {
     opacity: 0.7;
 }
 
-/* FILTROS PARA DESVANTAGENS - CORES CLARAS */
-.filtro-btn-desvantagens[data-filtro="mental"] {
-    border-left: 3px solid #64b5f6; /* AZUL CLARO */
-}
-
-.filtro-btn-desvantagens[data-filtro="fisica"] {
-    border-left: 3px solid #81c784; /* VERDE CLARO */
-}
-
-.filtro-btn-desvantagens[data-filtro="social"] {
-    border-left: 3px solid #ffb74d; /* LARANJA CLARO */
-}
-
-.filtro-btn-desvantagens[data-filtro="supernatural"] {
-    border-left: 3px solid #ba68c8; /* ROXO CLARO */
-}
-
-.filtro-btn-desvantagens[data-filtro="simples"] {
-    border-left: 3px solid #90a4ae; /* CINZA AZULADO CLARO */
-}
-
-.filtro-btn-desvantagens[data-filtro="opcoes"] {
-    border-left: 3px solid #ff8a65; /* SALMÃO CLARO */
-}
-
-.filtro-btn-desvantagens[data-filtro="selecao"] {
-    border-left: 3px solid #ce93d8; /* ROXO ROSADO CLARO */
-}
-
 /* SCROLLBAR PARA LISTA DE DESVANTAGENS */
 .lista-desvantagens-scroll::-webkit-scrollbar,
 .desvantagens-escolhidas-scroll::-webkit-scrollbar {
@@ -3210,6 +3293,18 @@ textarea.form-control {
 
 /* RESPONSIVIDADE ESPECÍFICA PARA DESVANTAGENS */
 @media (max-width: 768px) {
+    .filtros-rapidos {
+        padding: 10px 15px;
+        gap: 6px;
+    }
+    
+    .filtro-btn-desvantagens {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: calc(50% - 6px);
+    }
+    
     .desvantagem-linha {
         flex-direction: column;
         align-items: stretch;
@@ -3273,49 +3368,6 @@ textarea.form-control {
 
 .desvantagem-adquirida-item.removing {
     animation: fadeOutRed 0.3s ease forwards;
-}
-
-/* ESTADO ATIVO PARA DESVANTAGENS - CORES CLARAS */
-.filtro-btn-desvantagens.active[data-filtro="mental"] {
-    background: rgba(100, 181, 246, 0.25);
-    border-color: #64b5f6;
-    color: #e3f2fd; /* AZUL MUITO CLARO */
-}
-
-.filtro-btn-desvantagens.active[data-filtro="fisica"] {
-    background: rgba(129, 199, 132, 0.25);
-    border-color: #81c784;
-    color: #e8f5e9; /* VERDE MUITO CLARO */
-}
-
-.filtro-btn-desvantagens.active[data-filtro="social"] {
-    background: rgba(255, 183, 77, 0.25);
-    border-color: #ffb74d;
-    color: #fff3e0; /* LARANJA MUITO CLARO */
-}
-
-.filtro-btn-desvantagens.active[data-filtro="supernatural"] {
-    background: rgba(186, 104, 200, 0.25);
-    border-color: #ba68c8;
-    color: #f3e5f5; /* ROXO MUITO CLARO */
-}
-
-.filtro-btn-desvantagens.active[data-filtro="simples"] {
-    background: rgba(144, 164, 174, 0.25);
-    border-color: #90a4ae;
-    color: #eceff1; /* CINZA MUITO CLARO */
-}
-
-.filtro-btn-desvantagens.active[data-filtro="opcoes"] {
-    background: rgba(255, 138, 101, 0.25);
-    border-color: #ff8a65;
-    color: #ffccbc; /* SALMÃO MUITO CLARO */
-}
-
-.filtro-btn-desvantagens.active[data-filtro="selecao"] {
-    background: rgba(206, 147, 216, 0.25);
-    border-color: #ce93d8;
-    color: #f3e5f5; /* ROXO MUITO CLARO */
 }
 
 /* DESTAQUE PARA PONTOS NEGATIVOS */
@@ -3429,21 +3481,6 @@ textarea.form-control {
     background: linear-gradient(145deg, rgba(255, 193, 7, 0.9), rgba(212, 175, 55, 0.9));
     border: 2px solid rgba(255, 193, 7, 0.5);
     color: #2c2008; /* DOURADO ESCURO PARA CONTRASTE */
-}
-
-/* Responsividade para os filtros de desvantagens */
-@media (max-width: 768px) {
-    .filtro-btn-desvantagens {
-        padding: 5px 10px;
-        font-size: 0.8rem;
-        flex: 1;
-        min-width: calc(50% - 6px);
-    }
-    
-    .filtros-rapidos {
-        gap: 6px;
-        padding: 10px 15px;
-    }
 }
 
 /* Scrollbar para fobias */
