@@ -1,6 +1,5 @@
-// catalogo-vantagens.js - APENAS AS VANTAGENS QUE VOCÊ PEDIU
+// catalogo-vantagens.js - CORRIGIDO
 const CATALOGO_VANTAGENS = {
-    // MENTAL/SOBRENATURAL
     'aptidao-magica': {
         id: 'aptidao-magica',
         nome: 'Aptidão Mágica',
@@ -12,12 +11,12 @@ const CATALOGO_VANTAGENS = {
         configuracao: {
             tipo: 'niveis-com-limites',
             niveis: [
-                { nivel: 0, custo: 5, desc: 'Aptidão Mágica 0 (consciência básica)' },
-                { nivel: 1, custo: 15, desc: 'Aptidão Mágica 1 (+1 em magias)' },
-                { nivel: 2, custo: 25, desc: 'Aptidão Mágica 2 (+2 em magias)' },
-                { nivel: 3, custo: 35, desc: 'Aptidão Mágica 3 (+3 em magias)' }
+                { nivel: 0, custo: 5, desc: 'Aptidão Mágica 0 - Consciência mágica básica (5 pontos)' },
+                { nivel: 1, custo: 15, desc: 'Aptidão Mágica 1 - +1 em magias (15 pontos)' },
+                { nivel: 2, custo: 25, desc: 'Aptidão Mágica 2 - +2 em magias (25 pontos)' },
+                { nivel: 3, custo: 35, desc: 'Aptidão Mágica 3 - +3 em magias (35 pontos)' }
             ],
-            limiteNiveis: 3, // Máximo 3 como você mencionou
+            limiteNiveis: 3,
             limitações: [
                 { id: 'canção', nome: 'Canção', percent: -40, desc: 'Tem que cantar para fazer mágicas' },
                 { id: 'dança', nome: 'Dança', percent: -40, desc: 'Precisa realizar movimentos corporais' },
@@ -61,7 +60,7 @@ const CATALOGO_VANTAGENS = {
                     desc: 'Uma vez por sessão pode adicionar 1 dado à ST, DX ou HT por 3d segundos. Especificar característica ao comprar.' 
                 }
             ],
-            multiplo: false // Só pode escolher uma opção
+            multiplo: false
         }
     },
 
@@ -101,7 +100,7 @@ const CATALOGO_VANTAGENS = {
         icone: 'fa-hands',
         descricao: 'O personagem é capaz de lutar e manusear igualmente bem com qualquer uma das mãos e nunca sofre a penalidade de -4 na DX por estar usando a mão inábil. Não permite ações adicionais no combate - para isso precisa de Ataque Adicional.',
         custoBase: 5,
-        configuracao: null // Nenhuma configuração especial - vantagem simples
+        configuracao: null
     }
 };
 
@@ -120,7 +119,30 @@ function filtrarVantagens(filtro = 'todos') {
 
 // Função para buscar vantagem por ID
 function getVantagemPorId(id) {
-    return CATALOGO_VANTAGENS[id] || null;
+    // Converter para minúsculas e remover acentos
+    const idNormalizado = id.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    // Primeiro tenta encontrar exato
+    if (CATALOGO_VANTAGENS[id]) {
+        return CATALOGO_VANTAGENS[id];
+    }
+    
+    // Tenta encontrar normalizado
+    for (const key in CATALOGO_VANTAGENS) {
+        const keyNormalizado = key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (keyNormalizado === idNormalizado) {
+            return CATALOGO_VANTAGENS[key];
+        }
+        
+        // Também verifica pelo nome
+        const nomeNormalizado = CATALOGO_VANTAGENS[key].nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (nomeNormalizado.includes(idNormalizado) || idNormalizado.includes(nomeNormalizado)) {
+            return CATALOGO_VANTAGENS[key];
+        }
+    }
+    
+    console.error('Vantagem não encontrada:', id);
+    return null;
 }
 
 // Exportar para uso em vantagens.js
