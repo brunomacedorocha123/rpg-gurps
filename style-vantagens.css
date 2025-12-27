@@ -2877,7 +2877,7 @@ textarea.form-control {
 }
 
 /* =========================================== */
-/* ESTILOS ESPECÍFICOS PARA DESVANTAGENS */
+/* ESTILOS ESPECÍFICOS PARA DESVANTAGENS - CORES CLARAS */
 /* =========================================== */
 
 /* LISTA DE DESVANTAGENS */
@@ -2893,16 +2893,16 @@ textarea.form-control {
     align-items: center;
     padding: 12px 15px;
     margin-bottom: 8px;
-    background: rgba(198, 40, 40, 0.1);
+    background: rgba(212, 175, 55, 0.08);
     border-radius: 8px;
-    border: 1px solid rgba(244, 67, 54, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.15);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .desvantagem-linha:hover {
-    border-color: rgba(244, 67, 54, 0.4);
-    background: rgba(198, 40, 40, 0.2);
+    border-color: rgba(212, 175, 55, 0.3);
+    background: rgba(212, 175, 55, 0.12);
     transform: translateY(-2px);
 }
 
@@ -2915,15 +2915,15 @@ textarea.form-control {
 
 .desvantagem-info i {
     font-size: 1.2rem;
-    color: #f44336;
+    color: #ffd700; /* DOURADO BRILHANTE */
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(244, 67, 54, 0.1);
+    background: rgba(255, 215, 0, 0.1);
     border-radius: 50%;
-    border: 1px solid rgba(244, 67, 54, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.2);
     flex-shrink: 0;
 }
 
@@ -2933,7 +2933,7 @@ textarea.form-control {
 }
 
 .desvantagem-info strong {
-    color: var(--text-light);
+    color: #ffffff; /* BRANCO PURO */
     font-family: 'Cinzel', serif;
     font-size: 0.95rem;
     display: block;
@@ -2944,8 +2944,8 @@ textarea.form-control {
 }
 
 .desvantagem-info small {
-    color: #f44336;
-    opacity: 0.8;
+    color: #ffd700; /* DOURADO BRILHANTE */
+    opacity: 0.9;
     font-size: 0.8rem;
     white-space: nowrap;
 }
@@ -2963,15 +2963,15 @@ textarea.form-control {
     align-items: center;
     padding: 12px 15px;
     margin-bottom: 10px;
-    background: rgba(198, 40, 40, 0.1);
+    background: rgba(212, 175, 55, 0.08);
     border-radius: 8px;
-    border: 1px solid rgba(244, 67, 54, 0.3);
+    border: 1px solid rgba(212, 175, 55, 0.2);
     transition: all 0.2s ease;
 }
 
 .desvantagem-adquirida-item:hover {
-    border-color: rgba(244, 67, 54, 0.5);
-    background: rgba(198, 40, 40, 0.2);
+    border-color: rgba(212, 175, 55, 0.3);
+    background: rgba(212, 175, 55, 0.12);
 }
 
 .desvantagem-adquirida-info {
@@ -2983,15 +2983,15 @@ textarea.form-control {
 
 .desvantagem-adquirida-info i {
     font-size: 1rem;
-    color: #f44336;
+    color: #ffd700; /* DOURADO BRILHANTE */
     width: 35px;
     height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(244, 67, 54, 0.1);
+    background: rgba(255, 215, 0, 0.1);
     border-radius: 50%;
-    border: 1px solid rgba(244, 67, 54, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.2);
     flex-shrink: 0;
 }
 
@@ -3001,7 +3001,7 @@ textarea.form-control {
 }
 
 .desvantagem-adquirida-info strong {
-    color: var(--text-light);
+    color: #ffffff; /* BRANCO PURO */
     font-family: 'Cinzel', serif;
     font-size: 0.9rem;
     display: block;
@@ -3012,8 +3012,8 @@ textarea.form-control {
 }
 
 .desvantagem-adquirida-info small {
-    color: #f44336;
-    opacity: 0.8;
+    color: #ffd700; /* DOURADO BRILHANTE */
+    opacity: 0.9;
     font-size: 0.8rem;
     white-space: nowrap;
     overflow: hidden;
@@ -3029,15 +3029,24 @@ textarea.form-control {
 }
 
 .pontos-badge.negativo {
-    background: linear-gradient(145deg, rgba(244, 67, 54, 0.9), rgba(198, 40, 40, 0.9));
-    border: 2px solid rgba(244, 67, 54, 0.5);
-    color: white;
+    background: linear-gradient(145deg, rgba(255, 193, 7, 0.9), rgba(212, 175, 55, 0.9));
+    border: 2px solid rgba(255, 193, 7, 0.5);
+    color: #2c2008; /* DOURADO ESCURO PARA CONTRASTE */
+    font-weight: bold;
 }
 
 .custo-badge.negativo {
-    background: rgba(244, 67, 54, 0.2);
-    border: 1px solid #f44336;
-    color: #f44336;
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.85rem;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 /* MODAL DE DESVANTAGENS */
@@ -3046,7 +3055,7 @@ textarea.form-control {
     max-width: 600px;
     max-height: 90vh;
     background: linear-gradient(145deg, rgba(44, 32, 8, 0.98), rgba(26, 18, 0, 0.98));
-    border: 3px solid #f44336;
+    border: 3px solid #ffd700; /* DOURADO BRILHANTE */
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -3056,21 +3065,23 @@ textarea.form-control {
 }
 
 .desvantagem-modal .modal-header {
-    background: linear-gradient(145deg, rgba(139, 0, 0, 0.4), rgba(44, 32, 8, 0.9));
-    border-bottom: 2px solid #f44336;
+    background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(44, 32, 8, 0.9));
+    border-bottom: 2px solid #ffd700; /* DOURADO BRILHANTE */
 }
 
 .desvantagem-modal .modal-header h3 {
-    color: #f44336;
+    color: #ffd700; /* DOURADO BRILHANTE */
 }
 
-.desvantagem-modal .btn-confirmar {
-    background: linear-gradient(145deg, rgba(244, 67, 54, 0.9), rgba(198, 40, 40, 0.9));
-    border: 2px solid rgba(244, 67, 54, 0.5);
+.desvantagem-modal .btn-confirmar-desvantagem {
+    background: linear-gradient(145deg, rgba(255, 193, 7, 0.9), rgba(212, 175, 55, 0.9));
+    border: 2px solid rgba(255, 193, 7, 0.5);
+    color: #2c2008; /* DOURADO ESCURO PARA CONTRASTE */
 }
 
-.desvantagem-modal .btn-confirmar:hover:not(:disabled) {
-    background: linear-gradient(145deg, rgba(255, 87, 75, 0.9), rgba(244, 67, 54, 0.9));
+.desvantagem-modal .btn-confirmar-desvantagem:hover:not(:disabled) {
+    background: linear-gradient(145deg, rgba(255, 235, 59, 0.9), rgba(255, 193, 7, 0.9));
+    color: #2c2008;
 }
 
 /* BOTÃO DE ADICIONAR DESVANTAGEM */
@@ -3078,9 +3089,9 @@ textarea.form-control {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    background: rgba(212, 175, 55, 0.1);
-    color: var(--text-gold);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.15);
+    color: #ffd700; /* DOURADO BRILHANTE */
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -3090,10 +3101,10 @@ textarea.form-control {
 }
 
 .btn-adicionar-desvantagem:hover {
-    border-color: rgba(212, 175, 55, 0.5);
-    background: rgba(212, 175, 55, 0.2);
+    border-color: rgba(255, 235, 59, 0.6);
+    background: rgba(255, 235, 59, 0.25);
     transform: rotate(90deg);
-    color: var(--secondary-gold);
+    color: #fff176; /* AMARELO BEM CLARO */
 }
 
 /* BOTÃO DE REMOVER DESVANTAGEM */
@@ -3101,9 +3112,9 @@ textarea.form-control {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    background: rgba(212, 175, 55, 0.1);
-    color: var(--text-gold);
+    border: 1px solid rgba(100, 181, 246, 0.4);
+    background: rgba(100, 181, 246, 0.15);
+    color: #64b5f6; /* AZUL CLARO */
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -3113,64 +3124,65 @@ textarea.form-control {
 }
 
 .btn-remover-desvantagem:hover {
-    background: rgba(212, 175, 55, 0.2);
+    background: rgba(100, 181, 246, 0.25);
     transform: rotate(90deg);
-    color: var(--secondary-gold);
+    color: #90caf9; /* AZUL MAIS CLARO */
 }
 
 /* LOADING STATE */
 .loading-state {
     text-align: center;
     padding: 60px 20px;
-    color: var(--text-light);
-    opacity: 0.7;
+    color: #e0e0e0; /* CINZA CLARO */
+    opacity: 0.8;
 }
 
 .loading-state i {
     font-size: 2.5rem;
     margin-bottom: 15px;
-    color: var(--text-gold);
-    opacity: 0.8;
+    color: #ffd700; /* DOURADO BRILHANTE */
+    opacity: 0.9;
 }
 
 .loading-state p {
     font-size: 1rem;
     font-family: 'Cinzel', serif;
+    color: #ffffff; /* BRANCO PURO */
 }
 
 /* AJUSTES PARA LISTAS VAZIAS */
 .desvantagens-escolhidas-scroll .lista-vazia i {
-    color: var(--text-gold);
-    opacity: 0.5;
+    color: #ffd700; /* DOURADO BRILHANTE */
+    opacity: 0.7;
 }
 
-/* FILTROS PARA DESVANTAGENS - CORES DIFERENCIADAS */
+/* FILTROS PARA DESVANTAGENS - CORES CLARAS */
 .filtro-btn-desvantagens[data-filtro="mental"] {
-    border-left: 3px solid #64b5f6;
+    border-left: 3px solid #64b5f6; /* AZUL CLARO */
 }
 
 .filtro-btn-desvantagens[data-filtro="fisica"] {
-    border-left: 3px solid #81c784;
+    border-left: 3px solid #81c784; /* VERDE CLARO */
 }
 
 .filtro-btn-desvantagens[data-filtro="social"] {
-    border-left: 3px solid #ffb74d;
+    border-left: 3px solid #ffb74d; /* LARANJA CLARO */
 }
 
 .filtro-btn-desvantagens[data-filtro="supernatural"] {
-    border-left: 3px solid #ba68c8;
+    border-left: 3px solid #ba68c8; /* ROXO CLARO */
 }
 
 .filtro-btn-desvantagens[data-filtro="simples"] {
-    border-left: 3px solid #90a4ae;
+    border-left: 3px solid #90a4ae; /* CINZA AZULADO CLARO */
 }
 
 .filtro-btn-desvantagens[data-filtro="opcoes"] {
-    border-left: 3px solid #ff8a65;
+    border-left: 3px solid #ff8a65; /* SALMÃO CLARO */
 }
 
 .filtro-btn-desvantagens[data-filtro="selecao"] {
-    border-left: 3px solid #ba68c8;
+    border-left: 3px solid #ce93d8; /* ROXO ROSADO CLARO */
 }
 
 /* SCROLLBAR PARA LISTA DE DESVANTAGENS */
@@ -3181,19 +3193,19 @@ textarea.form-control {
 
 .lista-desvantagens-scroll::-webkit-scrollbar-track,
 .desvantagens-escolhidas-scroll::-webkit-scrollbar-track {
-    background: rgba(26, 18, 0, 0.3);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
 }
 
 .lista-desvantagens-scroll::-webkit-scrollbar-thumb,
 .desvantagens-escolhidas-scroll::-webkit-scrollbar-thumb {
-    background: var(--primary-gold);
+    background: #ffd700; /* DOURADO BRILHANTE */
     border-radius: 3px;
 }
 
 .lista-desvantagens-scroll::-webkit-scrollbar-thumb:hover,
 .desvantagens-escolhidas-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-gold);
+    background: #ffeb3b; /* AMARELO BEM CLARO */
 }
 
 /* RESPONSIVIDADE ESPECÍFICA PARA DESVANTAGENS */
@@ -3263,120 +3275,80 @@ textarea.form-control {
     animation: fadeOutRed 0.3s ease forwards;
 }
 
-/* ESTADO ATIVO PARA DESVANTAGENS */
+/* ESTADO ATIVO PARA DESVANTAGENS - CORES CLARAS */
 .filtro-btn-desvantagens.active[data-filtro="mental"] {
-    background: rgba(100, 181, 246, 0.2);
+    background: rgba(100, 181, 246, 0.25);
     border-color: #64b5f6;
-    color: #bbdefb;
+    color: #e3f2fd; /* AZUL MUITO CLARO */
 }
 
 .filtro-btn-desvantagens.active[data-filtro="fisica"] {
-    background: rgba(129, 199, 132, 0.2);
+    background: rgba(129, 199, 132, 0.25);
     border-color: #81c784;
-    color: #c8e6c9;
+    color: #e8f5e9; /* VERDE MUITO CLARO */
 }
 
 .filtro-btn-desvantagens.active[data-filtro="social"] {
-    background: rgba(255, 183, 77, 0.2);
+    background: rgba(255, 183, 77, 0.25);
     border-color: #ffb74d;
-    color: #ffe0b2;
+    color: #fff3e0; /* LARANJA MUITO CLARO */
 }
 
 .filtro-btn-desvantagens.active[data-filtro="supernatural"] {
-    background: rgba(186, 104, 200, 0.2);
+    background: rgba(186, 104, 200, 0.25);
     border-color: #ba68c8;
-    color: #e1bee7;
+    color: #f3e5f5; /* ROXO MUITO CLARO */
 }
 
 .filtro-btn-desvantagens.active[data-filtro="simples"] {
-    background: rgba(144, 164, 174, 0.2);
+    background: rgba(144, 164, 174, 0.25);
     border-color: #90a4ae;
-    color: #cfd8dc;
+    color: #eceff1; /* CINZA MUITO CLARO */
 }
 
 .filtro-btn-desvantagens.active[data-filtro="opcoes"] {
-    background: rgba(255, 138, 101, 0.2);
+    background: rgba(255, 138, 101, 0.25);
     border-color: #ff8a65;
-    color: #ffccbc;
+    color: #ffccbc; /* SALMÃO MUITO CLARO */
 }
 
 .filtro-btn-desvantagens.active[data-filtro="selecao"] {
-    background: rgba(186, 104, 200, 0.2);
-    border-color: #ba68c8;
-    color: #e1bee7;
+    background: rgba(206, 147, 216, 0.25);
+    border-color: #ce93d8;
+    color: #f3e5f5; /* ROXO MUITO CLARO */
 }
 
 /* DESTAQUE PARA PONTOS NEGATIVOS */
 .resumo-escolhidas .resumo-item span:last-child.negativo {
-    color: var(--text-gold);
+    color: #ffd700; /* DOURADO BRILHANTE */
+    font-weight: bold;
 }
 
 /* HOVER PARA ITENS DE DESVANTAGENS */
 .desvantagem-linha:hover .desvantagem-info strong {
-    color: var(--text-gold);
+    color: #ffd700; /* DOURADO BRILHANTE */
 }
 
 .desvantagem-adquirida-item:hover .desvantagem-adquirida-info strong {
-    color: var(--text-gold);
-}
-
-/* =========================================== */
-/* CORREÇÕES PARA DESVANTAGENS - NOVAS CORES */
-/* =========================================== */
-
-/* Estilos para os filtros de desvantagens - Cores mais claras */
-.filtro-btn-desvantagens {
-    padding: 6px 12px;
-    background: rgba(26, 18, 0, 0.7);
-    border: 1px solid var(--wood-light);
-    border-radius: 4px;
-    color: var(--text-light);
-    font-family: 'Cinzel', serif;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.filtro-btn-desvantagens:hover {
-    border-color: var(--primary-gold);
-    background: rgba(212, 175, 55, 0.1);
-    color: var(--text-gold);
-}
-
-.filtro-btn-desvantagens.active {
-    background: rgba(212, 175, 55, 0.2);
-    border-color: var(--primary-gold);
-    color: var(--text-gold);
+    color: #ffd700; /* DOURADO BRILHANTE */
 }
 
 /* Botões do modal de desvantagens */
 .desvantagem-modal .modal-close,
 .desvantagem-modal .btn-cancelar-desvantagem {
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    color: var(--text-gold);
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: #ffd700; /* DOURADO BRILHANTE */
 }
 
 .desvantagem-modal .modal-close:hover,
 .desvantagem-modal .btn-cancelar-desvantagem:hover {
-    background: rgba(212, 175, 55, 0.2);
-    border-color: var(--primary-gold);
-    color: var(--secondary-gold);
+    background: rgba(255, 235, 59, 0.25);
+    border-color: #ffeb3b;
+    color: #fff176; /* AMARELO BEM CLARO */
 }
 
-.desvantagem-modal .btn-confirmar-desvantagem {
-    background: linear-gradient(145deg, rgba(212, 175, 55, 0.9), rgba(168, 134, 30, 0.9));
-    border: 2px solid rgba(212, 175, 55, 0.5);
-    color: var(--primary-dark);
-}
-
-.desvantagem-modal .btn-confirmar-desvantagem:hover:not(:disabled) {
-    background: linear-gradient(145deg, var(--primary-gold), var(--secondary-gold));
-    color: var(--primary-dark);
-}
-
-/* Estilos para os botões do modal - garantir que funcionem */
+/* Estilos para os botões do modal */
 .desvantagem-modal .btn-cancelar-desvantagem,
 .desvantagem-modal .btn-confirmar-desvantagem {
     padding: 12px 25px !important;
@@ -3402,7 +3374,7 @@ textarea.form-control {
     max-height: 300px;
     overflow-y: auto;
     margin-bottom: 20px;
-    border: 1px solid rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.15);
     border-radius: 8px;
     padding: 10px;
 }
@@ -3411,18 +3383,18 @@ textarea.form-control {
     padding: 10px;
     margin-bottom: 5px;
     border-radius: 6px;
-    border: 1px solid rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.1);
     background: rgba(26, 18, 0, 0.6);
     transition: all 0.2s ease;
 }
 
 .fobia-option:hover {
-    border-color: rgba(212, 175, 55, 0.3);
+    border-color: rgba(255, 215, 0, 0.25);
     background: rgba(26, 18, 0, 0.8);
 }
 
 .fobia-option input:checked ~ .checkbox-text {
-    color: var(--text-gold);
+    color: #ffd700; /* DOURADO BRILHANTE */
     font-weight: 600;
 }
 
@@ -3431,20 +3403,20 @@ textarea.form-control {
     padding: 12px;
     margin-bottom: 8px;
     border-radius: 8px;
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    background: rgba(212, 175, 55, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    background: rgba(255, 215, 0, 0.05);
 }
 
 .opcao-alcoolismo:hover {
-    border-color: rgba(212, 175, 55, 0.4);
-    background: rgba(212, 175, 55, 0.1);
+    border-color: rgba(255, 215, 0, 0.35);
+    background: rgba(255, 215, 0, 0.1);
 }
 
 /* Display de custo negativo */
 .custo-display.negativo {
-    background: rgba(212, 175, 55, 0.1);
-    border: 2px solid var(--primary-gold);
-    color: var(--text-gold);
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid #ffd700;
+    color: #ffd700; /* DOURADO BRILHANTE */
     padding: 15px;
     border-radius: 8px;
     font-size: 1.3em;
@@ -3454,9 +3426,9 @@ textarea.form-control {
 
 /* Feedback específico para desvantagens */
 #feedback-desvantagens.feedback-message {
-    background: linear-gradient(145deg, rgba(212, 175, 55, 0.9), rgba(168, 134, 30, 0.9));
-    border: 2px solid rgba(212, 175, 55, 0.5);
-    color: var(--primary-dark);
+    background: linear-gradient(145deg, rgba(255, 193, 7, 0.9), rgba(212, 175, 55, 0.9));
+    border: 2px solid rgba(255, 193, 7, 0.5);
+    color: #2c2008; /* DOURADO ESCURO PARA CONTRASTE */
 }
 
 /* Responsividade para os filtros de desvantagens */
@@ -3485,10 +3457,10 @@ textarea.form-control {
 }
 
 .fobias-section::-webkit-scrollbar-thumb {
-    background: var(--primary-gold);
+    background: #ffd700; /* DOURADO BRILHANTE */
     border-radius: 3px;
 }
 
 .fobias-section::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-gold);
+    background: #ffeb3b; /* AMARELO BEM CLARO */
 }
