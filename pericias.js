@@ -33,6 +33,98 @@ let estadoPericias = {
     periciaEditando: null
 };
 
+// ===== TABELA DE CUSTOS REAL DO GURPS =====
+const TABELA_CUSTO_PERICIAS = {
+    'Fácil': [
+        { nivel: -1, custo: 0 },  // Não aprendido (default DX-4)
+        { nivel: 0, custo: 1 },   // 1 ponto = Atributo+0
+        { nivel: 1, custo: 2 },   // 2 pontos = Atributo+1
+        { nivel: 2, custo: 4 },   // 4 pontos = Atributo+2
+        { nivel: 3, custo: 8 },   // 8 pontos = Atributo+3
+        { nivel: 4, custo: 12 },  // 12 pontos = Atributo+4
+        { nivel: 5, custo: 16 },
+        { nivel: 6, custo: 20 },
+        { nivel: 7, custo: 24 },
+        { nivel: 8, custo: 28 },
+        { nivel: 9, custo: 32 },
+        { nivel: 10, custo: 36 }
+    ],
+    'Média': [
+        { nivel: -1, custo: 1 },  // 1 ponto = Atributo-1
+        { nivel: 0, custo: 2 },   // 2 pontos = Atributo+0
+        { nivel: 1, custo: 4 },   // 4 pontos = Atributo+1
+        { nivel: 2, custo: 8 },   // 8 pontos = Atributo+2
+        { nivel: 3, custo: 12 },  // 12 pontos = Atributo+3
+        { nivel: 4, custo: 16 },  // 16 pontos = Atributo+4
+        { nivel: 5, custo: 20 },
+        { nivel: 6, custo: 24 },
+        { nivel: 7, custo: 28 },
+        { nivel: 8, custo: 32 },
+        { nivel: 9, custo: 36 },
+        { nivel: 10, custo: 40 }
+    ],
+    'Difícil': [
+        { nivel: -2, custo: 1 },  // 1 ponto = Atributo-2
+        { nivel: -1, custo: 2 },  // 2 pontos = Atributo-1
+        { nivel: 0, custo: 4 },   // 4 pontos = Atributo+0
+        { nivel: 1, custo: 8 },   // 8 pontos = Atributo+1
+        { nivel: 2, custo: 12 },  // 12 pontos = Atributo+2
+        { nivel: 3, custo: 16 },  // 16 pontos = Atributo+3
+        { nivel: 4, custo: 20 },  // 20 pontos = Atributo+4
+        { nivel: 5, custo: 24 },
+        { nivel: 6, custo: 28 },
+        { nivel: 7, custo: 32 },
+        { nivel: 8, custo: 36 },
+        { nivel: 9, custo: 40 },
+        { nivel: 10, custo: 44 }
+    ],
+    'Muito Difícil': [
+        { nivel: -3, custo: 1 },  // 1 ponto = Atributo-3
+        { nivel: -2, custo: 2 },  // 2 pontos = Atributo-2
+        { nivel: -1, custo: 4 },  // 4 pontos = Atributo-1
+        { nivel: 0, custo: 8 },   // 8 pontos = Atributo+0
+        { nivel: 1, custo: 12 },  // 12 pontos = Atributo+1
+        { nivel: 2, custo: 16 },  // 16 pontos = Atributo+2
+        { nivel: 3, custo: 20 },  // 20 pontos = Atributo+3
+        { nivel: 4, custo: 24 },  // 24 pontos = Atributo+4
+        { nivel: 5, custo: 28 },
+        { nivel: 6, custo: 32 },
+        { nivel: 7, custo: 36 },
+        { nivel: 8, custo: 40 },
+        { nivel: 9, custo: 44 },
+        { nivel: 10, custo: 48 }
+    ]
+};
+
+// ===== FUNÇÕES DE CÁLCULO CORRETAS =====
+function obterTabelaCusto(dificuldade) {
+    return TABELA_CUSTO_PERICIAS[dificuldade] || TABELA_CUSTO_PERICIAS['Média'];
+}
+
+function calcularCustoParaNivel(dificuldade, nivel) {
+    const tabela = obterTabelaCusto(dificuldade);
+    const entrada = tabela.find(item => item.nivel === nivel);
+    return entrada ? entrada.custo : 0;
+}
+
+function calcularCustoBase(dificuldade) {
+    // Retorna o custo do nível 0 (ou nível mais baixo positivo)
+    const tabela = obterTabelaCusto(dificuldade);
+    const entradaZero = tabela.find(item => item.nivel === 0);
+    return entradaZero ? entradaZero.custo : 2;
+}
+
+function obterNiveisDisponiveis(dificuldade) {
+    const tabela = obterTabelaCusto(dificuldade);
+    return tabela.map(item => item.nivel);
+}
+
+function getNivelPorCusto(dificuldade, custo) {
+    const tabela = obterTabelaCusto(dificuldade);
+    const entrada = tabela.find(item => item.custo === custo);
+    return entrada ? entrada.nivel : 0;
+}
+
 // ===== INICIALIZAÇÃO =====
 function initPericiasTab() {
     console.log('🎯 Inicializando sistema de perícias...');
@@ -333,29 +425,43 @@ function renderizarCatalogoPericias() {
     console.log(`✅ Catálogo renderizado: ${periciasFiltradas.length} perícias`);
 }
 
-// ===== MODAL DE PERÍCIA =====
+// ===== MODAL DE PERÍCIA - VERSÃO CORRIGIDA =====
 function abrirModalPericia(pericia, periciaExistente = null) {
-    console.log(`🟢 Abrindo modal para: ${pericia.nome}`);
+    console.log(`🟢 Abrindo modal para: ${pericia.nome} (${pericia.dificuldade})`);
     
     estadoPericias.modalPericiaAtiva = pericia;
     estadoPericias.periciaEditando = periciaExistente;
     
-    // Determine initial level
+    // Determina nível inicial
     let nivelInicial = 0;
     if (periciaExistente) {
         nivelInicial = periciaExistente.nivel || 0;
+    } else {
+        // Para nova perícia, pega o primeiro nível positivo (normalmente 0)
+        const tabela = obterTabelaCusto(pericia.dificuldade);
+        const entradaZero = tabela.find(item => item.nivel === 0);
+        nivelInicial = entradaZero ? entradaZero.nivel : 0;
     }
     
     estadoPericias.nivelPericia = nivelInicial;
     
     const atributoBase = obterAtributoAtual(pericia.atributo);
     const nhAtual = atributoBase + nivelInicial;
+    const custoAtual = calcularCustoParaNivel(pericia.dificuldade, nivelInicial);
+    const niveisDisponiveis = obterNiveisDisponiveis(pericia.dificuldade);
     
-    // Calcula custo base baseado na dificuldade
-    const custoBase = calcularCustoBase(pericia.dificuldade);
-    const custoTotal = calcularCustoTotal(pericia.dificuldade, nivelInicial);
+    // Gera opções de nível
+    let opcoesNivelHTML = '';
+    niveisDisponiveis.forEach(nivel => {
+        const custo = calcularCustoParaNivel(pericia.dificuldade, nivel);
+        if (custo > 0) { // Só mostra níveis que custam pontos
+            const nivelDisplay = nivel >= 0 ? `+${nivel}` : nivel;
+            const selecionado = nivel === nivelInicial ? 'selected' : '';
+            opcoesNivelHTML += `<option value="${nivel}" ${selecionado}>${nivelDisplay} (${custo} pontos)</option>`;
+        }
+    });
     
-    // MODAL CONTENT
+    // MODAL CONTENT - VERSÃO CORRIGIDA
     const modalHTML = `
         <div class="modal-pericia-content">
             <div class="modal-pericia-header">
@@ -366,16 +472,16 @@ function abrirModalPericia(pericia, periciaExistente = null) {
             <div class="modal-pericia-body">
                 <div class="modal-pericia-info">
                     <div class="info-row">
-                        <span class="info-label">Atributo/Dificuldade:</span>
-                        <span class="info-value">${pericia.atributo}/${pericia.dificuldade}</span>
+                        <span class="info-label">Atributo:</span>
+                        <span class="info-value">${pericia.atributo}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Categoria:</span>
-                        <span class="info-value">${pericia.categoria || 'Geral'}</span>
+                        <span class="info-label">Dificuldade:</span>
+                        <span class="info-value pericia-dificuldade-${pericia.dificuldade.toLowerCase().replace(/ /g, '-')}">${pericia.dificuldade}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Custo Base:</span>
-                        <span class="info-value">${custoBase} ponto(s) por nível</span>
+                        <span class="info-label">Custo:</span>
+                        <span class="info-value" id="modal-custo-atual">${custoAtual} pontos</span>
                     </div>
                 </div>
                 
@@ -401,42 +507,52 @@ function abrirModalPericia(pericia, periciaExistente = null) {
                 <div class="modal-pericia-controles">
                     <div class="controle-nivel">
                         <h4>Nível da Perícia</h4>
-                        <div class="controle-nivel-botoes">
-                            <button class="btn-nivel btn-diminuir" onclick="window.diminuirNivelPericia()">-</button>
-                            <div class="nivel-atual">
-                                <div class="valor" id="modal-nivel-valor">${nivelInicial >= 0 ? '+' : ''}${nivelInicial}</div>
-                                <div class="label">Nível</div>
-                            </div>
-                            <button class="btn-nivel btn-aumentar" onclick="window.aumentarNivelPericia()">+</button>
-                        </div>
+                        <select class="nivel-select" id="nivel-pericia-select" onchange="window.alterarNivelPericiaDropdown(this.value)">
+                            ${opcoesNivelHTML}
+                        </select>
+                        
                         <div class="nivel-nh-info">
-                            <span>NH: </span>
+                            <span>NH Atual: </span>
                             <span id="modal-nh-valor">${nhAtual}</span>
-                            <small id="modal-nh-calculo">(${atributoBase} + ${nivelInicial >= 0 ? '+' : ''}${nivelInicial})</small>
+                            <small id="modal-nh-calculo">(${atributoBase} ${nivelInicial >= 0 ? '+' : ''}${nivelInicial})</small>
                         </div>
                     </div>
                     
-                    <div class="custo-nivel">
-                        <span>Custo por nível: </span>
-                        <span id="modal-custo-valor">${custoBase}</span>
-                        <span> ponto(s)</span>
+                    <div class="tabela-custo-rapida">
+                        <h5>Tabela de Custo (${pericia.dificuldade})</h5>
+                        <div class="tabela-custo-grid" id="tabela-custo-rapida">
+                            <!-- A tabela será gerada dinamicamente -->
+                        </div>
                     </div>
                 </div>
+                
+                ${pericia.tipo === 'grupo-especializacao' && !periciaExistente?.especializacao ? `
+                <div class="modal-pericia-especializacao-alerta">
+                    <h4><i class="fas fa-star"></i> Especialização Necessária</h4>
+                    <p>Esta perícia requer escolha de especialização.</p>
+                </div>
+                ` : ''}
             </div>
             
             <div class="modal-pericia-footer">
                 <div class="modal-custo-total">
                     <span class="label">Custo Total:</span>
-                    <span class="valor" id="modal-custo-total">${custoTotal}</span>
+                    <span class="valor" id="modal-custo-total">${custoAtual}</span>
                     <span> pontos</span>
                 </div>
                 <div class="modal-actions">
                     <button class="btn-modal btn-modal-cancelar" onclick="window.fecharModalPericia()">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
+                    ${pericia.tipo === 'grupo-especializacao' && !periciaExistente?.especializacao ? `
+                    <button class="btn-modal btn-modal-especializacao" onclick="window.abrirModalEspecializacao()">
+                        <i class="fas fa-star"></i> Escolher Especialização
+                    </button>
+                    ` : `
                     <button class="btn-modal btn-modal-confirmar" onclick="window.confirmarPericia()" id="btn-confirmar-pericia">
                         <i class="fas fa-check"></i> ${periciaExistente ? 'Atualizar' : 'Adquirir'}
                     </button>
+                    `}
                 </div>
             </div>
         </div>
@@ -445,80 +561,212 @@ function abrirModalPericia(pericia, periciaExistente = null) {
     const modal = document.getElementById('modal-pericia');
     if (modal) {
         modal.innerHTML = modalHTML;
+        // Gera a tabela de custos rápida
+        gerarTabelaCustoRapida(pericia.dificuldade, nivelInicial);
     }
     
     // Show modal
     const modalOverlay = document.getElementById('modal-pericia-overlay');
     if (modalOverlay) {
         modalOverlay.style.display = 'flex';
-        console.log('✅ Modal exibido');
+        console.log('✅ Modal exibido com cálculos corretos');
     }
 }
 
 // ===== FUNÇÕES AUXILIARES DO MODAL =====
-function diminuirNivelPericia() {
-    if (estadoPericias.nivelPericia > -5) { // Limite mínimo
-        estadoPericias.nivelPericia--;
-        atualizarDisplayModal();
-    }
-}
-
-function aumentarNivelPericia() {
-    if (estadoPericias.nivelPericia < 10) { // Limite máximo
-        estadoPericias.nivelPericia++;
-        atualizarDisplayModal();
-    }
-}
-
-function atualizarDisplayModal() {
+function alterarNivelPericiaDropdown(valorSelecionado) {
     if (!estadoPericias.modalPericiaAtiva) return;
+    
+    const novoNivel = parseInt(valorSelecionado);
+    estadoPericias.nivelPericia = novoNivel;
     
     const pericia = estadoPericias.modalPericiaAtiva;
     const atributoBase = obterAtributoAtual(pericia.atributo);
-    const nhAtual = atributoBase + estadoPericias.nivelPericia;
+    const nhAtual = atributoBase + novoNivel;
+    const custoAtual = calcularCustoParaNivel(pericia.dificuldade, novoNivel);
     
     // Update display
-    const nivelElement = document.getElementById('modal-nivel-valor');
     const nhElement = document.getElementById('modal-nh-valor');
     const nhCalculoElement = document.getElementById('modal-nh-calculo');
-    
-    if (nivelElement) nivelElement.textContent = `${estadoPericias.nivelPericia >= 0 ? '+' : ''}${estadoPericias.nivelPericia}`;
-    if (nhElement) nhElement.textContent = nhAtual;
-    if (nhCalculoElement) nhCalculoElement.textContent = `(${atributoBase} + ${estadoPericias.nivelPericia >= 0 ? '+' : ''}${estadoPericias.nivelPericia})`;
-    
-    // Cálculo de custo
-    const custoBase = calcularCustoBase(pericia.dificuldade);
-    const custoTotal = calcularCustoTotal(pericia.dificuldade, estadoPericias.nivelPericia);
-    
-    const custoElement = document.getElementById('modal-custo-valor');
+    const custoElement = document.getElementById('modal-custo-atual');
     const custoTotalElement = document.getElementById('modal-custo-total');
     
-    if (custoElement) custoElement.textContent = custoBase;
-    if (custoTotalElement) custoTotalElement.textContent = custoTotal;
-}
-
-function calcularCustoBase(dificuldade) {
-    const tabela = {
-        'Fácil': 1,
-        'Média': 2,
-        'Difícil': 4,
-        'Muito Difícil': 4
-    };
-    return tabela[dificuldade] || 2;
-}
-
-function calcularCustoTotal(dificuldade, nivel) {
-    const custoBase = calcularCustoBase(dificuldade);
+    if (nhElement) nhElement.textContent = nhAtual;
+    if (nhCalculoElement) nhCalculoElement.textContent = `(${atributoBase} ${novoNivel >= 0 ? '+' : ''}${novoNivel})`;
+    if (custoElement) custoElement.textContent = `${custoAtual} pontos`;
+    if (custoTotalElement) custoTotalElement.textContent = custoAtual;
     
-    // Para níveis positivos: custoBase * (nivel + 1)
-    // Para níveis negativos: custoBase
-    if (nivel >= 0) {
-        return custoBase * (nivel + 1);
+    // Update cost table
+    gerarTabelaCustoRapida(pericia.dificuldade, novoNivel);
+}
+
+function gerarTabelaCustoRapida(dificuldade, nivelAtual) {
+    const container = document.getElementById('tabela-custo-rapida');
+    if (!container) return;
+    
+    const tabela = obterTabelaCusto(dificuldade);
+    let tabelaHTML = '';
+    
+    // Mostra apenas os primeiros 6 níveis para não sobrecarregar
+    const niveisParaMostrar = tabela.slice(0, 6);
+    
+    niveisParaMostrar.forEach(item => {
+        if (item.custo > 0) { // Não mostra custo 0
+            const nivelDisplay = item.nivel >= 0 ? `+${item.nivel}` : item.nivel;
+            const isAtual = item.nivel === nivelAtual;
+            tabelaHTML += `
+                <div class="tabela-custo-item ${isAtual ? 'ativo' : ''}">
+                    <div class="tabela-nivel">${nivelDisplay}</div>
+                    <div class="tabela-custo">${item.custo}</div>
+                    ${isAtual ? '<div class="tabela-atual">✓</div>' : ''}
+                </div>
+            `;
+        }
+    });
+    
+    container.innerHTML = tabelaHTML;
+}
+
+// ===== MODAL DE ESPECIALIZAÇÃO =====
+function abrirModalEspecializacao() {
+    if (!estadoPericias.modalPericiaAtiva) return;
+    
+    const pericia = estadoPericias.modalPericiaAtiva;
+    console.log(`🟡 Abrindo especialização para: ${pericia.nome}`);
+    
+    // Get specializations ONLY for the specific group
+    const especializacoes = pericia.grupo ? 
+        (window.obterEspecializacoes ? window.obterEspecializacoes(pericia.grupo) : []) : [];
+    
+    const modal = document.getElementById('modal-especializacao');
+    if (!modal) return;
+    
+    let especializacoesHTML = '';
+    
+    if (especializacoes && especializacoes.length > 0) {
+        especializacoesHTML = especializacoes.map(espec => {
+            return `
+                <div class="especializacao-item" onclick="window.selecionarEspecializacaoModal('${espec.nome}', '${espec.id}')">
+                    <div class="especializacao-header">
+                        <div class="especializacao-nome">${espec.nome}</div>
+                        <div class="especializacao-custo">${espec.custoBase || 2} pts</div>
+                    </div>
+                    <div class="especializacao-descricao">${espec.descricao || ''}</div>
+                    ${espec.default ? `<div class="especializacao-default">Default: ${espec.default}</div>` : ''}
+                </div>
+            `;
+        }).join('');
     } else {
-        return custoBase; // Custo mínimo para níveis negativos
+        especializacoesHTML = `
+            <div class="no-especializacoes">
+                <i class="fas fa-info-circle"></i>
+                <p>Esta perícia não tem especializações pré-definidas.</p>
+                <p>Clique em "Confirmar" para adquirir a perícia geral.</p>
+            </div>
+        `;
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-especializacao-content">
+            <div class="modal-especializacao-header">
+                <h3><i class="fas fa-star"></i> ${pericia.nome}</h3>
+                <button class="modal-especializacao-close" onclick="window.fecharModalEspecializacao()">&times;</button>
+            </div>
+            
+            <div class="modal-especializacao-body">
+                <div class="modal-especializacao-info">
+                    <p>Selecione uma especialização para <strong>${pericia.nome}</strong>:</p>
+                    <small>Todas as especializações seguem a mesma tabela de custos.</small>
+                </div>
+                
+                <div class="especializacoes-lista" id="especializacoes-lista">
+                    ${especializacoesHTML}
+                </div>
+            </div>
+            
+            <div class="modal-especializacao-footer">
+                <div class="modal-actions">
+                    <button class="btn-modal btn-modal-cancelar" onclick="window.fecharModalEspecializacao()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button class="btn-modal btn-modal-confirmar" onclick="window.confirmarPericiaComEspecializacao()">
+                        <i class="fas fa-check"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const modalOverlay = document.getElementById('modal-especializacao-overlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'flex';
+        console.log('✅ Modal de especialização exibido');
     }
 }
 
+function selecionarEspecializacaoModal(nomeEspecializacao, idEspecializacao) {
+    estadoPericias.especializacaoSelecionada = { nome: nomeEspecializacao, id: idEspecializacao };
+    
+    // Update UI
+    document.querySelectorAll('.especializacao-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Find and select the clicked item
+    const items = document.querySelectorAll('.especializacao-item');
+    items.forEach(item => {
+        const nomeElement = item.querySelector('.especializacao-nome');
+        if (nomeElement && nomeElement.textContent === nomeEspecializacao) {
+            item.classList.add('selected');
+        }
+    });
+}
+
+function confirmarPericiaComEspecializacao() {
+    const pericia = estadoPericias.modalPericiaAtiva;
+    const nivel = estadoPericias.nivelPericia;
+    const especializacao = estadoPericias.especializacaoSelecionada || { nome: pericia.nome, id: pericia.id };
+    
+    const custoTotal = calcularCustoParaNivel(pericia.dificuldade, nivel);
+    
+    // Create unique ID
+    const skillId = especializacao.id || `${pericia.id}-${especializacao.nome.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    
+    const novaPericia = {
+        id: skillId,
+        nome: pericia.nome,
+        atributo: pericia.atributo,
+        dificuldade: pericia.dificuldade,
+        nivel: nivel,
+        custo: custoTotal,
+        investimentoAcumulado: custoTotal,
+        categoria: pericia.categoria || 'Geral',
+        descricao: pericia.descricao,
+        grupo: pericia.grupo,
+        especializacao: especializacao.nome !== pericia.nome ? especializacao.nome : null,
+        tipo: pericia.tipo
+    };
+    
+    // Verifica se já existe (para atualização)
+    const indexExistente = estadoPericias.periciasAprendidas.findIndex(p => p.id === skillId);
+    if (indexExistente >= 0) {
+        estadoPericias.periciasAprendidas[indexExistente] = novaPericia;
+    } else {
+        estadoPericias.periciasAprendidas.push(novaPericia);
+    }
+    
+    // Save and update
+    salvarDados();
+    atualizarEstatisticas();
+    renderizarPericiasAprendidas();
+    renderizarCatalogoPericias();
+    fecharModalEspecializacao();
+    fecharModalPericia();
+    
+    showNotification(`✅ ${pericia.nome}${especializacao.nome !== pericia.nome ? ` (${especializacao.nome})` : ''} adquirida!`, 'success');
+}
+
+// ===== FUNÇÃO DE CONFIRMAÇÃO DE PERÍCIA =====
 function confirmarPericia() {
     if (!estadoPericias.modalPericiaAtiva) {
         console.error('❌ Nenhuma perícia ativa no modal');
@@ -529,15 +777,7 @@ function confirmarPericia() {
     const nivel = estadoPericias.nivelPericia;
     const periciaExistente = estadoPericias.periciaEditando;
     
-    // Verifica se é um grupo que precisa de especialização
-    if (pericia.tipo === 'grupo-especializacao' && !periciaExistente?.especializacao) {
-        // Abre modal de especialização
-        abrirModalEspecializacao(pericia);
-        return;
-    }
-    
-    // Cálculo de custo
-    const custoTotal = calcularCustoTotal(pericia.dificuldade, nivel);
+    const custoTotal = calcularCustoParaNivel(pericia.dificuldade, nivel);
     
     if (periciaExistente) {
         // Update existing
@@ -591,236 +831,6 @@ function fecharModalPericia() {
     estadoPericias.periciaEditando = null;
     estadoPericias.nivelPericia = 0;
     console.log('🔒 Modal de perícia fechado');
-}
-
-// ===== MODAL DE ESPECIALIZAÇÃO =====
-function abrirModalEspecializacao(pericia) {
-    console.log(`🟡 Abrindo modal de especialização para: ${pericia.nome}`);
-    
-    estadoPericias.modalEspecializacaoAtiva = pericia;
-    
-    // Get specializations from catalog
-    const especializacoes = window.obterEspecializacoes ? 
-        window.obterEspecializacoes(pericia.grupo) : [];
-    
-    const modal = document.getElementById('modal-especializacao');
-    if (!modal) return;
-    
-    let especializacoesHTML = '';
-    if (especializacoes && especializacoes.length > 0) {
-        especializacoesHTML = especializacoes.map(espec => {
-            const custoBase = espec.custoBase || calcularCustoBase(espec.dificuldade || pericia.dificuldade);
-            return `
-                <div class="especializacao-item" data-id="${espec.id}" onclick="window.selecionarEspecializacao('${espec.id}', '${espec.nome}')">
-                    <div class="especializacao-header">
-                        <div class="especializacao-nome">${espec.nome}</div>
-                        <div class="especializacao-custo">${custoBase} pts</div>
-                    </div>
-                    <div class="especializacao-descricao">${espec.descricao || ''}</div>
-                    ${espec.default ? `<div class="especializacao-default">Default: ${espec.default}</div>` : ''}
-                    ${espec.prereq ? `<div class="especializacao-prereq">Pré-requisito: ${espec.prereq}</div>` : ''}
-                </div>
-            `;
-        }).join('');
-        
-        // Adiciona opção para digitar personalizada
-        especializacoesHTML += `
-            <div class="especializacao-item especializacao-personalizada-btn" onclick="window.mostrarInputEspecializacaoPersonalizada()">
-                <div class="especializacao-header">
-                    <div class="especializacao-nome"><i class="fas fa-edit"></i> Digitar Especialização</div>
-                    <div class="especializacao-custo">${calcularCustoBase(pericia.dificuldade)} pts</div>
-                </div>
-                <div class="especializacao-descricao">Clique para digitar uma especialização personalizada</div>
-            </div>
-        `;
-    } else {
-        especializacoesHTML = `
-            <div class="no-especializacoes">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Nenhuma especialização disponível para este grupo.</p>
-                <button class="btn-digitar-especializacao" onclick="window.mostrarInputEspecializacaoPersonalizada()">
-                    <i class="fas fa-edit"></i> Digitar Especialização Personalizada
-                </button>
-            </div>
-        `;
-    }
-    
-    modal.innerHTML = `
-        <div class="modal-especializacao-content">
-            <div class="modal-especializacao-header">
-                <h3><i class="fas fa-star"></i> Especialização: ${pericia.nome}</h3>
-                <button class="modal-especializacao-close" onclick="window.fecharModalEspecializacao()">&times;</button>
-            </div>
-            
-            <div class="modal-especializacao-body">
-                <div class="modal-especializacao-descricao">
-                    <p>Selecione uma especialização para ${pericia.nome}:</p>
-                </div>
-                
-                <div class="especializacoes-grid" id="especializacoes-grid">
-                    ${especializacoesHTML}
-                </div>
-                
-                <div class="especializacao-personalizada-input" id="especializacao-personalizada-input" style="display: none; margin-top: 20px;">
-                    <h4>Especialização Personalizada</h4>
-                    <input type="text" id="input-especializacao-personalizada" 
-                           placeholder="Digite o nome da especialização (ex: Cavalo, Mula, Rapieira, etc.)...">
-                    <button class="btn-confirmar-especializacao" onclick="window.confirmarEspecializacaoPersonalizada()">
-                        <i class="fas fa-check"></i> Confirmar
-                    </button>
-                </div>
-            </div>
-            
-            <div class="modal-especializacao-footer">
-                <div class="modal-actions">
-                    <button class="btn-modal btn-modal-cancelar" onclick="window.fecharModalEspecializacao()">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
-                    <button class="btn-modal btn-modal-confirmar" onclick="window.confirmarEspecializacaoComModal()" id="btn-confirmar-especializacao" disabled>
-                        <i class="fas fa-check"></i> Confirmar Especialização
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    const modalOverlay = document.getElementById('modal-especializacao-overlay');
-    if (modalOverlay) {
-        modalOverlay.style.display = 'flex';
-        console.log('✅ Modal de especialização exibido');
-    }
-}
-
-function selecionarEspecializacao(id, nome) {
-    estadoPericias.especializacaoSelecionada = { id, nome };
-    
-    // Update UI
-    document.querySelectorAll('.especializacao-item').forEach(item => {
-        item.classList.remove('selected');
-        if (item.dataset.id === id) {
-            item.classList.add('selected');
-        }
-    });
-    
-    const btnConfirmar = document.getElementById('btn-confirmar-especializacao');
-    if (btnConfirmar) {
-        btnConfirmar.disabled = false;
-        btnConfirmar.innerHTML = `<i class="fas fa-check"></i> Confirmar: ${nome}`;
-    }
-    
-    // Esconde input personalizado se estiver visível
-    const inputContainer = document.getElementById('especializacao-personalizada-input');
-    if (inputContainer) {
-        inputContainer.style.display = 'none';
-    }
-}
-
-function mostrarInputEspecializacaoPersonalizada() {
-    estadoPericias.especializacaoSelecionada = { id: 'personalizado', nome: '' };
-    
-    // Desmarca todas as opções
-    document.querySelectorAll('.especializacao-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    
-    // Mostra input
-    const inputContainer = document.getElementById('especializacao-personalizada-input');
-    if (inputContainer) {
-        inputContainer.style.display = 'block';
-        const input = document.getElementById('input-especializacao-personalizada');
-        if (input) {
-            input.focus();
-        }
-    }
-    
-    const btnConfirmar = document.getElementById('btn-confirmar-especializacao');
-    if (btnConfirmar) {
-        btnConfirmar.disabled = true;
-        btnConfirmar.innerHTML = `<i class="fas fa-check"></i> Confirmar Especialização`;
-    }
-}
-
-function confirmarEspecializacaoPersonalizada() {
-    const input = document.getElementById('input-especializacao-personalizada');
-    if (!input) return;
-    
-    const nome = input.value.trim();
-    
-    if (!nome) {
-        showNotification('Por favor, digite um nome para a especialização.', 'error');
-        return;
-    }
-    
-    if (nome.length < 2) {
-        showNotification('O nome da especialização deve ter pelo menos 2 caracteres.', 'error');
-        return;
-    }
-    
-    estadoPericias.especializacaoSelecionada = { 
-        id: 'personalizado', 
-        nome: nome 
-    };
-    
-    confirmarPericiaComEspecializacao();
-}
-
-function confirmarEspecializacaoComModal() {
-    if (!estadoPericias.modalEspecializacaoAtiva || !estadoPericias.especializacaoSelecionada) {
-        showNotification('Por favor, selecione uma especialização.', 'error');
-        return;
-    }
-    
-    if (estadoPericias.especializacaoSelecionada.id === 'personalizado' && !estadoPericias.especializacaoSelecionada.nome) {
-        showNotification('Por favor, digite o nome da especialização.', 'error');
-        return;
-    }
-    
-    confirmarPericiaComEspecializacao();
-}
-
-function confirmarPericiaComEspecializacao() {
-    const pericia = estadoPericias.modalEspecializacaoAtiva;
-    const nivel = estadoPericias.nivelPericia;
-    const especializacao = estadoPericias.especializacaoSelecionada;
-    
-    if (!pericia || !especializacao) {
-        console.error('❌ Dados incompletos para confirmar especialização');
-        return;
-    }
-    
-    // Cria ID único para a perícia especializada
-    const skillId = `${pericia.id}-${especializacao.nome.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
-    
-    // Cálculo de custo
-    const custoTotal = calcularCustoTotal(pericia.dificuldade, nivel);
-    
-    // Add new specialized skill
-    const novaPericia = {
-        id: skillId,
-        nome: pericia.nome,
-        atributo: pericia.atributo,
-        dificuldade: pericia.dificuldade,
-        nivel: nivel,
-        custo: custoTotal,
-        investimentoAcumulado: custoTotal,
-        categoria: pericia.categoria || 'Geral',
-        descricao: pericia.descricao,
-        grupo: pericia.grupo,
-        especializacao: especializacao.nome,
-        tipo: 'especializada'
-    };
-    
-    estadoPericias.periciasAprendidas.push(novaPericia);
-    
-    // Save and update UI
-    salvarDados();
-    atualizarEstatisticas();
-    renderizarPericiasAprendidas();
-    renderizarCatalogoPericias();
-    fecharModalEspecializacao();
-    
-    showNotification(`✅ ${pericia.nome} (${especializacao.nome}) adquirida com sucesso!`, 'success');
-    console.log(`➕ Perícia especializada adquirida: ${pericia.nome} (${especializacao.nome})`);
 }
 
 function fecharModalEspecializacao() {
@@ -995,7 +1005,7 @@ function atualizarEstatisticas() {
     
     // Calculate from learned skills
     estadoPericias.periciasAprendidas.forEach(pericia => {
-        const custo = pericia.custo || pericia.investimentoAcumulado || 0;
+        const custo = pericia.investimentoAcumulado || pericia.custo || 0;
         const atributo = pericia.atributo;
         const categoria = pericia.categoria;
         
@@ -1112,6 +1122,8 @@ function renderizarPericiasAprendidas() {
             nomeDisplay += ` <span class="pericia-especializacao">(${pericia.especializacao})</span>`;
         }
         
+        const custoDisplay = pericia.investimentoAcumulado || pericia.custo || 0;
+        
         const html = `
             <div class="pericia-aprendida-header">
                 <div class="pericia-aprendida-nome">${nomeDisplay}</div>
@@ -1128,7 +1140,7 @@ function renderizarPericiasAprendidas() {
             </div>
             <div class="pericia-info-adicional">
                 <span class="pericia-dificuldade">${pericia.dificuldade}</span>
-                <span class="pericia-custo">${pericia.custo || pericia.investimentoAcumulado || 0} pts</span>
+                <span class="pericia-custo">${custoDisplay} pts</span>
             </div>
             ${pericia.especializacao ? `
             <div class="especializacoes">
@@ -1280,7 +1292,7 @@ function renderizarFiltros() {
     });
 }
 
-// ===== LIMPAR DADOS (para teste) =====
+// ===== LIMPAR DADOS =====
 function limparDadosPericias() {
     if (confirm('Tem certeza que deseja limpar TODAS as perícias aprendidas? Esta ação não pode ser desfeita.')) {
         estadoPericias.periciasAprendidas = [];
@@ -1296,13 +1308,11 @@ function limparDadosPericias() {
 window.initPericiasTab = initPericiasTab;
 window.abrirModalPericia = abrirModalPericia;
 window.fecharModalPericia = fecharModalPericia;
-window.diminuirNivelPericia = diminuirNivelPericia;
-window.aumentarNivelPericia = aumentarNivelPericia;
+window.alterarNivelPericiaDropdown = alterarNivelPericiaDropdown;
 window.confirmarPericia = confirmarPericia;
-window.selecionarEspecializacao = selecionarEspecializacao;
-window.mostrarInputEspecializacaoPersonalizada = mostrarInputEspecializacaoPersonalizada;
-window.confirmarEspecializacaoPersonalizada = confirmarEspecializacaoPersonalizada;
-window.confirmarEspecializacaoComModal = confirmarEspecializacaoComModal;
+window.selecionarEspecializacaoModal = selecionarEspecializacaoModal;
+window.abrirModalEspecializacao = abrirModalEspecializacao;
+window.confirmarPericiaComEspecializacao = confirmarPericiaComEspecializacao;
 window.fecharModalEspecializacao = fecharModalEspecializacao;
 window.removerPericia = removerPericia;
 window.editarPericia = editarPericia;
@@ -1310,6 +1320,8 @@ window.renderizarCatalogoPericias = renderizarCatalogoPericias;
 window.renderizarPericiasAprendidas = renderizarPericiasAprendidas;
 window.filtrarPericiasPor = filtrarPericiasPor;
 window.limparDadosPericias = limparDadosPericias;
+window.obterTabelaCusto = obterTabelaCusto;
+window.calcularCustoParaNivel = calcularCustoParaNivel;
 
 // ===== INICIALIZAÇÃO AUTOMÁTICA =====
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,15 +1,15 @@
 // ============================================
-// CATÁLOGO DE PERÍCIAS - VERSÃO CORRIGIDA
+// CATÁLOGO DE PERÍCIAS - VERSÃO CORRIGIDA COM DIFICULDADES REAIS
 // ============================================
 
 const catalogoPericias = {
-  // CATEGORIA COMBATE
+  // CATEGORIA COMBATE - Todas são base DX
   "Combate": {
-    // Sub-categoria: Armas de Esgrima
+    // Sub-categoria: Armas de Esgrima - TODAS são MÉDIA
     "Armas de Esgrima": {
       tipo: "modal-escolha",
       nome: "Armas de Esgrima",
-      descricao: "Armas leves e balanceadas para combate de esgrima.",
+      descricao: "Armas leves e balanceadas para combate de esgrima. Default: qualquer outra perícia de arma -3.",
       atributo: "DX",
       categoria: "Combate",
       pericias: [
@@ -56,7 +56,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Armas de Haste
+    // Sub-categoria: Armas de Haste - TODAS são MÉDIA
     "Armas de Haste": {
       tipo: "modal-escolha",
       nome: "Armas de Haste",
@@ -80,7 +80,7 @@ const catalogoPericias = {
           atributo: "DX",
           dificuldade: "Média",
           custoBase: 2,
-          descricao: "Qualquer haste longa usada como arma.",
+          descricao: "Qualquer haste longa usada como arma. Concede +2 ao Aparar.",
           prereq: "Armas de Haste-4 ou Lança-4",
           default: "Armas de Haste-4 ou Lança-4"
         },
@@ -97,11 +97,11 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Armas de Impacto
+    // Sub-categoria: Armas de Impacto - TODAS são MÉDIA
     "Armas de Impacto": {
       tipo: "modal-escolha",
       nome: "Armas de Impacto",
-      descricao: "Armas rígidas para golpear e esmagar.",
+      descricao: "Armas rígidas para golpear e esmagar. Default: qualquer outra perícia de arma -3.",
       atributo: "DX",
       categoria: "Combate",
       pericias: [
@@ -128,11 +128,11 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Chicotes
+    // Sub-categoria: Chicotes - MISTO: Média e Difícil
     "Chicotes": {
       tipo: "modal-escolha",
       nome: "Chicotes",
-      descricao: "Armas flexíveis para ataque à distância.",
+      descricao: "Armas flexíveis para ataque à distância. Default: qualquer outra perícia de arma -3.",
       atributo: "DX",
       categoria: "Combate",
       pericias: [
@@ -179,7 +179,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Espadas
+    // Sub-categoria: Espadas - MISTO: Fácil e Média
     "Espadas": {
       tipo: "modal-escolha",
       nome: "Espadas",
@@ -193,7 +193,7 @@ const catalogoPericias = {
           atributo: "DX",
           dificuldade: "Fácil",
           custoBase: 1,
-          descricao: "Qualquer lâmina rígida curta.",
+          descricao: "Qualquer lâmina rígida curta. Penalidade de -1 ao Aparar.",
           prereq: "Adaga de Esgrima-3, Espadas Curtas-3 ou Espada de Energia-3",
           default: "Adaga de Esgrima-3, Espadas Curtas-3 ou Espada de Energia-3"
         },
@@ -203,7 +203,7 @@ const catalogoPericias = {
           atributo: "DX",
           dificuldade: "Média",
           custoBase: 2,
-          descricao: "Espada pontiaguda para defesa e desarme.",
+          descricao: "Espada pontiaguda para defesa e desarme. +2 para desarmar.",
           prereq: "Adaga de Esgrima-4, Espadas Curtas-3 ou Espada de Energia-4",
           default: "Adaga de Esgrima-4, Espadas Curtas-3 ou Espada de Energia-4"
         },
@@ -250,11 +250,11 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Manguais
+    // Sub-categoria: Manguais - TODAS são DIFÍCIL
     "Manguais": {
       tipo: "modal-escolha",
       nome: "Manguais",
-      descricao: "Armas flexíveis com cabeças de impacto.",
+      descricao: "Armas flexíveis com cabeças de impacto. Default: qualquer outra perícia de arma -3.",
       atributo: "DX",
       categoria: "Combate",
       pericias: [
@@ -281,7 +281,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Outras Armas
+    // Sub-categoria: Outras Armas - MÉDIA
     "Outras Armas": {
       tipo: "modal-escolha",
       nome: "Outras Armas",
@@ -302,11 +302,11 @@ const catalogoPericias = {
       ]
     },
 
-    // Sub-categoria: Escudos
+    // Sub-categoria: Escudos - TODAS são FÁCIL
     "Escudos": {
       tipo: "modal-escolha",
       nome: "Escudo",
-      descricao: "Habilidade de usar um escudo tanto para defesa quanto para atacar. A defesa ativa (Bloqueio) é igual a (NH/2) + 3, arredondado para baixo.",
+      descricao: "Habilidade de usar um escudo tanto para defesa quanto para atacar. Bloqueio = (NH/2) + 3, arredondado para baixo.",
       atributo: "DX",
       categoria: "Combate",
       pericias: [
@@ -316,7 +316,7 @@ const catalogoPericias = {
           atributo: "DX",
           dificuldade: "Fácil",
           custoBase: 1,
-          descricao: "Escudo pequeno empunhado com uma das mãos. Ocupa completamente a mão, mas pode ser preparado em um turno ou largado como ação livre.",
+          descricao: "Escudo pequeno empunhado com uma das mãos.",
           prereq: "DX-4",
           default: "DX-4 ou Escudo-2 ou Escudo de Energia-2"
         },
@@ -326,7 +326,7 @@ const catalogoPericias = {
           atributo: "DX",
           dificuldade: "Fácil",
           custoBase: 1,
-          descricao: "Escudo preso por faixa, permitindo segurar (mas não empunhar) algo com a mão do escudo. Especialização mais comum.",
+          descricao: "Escudo preso por faixa, permitindo segurar algo com a mão do escudo.",
           prereq: "DX-4",
           default: "DX-4 ou Escudo (Broquel)-2 ou Escudo de Energia-2"
         },
@@ -336,7 +336,7 @@ const catalogoPericias = {
           atributo: "DX",
           dificuldade: "Fácil",
           custoBase: 1,
-          descricao: "Escudo com superfície bloqueadora formada de energia, em vez de matéria.",
+          descricao: "Escudo com superfície bloqueadora formada de energia.",
           prereq: "DX-4",
           default: "DX-4 ou Escudo-2 ou Escudo (Broquel)-2"
         }
@@ -408,17 +408,6 @@ const catalogoPericias = {
           descricao: "Montar e controlar dragões. Default de Cavalgar (Cavalo): -10.",
           prereq: "DX-5 ou Adestramento de Animais (Dragão)-3",
           default: "DX-5 ou Adestramento de Animais (Dragão)-3"
-        },
-        {
-          id: "cavalgar-digitar",
-          nome: "Cavalgar (Digitar Animal)",
-          atributo: "DX",
-          dificuldade: "Média",
-          custoBase: 2,
-          descricao: "CLIQUE AQUI para digitar qualquer animal não listado (Elefante, Griffon, Pégaso, etc.).",
-          prereq: "DX-5 ou Adestramento de Animais-3",
-          default: "DX-5 ou Adestramento de Animais-3 (consultar mestre)",
-          tipo: "personalizado"
         }
       ]
     }
@@ -516,7 +505,7 @@ const catalogoPericias = {
 };
 
 // ============================================
-// FUNÇÕES AUXILIARES - CORRIGIDAS
+// FUNÇÕES AUXILIARES - VERSÃO CORRIGIDA
 // ============================================
 
 function obterTodasPericiasSimples() {
@@ -531,7 +520,7 @@ function obterTodasPericiasSimples() {
         
         // Se for um grupo de especialização (tem propriedade "tipo")
         if (dadosGrupo.tipo === "modal-escolha") {
-          // CORREÇÃO: Determina a dificuldade e custo base corretos
+          // CORREÇÃO: Pega dificuldade e custo base REAIS da primeira perícia
           let dificuldadeGrupo = "Média";
           let custoBaseGrupo = 2;
           
@@ -541,18 +530,15 @@ function obterTodasPericiasSimples() {
             custoBaseGrupo = dadosGrupo.pericias[0].custoBase || 2;
           }
           
-          // Para grupos especiais, ajusta dificuldade específica
-          if (grupo === "Escudos") {
-            dificuldadeGrupo = "Fácil";
-            custoBaseGrupo = 1;
-          }
+          // REMOVIDO: Não sobrescrevemos mais com valores fixos!
+          // As dificuldades já estão corretas no catálogo
           
           todas.push({
             id: `grupo-${grupo.toLowerCase().replace(/ /g, '-')}`,
             nome: dadosGrupo.nome,
             atributo: dadosGrupo.atributo,
-            dificuldade: dificuldadeGrupo,
-            custoBase: custoBaseGrupo,
+            dificuldade: dificuldadeGrupo,  // Usa o valor REAL do catálogo
+            custoBase: custoBaseGrupo,     // Usa o valor REAL do catálogo
             descricao: dadosGrupo.descricao,
             prereq: "Varia por especialização",
             default: "Varia por especialização",
@@ -619,8 +605,8 @@ function carregarCatalogoPericias() {
   const todasPericias = obterTodasPericiasSimples();
   console.log(`📊 Total de perícias: ${todasPericias.length}`);
   
-  // Mostra as perícias carregadas
-  console.log('📋 Perícias disponíveis:');
+  // Mostra as perícias carregadas com suas dificuldades REAIS
+  console.log('📋 Perícias disponíveis (com dificuldades REAIS):');
   todasPericias.forEach((p, i) => {
     console.log(`${i + 1}. ${p.nome} (${p.atributo}/${p.dificuldade}) - ${p.custoBase} pts`);
   });
@@ -645,5 +631,5 @@ window.buscarPericiaPorId = buscarPericiaPorId;
 window.buscarPericiaPorNome = buscarPericiaPorNome;
 window.carregarCatalogoPericias = carregarCatalogoPericias;
 
-console.log('✅ Catálogo de perícias carregado e corrigido!');
+console.log('✅ Catálogo de perícias CORRIGIDO com dificuldades REAIS!');
 console.log('📊 Total de categorias:', Object.keys(catalogoPericias).length);
