@@ -1739,3 +1739,59 @@
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* ESTILOS PARA SUB-ABAS DE PERÍCIAS */
+.subtabs-navigation-pericias {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-gold);
+    overflow-x: auto;
+}
+
+.subtab-btn-pericias {
+    padding: 12px 20px;
+    background: rgba(44, 32, 8, 0.8);
+    border: 2px solid var(--wood-light);
+    border-radius: 8px;
+    color: var(--text-light);
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.subtab-btn-pericias:hover {
+    background: rgba(44, 32, 8, 1);
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
+}
+
+.subtab-btn-pericias.active {
+    background: linear-gradient(145deg, var(--accent-red), #6b0000);
+    border-color: var(--primary-gold);
+    color: var(--text-gold);
+    box-shadow: 0 0 15px rgba(139, 0, 0, 0.3);
+}
+
+.subtab-pane-pericias {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.subtab-pane-pericias.active {
+    display: block;
+    opacity: 1;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
