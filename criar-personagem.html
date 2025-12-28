@@ -2563,7 +2563,7 @@ body::before {
             </div>
         </template>
 
-       <!-- ABA PERÍCIAS - HTML LIMPO -->
+      <!-- ABA PERÍCIAS - HTML LIMPO E CORRIGIDO -->
 <div id="pericias" class="tab-content">
     <div class="pericias-container">
         <!-- CABEÇALHO -->
@@ -2744,19 +2744,151 @@ body::before {
     </div>
 </div>
 
-<!-- MODAL PARA PERÍCIAS -->
-<div class="modal-pericia-overlay">
-    <div class="modal-pericia">
+<!-- MODAL PARA PERÍCIAS - VERSÃO CORRIGIDA -->
+<div id="modal-pericia-overlay" class="modal-pericia-overlay" style="display: none;">
+    <div id="modal-pericia" class="modal-pericia">
         <!-- Conteúdo será inserido dinamicamente via JS -->
+        <div class="modal-pericia-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando...</p>
+        </div>
     </div>
 </div>
 
-<!-- MODAL PARA ESPECIALIZAÇÃO -->
-<div class="modal-especializacao-overlay">
-    <div class="modal-especializacao">
+<!-- MODAL PARA ESPECIALIZAÇÃO - VERSÃO CORRIGIDA -->
+<div id="modal-especializacao-overlay" class="modal-especializacao-overlay" style="display: none;">
+    <div id="modal-especializacao" class="modal-especializacao">
         <!-- Conteúdo será inserido dinamicamente via JS -->
+        <div class="modal-especializacao-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando especializações...</p>
+        </div>
     </div>
 </div>
+
+<!-- BOTÕES DE CONTROLE PARA OS MODAIS (hidden) -->
+<div style="display: none;">
+    <button id="btn-fechar-modal-pericia" onclick="fecharModalPericia()">Fechar</button>
+    <button id="btn-fechar-modal-especializacao" onclick="fecharModalEspecializacao()">Fechar</button>
+</div>
+
+<!-- ESTRUTURA DE TEMPLATE PARA O MODAL DE PERÍCIA -->
+<template id="template-modal-pericia">
+    <div class="modal-pericia-content">
+        <div class="modal-pericia-header">
+            <h3><i class="fas fa-book-open"></i> <span class="modal-pericia-nome">Nome da Perícia</span></h3>
+            <button class="modal-pericia-close" onclick="fecharModalPericia()">&times;</button>
+        </div>
+        
+        <div class="modal-pericia-body">
+            <div class="modal-pericia-info">
+                <div class="info-row">
+                    <span class="info-label">Atributo/Dificuldade:</span>
+                    <span class="info-value modal-pericia-atributo">DX/Média</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Categoria:</span>
+                    <span class="info-value modal-pericia-categoria">Geral</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Custo Base:</span>
+                    <span class="info-value modal-pericia-custo">2 pontos</span>
+                </div>
+            </div>
+            
+            <div class="modal-pericia-descricao">
+                <h4>Descrição</h4>
+                <p class="modal-pericia-descricao-texto">Descrição da perícia.</p>
+            </div>
+            
+            <div class="modal-pericia-default" style="display: none;">
+                <h4>Default</h4>
+                <p class="modal-pericia-default-texto">Default da perícia.</p>
+            </div>
+            
+            <div class="modal-pericia-controles">
+                <div class="controle-nivel">
+                    <h4>Nível da Perícia</h4>
+                    <div class="controle-nivel-botoes">
+                        <button class="btn-nivel btn-diminuir" onclick="diminuirNivelPericia()">-</button>
+                        <div class="nivel-atual">
+                            <div class="valor" id="modal-nivel-valor">+0</div>
+                            <div class="label">Nível</div>
+                        </div>
+                        <button class="btn-nivel btn-aumentar" onclick="aumentarNivelPericia()">+</button>
+                    </div>
+                    <div class="nivel-nh-info">
+                        <span>NH: </span>
+                        <span id="modal-nh-valor">10</span>
+                        <small id="modal-nh-calculo">(10 + 0)</small>
+                    </div>
+                </div>
+                
+                <div class="custo-nivel">
+                    <span>Custo: </span>
+                    <span id="modal-custo-valor">2</span>
+                    <span> ponto(s)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-pericia-footer">
+            <div class="modal-custo-total">
+                <span class="label">Custo Total:</span>
+                <span class="valor" id="modal-custo-total">2</span>
+                <span> pontos</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancelar" onclick="fecharModalPericia()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn-modal btn-modal-confirmar" onclick="confirmarPericia()" id="btn-confirmar-pericia">
+                    <i class="fas fa-check"></i> Adquirir Perícia
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- ESTRUTURA DE TEMPLATE PARA O MODAL DE ESPECIALIZAÇÃO -->
+<template id="template-modal-especializacao">
+    <div class="modal-especializacao-content">
+        <div class="modal-especializacao-header">
+            <h3><i class="fas fa-star"></i> <span class="modal-especializacao-nome">Especialização: Nome</span></h3>
+            <button class="modal-especializacao-close" onclick="fecharModalEspecializacao()">&times;</button>
+        </div>
+        
+        <div class="modal-especializacao-body">
+            <div class="modal-especializacao-descricao">
+                <p>Selecione uma especialização:</p>
+            </div>
+            
+            <div class="modal-especializacao-lista" id="modal-especializacao-lista">
+                <!-- Especializações serão inseridas aqui -->
+            </div>
+            
+            <div class="modal-especializacao-personalizada" id="modal-especializacao-personalizada" style="display: none;">
+                <h4>Especialização Personalizada</h4>
+                <input type="text" id="input-especializacao-personalizada" 
+                       placeholder="Digite o nome da especialização...">
+                <button class="btn-confirmar-especializacao" onclick="confirmarEspecializacaoPersonalizada()">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+        
+        <div class="modal-especializacao-footer">
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancelar" onclick="fecharModalEspecializacao()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn-modal btn-modal-confirmar" onclick="confirmarEspecializacao()" id="btn-confirmar-especializacao" disabled>
+                    <i class="fas fa-check"></i> Confirmar Especialização
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
 
 
 
