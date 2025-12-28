@@ -2563,7 +2563,7 @@ body::before {
             </div>
         </template>
 
-        <!-- ABA PERÍCIAS -->
+       <!-- ABA PERÍCIAS - HTML LIMPO -->
 <div id="pericias" class="tab-content">
     <div class="pericias-container">
         <!-- CABEÇALHO -->
@@ -2597,32 +2597,32 @@ body::before {
                 
                 <!-- CARDS DE ESTATÍSTICAS -->
                 <div class="stats-cards-grid">
-                    <div class="stat-card" data-filtro="todas" onclick="filtrarPor('todas')">
+                    <div class="stat-card" data-filtro="todas">
                         <div class="stat-categoria">Todas</div>
                         <div class="stat-valor" id="qtd-total">0</div>
                         <div class="stat-pontos" id="pts-total">(0 pts)</div>
                     </div>
-                    <div class="stat-card" data-filtro="dx" onclick="filtrarPor('dx')">
+                    <div class="stat-card" data-filtro="dx">
                         <div class="stat-categoria">DX</div>
                         <div class="stat-valor" id="qtd-dx">0</div>
                         <div class="stat-pontos" id="pts-dx">(0 pts)</div>
                     </div>
-                    <div class="stat-card" data-filtro="iq" onclick="filtrarPor('iq')">
+                    <div class="stat-card" data-filtro="iq">
                         <div class="stat-categoria">IQ</div>
                         <div class="stat-valor" id="qtd-iq">0</div>
                         <div class="stat-pontos" id="pts-iq">(0 pts)</div>
                     </div>
-                    <div class="stat-card" data-filtro="ht" onclick="filtrarPor('ht')">
+                    <div class="stat-card" data-filtro="ht">
                         <div class="stat-categoria">HT</div>
                         <div class="stat-valor" id="qtd-ht">0</div>
                         <div class="stat-pontos" id="pts-ht">(0 pts)</div>
                     </div>
-                    <div class="stat-card" data-filtro="perc" onclick="filtrarPor('perc')">
+                    <div class="stat-card" data-filtro="perc">
                         <div class="stat-categoria">PER</div>
                         <div class="stat-valor" id="qtd-perc">0</div>
                         <div class="stat-pontos" id="pts-perc">(0 pts)</div>
                     </div>
-                    <div class="stat-card" data-filtro="combate" onclick="filtrarPor('combate')">
+                    <div class="stat-card" data-filtro="combate">
                         <div class="stat-categoria">Combate</div>
                         <div class="stat-valor" id="qtd-combate">0</div>
                         <div class="stat-pontos" id="pts-combate">(0 pts)</div>
@@ -2693,30 +2693,13 @@ body::before {
             <!-- SUB-ABA 2: TÉCNICAS -->
             <div id="subtab-tecnicas" class="subtab-pane-pericias">
                 <!-- MENSAGEM INFORMATIVA -->
-                <div style="
-                    background: rgba(44, 32, 8, 0.6);
-                    border: 2px solid var(--wood-light);
-                    border-radius: 10px;
-                    padding: 25px;
-                    text-align: center;
-                    margin-bottom: 25px;
-                ">
-                    <h3 style="color: var(--text-gold); margin-bottom: 15px;">
-                        <i class="fas fa-tools"></i> Técnicas Especiais
-                    </h3>
-                    <p style="color: rgba(245, 245, 220, 0.8); line-height: 1.6;">
+                <div class="tecnica-info-box">
+                    <h3><i class="fas fa-tools"></i> Técnicas Especiais</h3>
+                    <p>
                         Técnicas são variações especializadas de perícias. Elas permitem que você melhore 
                         habilidades específicas além do limite normal, pagando pontos de habilidade.
                     </p>
-                    <div style="
-                        background: rgba(212, 175, 55, 0.1);
-                        border: 1px solid var(--primary-gold);
-                        border-radius: 6px;
-                        padding: 10px;
-                        margin-top: 15px;
-                        font-size: 0.9rem;
-                        color: rgba(212, 175, 55, 0.8);
-                    ">
+                    <div class="tecnica-dica">
                         <i class="fas fa-info-circle"></i>
                         <strong>Como funciona:</strong> Cada ponto investido melhora o nível da técnica, 
                         mas nunca pode exceder o nível da perícia base.
@@ -2775,7 +2758,7 @@ body::before {
     </div>
 </div>
 
-<!-- MODAL PARA TÉCNICAS (será criado dinamicamente) -->
+
 
         <!-- MAGIA -->
         <div id="magia" class="tab-content">
