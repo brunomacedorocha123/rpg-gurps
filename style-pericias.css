@@ -1071,3 +1071,620 @@
         width: 100%;
     }
 }
+
+/* ============================================
+   ESTILOS ESPECÍFICOS PARA TÉCNICAS
+   ============================================ */
+
+/* ITEM DE TÉCNICA NO CATÁLOGO */
+.tecnica-item {
+    background: rgba(44, 32, 8, 0.6);
+    border: 1px solid var(--wood-light);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.tecnica-item:hover {
+    background: rgba(44, 32, 8, 0.9);
+    border-color: var(--primary-gold);
+    transform: translateX(5px);
+}
+
+.tecnica-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.tecnica-nome {
+    flex: 1;
+    font-weight: bold;
+    color: var(--text-light);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tecnica-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tecnica-base {
+    font-size: 0.9rem;
+    color: rgba(212, 175, 55, 0.8);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tecnica-limite {
+    font-size: 0.8rem;
+    color: rgba(212, 175, 55, 0.6);
+    font-style: italic;
+}
+
+.tecnica-descricao {
+    color: rgba(245, 245, 220, 0.7);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.tecnica-prereq {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(139, 0, 0, 0.2);
+}
+
+.tecnica-prereq strong {
+    color: var(--text-gold);
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.prereq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.prereq-ok {
+    color: var(--accent-green);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.prereq-fail {
+    color: var(--accent-red);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tecnica-aprendida-indicator {
+    background: rgba(46, 92, 58, 0.3);
+    border: 1px solid var(--accent-green);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tecnica-bloqueada {
+    background: rgba(139, 0, 0, 0.2);
+    border: 1px solid var(--accent-red);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* TÉCNICAS APRENDIDAS */
+.tecnica-aprendida-item {
+    background: rgba(26, 18, 0, 0.8);
+    border: 2px solid var(--wood-light);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tecnica-aprendida-item:hover {
+    background: rgba(44, 32, 8, 0.9);
+    border-color: var(--primary-gold);
+}
+
+.tecnica-aprendida-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.tecnica-aprendida-nome {
+    font-weight: bold;
+    color: var(--text-light);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tecnica-aprendida-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.tecnica-nivel-container {
+    margin-bottom: 10px;
+}
+
+.nivel-label {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.nivel-progresso {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.nivel-base, .nivel-atual {
+    color: var(--text-light);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.nivel-max {
+    color: rgba(212, 175, 55, 0.6);
+    font-size: 0.85rem;
+}
+
+.nivel-detalhes {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.tecnica-custo-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.custo-label {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.9rem;
+}
+
+.custo-valor {
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.btn-remover-tecnica {
+    background: rgba(139, 0, 0, 0.2);
+    border: 1px solid var(--accent-red);
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-remover-tecnica:hover {
+    background: rgba(139, 0, 0, 0.4);
+}
+
+/* MODAL DE TÉCNICA */
+.modal-tecnica-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-tecnica-content {
+    background: linear-gradient(145deg, rgba(26, 18, 0, 0.95), rgba(44, 32, 8, 0.95));
+    border: 3px solid var(--primary-gold);
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.4s ease;
+}
+
+.modal-tecnica .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 2px solid var(--primary-gold);
+}
+
+.modal-tecnica .modal-header h3 {
+    color: var(--text-gold);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-tecnica .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-tecnica .modal-close:hover {
+    background: rgba(139, 0, 0, 0.3);
+    color: var(--accent-red);
+}
+
+.modal-tecnica .modal-body {
+    padding: 25px;
+}
+
+.modal-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-info-grid .info-card {
+    background: rgba(44, 32, 8, 0.6);
+    border: 1px solid var(--wood-light);
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+}
+
+.info-card .info-label {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.info-card .info-value {
+    color: var(--text-light);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.tecnica-calculadora {
+    background: rgba(44, 32, 8, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 2px solid var(--wood-dark);
+}
+
+.calc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calc-header h4 {
+    color: var(--text-gold);
+    font-size: 1.2rem;
+}
+
+.nh-info {
+    display: flex;
+    gap: 15px;
+}
+
+.nh-info span {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.9rem;
+}
+
+.nh-info strong {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+.pontos-controle {
+    background: rgba(26, 18, 0, 0.8);
+    border: 2px solid var(--wood-light);
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.controle-label {
+    color: rgba(212, 175, 55, 0.9);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.controle-valor {
+    color: var(--text-gold);
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.controle-botoes {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.btn-controle {
+    background: rgba(44, 32, 8, 0.8);
+    border: 2px solid var(--wood-light);
+    border-radius: 8px;
+    width: 45px;
+    height: 45px;
+    color: var(--text-light);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-controle:hover:not(:disabled) {
+    border-color: var(--primary-gold);
+    background: rgba(44, 32, 8, 1);
+}
+
+.btn-controle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.niveis-info {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.niveis-display, .nh-display {
+    text-align: center;
+}
+
+.niveis-label, .nh-label {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.niveis-valor, .nh-valor {
+    color: var(--text-gold);
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.custo-tabela {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.custo-tabela small {
+    color: rgba(212, 175, 55, 0.7);
+    font-size: 0.85rem;
+}
+
+.tabela-itens {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.tabela-item {
+    background: rgba(44, 32, 8, 0.6);
+    border: 1px solid var(--wood-light);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    color: rgba(212, 175, 55, 0.8);
+}
+
+.tabela-item.ativo {
+    background: rgba(46, 92, 58, 0.3);
+    border-color: var(--accent-green);
+    color: var(--text-light);
+}
+
+.tecnica-custo-total {
+    background: rgba(26, 18, 0, 0.8);
+    border: 2px solid var(--primary-gold);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.custo-label {
+    color: rgba(212, 175, 55, 0.9);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.custo-valor {
+    color: var(--text-gold);
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.custo-diferenca {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.custo-diferenca.positivo {
+    color: var(--accent-green);
+}
+
+.custo-diferenca.negativo {
+    color: var(--accent-red);
+}
+
+.modal-tecnica .modal-footer {
+    padding: 20px 25px;
+    border-top: 2px solid var(--wood-dark);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-modal {
+    flex: 1;
+    padding: 12px 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-cancelar {
+    background: rgba(139, 0, 0, 0.3);
+    border: 2px solid var(--wood-light);
+    color: var(--text-light);
+}
+
+.btn-cancelar:hover {
+    background: rgba(139, 0, 0, 0.5);
+    border-color: var(--accent-red);
+}
+
+.btn-confirmar {
+    background: linear-gradient(145deg, var(--accent-green), #1e4028);
+    color: white;
+    border: none;
+}
+
+.btn-confirmar:hover:not(:disabled) {
+    background: linear-gradient(145deg, #3a7c4a, #1e4028);
+}
+
+.btn-confirmar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+    .modal-info-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .nh-info {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .niveis-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .tabela-itens {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .controle-valor {
+        font-size: 2rem;
+    }
+    
+    .custo-valor {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tecnica-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .tecnica-aprendida-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .tecnica-aprendida-info {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
