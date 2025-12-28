@@ -1,5 +1,5 @@
 // ============================================
-// SISTEMA DE PERÍCIAS - COMPLETO E FUNCIONAL
+// SISTEMA DE PERÍCIAS - VERSÃO CORRIGIDA
 // ============================================
 
 // Estado do sistema
@@ -29,7 +29,8 @@ let estadoPericias = {
     modalPericiaAtiva: null,
     modalEspecializacaoAtiva: null,
     especializacaoSelecionada: null,
-    nivelPericia: 0
+    nivelPericia: 0,
+    periciaEditando: null
 };
 
 // ===== INICIALIZAÇÃO =====
@@ -184,8 +185,8 @@ function configurarEventos() {
         });
     });
     
-    // Modal overlay
-    const modalPericiaOverlay = document.querySelector('.modal-pericia-overlay');
+    // Modal overlay - USANDO OS NOVOS IDs
+    const modalPericiaOverlay = document.getElementById('modal-pericia-overlay');
     if (modalPericiaOverlay) {
         modalPericiaOverlay.addEventListener('click', (e) => {
             if (e.target === e.currentTarget) {
@@ -194,7 +195,7 @@ function configurarEventos() {
         });
     }
     
-    const modalEspecializacaoOverlay = document.querySelector('.modal-especializacao-overlay');
+    const modalEspecializacaoOverlay = document.getElementById('modal-especializacao-overlay');
     if (modalEspecializacaoOverlay) {
         modalEspecializacaoOverlay.addEventListener('click', (e) => {
             if (e.target === e.currentTarget) {
@@ -480,7 +481,9 @@ function renderizarCatalogo() {
         
         periciaElement.innerHTML = html;
         
-        periciaElement.addEventListener('click', () => {
+        // EVENT LISTENER SIMPLIFICADO E CORRETO
+        periciaElement.addEventListener('click', function() {
+            console.log(`🔵 Clicou na perícia: ${pericia.nome}`);
             abrirModalPericia(pericia);
         });
         
@@ -565,6 +568,7 @@ function renderizarPericiasAprendidas() {
         periciaElement.addEventListener('click', () => {
             const periciaOriginal = window.buscarPericiaPorId ? window.buscarPericiaPorId(pericia.id) : null;
             if (periciaOriginal) {
+                estadoPericias.periciaEditando = pericia;
                 abrirModalPericia(periciaOriginal, pericia);
             }
         });
@@ -573,9 +577,12 @@ function renderizarPericiasAprendidas() {
     });
 }
 
-// ===== MODAL DE PERÍCIA =====
+// ===== MODAL DE PERÍCIA - VERSÃO SIMPLIFICADA E FUNCIONAL =====
 function abrirModalPericia(pericia, periciaExistente = null) {
+    console.log(`🟢 Abrindo modal para: ${pericia.nome}`);
+    
     estadoPericias.modalPericiaAtiva = pericia;
+    estadoPericias.periciaEditando = periciaExistente;
     
     // Determine initial level
     let nivelInicial = 0;
@@ -596,171 +603,151 @@ function abrirModalPericia(pericia, periciaExistente = null) {
     const atributoBase = obterAtributoAtual(pericia.atributo);
     const nhAtual = atributoBase + nivelInicial;
     
-    // Create modal content
-    const modal = document.querySelector('.modal-pericia');
-    if (!modal) return;
-    
-    modal.innerHTML = `
-        <div class="modal-header">
-            <h3><i class="fas fa-book-open"></i> ${pericia.nome}</h3>
-            <button class="modal-close" onclick="fecharModalPericia()">&times;</button>
-        </div>
-        
-        <div class="modal-body">
-            <div class="modal-info-grid">
-                <div class="info-card">
-                    <div class="info-label">Atributo/Dificuldade</div>
-                    <div class="info-value">${pericia.atributo}/${pericia.dificuldade}</div>
-                </div>
-                <div class="info-card">
-                    <div class="info-label">Categoria</div>
-                    <div class="info-value">${pericia.categoria || 'Geral'}</div>
-                </div>
-                <div class="info-card">
-                    <div class="info-label">Custo Base</div>
-                    <div class="info-value">${pericia.custoBase || 'Varia'} pontos</div>
-                </div>
-            </div>
-            
-            <div class="modal-descricao">
-                <h4>Descrição</h4>
-                <p>${pericia.descricao || 'Sem descrição disponível.'}</p>
-            </div>
-            
-            ${pericia.default ? `
-            <div class="modal-default">
-                <h4>Default</h4>
-                <p>${pericia.default}</p>
-            </div>
-            ` : ''}
-            
-            <div class="modal-controles">
-                <div class="nivel-selecao">
-                    <h4>Selecionar Nível</h4>
-                    <div class="nivel-options">
-                        ${niveisDisponiveis.map(nivel => `
-                            <div class="nivel-option ${nivel.nivel === nivelInicial ? 'selected' : ''}" 
-                                 data-nivel="${nivel.nivel}"
-                                 onclick="selecionarNivelPericia(${nivel.nivel})">
-                                <div class="nivel-valor">${nivel.nivel >= 0 ? '+' : ''}${nivel.nivel}</div>
-                                <div class="nivel-custo">${nivel.custo} ponto${nivel.custo !== 1 ? 's' : ''}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                
-                <div class="nh-calculado">
-                    <h4>Número de Habilidade (NH)</h4>
-                    <div class="nh-display">
-                        <span class="nh-valor" id="nh-modal-valor">${nhAtual}</span>
-                        <span class="nh-detalhes" id="nh-modal-detalhes">
-                            ${atributoBase} (${pericia.atributo}) + ${nivelInicial >= 0 ? '+' : ''}${nivelInicial}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            
-            ${pericia.tipo === 'grupo-especializacao' || pericia.grupo ? `
-            <div class="modal-especializacao-nota">
-                <i class="fas fa-info-circle"></i>
-                Esta perícia requer especialização. Você poderá escolher após confirmar.
-            </div>
-            ` : ''}
-        </div>
-        
-        <div class="modal-footer">
-            <div class="custo-total">
-                <span>Custo Total:</span>
-                <span class="custo-valor" id="custo-modal-total">0</span>
-                <span>pontos</span>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-modal btn-cancelar" onclick="fecharModalPericia()">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <button class="btn-modal btn-confirmar" onclick="confirmarPericia()" id="btn-confirmar-pericia">
-                    <i class="fas fa-check"></i> ${periciaExistente ? 'Atualizar' : 'Adquirir'}
-                </button>
-            </div>
-        </div>
-    `;
-    
-    // Show modal
-    const modalOverlay = document.querySelector('.modal-pericia-overlay');
-    if (modalOverlay) {
-        modalOverlay.style.display = 'flex';
+    // Get the template
+    const template = document.getElementById('template-modal-pericia');
+    if (!template) {
+        console.error('❌ Template do modal não encontrado!');
+        return;
     }
     
-    // Update cost
-    atualizarCustoModal();
+    // Clone the template
+    const modalContent = document.importNode(template.content, true);
+    
+    // Fill in the data
+    modalContent.querySelector('.modal-pericia-nome').textContent = pericia.nome;
+    modalContent.querySelector('.modal-pericia-atributo').textContent = `${pericia.atributo}/${pericia.dificuldade}`;
+    modalContent.querySelector('.modal-pericia-categoria').textContent = pericia.categoria || 'Geral';
+    modalContent.querySelector('.modal-pericia-custo').textContent = `${pericia.custoBase || 'Varia'} pontos`;
+    modalContent.querySelector('.modal-pericia-descricao-texto').textContent = pericia.descricao || 'Sem descrição disponível.';
+    
+    // Show default if exists
+    if (pericia.default) {
+        const defaultSection = modalContent.querySelector('.modal-pericia-default');
+        defaultSection.style.display = 'block';
+        modalContent.querySelector('.modal-pericia-default-texto').textContent = pericia.default;
+    }
+    
+    // Set initial values
+    modalContent.querySelector('#modal-nivel-valor').textContent = `${nivelInicial >= 0 ? '+' : ''}${nivelInicial}`;
+    modalContent.querySelector('#modal-nh-valor').textContent = nhAtual;
+    modalContent.querySelector('#modal-nh-calculo').textContent = `(${atributoBase} + ${nivelInicial >= 0 ? '+' : ''}${nivelInicial})`;
+    
+    // Calculate initial cost
+    const infoEvolucao = obterInfoEvolucao(periciaExistente, nivelInicial, pericia.dificuldade);
+    if (infoEvolucao) {
+        modalContent.querySelector('#modal-custo-valor').textContent = infoEvolucao.custoAPagar || 0;
+        modalContent.querySelector('#modal-custo-total').textContent = infoEvolucao.custoTotal || 0;
+        
+        const btnConfirmar = modalContent.querySelector('#btn-confirmar-pericia');
+        if (btnConfirmar) {
+            if (infoEvolucao.jaPossui) {
+                btnConfirmar.disabled = true;
+                btnConfirmar.innerHTML = '<i class="fas fa-check"></i> Já Possui';
+            } else if (periciaExistente) {
+                btnConfirmar.innerHTML = `<i class="fas fa-sync-alt"></i> Atualizar (${infoEvolucao.custoAPagar} pts)`;
+            } else {
+                btnConfirmar.innerHTML = `<i class="fas fa-plus"></i> Adquirir (${infoEvolucao.custoAPagar} pts)`;
+            }
+        }
+    }
+    
+    // Clear the modal and add new content
+    const modal = document.getElementById('modal-pericia');
+    if (modal) {
+        modal.innerHTML = '';
+        modal.appendChild(modalContent);
+        
+        // Add event listeners to buttons
+        const btnDiminuir = modal.querySelector('.btn-diminuir');
+        const btnAumentar = modal.querySelector('.btn-aumentar');
+        
+        if (btnDiminuir) {
+            btnDiminuir.addEventListener('click', () => {
+                diminuirNivelPericia();
+            });
+        }
+        
+        if (btnAumentar) {
+            btnAumentar.addEventListener('click', () => {
+                aumentarNivelPericia();
+            });
+        }
+    }
+    
+    // Show modal
+    const modalOverlay = document.getElementById('modal-pericia-overlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'flex';
+        console.log('✅ Modal exibido');
+    } else {
+        console.error('❌ Modal overlay não encontrado!');
+    }
 }
 
-function selecionarNivelPericia(nivel) {
+function diminuirNivelPericia() {
     if (!estadoPericias.modalPericiaAtiva) return;
     
-    estadoPericias.nivelPericia = nivel;
+    const pericia = estadoPericias.modalPericiaAtiva;
+    const tabela = obterTabelaCusto(pericia.dificuldade);
     
-    // Update selected state
-    document.querySelectorAll('.nivel-option').forEach(opt => {
-        opt.classList.remove('selected');
-        if (parseInt(opt.dataset.nivel) === nivel) {
-            opt.classList.add('selected');
-        }
-    });
+    // Find current position
+    const currentIndex = tabela.findIndex(item => item.nivel === estadoPericias.nivelPericia);
+    if (currentIndex > 0) {
+        estadoPericias.nivelPericia = tabela[currentIndex - 1].nivel;
+        atualizarDisplayModal();
+    }
+}
+
+function aumentarNivelPericia() {
+    if (!estadoPericias.modalPericiaAtiva) return;
     
-    // Update NH display
+    const pericia = estadoPericias.modalPericiaAtiva;
+    const tabela = obterTabelaCusto(pericia.dificuldade);
+    
+    // Find current position
+    const currentIndex = tabela.findIndex(item => item.nivel === estadoPericias.nivelPericia);
+    if (currentIndex < tabela.length - 1) {
+        estadoPericias.nivelPericia = tabela[currentIndex + 1].nivel;
+        atualizarDisplayModal();
+    }
+}
+
+function atualizarDisplayModal() {
+    if (!estadoPericias.modalPericiaAtiva) return;
+    
     const pericia = estadoPericias.modalPericiaAtiva;
     const atributoBase = obterAtributoAtual(pericia.atributo);
-    const nhAtual = atributoBase + nivel;
+    const nhAtual = atributoBase + estadoPericias.nivelPericia;
     
-    const nhValor = document.getElementById('nh-modal-valor');
-    const nhDetalhes = document.getElementById('nh-modal-detalhes');
+    // Update display
+    const nivelElement = document.getElementById('modal-nivel-valor');
+    const nhElement = document.getElementById('modal-nh-valor');
+    const nhCalculoElement = document.getElementById('modal-nh-calculo');
     
-    if (nhValor) nhValor.textContent = nhAtual;
-    if (nhDetalhes) nhDetalhes.textContent = 
-        `${atributoBase} (${pericia.atributo}) + ${nivel >= 0 ? '+' : ''}${nivel}`;
+    if (nivelElement) nivelElement.textContent = `${estadoPericias.nivelPericia >= 0 ? '+' : ''}${estadoPericias.nivelPericia}`;
+    if (nhElement) nhElement.textContent = nhAtual;
+    if (nhCalculoElement) nhCalculoElement.textContent = `(${atributoBase} + ${estadoPericias.nivelPericia >= 0 ? '+' : ''}${estadoPericias.nivelPericia})`;
     
     // Update cost
-    atualizarCustoModal();
-}
-
-function atualizarCustoModal() {
-    if (!estadoPericias.modalPericiaAtiva) return;
+    const periciaExistente = estadoPericias.periciaEditando;
+    const infoEvolucao = obterInfoEvolucao(periciaExistente, estadoPericias.nivelPericia, pericia.dificuldade);
     
-    const pericia = estadoPericias.modalPericiaAtiva;
-    const nivel = estadoPericias.nivelPericia;
-    const periciaExistente = estadoPericias.periciasAprendidas.find(p => p.id === pericia.id);
-    
-    const infoEvolucao = obterInfoEvolucao(periciaExistente, nivel, pericia.dificuldade);
-    
-    const custoElement = document.getElementById('custo-modal-total');
+    const custoElement = document.getElementById('modal-custo-valor');
+    const custoTotalElement = document.getElementById('modal-custo-total');
     const btnConfirmar = document.getElementById('btn-confirmar-pericia');
     
     if (infoEvolucao) {
-        if (infoEvolucao.jaPossui) {
-            if (custoElement) {
-                custoElement.textContent = '0';
-                custoElement.className = 'custo-valor custo-zero';
-            }
-            if (btnConfirmar) {
+        if (custoElement) custoElement.textContent = infoEvolucao.custoAPagar || 0;
+        if (custoTotalElement) custoTotalElement.textContent = infoEvolucao.custoTotal || 0;
+        
+        if (btnConfirmar) {
+            if (infoEvolucao.jaPossui) {
                 btnConfirmar.disabled = true;
                 btnConfirmar.innerHTML = '<i class="fas fa-check"></i> Já Possui';
-            }
-        } else if (infoEvolucao.ehEvolucao) {
-            if (custoElement) {
-                custoElement.textContent = `+${infoEvolucao.custoAPagar}`;
-                custoElement.className = 'custo-valor custo-evolucao';
-            }
-            if (btnConfirmar) {
+            } else if (periciaExistente) {
                 btnConfirmar.disabled = false;
-                btnConfirmar.innerHTML = `<i class="fas fa-arrow-up"></i> Evoluir (+${infoEvolucao.custoAPagar} pts)`;
-            }
-        } else {
-            if (custoElement) {
-                custoElement.textContent = infoEvolucao.custoAPagar;
-                custoElement.className = 'custo-valor custo-novo';
-            }
-            if (btnConfirmar) {
+                btnConfirmar.innerHTML = `<i class="fas fa-sync-alt"></i> Atualizar (${infoEvolucao.custoAPagar} pts)`;
+            } else {
                 btnConfirmar.disabled = false;
                 btnConfirmar.innerHTML = `<i class="fas fa-plus"></i> Adquirir (${infoEvolucao.custoAPagar} pts)`;
             }
@@ -862,6 +849,7 @@ function confirmarPericia() {
     
     const pericia = estadoPericias.modalPericiaAtiva;
     const nivel = estadoPericias.nivelPericia;
+    const periciaExistente = estadoPericias.periciaEditando;
     
     // Check if this is a specialization group
     if (pericia.tipo === 'grupo-especializacao' || pericia.grupo) {
@@ -869,7 +857,6 @@ function confirmarPericia() {
         return;
     }
     
-    const periciaExistente = estadoPericias.periciasAprendidas.find(p => p.id === pericia.id);
     const infoEvolucao = obterInfoEvolucao(periciaExistente, nivel, pericia.dificuldade);
     
     if (!infoEvolucao || infoEvolucao.jaPossui) {
@@ -919,74 +906,72 @@ function confirmarPericia() {
 
 // ===== MODAL DE ESPECIALIZAÇÃO =====
 function abrirModalEspecializacao(pericia) {
+    console.log(`🟢 Abrindo modal de especialização para: ${pericia.nome}`);
+    
     estadoPericias.modalEspecializacaoAtiva = pericia;
     
     // Get specializations from catalog
     const especializacoes = window.obterEspecializacoes ? 
         window.obterEspecializacoes(pericia.grupo || pericia.nome) : [];
     
-    const modal = document.querySelector('.modal-especializacao');
-    if (!modal) return;
+    // Get the template
+    const template = document.getElementById('template-modal-especializacao');
+    if (!template) {
+        console.error('❌ Template do modal de especialização não encontrado!');
+        return;
+    }
     
-    modal.innerHTML = `
-        <div class="modal-header">
-            <h3><i class="fas fa-star"></i> Especialização: ${pericia.nome}</h3>
-            <button class="modal-close" onclick="fecharModalEspecializacao()">&times;</button>
-        </div>
-        
-        <div class="modal-body">
-            <div class="modal-descricao">
-                <p>Selecione uma especialização para ${pericia.nome}:</p>
-            </div>
-            
-            <div class="especializacoes-grid">
-                ${especializacoes.map(espec => `
-                    <div class="especializacao-item" data-id="${espec.id}" onclick="selecionarEspecializacao('${espec.id}')">
-                        <div class="especializacao-header">
-                            <div class="especializacao-nome">${espec.nome}</div>
-                            <div class="especializacao-custo">${espec.custoBase || 2} pts</div>
-                        </div>
-                        <div class="especializacao-descricao">${espec.descricao || ''}</div>
-                        ${espec.default ? `<div class="especializacao-default">Default: ${espec.default}</div>` : ''}
-                    </div>
-                `).join('')}
-                
-                ${especializacoes.length === 0 ? `
-                    <div class="no-especializacoes">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <p>Nenhuma especialização disponível para este grupo.</p>
-                        <button class="btn-digitar-especializacao" onclick="digitarEspecializacaoPersonalizada()">
-                            <i class="fas fa-edit"></i> Digitar Especialização
-                        </button>
-                    </div>
-                ` : ''}
-            </div>
-            
-            <div class="especializacao-personalizada" id="especializacao-personalizada" style="display: none;">
-                <h4>Especialização Personalizada</h4>
-                <input type="text" id="input-especializacao-personalizada" 
-                       placeholder="Digite o nome da especialização...">
-                <button class="btn-confirmar-especializacao" onclick="confirmarEspecializacaoPersonalizada()">
-                    <i class="fas fa-check"></i> Confirmar
-                </button>
-            </div>
-        </div>
-        
-        <div class="modal-footer">
-            <div class="modal-actions">
-                <button class="btn-modal btn-cancelar" onclick="fecharModalEspecializacao()">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <button class="btn-modal btn-confirmar" id="btn-confirmar-especializacao" onclick="confirmarEspecializacao()" disabled>
-                    <i class="fas fa-check"></i> Confirmar Especialização
-                </button>
-            </div>
-        </div>
-    `;
+    // Clone the template
+    const modalContent = document.importNode(template.content, true);
     
-    const modalOverlay = document.querySelector('.modal-especializacao-overlay');
+    // Fill in the data
+    modalContent.querySelector('.modal-especializacao-nome').textContent = `Especialização: ${pericia.nome}`;
+    
+    const listaElement = modalContent.getElementById('modal-especializacao-lista');
+    if (listaElement) {
+        if (especializacoes.length === 0) {
+            listaElement.innerHTML = `
+                <div class="no-especializacoes">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Nenhuma especialização disponível para este grupo.</p>
+                    <button class="btn-digitar-especializacao" onclick="window.digitarEspecializacaoPersonalizada()">
+                        <i class="fas fa-edit"></i> Digitar Especialização
+                    </button>
+                </div>
+            `;
+        } else {
+            listaElement.innerHTML = especializacoes.map(espec => `
+                <div class="especializacao-item" data-id="${espec.id}">
+                    <div class="especializacao-header">
+                        <div class="especializacao-nome">${espec.nome}</div>
+                        <div class="especializacao-custo">${espec.custoBase || 2} pts</div>
+                    </div>
+                    ${espec.descricao ? `<div class="especializacao-descricao">${espec.descricao}</div>` : ''}
+                    ${espec.default ? `<div class="especializacao-default">Default: ${espec.default}</div>` : ''}
+                </div>
+            `).join('');
+            
+            // Add event listeners to specialization items
+            listaElement.querySelectorAll('.especializacao-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    selecionarEspecializacao(this.dataset.id);
+                });
+            });
+        }
+    }
+    
+    // Clear the modal and add new content
+    const modal = document.getElementById('modal-especializacao');
+    if (modal) {
+        modal.innerHTML = '';
+        modal.appendChild(modalContent);
+    }
+    
+    // Show modal
+    const modalOverlay = document.getElementById('modal-especializacao-overlay');
     if (modalOverlay) {
         modalOverlay.style.display = 'flex';
+        console.log('✅ Modal de especialização exibido');
     }
 }
 
@@ -994,12 +979,15 @@ function selecionarEspecializacao(id) {
     estadoPericias.especializacaoSelecionada = id;
     
     // Update UI
-    document.querySelectorAll('.especializacao-item').forEach(item => {
-        item.classList.remove('selected');
-        if (item.dataset.id === id) {
-            item.classList.add('selected');
-        }
-    });
+    const modal = document.getElementById('modal-especializacao');
+    if (modal) {
+        modal.querySelectorAll('.especializacao-item').forEach(item => {
+            item.classList.remove('selected');
+            if (item.dataset.id === id) {
+                item.classList.add('selected');
+            }
+        });
+    }
     
     const btnConfirmar = document.getElementById('btn-confirmar-especializacao');
     if (btnConfirmar) btnConfirmar.disabled = false;
@@ -1007,8 +995,11 @@ function selecionarEspecializacao(id) {
 
 function digitarEspecializacaoPersonalizada() {
     estadoPericias.especializacaoSelecionada = 'personalizado';
-    const container = document.getElementById('especializacao-personalizada');
-    if (container) container.style.display = 'block';
+    const container = document.getElementById('modal-especializacao-personalizada');
+    if (container) {
+        container.style.display = 'block';
+        container.querySelector('input').focus();
+    }
     
     const btnConfirmar = document.getElementById('btn-confirmar-especializacao');
     if (btnConfirmar) btnConfirmar.disabled = false;
@@ -1057,21 +1048,36 @@ function confirmarEspecializacao() {
 function confirmarPericiaComEspecializacao(especializacaoNome) {
     const pericia = estadoPericias.modalEspecializacaoAtiva;
     const nivel = estadoPericias.nivelPericia;
+    const periciaExistente = estadoPericias.periciaEditando;
     
-    // Add skill with specialization
-    estadoPericias.periciasAprendidas.push({
-        id: `${pericia.id}-${especializacaoNome.toLowerCase().replace(/\s+/g, '-')}`,
-        nome: pericia.nome,
-        atributo: pericia.atributo,
-        dificuldade: pericia.dificuldade,
-        nivel: nivel,
-        custo: 2, // Base cost for specialized skills
-        investimentoAcumulado: 2,
-        categoria: pericia.categoria || 'Geral',
-        descricao: pericia.descricao,
-        grupo: pericia.grupo || pericia.nome,
-        especializacao: especializacaoNome
-    });
+    // Add or update skill with specialization
+    const skillId = `${pericia.id}-${especializacaoNome.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    if (periciaExistente) {
+        // Update existing
+        const index = estadoPericias.periciasAprendidas.indexOf(periciaExistente);
+        estadoPericias.periciasAprendidas[index] = {
+            ...periciaExistente,
+            id: skillId,
+            especializacao: especializacaoNome,
+            grupo: pericia.grupo || pericia.nome
+        };
+    } else {
+        // Add new
+        estadoPericias.periciasAprendidas.push({
+            id: skillId,
+            nome: pericia.nome,
+            atributo: pericia.atributo,
+            dificuldade: pericia.dificuldade,
+            nivel: nivel,
+            custo: pericia.custoBase || 2,
+            investimentoAcumulado: pericia.custoBase || 2,
+            categoria: pericia.categoria || 'Geral',
+            descricao: pericia.descricao,
+            grupo: pericia.grupo || pericia.nome,
+            especializacao: especializacaoNome
+        });
+    }
     
     // Save and update UI
     salvarDados();
@@ -1097,21 +1103,24 @@ function removerPericia(id) {
 }
 
 function fecharModalPericia() {
-    const modalOverlay = document.querySelector('.modal-pericia-overlay');
+    const modalOverlay = document.getElementById('modal-pericia-overlay');
     if (modalOverlay) {
         modalOverlay.style.display = 'none';
     }
     estadoPericias.modalPericiaAtiva = null;
+    estadoPericias.periciaEditando = null;
     estadoPericias.nivelPericia = 0;
+    console.log('🔴 Modal de perícia fechado');
 }
 
 function fecharModalEspecializacao() {
-    const modalOverlay = document.querySelector('.modal-especializacao-overlay');
+    const modalOverlay = document.getElementById('modal-especializacao-overlay');
     if (modalOverlay) {
         modalOverlay.style.display = 'none';
     }
     estadoPericias.modalEspecializacaoAtiva = null;
     estadoPericias.especializacaoSelecionada = null;
+    console.log('🔴 Modal de especialização fechado');
 }
 
 function showToastPericia(mensagem) {
@@ -1137,11 +1146,14 @@ window.filtrarPor = filtrarPor;
 window.abrirModalPericia = abrirModalPericia;
 window.fecharModalPericia = fecharModalPericia;
 window.fecharModalEspecializacao = fecharModalEspecializacao;
-window.selecionarNivelPericia = selecionarNivelPericia;
+window.diminuirNivelPericia = diminuirNivelPericia;
+window.aumentarNivelPericia = aumentarNivelPericia;
 window.selecionarEspecializacao = selecionarEspecializacao;
 window.confirmarEspecializacao = confirmarEspecializacao;
 window.digitarEspecializacaoPersonalizada = digitarEspecializacaoPersonalizada;
 window.confirmarEspecializacaoPersonalizada = confirmarEspecializacaoPersonalizada;
+window.confirmarPericia = confirmarPericia;
+window.removerPericia = removerPericia;
 
 // Inicialização automática quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', function() {
