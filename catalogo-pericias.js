@@ -1,11 +1,11 @@
 // ============================================
-// CATÁLOGO DE PERÍCIAS - EXATAMENTE COMO NO SEU CÓDIGO
+// CATÁLOGO DE PERÍCIAS - VERSÃO CORRIGIDA
 // ============================================
 
 const catalogoPericias = {
-  // CATEGORIA COMBATE - EXATAMENTE COMO NO SEU CÓDIGO
+  // CATEGORIA COMBATE
   "Combate": {
-    // Sub-categoria: Armas de Esgrima (exatamente como no seu código)
+    // Sub-categoria: Armas de Esgrima
     "Armas de Esgrima": {
       tipo: "modal-escolha",
       nome: "Armas de Esgrima",
@@ -56,7 +56,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Armas de Haste (exatamente como no seu código)
+    // Sub-categoria: Armas de Haste
     "Armas de Haste": {
       tipo: "modal-escolha",
       nome: "Armas de Haste",
@@ -97,7 +97,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Armas de Impacto (exatamente como no seu código)
+    // Sub-categoria: Armas de Impacto
     "Armas de Impacto": {
       tipo: "modal-escolha",
       nome: "Armas de Impacto",
@@ -128,7 +128,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Chicotes (exatamente como no seu código)
+    // Sub-categoria: Chicotes
     "Chicotes": {
       tipo: "modal-escolha",
       nome: "Chicotes",
@@ -179,7 +179,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Espadas (exatamente como no seu código)
+    // Sub-categoria: Espadas
     "Espadas": {
       tipo: "modal-escolha",
       nome: "Espadas",
@@ -250,7 +250,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Manguais (exatamente como no seu código)
+    // Sub-categoria: Manguais
     "Manguais": {
       tipo: "modal-escolha",
       nome: "Manguais",
@@ -281,7 +281,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Sub-categoria: Outras Armas (exatamente como no seu código)
+    // Sub-categoria: Outras Armas
     "Outras Armas": {
       tipo: "modal-escolha",
       nome: "Outras Armas",
@@ -302,7 +302,7 @@ const catalogoPericias = {
       ]
     },
 
-    // Sub-categoria: Escudos (exatamente como no seu código)
+    // Sub-categoria: Escudos
     "Escudos": {
       tipo: "modal-escolha",
       nome: "Escudo",
@@ -343,7 +343,7 @@ const catalogoPericias = {
       ]
     },
     
-    // Perícias de Combate Simples (exatamente como no seu código)
+    // Perícias de Combate Simples
     "Simples": [
       {
         id: "arco",
@@ -360,7 +360,7 @@ const catalogoPericias = {
     ]
   },
   
-  // CATEGORIA ESPECIALIZAÇÃO (exatamente como no seu código)
+  // CATEGORIA ESPECIALIZAÇÃO
   "Especializacao": {
     "Cavalgar": {
       tipo: "modal-escolha",
@@ -424,7 +424,7 @@ const catalogoPericias = {
     }
   },
   
-  // CATEGORIA DX (exatamente como no seu código)
+  // CATEGORIA DX
   "DX": [
     {
       id: "acrobacia",
@@ -466,7 +466,7 @@ const catalogoPericias = {
     }
   ],
   
-  // CATEGORIA IQ (exatamente como no seu código)
+  // CATEGORIA IQ
   "IQ": [
     {
       id: "labia",
@@ -482,7 +482,7 @@ const catalogoPericias = {
     }
   ],
   
-  // CATEGORIA HT (exatamente como no seu código)
+  // CATEGORIA HT
   "HT": [
     {
       id: "corrida",
@@ -498,7 +498,7 @@ const catalogoPericias = {
     }
   ],
   
-  // CATEGORIA PERC (exatamente como no seu código)
+  // CATEGORIA PERC
   "PERC": [
     {
       id: "observacao",
@@ -516,13 +516,13 @@ const catalogoPericias = {
 };
 
 // ============================================
-// FUNÇÕES AUXILIARES - EXATAMENTE COMO NO SEU CÓDIGO
+// FUNÇÕES AUXILIARES - CORRIGIDAS
 // ============================================
 
 function obterTodasPericiasSimples() {
   const todas = [];
   
-  // Percorre todas as categorias EXATAMENTE como no seu código
+  // Percorre todas as categorias
   for (const categoria in catalogoPericias) {
     if (categoria === "Combate" || categoria === "Especializacao") {
       // Ambas têm estrutura de grupos
@@ -531,12 +531,28 @@ function obterTodasPericiasSimples() {
         
         // Se for um grupo de especialização (tem propriedade "tipo")
         if (dadosGrupo.tipo === "modal-escolha") {
+          // CORREÇÃO: Determina a dificuldade e custo base corretos
+          let dificuldadeGrupo = "Média";
+          let custoBaseGrupo = 2;
+          
+          // Se tiver perícias no grupo, pega da primeira
+          if (dadosGrupo.pericias && Array.isArray(dadosGrupo.pericias) && dadosGrupo.pericias.length > 0) {
+            dificuldadeGrupo = dadosGrupo.pericias[0].dificuldade;
+            custoBaseGrupo = dadosGrupo.pericias[0].custoBase || 2;
+          }
+          
+          // Para grupos especiais, ajusta dificuldade específica
+          if (grupo === "Escudos") {
+            dificuldadeGrupo = "Fácil";
+            custoBaseGrupo = 1;
+          }
+          
           todas.push({
             id: `grupo-${grupo.toLowerCase().replace(/ /g, '-')}`,
             nome: dadosGrupo.nome,
             atributo: dadosGrupo.atributo,
-            dificuldade: "Média",
-            custoBase: 2,
+            dificuldade: dificuldadeGrupo,
+            custoBase: custoBaseGrupo,
             descricao: dadosGrupo.descricao,
             prereq: "Varia por especialização",
             default: "Varia por especialização",
@@ -571,7 +587,7 @@ function obterTodasPericiasSimples() {
 }
 
 function obterEspecializacoes(grupo) {
-  // Procura em Combate E em Especializacao EXATAMENTE como no seu código
+  // Procura em Combate E em Especializacao
   const categorias = ["Combate", "Especializacao"];
   
   for (const categoria of categorias) {
@@ -599,12 +615,20 @@ function buscarPericiaPorNome(nome) {
 // Função para carregar o catálogo no sistema
 function carregarCatalogoPericias() {
   console.log('📚 Catálogo de perícias carregado com sucesso!');
-  console.log(`📊 Total de perícias: ${obterTodasPericiasSimples().length}`);
+  
+  const todasPericias = obterTodasPericiasSimples();
+  console.log(`📊 Total de perícias: ${todasPericias.length}`);
+  
+  // Mostra as perícias carregadas
+  console.log('📋 Perícias disponíveis:');
+  todasPericias.forEach((p, i) => {
+    console.log(`${i + 1}. ${p.nome} (${p.atributo}/${p.dificuldade}) - ${p.custoBase} pts`);
+  });
   
   // Atualiza o contador
   const contador = document.getElementById('contador-pericias');
   if (contador) {
-    contador.textContent = obterTodasPericiasSimples().length;
+    contador.textContent = todasPericias.length;
   }
   
   return true;
@@ -621,4 +645,5 @@ window.buscarPericiaPorId = buscarPericiaPorId;
 window.buscarPericiaPorNome = buscarPericiaPorNome;
 window.carregarCatalogoPericias = carregarCatalogoPericias;
 
-console.log('✅ Catálogo de perícias carregado exatamente como no seu código!');
+console.log('✅ Catálogo de perícias carregado e corrigido!');
+console.log('📊 Total de categorias:', Object.keys(catalogoPericias).length);
