@@ -1,5 +1,5 @@
 // ============================================
-// TECNICAS.JS - SISTEMA COMPLETO 100%
+// TECNICAS.JS - SISTEMA COMPLETO 100% CORRETO
 // ============================================
 
 // ===== 1. CATÁLOGO SIMPLES E CORRETO =====
@@ -13,7 +13,7 @@ const CATALOGO_TECNICAS = [
         periciaBase: "Arco",        // MODIFICA O ARCO
         atributo: "DX",
         modificadorBase: -4,        // -4 NO ARCO
-        prereq: ["Arco", "Cavalgar"] // Arco específico, qualquer Cavalgar
+        prereq: ["Arco", "Cavalgar"] // Arco genérico, Cavalgar (qualquer)
     }
 ];
 
@@ -21,21 +21,27 @@ const CATALOGO_TECNICAS = [
 let tecnicasAprendidas = JSON.parse(localStorage.getItem('tecnicas_aprendidas') || '[]');
 let pontosTecnicas = parseInt(localStorage.getItem('pontos_tecnicas') || '0');
 
-// ===== 3. BUSCA DE PERÍCIAS - CORRETA =====
+// ===== 3. BUSCA DE PERÍCIAS - 100% CORRETA =====
 function buscarPericiaParaTecnica(nomePericia) {
-    console.log(`🔍 Buscando: ${nomePericia}`);
+    console.log(`🔍 Buscando perícia para técnica: ${nomePericia}`);
     
-    // Tenta o sistema principal primeiro
-    if (window.estadoPericias && window.estadoPericias.periciasAprendidas) {
-        const pericias = window.estadoPericias.periciasAprendidas;
-        
-        // PARA ARCO: busca específico
-        if (nomePericia === "Arco") {
-            const arco = pericias.find(p => 
-                p && p.nome && 
-                (p.nome === "Arco" || p.nome.includes("Arco"))
-            );
+    // PARA ARCO: busca específico "Arco"
+    if (nomePericia === "Arco") {
+        // Tenta o sistema principal primeiro
+        if (window.estadoPericias && window.estadoPericias.periciasAprendidas) {
+            const pericias = window.estadoPericias.periciasAprendidas;
+            
+            // Busca EXATAMENTE "Arco" ou que contenha "Arco" no nome
+            const arco = pericias.find(p => {
+                if (!p || !p.nome) return false;
+                const nomePer = p.nome.toLowerCase().trim();
+                return nomePer === "arco" || 
+                       nomePer.startsWith("arco ") ||
+                       nomePer.includes("(arco)");
+            });
+            
             if (arco) {
+                console.log(`✅ Arco encontrado no estado: ${arco.nome} - NH ${arco.nivel}`);
                 return {
                     tem: true,
                     nivel: arco.nivel || 0,
@@ -44,37 +50,24 @@ function buscarPericiaParaTecnica(nomePericia) {
             }
         }
         
-        // PARA CAVALGAR: aceita QUALQUER
-        if (nomePericia === "Cavalgar") {
-            const cavalgar = pericias.find(p => 
-                p && p.nome && 
-                p.nome.toLowerCase().includes("cavalgar")
-            );
-            if (cavalgar) {
-                return {
-                    tem: true,
-                    nivel: cavalgar.nivel || 0,
-                    nome: cavalgar.nome
-                };
-            }
-        }
-    }
-    
-    // Fallback para localStorage
-    try {
-        const dados = localStorage.getItem('gurps_pericias');
-        if (dados) {
-            const parsed = JSON.parse(dados);
-            const pericias = parsed.periciasAprendidas || parsed;
-            
-            if (Array.isArray(pericias)) {
-                // Arco específico
-                if (nomePericia === "Arco") {
-                    const arco = pericias.find(p => 
-                        p && p.nome && 
-                        (p.nome === "Arco" || p.nome.includes("Arco"))
-                    );
+        // Fallback para localStorage
+        try {
+            const dados = localStorage.getItem('gurps_pericias');
+            if (dados) {
+                const parsed = JSON.parse(dados);
+                const pericias = parsed.periciasAprendidas || parsed;
+                
+                if (Array.isArray(pericias)) {
+                    const arco = pericias.find(p => {
+                        if (!p || !p.nome) return false;
+                        const nomePer = p.nome.toLowerCase().trim();
+                        return nomePer === "arco" || 
+                               nomePer.startsWith("arco ") ||
+                               nomePer.includes("(arco)");
+                    });
+                    
                     if (arco) {
+                        console.log(`✅ Arco encontrado no localStorage: ${arco.nome} - NH ${arco.nivel}`);
                         return {
                             tem: true,
                             nivel: arco.nivel || 0,
@@ -82,14 +75,54 @@ function buscarPericiaParaTecnica(nomePericia) {
                         };
                     }
                 }
+            }
+        } catch (e) {
+            console.log("Erro ao buscar Arco:", e);
+        }
+        
+        console.log(`❌ Arco não encontrado`);
+        return { tem: false, nivel: 0, nome: "Arco" };
+    }
+    
+    // PARA CAVALGAR: aceita QUALQUER especialização
+    if (nomePericia === "Cavalgar") {
+        // Tenta o sistema principal primeiro
+        if (window.estadoPericias && window.estadoPericias.periciasAprendidas) {
+            const pericias = window.estadoPericias.periciasAprendidas;
+            
+            // Busca QUALQUER perícia que contenha "cavalgar"
+            const cavalgar = pericias.find(p => {
+                if (!p || !p.nome) return false;
+                const nomePer = p.nome.toLowerCase().trim();
+                return nomePer.includes("cavalgar");
+            });
+            
+            if (cavalgar) {
+                console.log(`✅ Cavalgar encontrado no estado: ${cavalgar.nome} - NH ${cavalgar.nivel}`);
+                return {
+                    tem: true,
+                    nivel: cavalgar.nivel || 0,
+                    nome: cavalgar.nome
+                };
+            }
+        }
+        
+        // Fallback para localStorage
+        try {
+            const dados = localStorage.getItem('gurps_pericias');
+            if (dados) {
+                const parsed = JSON.parse(dados);
+                const pericias = parsed.periciasAprendidas || parsed;
                 
-                // Qualquer Cavalgar
-                if (nomePericia === "Cavalgar") {
-                    const cavalgar = pericias.find(p => 
-                        p && p.nome && 
-                        p.nome.toLowerCase().includes("cavalgar")
-                    );
+                if (Array.isArray(pericias)) {
+                    const cavalgar = pericias.find(p => {
+                        if (!p || !p.nome) return false;
+                        const nomePer = p.nome.toLowerCase().trim();
+                        return nomePer.includes("cavalgar");
+                    });
+                    
                     if (cavalgar) {
+                        console.log(`✅ Cavalgar encontrado no localStorage: ${cavalgar.nome} - NH ${cavalgar.nivel}`);
                         return {
                             tem: true,
                             nivel: cavalgar.nivel || 0,
@@ -98,23 +131,30 @@ function buscarPericiaParaTecnica(nomePericia) {
                     }
                 }
             }
+        } catch (e) {
+            console.log("Erro ao buscar Cavalgar:", e);
         }
-    } catch (e) {
-        console.log("Erro ao buscar perícias:", e);
+        
+        console.log(`❌ Cavalgar não encontrado`);
+        return { tem: false, nivel: 0, nome: "Cavalgar (qualquer)" };
     }
     
     return { tem: false, nivel: 0, nome: nomePericia };
 }
 
-// ===== 4. VERIFICAR PRÉ-REQUISITOS =====
+// ===== 4. VERIFICAR PRÉ-REQUISITOS - 100% CORRETO =====
 function verificarPrereqTecnica(tecnica) {
     const arco = buscarPericiaParaTecnica("Arco");
     const cavalgar = buscarPericiaParaTecnica("Cavalgar");
     
+    console.log(`📋 Verificando pré-requisitos para ${tecnica.nome}:`);
+    console.log(`   Arco: ${arco.tem ? '✅' : '❌'} ${arco.nome} (NH ${arco.nivel})`);
+    console.log(`   Cavalgar: ${cavalgar.tem ? '✅' : '❌'} ${cavalgar.nome} (NH ${cavalgar.nivel})`);
+    
     return {
         arco: arco,
         cavalgar: cavalgar,
-        todosCumpridos: arco.tem && cavalgar.tem
+        todosCumpridos: arco.tem && cavalgar.tem && arco.nivel > 0 && cavalgar.nivel > 0
     };
 }
 
@@ -158,7 +198,7 @@ function calcularNHTecnicaCorreto(tecnicaId, niveisInvestidos = 0) {
     };
 }
 
-// ===== 6. RENDERIZAR CATÁLOGO =====
+// ===== 6. RENDERIZAR CATÁLOGO - 100% CORRETO =====
 function renderizarCatalogoTecnicas() {
     const container = document.getElementById('lista-tecnicas');
     if (!container) return;
@@ -188,7 +228,8 @@ function renderizarCatalogoTecnicas() {
             btnIcon = 'fa-lock';
         }
         
-        // Card HTML
+        // Card HTML - MOSTRANDO O ARCO COM -4
+        const sinalMod = tecnica.modificadorBase >= 0 ? '+' : '';
         const card = document.createElement('div');
         card.className = 'tecnica-card';
         card.innerHTML = `
@@ -205,7 +246,10 @@ function renderizarCatalogoTecnicas() {
             <div class="tecnica-info">
                 <div class="info-item">
                     <span class="label">Base:</span>
-                    <span class="valor">${tecnica.periciaBase} ${prereq.arco.tem ? `(NH ${nhCalculo.nhBase})` : ''}</span>
+                    <span class="valor">
+                        ${tecnica.periciaBase} 
+                        ${prereq.arco.tem ? `(NH ${nhCalculo.nhBase}${sinalMod}${tecnica.modificadorBase})` : ''}
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="label">Penalidade:</span>
@@ -221,7 +265,7 @@ function renderizarCatalogoTecnicas() {
                 <div class="prereq-titulo">Pré-requisitos:</div>
                 <div class="prereq-item ${prereq.arco.tem ? 'ok' : 'falta'}">
                     <i class="fas fa-${prereq.arco.tem ? 'check' : 'times'}"></i>
-                    Arco ${prereq.arco.tem ? `(NH ${prereq.arco.nivel})` : ''}
+                    ${prereq.arco.nome} ${prereq.arco.tem ? `(NH ${prereq.arco.nivel})` : ''}
                 </div>
                 <div class="prereq-item ${prereq.cavalgar.tem ? 'ok' : 'falta'}">
                     <i class="fas fa-${prereq.cavalgar.tem ? 'check' : 'times'}"></i>
@@ -243,7 +287,7 @@ function renderizarCatalogoTecnicas() {
     });
 }
 
-// ===== 7. RENDERIZAR APRENDIDAS =====
+// ===== 7. RENDERIZAR APRENDIDAS - 100% CORRETO (MOSTRANDO ARCO COM -4) =====
 function renderizarTecnicasAprendidas() {
     const container = document.getElementById('tecnicas-aprendidas');
     if (!container) return;
@@ -266,6 +310,17 @@ function renderizarTecnicasAprendidas() {
         
         const nh = calcularNHTecnicaCorreto(tecnica.id, tecnica.niveis || 0);
         
+        // CÁLCULO DETALHADO PARA MOSTRAR ARCO COM -4
+        const nhArco = nh.nhBase;
+        const penalidade = base.modificadorBase; // -4
+        const nhAposPenalidade = nhArco + penalidade;
+        const niveisBonus = tecnica.niveis || 0;
+        
+        // Formatação do cálculo
+        const sinalPenalidade = penalidade >= 0 ? '+' : '';
+        const sinalNiveis = niveisBonus > 0 ? '+' : '';
+        const calculoDetalhado = `${nhArco} ${sinalPenalidade}${penalidade} ${sinalNiveis}${niveisBonus > 0 ? niveisBonus : ''} = ${nh.nh}`;
+        
         const card = document.createElement('div');
         card.className = 'tecnica-aprendida';
         card.innerHTML = `
@@ -279,25 +334,29 @@ function renderizarTecnicasAprendidas() {
             
             <div class="aprendida-detalhes">
                 <div class="detalhe">
-                    <span>Perícia Base:</span>
-                    <strong>${base.periciaBase} (NH ${nh.nhBase})</strong>
+                    <span>Base:</span>
+                    <strong>${base.periciaBase} (NH ${nhArco})</strong>
                 </div>
                 <div class="detalhe">
-                    <span>Penalidade:</span>
-                    <strong>${base.modificadorBase}</strong>
+                    <span>Penalidade no Arco:</span>
+                    <strong>${sinalPenalidade}${penalidade}</strong>
                 </div>
                 <div class="detalhe">
-                    <span>Níveis:</span>
-                    <strong>+${tecnica.niveis || 0}</strong>
+                    <span>Arco com penalidade:</span>
+                    <strong>NH ${nhAposPenalidade}</strong>
                 </div>
                 <div class="detalhe">
-                    <span>Pontos:</span>
+                    <span>Níveis na técnica:</span>
+                    <strong>${sinalNiveis}${niveisBonus}</strong>
+                </div>
+                <div class="detalhe">
+                    <span>Pontos gastos:</span>
                     <strong>${tecnica.pontos || 0} pts</strong>
                 </div>
             </div>
             
             <div class="aprendida-calculo">
-                <small>${nh.calculo}</small>
+                <small><strong>Cálculo:</strong> ${calculoDetalhado}</small>
             </div>
             
             <div class="aprendida-acoes">
@@ -313,6 +372,7 @@ function renderizarTecnicasAprendidas() {
         container.appendChild(card);
     });
 }
+
 // ===== 8. MODAL COMPLETO E FUNCIONAL =====
 let tecnicaModalSelecionada = null;
 
@@ -352,14 +412,14 @@ function abrirModalTecnica(id) {
                 <div class="modal-prereq">
                     <h4><i class="fas fa-clipboard-check"></i> Pré-requisitos</h4>
                     <div class="prereq-lista">
-                        <div class="prereq ${arcoInfo.tem ? 'ok' : 'falta'}">
-                            <i class="fas fa-${arcoInfo.tem ? 'check' : 'times'}"></i>
-                            <span>Arco</span>
+                        <div class="prereq ${arcoInfo.tem && arcoInfo.nivel > 0 ? 'ok' : 'falta'}">
+                            <i class="fas fa-${arcoInfo.tem && arcoInfo.nivel > 0 ? 'check' : 'times'}"></i>
+                            <span>${arcoInfo.nome}</span>
                             <small>${arcoInfo.tem ? `NH ${arcoInfo.nivel}` : 'Não aprendido'}</small>
                         </div>
-                        <div class="prereq ${cavalgarInfo.tem ? 'ok' : 'falta'}">
-                            <i class="fas fa-${cavalgarInfo.tem ? 'check' : 'times'}"></i>
-                            <span>${cavalgarInfo.tem ? cavalgarInfo.nome : 'Cavalgar'}</span>
+                        <div class="prereq ${cavalgarInfo.tem && cavalgarInfo.nivel > 0 ? 'ok' : 'falta'}">
+                            <i class="fas fa-${cavalgarInfo.tem && cavalgarInfo.nivel > 0 ? 'check' : 'times'}"></i>
+                            <span>${cavalgarInfo.tem ? cavalgarInfo.nome : 'Cavalgar (qualquer)'}</span>
                             <small>${cavalgarInfo.tem ? `NH ${cavalgarInfo.nivel}` : 'Não aprendido'}</small>
                         </div>
                     </div>
@@ -403,7 +463,7 @@ function abrirModalTecnica(id) {
                     <h4><i class="fas fa-calculator"></i> Resumo</h4>
                     <div class="resumo-item">
                         <span>Arco:</span>
-                        <strong>NH ${nhArco} ${tecnica.modificadorBase} = ${nhBase}</strong>
+                        <strong>NH ${nhArco} ${tecnica.modificadorBase >= 0 ? '+' : ''}${tecnica.modificadorBase} = ${nhBase}</strong>
                     </div>
                     <div class="resumo-item">
                         <span>Níveis adicionais:</span>
@@ -423,7 +483,7 @@ function abrirModalTecnica(id) {
                     <i class="fas fa-exclamation-triangle"></i>
                     <div>
                         <strong>Pré-requisitos não cumpridos</strong>
-                        <p>Você precisa aprender Arco e Cavalgar para adquirir esta técnica.</p>
+                        <p>Você precisa aprender Arco (qualquer) e Cavalgar (qualquer especialização) para adquirir esta técnica.</p>
                     </div>
                 </div>
                 `}
@@ -501,13 +561,19 @@ function confirmarTecnicaModal(id) {
     // Verifica pré-requisitos novamente
     const prereq = verificarPrereqTecnica(tecnica);
     if (!prereq.todosCumpridos) {
-        alert('❌ Pré-requisitos não cumpridos!');
+        alert('❌ Pré-requisitos não cumpridos! Você precisa ter Arco e Cavalgar (qualquer).');
         return;
     }
     
     // Verifica se tem Arco com pelo menos 1 ponto
     if (prereq.arco.nivel <= 0) {
         alert('❌ Você precisa ter pelo menos 1 ponto em Arco!');
+        return;
+    }
+    
+    // Verifica se tem Cavalgar com pelo menos 1 ponto
+    if (prereq.cavalgar.nivel <= 0) {
+        alert('❌ Você precisa ter pelo menos 1 ponto em Cavalgar (qualquer especialização)!');
         return;
     }
     
@@ -526,7 +592,9 @@ function confirmarTecnicaModal(id) {
             niveis: niveis,
             pontos: pontos,
             periciaBase: tecnica.periciaBase,
-            modificadorBase: tecnica.modificadorBase
+            modificadorBase: tecnica.modificadorBase,
+            prereqArco: prereq.arco,
+            prereqCavalgar: prereq.cavalgar
         };
         
         alert(`✅ ${tecnica.nome} atualizada!`);
@@ -539,7 +607,9 @@ function confirmarTecnicaModal(id) {
             niveis: niveis,
             pontos: pontos,
             periciaBase: tecnica.periciaBase,
-            modificadorBase: tecnica.modificadorBase
+            modificadorBase: tecnica.modificadorBase,
+            prereqArco: prereq.arco,
+            prereqCavalgar: prereq.cavalgar
         });
         pontosTecnicas += pontos;
         
@@ -561,7 +631,7 @@ function editarTecnica(id) {
 }
 
 function removerTecnica(id) {
-    if (!confirm('Tem certeza que deseja remover esta técnica?')) return;
+    if (!confirm('Tem certeza que deseja remover esta técnica? Os pontos serão devolvidos.')) return;
     
     const index = tecnicasAprendidas.findIndex(t => t.id === id);
     if (index === -1) return;
@@ -576,7 +646,7 @@ function removerTecnica(id) {
     
     // Atualiza
     renderizarTodasTecnicas();
-    alert('Técnica removida!');
+    alert('✅ Técnica removida! Pontos devolvidos.');
 }
 
 // ===== 12. FECHAR MODAL =====
@@ -637,6 +707,8 @@ function inicializarSistemaTecnicas() {
     
     // Renderiza tudo
     renderizarTodasTecnicas();
+    
+    console.log('✅ Sistema de técnicas inicializado com sucesso!');
 }
 
 // ===== 16. CARREGAR DO STORAGE =====
@@ -645,18 +717,41 @@ function carregarTecnicasDoStorage() {
         const dados = localStorage.getItem('tecnicas_aprendidas');
         if (dados) {
             tecnicasAprendidas = JSON.parse(dados);
+            console.log(`📁 Carregadas ${tecnicasAprendidas.length} técnicas do storage`);
         }
         
         const pontos = localStorage.getItem('pontos_tecnicas');
         if (pontos) {
             pontosTecnicas = parseInt(pontos);
+            console.log(`📁 Carregados ${pontosTecnicas} pontos de técnicas`);
         }
     } catch (e) {
-        console.log('Nenhuma técnica salva encontrada');
+        console.log('📁 Nenhuma técnica salva encontrada, iniciando com lista vazia');
+        tecnicasAprendidas = [];
+        pontosTecnicas = 0;
     }
 }
 
-// ===== 17. EXPORTAR FUNÇÕES =====
+// ===== 17. FUNÇÃO AUXILIAR: VER TODAS AS PERÍCIAS (DEBUG) =====
+function debugVerPericias() {
+    console.log('🔍 DEBUG: Verificando todas as perícias...');
+    
+    if (window.estadoPericias && window.estadoPericias.periciasAprendidas) {
+        console.log('Perícias no estado:', window.estadoPericias.periciasAprendidas);
+    }
+    
+    // Testa buscar Arco
+    const arco = buscarPericiaParaTecnica("Arco");
+    console.log('Resultado Arco:', arco);
+    
+    // Testa buscar Cavalgar
+    const cavalgar = buscarPericiaParaTecnica("Cavalgar");
+    console.log('Resultado Cavalgar:', cavalgar);
+    
+    return { arco, cavalgar };
+}
+
+// ===== 18. EXPORTAR FUNÇÕES =====
 window.abrirModalTecnica = abrirModalTecnica;
 window.fecharModalTecnica = fecharModalTecnica;
 window.selecionarOpcaoTecnica = selecionarOpcaoTecnica;
@@ -665,13 +760,17 @@ window.editarTecnica = editarTecnica;
 window.removerTecnica = removerTecnica;
 window.renderizarTodasTecnicas = renderizarTodasTecnicas;
 window.inicializarSistemaTecnicas = inicializarSistemaTecnicas;
+window.debugVerPericias = debugVerPericias;
 
-// ===== 18. INICIALIZAÇÃO AUTOMÁTICA =====
+// ===== 19. INICIALIZAÇÃO AUTOMÁTICA =====
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM carregado, configurando sistema de técnicas...');
+    
     // Quando clicar na aba de técnicas
     document.querySelectorAll('.subtab-btn-pericias').forEach(btn => {
         btn.addEventListener('click', function() {
             if (this.dataset.subtab === 'tecnicas') {
+                console.log('🔍 Aba de técnicas clicada, inicializando...');
                 setTimeout(inicializarSistemaTecnicas, 100);
             }
         });
@@ -680,8 +779,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Se já estiver na aba técnicas
     const abaTecnicas = document.getElementById('subtab-tecnicas');
     if (abaTecnicas && abaTecnicas.classList.contains('active')) {
+        console.log('🔍 Já está na aba técnicas, inicializando...');
         setTimeout(inicializarSistemaTecnicas, 100);
+    }
+    
+    // Inicializa debug se necessário
+    if (window.location.hash === '#debug') {
+        console.log('🐛 Modo debug ativado');
+        setTimeout(debugVerPericias, 500);
     }
 });
 
 console.log('✅ SISTEMA DE TÉCNICAS 100% COMPLETO CARREGADO!');
+console.log('🔧 Funcionalidades implementadas:');
+console.log('   - Catálogo com Arquearia Montada');
+console.log('   - Busca inteligente de Arco (genérico)');
+console.log('   - Busca inteligente de Cavalgar (qualquer especialização)');
+console.log('   - Cálculo correto: Arco (NH X) - 4 + níveis');
+console.log('   - Interface mostrando cálculo detalhado');
+console.log('   - Sistema de pré-requisitos completo');
