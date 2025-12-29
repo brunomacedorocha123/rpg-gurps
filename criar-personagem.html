@@ -2563,7 +2563,7 @@ body::before {
             </div>
         </template>
 
-      <!-- ABA PERÍCIAS - HTML LIMPO E CORRIGIDO -->
+      <!-- ABA PERÍCIAS - HTML COMPLETO E FUNCIONAL -->
 <div id="pericias" class="tab-content">
     <div class="pericias-container">
         <!-- CABEÇALHO -->
@@ -2706,19 +2706,39 @@ body::before {
                     </div>
                 </div>
                 
+                <!-- BARRA DE CONTROLE TÉCNICAS -->
+                <div class="tecnicas-controls-bar">
+                    <div class="tecnicas-stats">
+                        <div class="tecnica-stat">
+                            <span class="stat-label">Técnicas:</span>
+                            <span class="stat-value" id="total-tecnicas">0</span>
+                        </div>
+                        <div class="tecnica-stat">
+                            <span class="stat-label">Pontos:</span>
+                            <span class="stat-value" id="pontos-tecnicas">0</span>
+                        </div>
+                    </div>
+                    <button class="btn-atualizar-tecnicas" id="btn-atualizar-tecnicas">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                </div>
+                
                 <!-- LAYOUT DUPLO PARA TÉCNICAS -->
                 <div class="catalogo-grid-duplo">
                     <!-- CATÁLOGO DE TÉCNICAS -->
                     <div class="catalogo-card">
                         <div class="card-header">
                             <h3><i class="fas fa-bullseye"></i> Técnicas Disponíveis</h3>
+                            <div class="lista-status">
+                                <small id="contador-tecnicas">0 técnicas</small>
+                            </div>
                         </div>
                         <div class="lista-pericias-scroll" id="lista-tecnicas">
                             <!-- Técnicas serão inseridas aqui via JS -->
                             <div class="empty-state">
                                 <i class="fas fa-tools"></i>
-                                <h4>Técnicas Especiais</h4>
-                                <p>Selecione técnicas para aprimorar suas habilidades</p>
+                                <h4>Carregando técnicas...</h4>
+                                <p>Aguarde enquanto as técnicas são carregadas</p>
                             </div>
                         </div>
                     </div>
@@ -2727,14 +2747,24 @@ body::before {
                     <div class="catalogo-card">
                         <div class="card-header">
                             <h3><i class="fas fa-star"></i> Técnicas Aprendidas</h3>
-                            <span class="pontos-badge" id="pontos-tecnicas">0 pts</span>
+                            <span class="pontos-badge" id="pontos-tecnicas-aprendidas">0 pts</span>
                         </div>
                         <div class="lista-pericias-scroll" id="tecnicas-aprendidas">
                             <!-- Técnicas aprendidas serão inseridas aqui via JS -->
-                            <div class="nenhuma-pericia-aprendida">
+                            <div class="nenhuma-tecnica-aprendida">
                                 <i class="fas fa-tools"></i>
                                 <div>Nenhuma técnica aprendida</div>
                                 <small>As técnicas que você adquirir aparecerão aqui</small>
+                            </div>
+                        </div>
+                        <div class="resumo-tecnicas">
+                            <div class="resumo-item">
+                                <span>Nível Médio:</span>
+                                <span id="nivel-medio-tecnicas">0</span>
+                            </div>
+                            <div class="resumo-item">
+                                <span>Custo Total:</span>
+                                <span id="custo-total-tecnicas">0</span>
                             </div>
                         </div>
                     </div>
@@ -2744,10 +2774,9 @@ body::before {
     </div>
 </div>
 
-<!-- MODAL PARA PERÍCIAS - VERSÃO CORRIGIDA -->
+<!-- MODAL PARA PERÍCIAS -->
 <div id="modal-pericia-overlay" class="modal-pericia-overlay" style="display: none;">
     <div id="modal-pericia" class="modal-pericia">
-        <!-- Conteúdo será inserido dinamicamente via JS -->
         <div class="modal-pericia-loading">
             <i class="fas fa-spinner fa-spin"></i>
             <p>Carregando...</p>
@@ -2755,10 +2784,9 @@ body::before {
     </div>
 </div>
 
-<!-- MODAL PARA ESPECIALIZAÇÃO - VERSÃO CORRIGIDA -->
+<!-- MODAL PARA ESPECIALIZAÇÃO -->
 <div id="modal-especializacao-overlay" class="modal-especializacao-overlay" style="display: none;">
     <div id="modal-especializacao" class="modal-especializacao">
-        <!-- Conteúdo será inserido dinamicamente via JS -->
         <div class="modal-especializacao-loading">
             <i class="fas fa-spinner fa-spin"></i>
             <p>Carregando especializações...</p>
@@ -2766,129 +2794,234 @@ body::before {
     </div>
 </div>
 
-<!-- BOTÕES DE CONTROLE PARA OS MODAIS (hidden) -->
-<div style="display: none;">
-    <button id="btn-fechar-modal-pericia" onclick="fecharModalPericia()">Fechar</button>
-    <button id="btn-fechar-modal-especializacao" onclick="fecharModalEspecializacao()">Fechar</button>
+<!-- MODAL PARA TÉCNICAS -->
+<div id="modal-tecnica-overlay" class="modal-tecnica-overlay" style="display: none;">
+    <div id="modal-tecnica" class="modal-tecnica">
+        <div class="modal-tecnica-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando técnica...</p>
+        </div>
+    </div>
 </div>
 
-<!-- ESTRUTURA DE TEMPLATE PARA O MODAL DE PERÍCIA -->
-<template id="template-modal-pericia">
-    <div class="modal-pericia-content">
-        <div class="modal-pericia-header">
-            <h3><i class="fas fa-book-open"></i> <span class="modal-pericia-nome">Nome da Perícia</span></h3>
-            <button class="modal-pericia-close" onclick="fecharModalPericia()">&times;</button>
+<!-- TEMPLATE DO MODAL DE TÉCNICA -->
+<template id="template-modal-tecnica">
+    <div class="modal-tecnica-content">
+        <div class="modal-tecnica-header">
+            <h3><i class="fas fa-tools"></i> <span class="modal-tecnica-nome">Nome da Técnica</span></h3>
+            <button class="modal-tecnica-close" onclick="fecharModalTecnica()">&times;</button>
         </div>
         
-        <div class="modal-pericia-body">
-            <div class="modal-pericia-info">
+        <div class="modal-tecnica-body">
+            <div class="modal-tecnica-info">
                 <div class="info-row">
-                    <span class="info-label">Atributo/Dificuldade:</span>
-                    <span class="info-value modal-pericia-atributo">DX/Média</span>
+                    <span class="info-label">Dificuldade:</span>
+                    <span class="info-value modal-tecnica-dificuldade">Difícil</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Categoria:</span>
-                    <span class="info-value modal-pericia-categoria">Geral</span>
+                    <span class="info-label">Perícia Base:</span>
+                    <span class="info-value modal-tecnica-pericia">Arco</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Custo Base:</span>
-                    <span class="info-value modal-pericia-custo">2 pontos</span>
+                    <span class="info-label">Modificador Base:</span>
+                    <span class="info-value modal-tecnica-modificador">-4</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pré-requisitos:</span>
+                    <span class="info-value modal-tecnica-prereq">Arco 4, Cavalgar</span>
                 </div>
             </div>
             
-            <div class="modal-pericia-descricao">
+            <div class="modal-tecnica-descricao">
                 <h4>Descrição</h4>
-                <p class="modal-pericia-descricao-texto">Descrição da perícia.</p>
+                <p class="modal-tecnica-descricao-texto">Descrição da técnica.</p>
             </div>
             
-            <div class="modal-pericia-default" style="display: none;">
-                <h4>Default</h4>
-                <p class="modal-pericia-default-texto">Default da perícia.</p>
+            <!-- PRÉ-REQUISITOS STATUS -->
+            <div class="modal-tecnica-prereq-status" id="modal-prereq-status">
+                <h4>Status dos Pré-requisitos</h4>
+                <div class="prereq-status-list">
+                    <!-- Será preenchido via JS -->
+                </div>
             </div>
             
-            <div class="modal-pericia-controles">
-                <div class="controle-nivel">
-                    <h4>Nível da Perícia</h4>
-                    <div class="controle-nivel-botoes">
-                        <button class="btn-nivel btn-diminuir" onclick="diminuirNivelPericia()">-</button>
-                        <div class="nivel-atual">
-                            <div class="valor" id="modal-nivel-valor">+0</div>
-                            <div class="label">Nível</div>
+            <!-- CONTROLE DE PONTOS -->
+            <div class="modal-tecnica-controles">
+                <div class="controle-pontos">
+                    <h4>Investir Pontos</h4>
+                    <div class="pontos-opcoes">
+                        <div class="opcao-pontos" data-pontos="2" data-niveis="1">
+                            <span class="pontos-valor">2 pts</span>
+                            <span class="niveis-valor">= +1 nível</span>
                         </div>
-                        <button class="btn-nivel btn-aumentar" onclick="aumentarNivelPericia()">+</button>
-                    </div>
-                    <div class="nivel-nh-info">
-                        <span>NH: </span>
-                        <span id="modal-nh-valor">10</span>
-                        <small id="modal-nh-calculo">(10 + 0)</small>
+                        <div class="opcao-pontos" data-pontos="3" data-niveis="2">
+                            <span class="pontos-valor">3 pts</span>
+                            <span class="niveis-valor">= +2 níveis</span>
+                        </div>
+                        <div class="opcao-pontos" data-pontos="4" data-niveis="3">
+                            <span class="pontos-valor">4 pts</span>
+                            <span class="niveis-valor">= +3 níveis</span>
+                        </div>
+                        <div class="opcao-pontos" data-pontos="5" data-niveis="4">
+                            <span class="pontos-valor">5 pts</span>
+                            <span class="niveis-valor">= +4 níveis</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="custo-nivel">
-                    <span>Custo: </span>
-                    <span id="modal-custo-valor">2</span>
-                    <span> ponto(s)</span>
+                <!-- VISUALIZAÇÃO DO NH -->
+                <div class="visualizacao-nh">
+                    <h4>Nível de Habilidade (NH)</h4>
+                    <div class="nh-calculado">
+                        <div class="nh-base">
+                            <span>Perícia Base: </span>
+                            <strong id="nh-base-tecnica">10</strong>
+                        </div>
+                        <div class="nh-modificador">
+                            <span>Modificador Técnica: </span>
+                            <strong id="nh-mod-tecnica">+0</strong>
+                        </div>
+                        <div class="nh-total">
+                            <span>NH Final: </span>
+                            <strong id="nh-total-tecnica">10</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RESUMO DO CUSTO -->
+            <div class="modal-tecnica-resumo">
+                <div class="resumo-item">
+                    <span>Pontos Investidos:</span>
+                    <strong id="resumo-pontos">0</strong>
+                </div>
+                <div class="resumo-item">
+                    <span>Níveis Adquiridos:</span>
+                    <strong id="resumo-niveis">+0</strong>
+                </div>
+                <div class="resumo-item">
+                    <span>NH da Técnica:</span>
+                    <strong id="resumo-nh">10</strong>
                 </div>
             </div>
         </div>
         
-        <div class="modal-pericia-footer">
+        <div class="modal-tecnica-footer">
             <div class="modal-custo-total">
                 <span class="label">Custo Total:</span>
-                <span class="valor" id="modal-custo-total">2</span>
+                <span class="valor" id="modal-custo-total-tecnica">0</span>
                 <span> pontos</span>
             </div>
             <div class="modal-actions">
-                <button class="btn-modal btn-modal-cancelar" onclick="fecharModalPericia()">
+                <button class="btn-modal btn-modal-cancelar" onclick="fecharModalTecnica()">
                     <i class="fas fa-times"></i> Cancelar
                 </button>
-                <button class="btn-modal btn-modal-confirmar" onclick="confirmarPericia()" id="btn-confirmar-pericia">
-                    <i class="fas fa-check"></i> Adquirir Perícia
+                <button class="btn-modal btn-modal-confirmar" onclick="confirmarTecnica()" id="btn-confirmar-tecnica" disabled>
+                    <i class="fas fa-check"></i> Adquirir Técnica
                 </button>
             </div>
         </div>
     </div>
 </template>
 
-<!-- ESTRUTURA DE TEMPLATE PARA O MODAL DE ESPECIALIZAÇÃO -->
-<template id="template-modal-especializacao">
-    <div class="modal-especializacao-content">
-        <div class="modal-especializacao-header">
-            <h3><i class="fas fa-star"></i> <span class="modal-especializacao-nome">Especialização: Nome</span></h3>
-            <button class="modal-especializacao-close" onclick="fecharModalEspecializacao()">&times;</button>
-        </div>
-        
-        <div class="modal-especializacao-body">
-            <div class="modal-especializacao-descricao">
-                <p>Selecione uma especialização:</p>
+<!-- TEMPLATE PARA ITEM DE TÉCNICA NO CATÁLOGO -->
+<template id="template-item-tecnica">
+    <div class="tecnica-item" data-id="{id}">
+        <div class="tecnica-header">
+            <div class="tecnica-nome-container">
+                <div class="tecnica-nome">{nome}</div>
+                <div class="tecnica-tags">
+                    <span class="tecnica-dificuldade {dificuldade-class}">{dificuldade}</span>
+                    <span class="tecnica-tipo">{periciaBase}</span>
+                </div>
             </div>
-            
-            <div class="modal-especializacao-lista" id="modal-especializacao-lista">
-                <!-- Especializações serão inseridas aqui -->
-            </div>
-            
-            <div class="modal-especializacao-personalizada" id="modal-especializacao-personalizada" style="display: none;">
-                <h4>Especialização Personalizada</h4>
-                <input type="text" id="input-especializacao-personalizada" 
-                       placeholder="Digite o nome da especialização...">
-                <button class="btn-confirmar-especializacao" onclick="confirmarEspecializacaoPersonalizada()">
-                    <i class="fas fa-check"></i> Confirmar
-                </button>
+            <div class="tecnica-status">
+                <span class="tecnica-status-badge {status-class}">{status-text}</span>
             </div>
         </div>
         
-        <div class="modal-especializacao-footer">
-            <div class="modal-actions">
-                <button class="btn-modal btn-modal-cancelar" onclick="fecharModalEspecializacao()">
-                    <i class="fas fa-times"></i> Cancelar
+        <div class="tecnica-descricao">
+            <p>{descricao}</p>
+        </div>
+        
+        <div class="tecnica-info-rapida">
+            <div class="info-item">
+                <i class="fas fa-bullseye"></i>
+                <span>Base: {periciaBase}</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-arrow-up"></i>
+                <span>Mod: {modificadorBase}</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-coins"></i>
+                <span>Custo: {custo-text}</span>
+            </div>
+        </div>
+        
+        <div class="tecnica-prereq">
+            <strong><i class="fas fa-clipboard-check"></i> Pré-requisitos:</strong>
+            <span>{prereq-text}</span>
+        </div>
+        
+        <div class="tecnica-actions">
+            <button class="btn-tecnica btn-adquirir" onclick="abrirModalTecnica('{id}')">
+                <i class="fas fa-plus-circle"></i> {btn-text}
+            </button>
+        </div>
+    </div>
+</template>
+
+<!-- TEMPLATE PARA TÉCNICA APRENDIDA -->
+<template id="template-tecnica-aprendida">
+    <div class="tecnica-aprendida-item" data-id="{id}">
+        <div class="tecnica-aprendida-header">
+            <div class="tecnica-aprendida-nome">
+                <i class="{icone}"></i>
+                <span>{nome}</span>
+            </div>
+            <div class="tecnica-aprendida-nh">
+                NH <span class="nh-valor">{nh}</span>
+            </div>
+        </div>
+        
+        <div class="tecnica-aprendida-info">
+            <div class="info-row">
+                <span>Perícia Base:</span>
+                <strong>{periciaBase}</strong>
+            </div>
+            <div class="info-row">
+                <span>Níveis:</span>
+                <strong>+{niveis}</strong>
+            </div>
+            <div class="info-row">
+                <span>Pontos:</span>
+                <strong>{pontos} pts</strong>
+            </div>
+        </div>
+        
+        <div class="tecnica-aprendida-controles">
+            <div class="nivel-info">
+                <span>Limite: NH {periciaBase} = {limite}</span>
+            </div>
+            <div class="tecnica-actions">
+                <button class="btn-editar-tecnica" onclick="editarTecnica('{id}')">
+                    <i class="fas fa-edit"></i> Editar
                 </button>
-                <button class="btn-modal btn-modal-confirmar" onclick="confirmarEspecializacao()" id="btn-confirmar-especializacao" disabled>
-                    <i class="fas fa-check"></i> Confirmar Especialização
+                <button class="btn-remover-tecnica" onclick="removerTecnica('{id}')">
+                    <i class="fas fa-trash"></i> Remover
                 </button>
             </div>
         </div>
     </div>
 </template>
+
+<!-- ESTRUTURA OCULTA PARA CONTROLES -->
+<div style="display: none;">
+    <button id="btn-fechar-modal-pericia" onclick="fecharModalPericia()">Fechar</button>
+    <button id="btn-fechar-modal-especializacao" onclick="fecharModalEspecializacao()">Fechar</button>
+    <button id="btn-fechar-modal-tecnica" onclick="fecharModalTecnica()">Fechar</button>
+</div>
 
 
 
@@ -2949,6 +3082,7 @@ body::before {
 <script src="peculiaridades.js"></script>
 <script src="catalogo-pericias.js"></script>
 <script src="pericias.js"></script>
+<script src="tecnicas.js"></script>
 
     <script>
     // ===========================================

@@ -2063,3 +2063,742 @@
         justify-content: center;
     }
 }
+
+/* ============================================
+   ESTILOS ESPECÍFICOS PARA TÉCNICAS
+   ============================================ */
+
+/* CONTAINER DE INFORMAÇÃO */
+.tecnica-info-box {
+    background: rgba(44, 32, 8, 0.6);
+    border: 2px solid var(--wood-light);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.tecnica-info-box h3 {
+    color: var(--text-gold);
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tecnica-info-box p {
+    color: rgba(245, 245, 220, 0.9);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.tecnica-dica {
+    background: rgba(212, 175, 55, 0.1);
+    border-left: 4px solid var(--primary-gold);
+    padding: 15px;
+    border-radius: 0 8px 8px 0;
+}
+
+.tecnica-dica i {
+    color: var(--primary-gold);
+    margin-right: 8px;
+}
+
+.tecnica-dica strong {
+    color: var(--text-gold);
+}
+
+/* BARRA DE CONTROLE TÉCNICAS */
+.tecnicas-controls-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(26, 18, 0, 0.6);
+    border-radius: 8px;
+    border: 1px solid var(--wood-light);
+}
+
+.tecnicas-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.tecnica-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tecnica-stat .stat-label {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.9rem;
+}
+
+.tecnica-stat .stat-value {
+    color: var(--text-gold);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.btn-atualizar-tecnicas {
+    background: linear-gradient(145deg, var(--accent-red), #6b0000);
+    border: 2px solid var(--primary-gold);
+    border-radius: 6px;
+    padding: 8px 15px;
+    color: var(--text-gold);
+    font-family: 'Cinzel', serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-atualizar-tecnicas:hover {
+    background: linear-gradient(145deg, #8b0000, #6b0000);
+    transform: scale(1.05);
+}
+
+/* ITEM DE TÉCNICA NO CATÁLOGO */
+.tecnica-item {
+    background: rgba(44, 32, 8, 0.6);
+    border: 2px solid var(--wood-light);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.tecnica-item:hover {
+    background: rgba(44, 32, 8, 0.8);
+    border-color: var(--primary-gold);
+    transform: translateX(5px);
+}
+
+.tecnica-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.tecnica-nome-container {
+    flex: 1;
+}
+
+.tecnica-nome {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-light);
+    margin-bottom: 8px;
+}
+
+.tecnica-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tecnica-dificuldade {
+    background: var(--accent-red);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.tecnica-dificuldade.Difícil {
+    background: var(--accent-red);
+}
+
+.tecnica-dificuldade.Média {
+    background: var(--primary-gold);
+}
+
+.tecnica-dificuldade.Fácil {
+    background: var(--accent-green);
+}
+
+.tecnica-tipo {
+    background: rgba(139, 0, 0, 0.3);
+    color: var(--text-light);
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    border: 1px solid var(--accent-red);
+}
+
+.tecnica-status {
+    margin-left: 15px;
+}
+
+.tecnica-status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.tecnica-status-badge.disponivel {
+    background: rgba(46, 92, 58, 0.3);
+    color: var(--accent-green);
+    border: 1px solid var(--accent-green);
+}
+
+.tecnica-status-badge.aprendida {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--text-gold);
+    border: 1px solid var(--primary-gold);
+}
+
+.tecnica-status-badge.bloqueada {
+    background: rgba(139, 0, 0, 0.2);
+    color: var(--accent-red);
+    border: 1px solid var(--accent-red);
+}
+
+.tecnica-descricao {
+    color: rgba(245, 245, 220, 0.8);
+    line-height: 1.5;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.tecnica-info-rapida {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(26, 18, 0, 0.4);
+    border-radius: 6px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(212, 175, 55, 0.9);
+    font-size: 0.9rem;
+}
+
+.info-item i {
+    color: var(--primary-gold);
+    width: 16px;
+}
+
+.tecnica-prereq {
+    background: rgba(139, 0, 0, 0.1);
+    border-left: 3px solid var(--accent-red);
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 0 5px 5px 0;
+}
+
+.tecnica-prereq strong {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tecnica-prereq span {
+    color: rgba(245, 245, 220, 0.7);
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
+
+.tecnica-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-tecnica {
+    background: linear-gradient(145deg, var(--accent-green), #1e4028);
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    color: white;
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-tecnica:hover {
+    background: linear-gradient(145deg, #3a7c4a, #1e4028);
+    transform: scale(1.05);
+}
+
+.btn-tecnica:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* TÉCNICAS APRENDIDAS */
+.nenhuma-tecnica-aprendida {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(212, 175, 55, 0.5);
+}
+
+.nenhuma-tecnica-aprendida i {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    display: block;
+    color: var(--primary-gold);
+    opacity: 0.5;
+}
+
+.nenhuma-tecnica-aprendida div {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: var(--text-gold);
+}
+
+.nenhuma-tecnica-aprendida small {
+    font-size: 1rem;
+    color: rgba(212, 175, 55, 0.7);
+}
+
+.tecnica-aprendida-item {
+    background: rgba(26, 18, 0, 0.8);
+    border: 2px solid var(--wood-light);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.tecnica-aprendida-item:hover {
+    background: rgba(44, 32, 8, 0.9);
+    border-color: var(--primary-gold);
+}
+
+.tecnica-aprendida-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.tecnica-aprendida-nome {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tecnica-aprendida-nome i {
+    color: var(--primary-gold);
+}
+
+.tecnica-aprendida-nh {
+    background: rgba(212, 175, 55, 0.2);
+    border: 2px solid var(--primary-gold);
+    border-radius: 8px;
+    padding: 8px 15px;
+    color: var(--text-gold);
+    font-weight: bold;
+}
+
+.nh-valor {
+    font-size: 1.1rem;
+}
+
+.tecnica-aprendida-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(44, 32, 8, 0.4);
+    border-radius: 8px;
+}
+
+.tecnica-aprendida-info .info-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.tecnica-aprendida-info .info-row span {
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.tecnica-aprendida-info .info-row strong {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+.tecnica-aprendida-controles {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(139, 0, 0, 0.2);
+}
+
+.nivel-info {
+    color: rgba(212, 175, 55, 0.7);
+    font-size: 0.9rem;
+}
+
+.btn-editar-tecnica, .btn-remover-tecnica {
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-editar-tecnica {
+    background: rgba(212, 175, 55, 0.2);
+    border: 1px solid var(--primary-gold);
+    color: var(--text-gold);
+}
+
+.btn-editar-tecnica:hover {
+    background: rgba(212, 175, 55, 0.4);
+}
+
+.btn-remover-tecnica {
+    background: rgba(139, 0, 0, 0.2);
+    border: 1px solid var(--accent-red);
+    color: var(--text-light);
+}
+
+.btn-remover-tecnica:hover {
+    background: rgba(139, 0, 0, 0.4);
+}
+
+/* RESUMO TÉCNICAS */
+.resumo-tecnicas {
+    background: rgba(44, 32, 8, 0.8);
+    padding: 15px;
+    border-top: 2px solid var(--wood-dark);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* MODAL DE TÉCNICA */
+.modal-tecnica-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10002;
+    backdrop-filter: blur(5px);
+}
+
+.modal-tecnica {
+    background: linear-gradient(145deg, rgba(26, 18, 0, 0.95), rgba(44, 32, 8, 0.95));
+    border: 3px solid var(--primary-gold);
+    border-radius: 15px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    position: relative;
+    animation: modalSlideIn 0.4s ease;
+}
+
+.modal-tecnica-content {
+    display: none;
+}
+
+.modal-tecnica-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-gold);
+}
+
+.modal-tecnica-header h3 {
+    color: var(--text-gold);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-tecnica-close {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-tecnica-close:hover {
+    background: rgba(139, 0, 0, 0.3);
+    color: var(--accent-red);
+}
+
+.modal-tecnica-info {
+    background: rgba(44, 32, 8, 0.6);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--wood-light);
+}
+
+.modal-tecnica-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(139, 0, 0, 0.1);
+}
+
+.modal-tecnica-info .info-row:last-child {
+    border-bottom: none;
+}
+
+.modal-tecnica-descricao {
+    color: rgba(245, 245, 220, 0.9);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(44, 32, 8, 0.4);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-gold);
+}
+
+/* PRÉ-REQUISITOS STATUS */
+.modal-tecnica-prereq-status {
+    background: rgba(26, 18, 0, 0.6);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid var(--wood-light);
+}
+
+.modal-tecnica-prereq-status h4 {
+    color: var(--text-gold);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.prereq-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.prereq-status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(44, 32, 8, 0.4);
+    border-radius: 6px;
+}
+
+.prereq-status-item.cumprido {
+    border-left: 4px solid var(--accent-green);
+}
+
+.prereq-status-item.nao-cumprido {
+    border-left: 4px solid var(--accent-red);
+}
+
+.prereq-status-item i {
+    font-size: 1.2rem;
+    width: 24px;
+}
+
+.prereq-status-item.cumprido i {
+    color: var(--accent-green);
+}
+
+.prereq-status-item.nao-cumprido i {
+    color: var(--accent-red);
+}
+
+.prereq-status-text {
+    flex: 1;
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+/* CONTROLE DE PONTOS */
+.modal-tecnica-controles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 768px) {
+    .modal-tecnica-controles {
+        grid-template-columns: 1fr;
+    }
+}
+
+.controle-pontos h4 {
+    color: var(--text-gold);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.pontos-opcoes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 480px) {
+    .pontos-opcoes {
+        grid-template-columns: 1fr;
+    }
+}
+
+.opcao-pontos {
+    background: rgba(44, 32, 8, 0.6);
+    border: 2px solid var(--wood-light);
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.opcao-pontos:hover {
+    border-color: var(--primary-gold);
+    background: rgba(44, 32, 8, 0.8);
+}
+
+.opcao-pontos.selecionado {
+    background: rgba(46, 92, 58, 0.3);
+    border-color: var(--accent-green);
+}
+
+.pontos-valor {
+    display: block;
+    color: var(--text-gold);
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.niveis-valor {
+    display: block;
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+/* VISUALIZAÇÃO NH */
+.visualizacao-nh h4 {
+    color: var(--text-gold);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.nh-calculado {
+    background: rgba(44, 32, 8, 0.6);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--wood-light);
+}
+
+.nh-base, .nh-modificador, .nh-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.nh-total {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    font-size: 1.1rem;
+}
+
+/* RESUMO TÉCNICA MODAL */
+.modal-tecnica-resumo {
+    background: rgba(44, 32, 8, 0.8);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid var(--wood-light);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    text-align: center;
+}
+
+.modal-tecnica-resumo .resumo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.modal-tecnica-resumo .resumo-item span {
+    color: rgba(212, 175, 55, 0.9);
+    font-size: 0.9rem;
+}
+
+.modal-tecnica-resumo .resumo-item strong {
+    color: var(--text-light);
+    font-size: 1.2rem;
+}
+
+/* FOOTER DO MODAL TÉCNICA */
+.modal-tecnica-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 2px solid var(--wood-dark);
+}
+
+/* ANIMAÇÃO */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
