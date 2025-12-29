@@ -1,40 +1,14 @@
 // ============================================
-// TÉCNICAS.JS - SISTEMA COMPLETO
+// TÉCNICAS.JS - SISTEMA COMPLETO E FUNCIONAL
 // ============================================
 
-console.log("🔥 TÉCNICAS.JS - INICIANDO");
+console.log("🔥 TÉCNICAS.JS - SISTEMA INICIANDO");
 
-// ===== 1. DETECTAR SE ESTÁ NA ABA CERTA =====
-function verificarAbaTecnicas() {
-    console.log("🔍 Verificando aba de técnicas...");
-    
-    // Procurar a aba de técnicas
-    const tecnicaTab = document.getElementById('subtab-tecnicas');
-    if (!tecnicaTab) {
-        console.error("❌ Aba 'Técnicas' não encontrada!");
-        console.log("Procurando elementos com 'tecnicas' no ID...");
-        
-        const elementos = document.querySelectorAll('[id*="tecnic"]');
-        elementos.forEach(el => {
-            console.log(`  Encontrado: #${el.id}`);
-        });
-        return false;
-    }
-    
-    console.log("✅ Aba de técnicas encontrada!");
-    
-    // Verificar se está visível/ativa
-    const estaAtiva = tecnicaTab.classList.contains('active') || 
-                      tecnicaTab.style.display !== 'none';
-    
-    if (estaAtiva) {
-        console.log("✅ Aba de técnicas está ativa!");
-        return true;
-    } else {
-        console.log("ℹ️ Aba de técnicas não está ativa no momento");
-        return false;
-    }
-}
+// ===== 1. VARIÁVEIS GLOBAIS =====
+let tecnicasAprendidas = [];
+let tecnicaSelecionada = null;
+let nivelTecnicaAtual = 0;
+let pontosTecnicaAtuais = 0;
 
 // ===== 2. CATÁLOGO DE TÉCNICAS =====
 const CATALOGO_TECNICAS = [
@@ -42,159 +16,217 @@ const CATALOGO_TECNICAS = [
         id: "arquearia-montada",
         nome: "Arquearia Montada",
         icone: "fas fa-horse",
-        descricao: "Atirar com arco enquanto cavalga. Penalidade base de -4. Cada ponto investido reduz esta penalidade.",
+        descricao: "Esta técnica permite que o personagem utilize um arco com eficiência, ao mesmo tempo em que está cavalgando.",
+        regraEspecial: "Os modificadores para disparar sobre um cavalo nunca podem reduzir o NH em Arco abaixo do NH do personagem em Arquearia Montada.",
         dificuldade: "Difícil",
         periciaBase: "Arco",
         atributo: "DX",
         modificadorBase: -4,
         prereq: {
-            arcoMinimo: 5,
-            temCavalgar: true
+            pericias: ["Arco", "Cavalgar"],
+            nivelMinimo: 1
         },
         custoTabela: {
-            2: 1,  // 2 pontos = +1 nível
-            3: 2,  // 3 pontos = +2 níveis
-            4: 3,  // 4 pontos = +3 níveis
-            5: 4   // 5 pontos = +4 níveis
+            "medio": { 1: 1, 2: 2, 3: 3, 4: 4 },       // Médio: +1 = 1 ponto, +2 = 2 pontos, etc.
+            "dificil": { 1: 2, 2: 3, 3: 4, 4: 5 }      // Difícil: +1 = 2 pontos, +2 = 3 pontos, etc.
+        }
+    },
+    {
+        id: "atirar-movimento",
+        nome: "Atirar em Movimento",
+        icone: "fas fa-running",
+        descricao: "Permite atirar enquanto se move sem penalidades severas.",
+        dificuldade: "Média",
+        periciaBase: "Arma de Fogo",
+        atributo: "DX",
+        modificadorBase: -2,
+        prereq: {
+            pericias: ["Arma de Fogo"],
+            nivelMinimo: 1
+        },
+        custoTabela: {
+            "medio": { 1: 1, 2: 2, 3: 3, 4: 4 },
+            "dificil": { 1: 2, 2: 3, 3: 4, 4: 5 }
+        }
+    },
+    {
+        id: "combate-duas-armas",
+        nome: "Combate com Duas Armas",
+        icone: "fas fa-fist-raised",
+        descricao: "Permite lutar eficientemente com uma arma em cada mão.",
+        dificuldade: "Difícil",
+        periciaBase: "Esgrima",
+        atributo: "DX",
+        modificadorBase: -4,
+        prereq: {
+            pericias: ["Esgrima", "Arma Curta"],
+            nivelMinimo: 2
+        },
+        custoTabela: {
+            "medio": { 1: 1, 2: 2, 3: 3, 4: 4 },
+            "dificil": { 1: 2, 2: 3, 3: 4, 4: 5 }
         }
     }
 ];
 
-// ===== 3. ESTADO DO SISTEMA =====
-const estadoTecnicas = {
-    aprendidas: [],
-    modalAtivo: false
-};
-
-// ===== 4. FUNÇÃO PRINCIPAL - RENDERIZAR TÉCNICAS =====
-function renderizarTecnicas() {
-    console.log("🎨 Renderizando técnicas...");
+// ===== 3. INICIALIZAÇÃO DO SISTEMA =====
+function inicializarTecnicas() {
+    console.log("🚀 Inicializando sistema de técnicas...");
     
-    // PRIMEIRO: Encontrar o container correto
-    let container = document.getElementById('lista-tecnicas');
+    // Carregar técnicas aprendidas do localStorage
+    carregarTecnicas();
     
-    // Se não encontrar, procurar alternativas
-    if (!container) {
-        console.warn("⚠️ #lista-tecnicas não encontrado, procurando alternativas...");
-        
-        // Procurar qualquer container que possa ser
-        const possiveis = [
-            '#lista-tecnicas',
-            '#tecnicas-disponiveis',
-            '[class*="lista-tecnicas"]',
-            '[class*="catalogo-tecnicas"]',
-            '#subtab-tecnicas .catalogo-card',
-            '#subtab-tecnicas .lista-pericias-scroll'
-        ];
-        
-        possiveis.forEach(seletor => {
-            const el = document.querySelector(seletor);
-            if (el && !container) {
-                console.log(`✅ Usando alternativa: ${seletor}`);
-                container = el;
-            }
-        });
+    // Configurar eventos dos botões das sub-abas
+    configurarSubAbas();
+    
+    // Verificar se a aba de técnicas já está ativa
+    if (verificarAbaAtiva('tecnicas')) {
+        renderizarTodasTecnicas();
     }
     
+    console.log("✅ Sistema de técnicas inicializado!");
+}
+
+// ===== 4. CONFIGURAÇÃO DAS SUB-ABAS =====
+function configurarSubAbas() {
+    const botoesSubAbas = document.querySelectorAll('.subtab-btn-pericias');
+    
+    botoesSubAbas.forEach(botao => {
+        botao.addEventListener('click', function() {
+            const subtab = this.dataset.subtab;
+            console.log(`🎯 Clicou na sub-aba: ${subtab}`);
+            
+            if (subtab === 'tecnicas') {
+                // Pequeno delay para garantir que a aba foi renderizada
+                setTimeout(() => {
+                    renderizarTodasTecnicas();
+                }, 100);
+            }
+        });
+    });
+    
+    console.log("✅ Eventos das sub-abas configurados");
+}
+
+// ===== 5. RENDERIZAÇÃO DAS TÉCNICAS =====
+function renderizarTodasTecnicas() {
+    console.log("🎨 Renderizando todas as técnicas...");
+    
+    // Renderizar catálogo de técnicas
+    renderizarCatalogoTecnicas();
+    
+    // Renderizar técnicas aprendidas
+    renderizarTecnicasAprendidas();
+    
+    // Atualizar contadores
+    atualizarContadoresTecnicas();
+}
+
+function renderizarCatalogoTecnicas() {
+    const container = document.getElementById('lista-tecnicas');
     if (!container) {
-        console.error("❌ NÃO FOI POSSÍVEL ENCONTRAR O CONTAINER!");
-        
-        // Criar um container de emergência
-        criarContainerEmergencia();
+        console.error("❌ Container #lista-tecnicas não encontrado!");
         return;
     }
     
-    console.log(`✅ Container encontrado:`, container);
-    
-    // LIMPAR O CONTAINER
     container.innerHTML = '';
     
-    // ADICIONAR CSS SE NECESSÁRIO
-    adicionarCSStecnicas();
+    if (CATALOGO_TECNICAS.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-tools"></i>
+                <h4>Nenhuma técnica disponível</h4>
+                <p>As técnicas aparecerão aqui quando disponíveis</p>
+            </div>
+        `;
+        return;
+    }
     
-    // RENDERIZAR CADA TÉCNICA
     CATALOGO_TECNICAS.forEach(tecnica => {
-        const tecnicaElement = criarElementoTecnica(tecnica);
+        const tecnicaElement = criarCardTecnica(tecnica);
         container.appendChild(tecnicaElement);
     });
     
-    console.log(`✅ ${CATALOGO_TECNICAS.length} técnica(s) renderizada(s)`);
-    
-    // Atualizar técnicas aprendidas também
-    renderizarTecnicasAprendidas();
+    console.log(`✅ ${CATALOGO_TECNICAS.length} técnicas renderizadas no catálogo`);
 }
 
-// ===== 5. CRIAR ELEMENTO HTML DA TÉCNICA =====
-function criarElementoTecnica(tecnica) {
-    console.log(`🎨 Criando elemento para: ${tecnica.nome}`);
+function criarCardTecnica(tecnica) {
+    const jaAprendida = tecnicasAprendidas.some(t => t.id === tecnica.id);
+    const nivelAtual = jaAprendida ? 
+        tecnicasAprendidas.find(t => t.id === tecnica.id).nivel : 0;
     
-    const elemento = document.createElement('div');
-    elemento.className = 'tecnica-item';
-    elemento.dataset.id = tecnica.id;
+    const card = document.createElement('div');
+    card.className = 'tecnica-item';
+    card.dataset.id = tecnica.id;
     
-    // Verificar se já foi aprendida
-    const jaAprendida = estadoTecnicas.aprendidas.some(t => t.id === tecnica.id);
-    
-    elemento.innerHTML = `
+    card.innerHTML = `
         <div class="tecnica-header">
-            <div class="tecnica-titulo">
-                <i class="${tecnica.icone}"></i>
-                <span class="tecnica-nome">${tecnica.nome}</span>
-                <span class="tecnica-dificuldade-badge">${tecnica.dificuldade}</span>
+            <div class="tecnica-info-principal">
+                <div class="tecnica-titulo">
+                    <i class="${tecnica.icone}"></i>
+                    <h4>${tecnica.nome}</h4>
+                    <span class="dificuldade-badge ${tecnica.dificuldade.toLowerCase()}">
+                        ${tecnica.dificuldade}
+                    </span>
+                </div>
+                <div class="tecnica-base">
+                    <span class="base-label">Base:</span>
+                    <span class="base-valor">${tecnica.periciaBase} (${tecnica.atributo})</span>
+                </div>
             </div>
-            ${jaAprendida ? 
-                '<div class="tecnica-aprendida-badge"><i class="fas fa-check-circle"></i> Aprendida</div>' : 
-                '<div class="tecnica-disponivel-badge"><i class="fas fa-unlock"></i> Disponível</div>'
-            }
+            <div class="tecnica-status">
+                ${jaAprendida ? 
+                    `<div class="status-aprendida">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Nível ${nivelAtual}</span>
+                    </div>` :
+                    `<div class="status-disponivel">
+                        <i class="fas fa-unlock"></i>
+                        <span>Disponível</span>
+                    </div>`
+                }
+            </div>
         </div>
         
         <div class="tecnica-descricao">
             <p>${tecnica.descricao}</p>
+            ${tecnica.regraEspecial ? `<p class="regra-especial"><strong>Regra:</strong> ${tecnica.regraEspecial}</p>` : ''}
         </div>
         
         <div class="tecnica-detalhes">
             <div class="detalhe-item">
-                <span class="detalhe-label">Perícia Base:</span>
-                <span class="detalhe-valor">${tecnica.periciaBase}</span>
+                <span class="detalhe-label"><i class="fas fa-balance-scale"></i> Dificuldade:</span>
+                <span class="detalhe-valor">${tecnica.dificuldade}</span>
             </div>
             <div class="detalhe-item">
-                <span class="detalhe-label">Atributo:</span>
-                <span class="detalhe-valor">${tecnica.atributo}</span>
-            </div>
-            <div class="detalhe-item">
-                <span class="detalhe-label">Modificador Base:</span>
+                <span class="detalhe-label"><i class="fas fa-bullseye"></i> Mod. Base:</span>
                 <span class="detalhe-valor">${tecnica.modificadorBase >= 0 ? '+' : ''}${tecnica.modificadorBase}</span>
+            </div>
+            <div class="detalhe-item">
+                <span class="detalhe-label"><i class="fas fa-coins"></i> Custo:</span>
+                <span class="detalhe-valor">${tecnica.dificuldade === 'Difícil' ? '2 pts/nível' : '1 pt/nível'}</span>
             </div>
         </div>
         
         <div class="tecnica-prereq">
-            <h4><i class="fas fa-clipboard-check"></i> Pré-requisitos</h4>
-            <div class="prereq-item">
-                <i class="fas fa-bullseye"></i>
-                <span>${tecnica.periciaBase} NH ≥ ${tecnica.prereq.arcoMinimo}</span>
-                <span class="prereq-status">(Verificando...)</span>
+            <div class="prereq-titulo">
+                <i class="fas fa-clipboard-check"></i>
+                <strong>Pré-requisitos:</strong>
             </div>
-            <div class="prereq-item">
-                <i class="fas fa-horse-head"></i>
-                <span>Perícia Cavalgar</span>
-                <span class="prereq-status">(Verificando...)</span>
-            </div>
-        </div>
-        
-        <div class="tecnica-custo">
-            <h4><i class="fas fa-coins"></i> Custo</h4>
-            <div class="custo-tabela">
-                <div class="custo-item"><span class="pontos">2 pts</span> = <span class="niveis">+1 nível</span></div>
-                <div class="custo-item"><span class="pontos">3 pts</span> = <span class="niveis">+2 níveis</span></div>
-                <div class="custo-item"><span class="pontos">4 pts</span> = <span class="niveis">+3 níveis</span></div>
-                <div class="custo-item"><span class="pontos">5 pts</span> = <span class="niveis">+4 níveis</span></div>
+            <div class="prereq-lista">
+                ${tecnica.prereq.pericias.map(pericia => 
+                    `<div class="prereq-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${pericia}</span>
+                    </div>`
+                ).join('')}
             </div>
         </div>
         
         <div class="tecnica-acoes">
             ${jaAprendida ? 
-                `<button class="btn-tecnica btn-editar" onclick="abrirModalTecnica('${tecnica.id}')">
-                    <i class="fas fa-edit"></i> Editar Técnica
+                `<button class="btn-tecnica btn-editar" onclick="editarTecnica('${tecnica.id}')">
+                    <i class="fas fa-edit"></i> Editar Nível
                 </button>
                 <button class="btn-tecnica btn-remover" onclick="removerTecnica('${tecnica.id}')">
                     <i class="fas fa-trash"></i> Remover
@@ -206,337 +238,618 @@ function criarElementoTecnica(tecnica) {
         </div>
     `;
     
-    // Adicionar evento de clique em toda a técnica
-    elemento.addEventListener('click', function(e) {
-        if (!e.target.closest('.btn-tecnica')) {
-            abrirModalTecnica(tecnica.id);
-        }
-    });
-    
-    return elemento;
+    return card;
 }
 
-// ===== 6. RENDERIZAR TÉCNICAS APRENDIDAS =====
+// ===== 6. TÉCNICAS APRENDIDAS =====
 function renderizarTecnicasAprendidas() {
-    console.log("📚 Renderizando técnicas aprendidas...");
-    
     const container = document.getElementById('tecnicas-aprendidas');
     if (!container) {
-        console.warn("⚠️ #tecnicas-aprendidas não encontrado");
-        return;
-    }
-    
-    if (estadoTecnicas.aprendidas.length === 0) {
-        container.innerHTML = `
-            <div class="nenhuma-tecnica-aprendida">
-                <i class="fas fa-tools"></i>
-                <h4>Nenhuma técnica aprendida</h4>
-                <p>Adquira técnicas para aprimorar suas habilidades especiais</p>
-            </div>
-        `;
+        console.error("❌ Container #tecnicas-aprendidas não encontrado!");
         return;
     }
     
     container.innerHTML = '';
     
-    estadoTecnicas.aprendidas.forEach(tecnica => {
-        const dadosTecnica = CATALOGO_TECNICAS.find(t => t.id === tecnica.id);
-        if (!dadosTecnica) return;
+    if (tecnicasAprendidas.length === 0) {
+        container.innerHTML = `
+            <div class="nenhuma-pericia-aprendida">
+                <i class="fas fa-tools"></i>
+                <div>Nenhuma técnica aprendida</div>
+                <small>As técnicas que você adquirir aparecerão aqui</small>
+            </div>
+        `;
+        return;
+    }
+    
+    tecnicasAprendidas.forEach(tecnicaAprendida => {
+        const tecnicaOriginal = CATALOGO_TECNICAS.find(t => t.id === tecnicaAprendida.id);
+        if (!tecnicaOriginal) return;
         
-        const elemento = document.createElement('div');
-        elemento.className = 'tecnica-aprendida-item';
+        const card = document.createElement('div');
+        card.className = 'tecnica-aprendida-item';
         
-        elemento.innerHTML = `
+        card.innerHTML = `
             <div class="tecnica-aprendida-header">
-                <div class="tecnica-aprendida-nome">
-                    <i class="${dadosTecnica.icone}"></i> ${dadosTecnica.nome}
+                <div class="tecnica-aprendida-titulo">
+                    <i class="${tecnicaOriginal.icone}"></i>
+                    <h4>${tecnicaOriginal.nome}</h4>
                 </div>
-                <div class="tecnica-aprendida-nh">
-                    NH ${tecnica.nhAtual || 10}
+                <div class="tecnica-aprendida-nivel">
+                    <span class="nivel-label">Nível:</span>
+                    <span class="nivel-valor">${tecnicaAprendida.nivel}</span>
                 </div>
             </div>
             
-            <div class="tecnica-aprendida-detalhes">
-                <div class="detalhe">
-                    <span class="label">Investimento:</span>
-                    <span class="valor">${tecnica.pontos} pontos</span>
+            <div class="tecnica-aprendida-info">
+                <div class="info-item">
+                    <span class="info-label">Perícia Base:</span>
+                    <span class="info-valor">${tecnicaOriginal.periciaBase}</span>
                 </div>
-                <div class="detalhe">
-                    <span class="label">Níveis:</span>
-                    <span class="valor">+${tecnica.niveis || 0}</span>
+                <div class="info-item">
+                    <span class="info-label">Investimento:</span>
+                    <span class="info-valor">${tecnicaAprendida.pontos} pontos</span>
                 </div>
-                <div class="detalhe">
-                    <span class="label">Perícia Base:</span>
-                    <span class="valor">${dadosTecnica.periciaBase}</span>
+                <div class="info-item">
+                    <span class="info-label">NH Efetivo:</span>
+                    <span class="info-valor">${calcularNHTecnica(tecnicaAprendida, tecnicaOriginal)}</span>
                 </div>
+            </div>
+            
+            <div class="tecnica-aprendida-limite">
+                <i class="fas fa-info-circle"></i>
+                <small>Não pode exceder o NH em ${tecnicaOriginal.periciaBase}</small>
             </div>
             
             <div class="tecnica-aprendida-acoes">
-                <button class="btn-aprendida-editar" onclick="abrirModalTecnica('${tecnica.id}')">
-                    <i class="fas fa-edit"></i>
+                <button class="btn-nivel-controle btn-diminuir" onclick="alterarNivelTecnica('${tecnicaAprendida.id}', -1)">
+                    <i class="fas fa-minus"></i>
                 </button>
-                <button class="btn-aprendida-remover" onclick="removerTecnica('${tecnica.id}')">
-                    <i class="fas fa-trash"></i>
+                <button class="btn-nivel-controle btn-aumentar" onclick="alterarNivelTecnica('${tecnicaAprendida.id}', 1)">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="btn-remover-tecnica" onclick="removerTecnica('${tecnicaAprendida.id}')">
+                    <i class="fas fa-trash"></i> Remover
                 </button>
             </div>
         `;
         
-        container.appendChild(elemento);
+        container.appendChild(card);
     });
+    
+    console.log(`✅ ${tecnicasAprendidas.length} técnicas aprendidas renderizadas`);
 }
 
-// ===== 7. FUNÇÕES DO MODAL =====
+// ===== 7. MODAL DE TÉCNICA =====
 function abrirModalTecnica(id) {
-    console.log(`📖 Abrindo modal para: ${id}`);
-    
     const tecnica = CATALOGO_TECNICAS.find(t => t.id === id);
     if (!tecnica) return;
     
-    estadoTecnicas.modalAtivo = true;
+    tecnicaSelecionada = tecnica;
+    nivelTecnicaAtual = 0;
+    pontosTecnicaAtuais = 0;
     
-    // Criar modal
-    const modalHTML = `
-        <div class="modal-tecnica-overlay">
-            <div class="modal-tecnica-content">
-                <div class="modal-tecnica-header">
-                    <h3><i class="${tecnica.icone}"></i> ${tecnica.nome}</h3>
-                    <button class="modal-tecnica-close" onclick="fecharModalTecnica()">&times;</button>
+    // Criar overlay do modal
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-tecnica-overlay';
+    overlay.id = 'modal-tecnica-overlay';
+    
+    // Determinar custo por nível
+    const custoPorNivel = tecnica.dificuldade === 'Difícil' ? 2 : 1;
+    
+    overlay.innerHTML = `
+        <div class="modal-tecnica">
+            <div class="modal-tecnica-header">
+                <h3><i class="${tecnica.icone}"></i> ${tecnica.nome}</h3>
+                <button class="modal-tecnica-close" onclick="fecharModalTecnica()">&times;</button>
+            </div>
+            
+            <div class="modal-tecnica-body">
+                <div class="modal-tecnica-info">
+                    <div class="info-row">
+                        <span class="info-label">Perícia Base:</span>
+                        <span class="info-value">${tecnica.periciaBase} (${tecnica.atributo})</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Dificuldade:</span>
+                        <span class="info-value">${tecnica.dificuldade}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Custo por Nível:</span>
+                        <span class="info-value">${custoPorNivel} ponto(s)</span>
+                    </div>
                 </div>
                 
-                <div class="modal-tecnica-body">
-                    <div class="modal-info">
-                        <p><strong>Descrição:</strong> ${tecnica.descricao}</p>
-                        <p><strong>Dificuldade:</strong> ${tecnica.dificuldade}</p>
-                        <p><strong>Perícia Base:</strong> ${tecnica.periciaBase} (${tecnica.atributo})</p>
-                        <p><strong>Modificador Base:</strong> ${tecnica.modificadorBase >= 0 ? '+' : ''}${tecnica.modificadorBase}</p>
+                <div class="modal-tecnica-descricao">
+                    <h4>Descrição</h4>
+                    <p>${tecnica.descricao}</p>
+                    ${tecnica.regraEspecial ? `<p><strong>Regra Especial:</strong> ${tecnica.regraEspecial}</p>` : ''}
+                </div>
+                
+                <div class="modal-tecnica-prereq">
+                    <h4><i class="fas fa-clipboard-check"></i> Pré-requisitos</h4>
+                    <div class="prereq-lista">
+                        ${tecnica.prereq.pericias.map(pericia => 
+                            `<div class="prereq-item">
+                                <i class="fas fa-check"></i>
+                                <span>${pericia}</span>
+                            </div>`
+                        ).join('')}
                     </div>
-                    
-                    <div class="modal-controle-pontos">
-                        <h4>Selecionar Pontos</h4>
-                        <div class="pontos-opcoes">
-                            <button class="opcao-pontos" data-pontos="2" onclick="selecionarPontos(2)">2 pts = +1</button>
-                            <button class="opcao-pontos" data-pontos="3" onclick="selecionarPontos(3)">3 pts = +2</button>
-                            <button class="opcao-pontos" data-pontos="4" onclick="selecionarPontos(4)">4 pts = +3</button>
-                            <button class="opcao-pontos" data-pontos="5" onclick="selecionarPontos(5)">5 pts = +4</button>
+                </div>
+                
+                <div class="modal-tecnica-controles">
+                    <div class="controle-nivel">
+                        <h4>Nível da Técnica</h4>
+                        <div class="controle-nivel-botoes">
+                            <button class="btn-nivel btn-diminuir" onclick="alterarNivelModal(-1)" ${nivelTecnicaAtual === 0 ? 'disabled' : ''}>-</button>
+                            <div class="nivel-atual">
+                                <div class="valor" id="modal-nivel-tecnica">+0</div>
+                                <div class="label">Nível</div>
+                            </div>
+                            <button class="btn-nivel btn-aumentar" onclick="alterarNivelModal(1)" ${nivelTecnicaAtual === 4 ? 'disabled' : ''}>+</button>
+                        </div>
+                        <div class="nivel-info">
+                            <small>Máximo: +4 níveis</small>
                         </div>
                     </div>
                     
-                    <div class="modal-resumo">
-                        <h4>Resumo</h4>
-                        <p>Total: <strong id="pontos-selecionados">2</strong> pontos</p>
-                        <p>Níveis: <strong id="niveis-selecionados">+1</strong></p>
+                    <div class="controle-pontos">
+                        <div class="pontos-info">
+                            <span>Custo: </span>
+                            <span id="modal-pontos-tecnica">0</span>
+                            <span> ponto(s)</span>
+                        </div>
+                        <div class="pontos-detalhes">
+                            <small>${tecnica.dificuldade === 'Difícil' ? 
+                                '2 pontos por nível (Difícil)' : 
+                                '1 ponto por nível (Média)'}</small>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="modal-tecnica-footer">
-                    <button class="btn-modal-cancelar" onclick="fecharModalTecnica()">
-                        Cancelar
+                <div class="modal-tecnica-tabela">
+                    <h4>Tabela de Custos</h4>
+                    <div class="tabela-custos">
+                        ${tecnica.dificuldade === 'Difícil' ? 
+                            `<div class="tabela-item ${nivelTecnicaAtual === 0 ? 'ativo' : ''}">+0 = 0 pts</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 1 ? 'ativo' : ''}">+1 = 2 pts</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 2 ? 'ativo' : ''}">+2 = 3 pts</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 3 ? 'ativo' : ''}">+3 = 4 pts</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 4 ? 'ativo' : ''}">+4 = 5 pts</div>` :
+                            `<div class="tabela-item ${nivelTecnicaAtual === 0 ? 'ativo' : ''}">+0 = 0 pts</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 1 ? 'ativo' : ''}">+1 = 1 pt</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 2 ? 'ativo' : ''}">+2 = 2 pts</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 3 ? 'ativo' : ''}">+3 = 3 pts</div>
+                             <div class="tabela-item ${nivelTecnicaAtual === 4 ? 'ativo' : ''}">+4 = 4 pts</div>`
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-tecnica-footer">
+                <div class="modal-custo-total">
+                    <span class="label">Custo Total:</span>
+                    <span class="valor" id="modal-custo-total-tecnica">0</span>
+                    <span> pontos</span>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-modal btn-modal-cancelar" onclick="fecharModalTecnica()">
+                        <i class="fas fa-times"></i> Cancelar
                     </button>
-                    <button class="btn-modal-confirmar" onclick="confirmarCompraTecnica('${id}', 2)">
-                        Confirmar - 2 pontos
+                    <button class="btn-modal btn-modal-confirmar" onclick="confirmarTecnica()" id="btn-confirmar-tecnica">
+                        <i class="fas fa-check"></i> Adquirir Técnica
                     </button>
                 </div>
             </div>
         </div>
     `;
     
-    const modalDiv = document.createElement('div');
-    modalDiv.innerHTML = modalHTML;
-    modalDiv.id = 'modal-tecnica-atual';
-    document.body.appendChild(modalDiv);
+    document.body.appendChild(overlay);
+    overlay.style.display = 'flex';
     
-    console.log("✅ Modal criado");
+    console.log(`✅ Modal aberto para: ${tecnica.nome}`);
 }
 
-function selecionarPontos(pontos) {
-    const botaoConfirmar = document.querySelector('.btn-modal-confirmar');
-    if (botaoConfirmar) {
-        botaoConfirmar.textContent = `Confirmar - ${pontos} pontos`;
-        botaoConfirmar.onclick = () => confirmarCompraTecnica(estadoTecnicas.modalTecnicaId, pontos);
-    }
+function alterarNivelModal(quantidade) {
+    const novoNivel = nivelTecnicaAtual + quantidade;
     
-    // Atualizar resumo
-    const pontosElement = document.getElementById('pontos-selecionados');
-    const niveisElement = document.getElementById('niveis-selecionados');
-    
-    if (pontosElement && niveisElement) {
-        pontosElement.textContent = pontos;
-        const niveis = CATALOGO_TECNICAS[0].custoTabela[pontos] || 0;
-        niveisElement.textContent = `+${niveis}`;
+    if (novoNivel >= 0 && novoNivel <= 4) {
+        nivelTecnicaAtual = novoNivel;
+        
+        // Calcular pontos baseado na dificuldade
+        if (tecnicaSelecionada.dificuldade === 'Difícil') {
+            // Difícil: +1 = 2 pts, +2 = 3 pts, +3 = 4 pts, +4 = 5 pts
+            pontosTecnicaAtuais = nivelTecnicaAtual === 0 ? 0 : 
+                                 nivelTecnicaAtual === 1 ? 2 :
+                                 nivelTecnicaAtual === 2 ? 3 :
+                                 nivelTecnicaAtual === 3 ? 4 : 5;
+        } else {
+            // Média: 1 ponto por nível
+            pontosTecnicaAtuais = nivelTecnicaAtual;
+        }
+        
+        // Atualizar interface
+        atualizarModalTecnica();
     }
 }
 
-function confirmarCompraTecnica(id, pontos) {
-    const tecnica = CATALOGO_TECNICAS.find(t => t.id === id);
-    if (!tecnica) return;
+function atualizarModalTecnica() {
+    // Atualizar nível
+    const nivelElement = document.getElementById('modal-nivel-tecnica');
+    const pontosElement = document.getElementById('modal-pontos-tecnica');
+    const custoElement = document.getElementById('modal-custo-total-tecnica');
     
-    const niveis = tecnica.custoTabela[pontos] || 0;
+    if (nivelElement) nivelElement.textContent = `+${nivelTecnicaAtual}`;
+    if (pontosElement) pontosElement.textContent = pontosTecnicaAtuais;
+    if (custoElement) custoElement.textContent = pontosTecnicaAtuais;
+    
+    // Atualizar botões
+    const btnDiminuir = document.querySelector('.btn-diminuir');
+    const btnAumentar = document.querySelector('.btn-aumentar');
+    const btnConfirmar = document.getElementById('btn-confirmar-tecnica');
+    
+    if (btnDiminuir) btnDiminuir.disabled = nivelTecnicaAtual === 0;
+    if (btnAumentar) btnAumentar.disabled = nivelTecnicaAtual === 4;
+    
+    // Atualizar tabela
+    document.querySelectorAll('.tabela-item').forEach((item, index) => {
+        item.classList.toggle('ativo', index === nivelTecnicaAtual);
+    });
+    
+    // Habilitar/desabilitar botão de confirmar
+    if (btnConfirmar) {
+        btnConfirmar.disabled = nivelTecnicaAtual === 0;
+        btnConfirmar.textContent = nivelTecnicaAtual === 0 ? 
+            'Selecione um nível' : 
+            `Adquirir Técnica (${pontosTecnicaAtuais} pts)`;
+    }
+}
+
+function confirmarTecnica() {
+    if (!tecnicaSelecionada || nivelTecnicaAtual === 0) return;
     
     // Verificar se já existe
-    const index = estadoTecnicas.aprendidas.findIndex(t => t.id === id);
+    const indexExistente = tecnicasAprendidas.findIndex(t => t.id === tecnicaSelecionada.id);
     
-    if (index >= 0) {
+    if (indexExistente >= 0) {
         // Atualizar técnica existente
-        estadoTecnicas.aprendidas[index] = {
-            id: id,
-            nome: tecnica.nome,
-            pontos: pontos,
-            niveis: niveis,
-            nhAtual: 10 + niveis // SIMULAÇÃO - depois calcula com base real
+        tecnicasAprendidas[indexExistente] = {
+            id: tecnicaSelecionada.id,
+            nome: tecnicaSelecionada.nome,
+            nivel: nivelTecnicaAtual,
+            pontos: pontosTecnicaAtuais,
+            dataAdquisicao: new Date().toISOString()
         };
     } else {
         // Adicionar nova técnica
-        estadoTecnicas.aprendidas.push({
-            id: id,
-            nome: tecnica.nome,
-            pontos: pontos,
-            niveis: niveis,
-            nhAtual: 10 + niveis // SIMULAÇÃO
+        tecnicasAprendidas.push({
+            id: tecnicaSelecionada.id,
+            nome: tecnicaSelecionada.nome,
+            nivel: nivelTecnicaAtual,
+            pontos: pontosTecnicaAtuais,
+            dataAdquisicao: new Date().toISOString()
         });
     }
     
-    // Salvar
+    // Salvar no localStorage
     salvarTecnicas();
-    
-    // Atualizar interface
-    renderizarTecnicas();
     
     // Fechar modal
     fecharModalTecnica();
     
+    // Atualizar interface
+    renderizarTodasTecnicas();
+    
     // Mostrar mensagem
-    mostrarNotificacao(`✅ ${tecnica.nome} adquirida por ${pontos} pontos!`, 'success');
+    mostrarNotificacao(`✅ ${tecnicaSelecionada.nome} adquirida no nível +${nivelTecnicaAtual} por ${pontosTecnicaAtuais} pontos!`, 'success');
 }
 
 function fecharModalTecnica() {
-    const modal = document.getElementById('modal-tecnica-atual');
-    if (modal) {
-        modal.remove();
+    const overlay = document.getElementById('modal-tecnica-overlay');
+    if (overlay) {
+        overlay.remove();
     }
-    estadoTecnicas.modalAtivo = false;
+    tecnicaSelecionada = null;
+    nivelTecnicaAtual = 0;
+    pontosTecnicaAtuais = 0;
+}
+
+// ===== 8. FUNÇÕES DE GERENCIAMENTO =====
+function editarTecnica(id) {
+    const tecnica = CATALOGO_TECNICAS.find(t => t.id === id);
+    const tecnicaAprendida = tecnicasAprendidas.find(t => t.id === id);
+    
+    if (tecnica && tecnicaAprendida) {
+        tecnicaSelecionada = tecnica;
+        nivelTecnicaAtual = tecnicaAprendida.nivel;
+        pontosTecnicaAtuais = tecnicaAprendida.pontos;
+        abrirModalTecnica(id);
+    }
+}
+
+function alterarNivelTecnica(id, quantidade) {
+    const index = tecnicasAprendidas.findIndex(t => t.id === id);
+    if (index === -1) return;
+    
+    const tecnica = CATALOGO_TECNICAS.find(t => t.id === id);
+    const tecnicaAprendida = tecnicasAprendidas[index];
+    
+    let novoNivel = tecnicaAprendida.nivel + quantidade;
+    
+    // Limites: 1 a 4
+    if (novoNivel < 1) novoNivel = 1;
+    if (novoNivel > 4) novoNivel = 4;
+    
+    if (novoNivel !== tecnicaAprendida.nivel) {
+        // Calcular novos pontos
+        let novosPontos;
+        if (tecnica.dificuldade === 'Difícil') {
+            novosPontos = novoNivel === 1 ? 2 :
+                         novoNivel === 2 ? 3 :
+                         novoNivel === 3 ? 4 : 5;
+        } else {
+            novosPontos = novoNivel;
+        }
+        
+        // Atualizar
+        tecnicasAprendidas[index] = {
+            ...tecnicaAprendida,
+            nivel: novoNivel,
+            pontos: novosPontos
+        };
+        
+        // Salvar
+        salvarTecnicas();
+        
+        // Atualizar interface
+        renderizarTecnicasAprendidas();
+        atualizarContadoresTecnicas();
+        
+        // Mostrar mensagem
+        mostrarNotificacao(
+            `📈 ${tecnica.nome} alterada para nível +${novoNivel} (${novosPontos} pts)`,
+            'info'
+        );
+    }
 }
 
 function removerTecnica(id) {
-    if (confirm('Remover esta técnica?')) {
-        estadoTecnicas.aprendidas = estadoTecnicas.aprendidas.filter(t => t.id !== id);
+    if (confirm('Tem certeza que deseja remover esta técnica?')) {
+        tecnicasAprendidas = tecnicasAprendidas.filter(t => t.id !== id);
         salvarTecnicas();
-        renderizarTecnicas();
+        renderizarTodasTecnicas();
         mostrarNotificacao('🗑️ Técnica removida!', 'info');
     }
 }
 
-// ===== 8. FUNÇÕES AUXILIARES =====
-function salvarTecnicas() {
-    try {
-        localStorage.setItem('tecnicas_aprendidas', JSON.stringify(estadoTecnicas.aprendidas));
-        console.log("💾 Técnicas salvas");
-    } catch (e) {
-        console.error("❌ Erro ao salvar:", e);
-    }
-}
-
+// ===== 9. FUNÇÕES AUXILIARES =====
 function carregarTecnicas() {
     try {
         const salvo = localStorage.getItem('tecnicas_aprendidas');
         if (salvo) {
-            estadoTecnicas.aprendidas = JSON.parse(salvo);
-            console.log(`📂 ${estadoTecnicas.aprendidas.length} técnica(s) carregada(s)`);
+            tecnicasAprendidas = JSON.parse(saldo);
+            console.log(`📂 ${tecnicasAprendidas.length} técnica(s) carregada(s)`);
         }
     } catch (e) {
-        console.error("❌ Erro ao carregar:", e);
+        console.error("❌ Erro ao carregar técnicas:", e);
+        tecnicasAprendidas = [];
     }
 }
 
+function salvarTecnicas() {
+    try {
+        localStorage.setItem('tecnicas_aprendidas', JSON.stringify(tecnicasAprendidas));
+        console.log("💾 Técnicas salvas:", tecnicasAprendidas);
+    } catch (e) {
+        console.error("❌ Erro ao salvar técnicas:", e);
+    }
+}
+
+function calcularNHTecnica(tecnicaAprendida, tecnicaOriginal) {
+    // Simulação - na implementação real, buscar NH da perícia base
+    const nhBase = 10; // Exemplo
+    const modificador = tecnicaOriginal.modificadorBase + tecnicaAprendida.nivel;
+    return nhBase + modificador;
+}
+
+function atualizarContadoresTecnicas() {
+    const pontosElement = document.getElementById('pontos-tecnicas');
+    const totalPontos = tecnicasAprendidas.reduce((total, t) => total + t.pontos, 0);
+    
+    if (pontosElement) {
+        pontosElement.textContent = `${totalPontos} pts`;
+    }
+}
+
+function verificarAbaAtiva(subtab) {
+    const aba = document.getElementById(`subtab-${subtab}`);
+    return aba && aba.classList.contains('active');
+}
+
 function mostrarNotificacao(mensagem, tipo = 'info') {
+    // Criar elemento de notificação
     const notificacao = document.createElement('div');
-    notificacao.className = `notificacao-tecnica notificacao-${tipo}`;
+    notificacao.className = `notificacao notificacao-${tipo}`;
     notificacao.innerHTML = `
         <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
         <span>${mensagem}</span>
     `;
     
+    // Estilos
+    notificacao.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: ${tipo === 'success' ? '#4CAF50' : tipo === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 9999;
+        transform: translateX(150%);
+        transition: transform 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `;
+    
     document.body.appendChild(notificacao);
     
-    setTimeout(() => notificacao.classList.add('show'), 10);
+    // Animação
     setTimeout(() => {
-        notificacao.classList.remove('show');
-        setTimeout(() => notificacao.remove(), 300);
+        notificacao.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        notificacao.style.transform = 'translateX(150%)';
+        setTimeout(() => {
+            if (notificacao.parentNode) {
+                notificacao.parentNode.removeChild(notificacao);
+            }
+        }, 300);
     }, 3000);
 }
 
-// ===== 9. CSS PARA AS TÉCNICAS =====
-function adicionarCSStecnicas() {
-    if (document.getElementById('css-tecnicas')) return;
+// ===== 10. INJEÇÃO DE CSS =====
+function injetarCSSTecnicas() {
+    if (document.getElementById('css-tecnicas-injetado')) return;
     
     const css = `
-        <style id="css-tecnicas">
-        /* ESTILOS PARA TÉCNICAS */
+        <style id="css-tecnicas-injetado">
+        /* ESTILOS ESPECÍFICOS PARA TÉCNICAS */
+        
+        /* Item de técnica no catálogo */
         .tecnica-item {
-            background: linear-gradient(145deg, #1a1a2e, #16213e);
-            border: 1px solid #0f3460;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            color: #e6e6e6;
+            background: linear-gradient(145deg, rgba(26, 18, 0, 0.8), rgba(44, 32, 8, 0.8));
+            border: 1px solid var(--wood-light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
             transition: all 0.3s ease;
             cursor: pointer;
         }
         
         .tecnica-item:hover {
+            background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
+            border-color: var(--primary-gold);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border-color: #4cc9f0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .tecnica-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .tecnica-info-principal {
+            flex: 1;
         }
         
         .tecnica-titulo {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.2em;
-            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .tecnica-titulo h4 {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 1.1rem;
         }
         
         .tecnica-titulo i {
-            color: #4cc9f0;
-            font-size: 1.3em;
+            color: var(--primary-gold);
         }
         
-        .tecnica-dificuldade-badge {
-            background: #4361ee;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
+        .tecnica-base {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .base-label {
+            color: rgba(212, 175, 55, 0.8);
+        }
+        
+        .base-valor {
+            color: var(--text-light);
             font-weight: bold;
         }
         
-        .tecnica-aprendida-badge {
-            background: #4CAF50;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.9em;
+        .tecnica-status {
+            text-align: right;
         }
         
-        .tecnica-disponivel-badge {
-            background: #2196F3;
-            color: white;
+        .status-aprendida {
+            background: rgba(46, 92, 58, 0.3);
+            border: 1px solid var(--accent-green);
+            border-radius: 4px;
             padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.9em;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-disponivel {
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--primary-gold);
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            color: var(--text-gold);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .dificuldade-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .dificuldade-badge.fácil {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+        }
+        
+        .dificuldade-badge.media {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid #2196F3;
+            color: #2196F3;
+        }
+        
+        .dificuldade-badge.difícil {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
         }
         
         .tecnica-descricao {
-            margin: 15px 0;
-            line-height: 1.5;
-            color: #b8b8b8;
+            color: rgba(245, 245, 220, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 10px 0;
+        }
+        
+        .regra-especial {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 3px solid var(--primary-gold);
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: rgba(212, 175, 55, 0.9);
         }
         
         .tecnica-detalhes {
@@ -544,9 +857,9 @@ function adicionarCSStecnicas() {
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin: 15px 0;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 10px;
+            background: rgba(44, 32, 8, 0.4);
+            border-radius: 6px;
         }
         
         .detalhe-item {
@@ -555,275 +868,279 @@ function adicionarCSStecnicas() {
         
         .detalhe-label {
             display: block;
-            font-size: 0.9em;
-            color: #8a8a8a;
-            margin-bottom: 5px;
+            font-size: 0.8rem;
+            color: rgba(212, 175, 55, 0.7);
+            margin-bottom: 3px;
         }
         
         .detalhe-valor {
             display: block;
             font-weight: bold;
-            color: #4cc9f0;
+            color: var(--text-light);
+            font-size: 0.9rem;
         }
         
         .tecnica-prereq {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid #4361ee;
+            background: rgba(44, 32, 8, 0.4);
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid var(--accent-red);
         }
         
-        .tecnica-prereq h4 {
-            margin: 0 0 10px 0;
-            color: #8a8a8a;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .prereq-titulo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--text-gold);
+            font-size: 0.9rem;
+        }
+        
+        .prereq-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
         
         .prereq-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin: 8px 0;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 5px;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-light);
         }
         
         .prereq-item i {
-            color: #4361ee;
-            width: 20px;
-        }
-        
-        .prereq-status {
-            margin-left: auto;
-            font-size: 0.9em;
-            color: #8a8a8a;
-        }
-        
-        .tecnica-custo {
-            margin: 20px 0;
-        }
-        
-        .tecnica-custo h4 {
-            margin: 0 0 10px 0;
-            color: #8a8a8a;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .custo-tabela {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        
-        .custo-item {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        
-        .custo-item .pontos {
-            font-weight: bold;
-            color: #ffd166;
-        }
-        
-        .custo-item .niveis {
-            font-weight: bold;
-            color: #06d6a0;
+            color: var(--accent-green);
+            font-size: 0.8rem;
         }
         
         .tecnica-acoes {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
         .btn-tecnica {
             flex: 1;
-            padding: 12px;
+            padding: 8px 12px;
             border: none;
-            border-radius: 5px;
-            font-weight: bold;
+            border-radius: 6px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 5px;
         }
         
         .btn-adquirir {
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            background: linear-gradient(145deg, var(--accent-green), #1e4028);
             color: white;
         }
         
         .btn-adquirir:hover {
-            background: linear-gradient(135deg, #66BB6A, #388E3C);
+            background: linear-gradient(145deg, #3a7c4a, #1e4028);
             transform: scale(1.05);
         }
         
         .btn-editar {
-            background: linear-gradient(135deg, #2196F3, #0D47A1);
+            background: linear-gradient(145deg, #2196F3, #0D47A1);
             color: white;
         }
         
         .btn-editar:hover {
-            background: linear-gradient(135deg, #42A5F5, #1565C0);
+            background: linear-gradient(145deg, #42A5F5, #1565C0);
             transform: scale(1.05);
         }
         
         .btn-remover {
-            background: linear-gradient(135deg, #f44336, #c62828);
+            background: linear-gradient(145deg, #f44336, #c62828);
             color: white;
         }
         
         .btn-remover:hover {
-            background: linear-gradient(135deg, #ef5350, #d32f2f);
+            background: linear-gradient(145deg, #ef5350, #d32f2f);
             transform: scale(1.05);
         }
         
-        /* TÉCNICAS APRENDIDAS */
+        /* Técnica aprendida */
         .tecnica-aprendida-item {
-            background: linear-gradient(145deg, #1b3a4b, #144552);
-            border: 1px solid #006466;
-            border-radius: 10px;
+            background: linear-gradient(145deg, rgba(26, 18, 0, 0.9), rgba(44, 32, 8, 0.9));
+            border: 2px solid var(--wood-light);
+            border-radius: 8px;
             padding: 15px;
             margin-bottom: 10px;
-            color: #e6e6e6;
         }
         
         .tecnica-aprendida-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
-        .tecnica-aprendida-nome {
-            font-weight: bold;
-            font-size: 1.1em;
+        .tecnica-aprendida-titulo {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         
-        .tecnica-aprendida-nome i {
-            color: #4cc9f0;
+        .tecnica-aprendida-titulo h4 {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 1.1rem;
         }
         
-        .tecnica-aprendida-nh {
-            background: #006466;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
+        .tecnica-aprendida-titulo i {
+            color: var(--primary-gold);
+        }
+        
+        .tecnica-aprendida-nivel {
+            background: rgba(44, 32, 8, 0.6);
+            border: 2px solid var(--wood-light);
+            border-radius: 6px;
+            padding: 5px 15px;
+        }
+        
+        .nivel-label {
+            color: rgba(212, 175, 55, 0.8);
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+        
+        .nivel-valor {
+            color: var(--text-light);
             font-weight: bold;
+            font-size: 1.1rem;
         }
         
-        .tecnica-aprendida-detalhes {
+        .tecnica-aprendida-info {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin: 10px 0;
             padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            background: rgba(44, 32, 8, 0.4);
+            border-radius: 6px;
         }
         
-        .tecnica-aprendida-detalhes .detalhe {
+        .info-item {
             text-align: center;
         }
         
-        .tecnica-aprendida-detalhes .label {
+        .info-label {
             display: block;
-            font-size: 0.8em;
-            color: #8a8a8a;
+            font-size: 0.8rem;
+            color: rgba(212, 175, 55, 0.7);
             margin-bottom: 3px;
         }
         
-        .tecnica-aprendida-detalhes .valor {
+        .info-valor {
             display: block;
             font-weight: bold;
-            color: #4cc9f0;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .tecnica-aprendida-limite {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--primary-gold);
+            border-radius: 4px;
+            padding: 8px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            color: rgba(212, 175, 55, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .tecnica-aprendida-acoes {
             display: flex;
-            gap: 5px;
-            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
         }
         
-        .btn-aprendida-editar, .btn-aprendida-remover {
-            width: 35px;
-            height: 35px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
+        .btn-nivel-controle {
+            background: rgba(44, 32, 8, 0.8);
+            border: 2px solid var(--wood-light);
+            border-radius: 6px;
+            color: var(--text-light);
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .btn-aprendida-editar {
-            background: #2196F3;
-            color: white;
+        .btn-nivel-controle:hover {
+            border-color: var(--primary-gold);
+            background: rgba(44, 32, 8, 1);
         }
         
-        .btn-aprendida-editar:hover {
-            background: #42A5F5;
-            transform: scale(1.1);
+        .btn-remover-tecnica {
+            flex: 1;
+            background: rgba(139, 0, 0, 0.2);
+            border: 1px solid var(--accent-red);
+            border-radius: 4px;
+            padding: 10px;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
         
-        .btn-aprendida-remover {
-            background: #f44336;
-            color: white;
+        .btn-remover-tecnica:hover {
+            background: rgba(139, 0, 0, 0.4);
         }
         
-        .btn-aprendida-remover:hover {
-            background: #ef5350;
-            transform: scale(1.1);
-        }
-        
-        /* MODAL */
+        /* Modal de técnica */
         .modal-tecnica-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 10000;
+            backdrop-filter: blur(5px);
         }
         
-        .modal-tecnica-content {
-            background: linear-gradient(145deg, #1a1a2e, #16213e);
-            border: 2px solid #0f3460;
+        .modal-tecnica {
+            background: linear-gradient(145deg, rgba(26, 18, 0, 0.95), rgba(44, 32, 8, 0.95));
+            border: 3px solid var(--primary-gold);
             border-radius: 15px;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
-            color: #e6e6e6;
+            animation: modalSlideIn 0.4s ease;
         }
         
         .modal-tecnica-header {
-            padding: 20px;
-            border-bottom: 1px solid #0f3460;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 20px 25px;
+            border-bottom: 2px solid var(--primary-gold);
         }
         
         .modal-tecnica-header h3 {
+            color: var(--text-gold);
+            font-size: 1.5rem;
             margin: 0;
             display: flex;
             align-items: center;
@@ -833,232 +1150,337 @@ function adicionarCSStecnicas() {
         .modal-tecnica-close {
             background: none;
             border: none;
-            color: #8a8a8a;
-            font-size: 1.5em;
+            color: var(--text-light);
+            font-size: 2rem;
             cursor: pointer;
             padding: 0;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-        }
-        
-        .modal-tecnica-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .modal-tecnica-body {
-            padding: 20px;
-        }
-        
-        .modal-tecnica-footer {
-            padding: 20px;
-            border-top: 1px solid #0f3460;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        
-        .btn-modal-cancelar, .btn-modal-confirmar {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .btn-modal-cancelar {
-            background: #6c757d;
-            color: white;
+        .modal-tecnica-close:hover {
+            background: rgba(139, 0, 0, 0.3);
+            color: var(--accent-red);
         }
         
-        .btn-modal-cancelar:hover {
-            background: #5a6268;
+        .modal-tecnica-body {
+            padding: 25px;
         }
         
-        .btn-modal-confirmar {
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
-            color: white;
+        .modal-tecnica-info {
+            background: rgba(44, 32, 8, 0.6);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--wood-light);
         }
         
-        .btn-modal-confirmar:hover {
-            background: linear-gradient(135deg, #66BB6A, #388E3C);
+        .modal-tecnica-info .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(139, 0, 0, 0.1);
         }
         
-        /* NOTIFICAÇÕES */
-        .notificacao-tecnica {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 5px;
-            color: white;
+        .modal-tecnica-info .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .modal-tecnica-descricao {
+            color: rgba(245, 245, 220, 0.9);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .modal-tecnica-descricao h4 {
+            color: var(--text-gold);
+            margin-bottom: 10px;
+        }
+        
+        .modal-tecnica-prereq {
+            background: rgba(44, 32, 8, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-red);
+        }
+        
+        .modal-tecnica-prereq h4 {
+            color: var(--text-gold);
+            margin: 0 0 10px 0;
             display: flex;
             align-items: center;
             gap: 10px;
-            z-index: 10001;
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
         }
         
-        .notificacao-tecnica.show {
-            transform: translateX(0);
+        .modal-tecnica-controles {
+            background: rgba(44, 32, 8, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--wood-light);
         }
         
-        .notificacao-success {
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
-        }
-        
-        .notificacao-info {
-            background: linear-gradient(135deg, #2196F3, #0D47A1);
-        }
-        
-        .notificacao-error {
-            background: linear-gradient(135deg, #f44336, #c62828);
-        }
-        
-        /* ESTADO VAZIO */
-        .nenhuma-tecnica-aprendida {
+        .modal-tecnica-controles h4 {
+            color: var(--text-gold);
+            margin: 0 0 15px 0;
             text-align: center;
-            padding: 40px 20px;
-            color: #8a8a8a;
         }
         
-        .nenhuma-tecnica-aprendida i {
-            font-size: 3em;
+        .controle-nivel-botoes {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
             margin-bottom: 15px;
-            color: #4361ee;
         }
         
-        .nenhuma-tecnica-aprendida h4 {
+        .controle-nivel-botoes .btn-nivel {
+            background: rgba(44, 32, 8, 0.8);
+            border: 2px solid var(--wood-light);
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            color: var(--text-light);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .controle-nivel-botoes .btn-nivel:hover:not(:disabled) {
+            border-color: var(--primary-gold);
+            background: rgba(44, 32, 8, 1);
+        }
+        
+        .controle-nivel-botoes .btn-nivel:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .nivel-atual {
+            background: rgba(26, 18, 0, 0.8);
+            border: 3px solid var(--primary-gold);
+            border-radius: 10px;
+            padding: 15px 25px;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .nivel-atual .valor {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-gold);
+            margin-bottom: 5px;
+        }
+        
+        .nivel-atual .label {
+            color: rgba(212, 175, 55, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .nivel-info {
+            text-align: center;
+            color: rgba(212, 175, 55, 0.7);
+            font-size: 0.85rem;
+        }
+        
+        .controle-pontos {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .pontos-info {
+            color: var(--text-gold);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .pontos-detalhes {
+            color: rgba(212, 175, 55, 0.7);
+            font-size: 0.85rem;
+        }
+        
+        .modal-tecnica-tabela {
+            background: rgba(44, 32, 8, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-tecnica-tabela h4 {
+            color: var(--text-gold);
             margin: 0 0 10px 0;
-            color: #e6e6e6;
+            text-align: center;
         }
         
-        .nenhuma-tecnica-aprendida p {
-            margin: 0;
-            font-size: 0.9em;
+        .tabela-custos {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tabela-item {
+            background: rgba(26, 18, 0, 0.8);
+            border: 2px solid var(--wood-light);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            color: rgba(212, 175, 55, 0.8);
+            min-width: 80px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .tabela-item.ativo {
+            background: rgba(46, 92, 58, 0.3);
+            border-color: var(--accent-green);
+            color: var(--text-light);
+            font-weight: bold;
+        }
+        
+        .modal-tecnica-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-top: 2px solid var(--wood-dark);
+        }
+        
+        .modal-custo-total {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-custo-total .label {
+            color: rgba(212, 175, 55, 0.9);
+            font-weight: bold;
+        }
+        
+        .modal-custo-total .valor {
+            color: var(--text-gold);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .tecnica-detalhes,
+            .tecnica-aprendida-info {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            
+            .tecnica-acoes {
+                flex-direction: column;
+            }
+            
+            .tecnica-aprendida-acoes {
+                flex-direction: column;
+            }
+            
+            .btn-nivel-controle {
+                width: 100%;
+            }
+            
+            .tabela-custos {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .modal-tecnica-footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .modal-actions {
+                width: 100%;
+            }
+            
+            .modal-actions button {
+                flex: 1;
+            }
         }
         </style>
     `;
     
     document.head.insertAdjacentHTML('beforeend', css);
-    console.log("🎨 CSS das técnicas adicionado");
-}
-
-// ===== 10. CONTAINER DE EMERGÊNCIA =====
-function criarContainerEmergencia() {
-    console.log("🚨 Criando container de emergência...");
-    
-    // Procurar a aba de técnicas
-    const tecnicaTab = document.getElementById('subtab-tecnicas');
-    if (!tecnicaTab) {
-        console.error("❌ Não encontrou nem a aba!");
-        return;
-    }
-    
-    // Criar container emergencial
-    const container = document.createElement('div');
-    container.id = 'tecnicas-emergencia';
-    container.style.cssText = `
-        padding: 20px;
-        background: #1a1a2e;
-        color: white;
-        border-radius: 10px;
-        margin: 20px;
-    `;
-    
-    container.innerHTML = `
-        <h3 style="color: #4cc9f0; margin-top: 0;">
-            <i class="fas fa-tools"></i> Técnicas Especiais
-        </h3>
-        <div id="lista-tecnicas-emergencia"></div>
-    `;
-    
-    tecnicaTab.appendChild(container);
-    
-    // Agora renderizar as técnicas
-    const subContainer = document.getElementById('lista-tecnicas-emergencia');
-    if (subContainer) {
-        CATALOGO_TECNICAS.forEach(tecnica => {
-            const elemento = criarElementoTecnica(tecnica);
-            subContainer.appendChild(elemento);
-        });
-    }
+    console.log("🎨 CSS das técnicas injetado");
 }
 
 // ===== 11. INICIALIZAÇÃO COMPLETA =====
-function inicializarTecnicas() {
-    console.log("🚀 INICIALIZANDO SISTEMA DE TÉCNICAS");
-    
-    // 1. Carregar dados salvos
-    carregarTecnicas();
-    
-    // 2. Adicionar CSS
-    adicionarCSStecnicas();
-    
-    // 3. Renderizar
-    renderizarTecnicas();
-    
-    console.log("✅ Sistema de técnicas inicializado!");
-}
-
-// ===== 12. ESCUTAR MUDANÇAS NA ABA =====
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("📄 DOM carregado - Configurando técnicas");
+    console.log("📄 DOM carregado - Preparando sistema de técnicas");
     
-    // Carregar dados imediatamente
-    carregarTecnicas();
+    // Injetar CSS
+    injetarCSSTecnicas();
     
-    // Configurar observador para cliques nas abas
-    const botoes = document.querySelectorAll('.subtab-btn-pericias');
-    botoes.forEach(botao => {
-        botao.addEventListener('click', function() {
-            const subtab = this.dataset.subtab;
-            console.log(`🎯 Clicou em: ${subtab}`);
-            
-            if (subtab === 'tecnicas') {
-                setTimeout(() => {
-                    console.log("🔄 Inicializando técnicas após clique...");
-                    inicializarTecnicas();
-                }, 300);
-            }
-        });
-    });
-    
-    // Se a aba já estiver ativa, inicializar agora
-    const tecnicaTab = document.getElementById('subtab-tecnicas');
-    if (tecnicaTab && tecnicaTab.classList.contains('active')) {
-        console.log("✅ Aba de técnicas já está ativa - inicializando...");
-        setTimeout(inicializarTecnicas, 500);
-    }
-    
-    // Botão de força para debug
-    const forceBtn = document.createElement('button');
-    forceBtn.textContent = 'FORÇAR TÉCNICAS';
-    forceBtn.style.cssText = `
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        background: #FF5722;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 9999;
-        font-weight: bold;
-    `;
-    forceBtn.onclick = inicializarTecnicas;
-    document.body.appendChild(forceBtn);
+    // Inicializar sistema
+    setTimeout(() => {
+        inicializarTecnicas();
+        
+        // Adicionar botão de debug (remover em produção)
+        const debugBtn = document.createElement('button');
+        debugBtn.textContent = '🔧 Debug Técnicas';
+        debugBtn.style.cssText = `
+            position: fixed;
+            bottom: 60px;
+            left: 10px;
+            background: #FF5722;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 9998;
+            font-weight: bold;
+            font-size: 12px;
+        `;
+        debugBtn.onclick = function() {
+            console.log("=== DEBUG TÉCNICAS ===");
+            console.log("Técnicas aprendidas:", tecnicasAprendidas);
+            console.log("Técnica selecionada:", tecnicaSelecionada);
+            console.log("Nível atual:", nivelTecnicaAtual);
+            console.log("Pontos atuais:", pontosTecnicaAtuais);
+            renderizarTodasTecnicas();
+        };
+        document.body.appendChild(debugBtn);
+        
+        console.log("🎮 Sistema de técnicas pronto para uso!");
+    }, 1000);
 });
 
-// ===== 13. EXPORTAR FUNÇÕES =====
+// ===== 12. EXPORTAÇÕES =====
 window.initTecnicas = inicializarTecnicas;
-window.renderizarTecnicas = renderizarTecnicas;
+window.renderTecnicas = renderizarTodasTecnicas;
+window.abrirTecnica = abrirModalTecnica;
+window.fecharTecnica = fecharModalTecnica;
 
-console.log("✅ TÉCNICAS.JS - CARREGADO E PRONTO");
+console.log("✅ TÉCNICAS.JS - SISTEMA COMPLETO CARREGADO");
