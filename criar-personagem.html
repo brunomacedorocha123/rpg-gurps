@@ -3237,7 +3237,7 @@ body::before {
     </div>
 </div>
 
-      <!-- ABA COMBATE - SOMENTE COMBATE! -->
+     <!-- ABA COMBATE - COMPLETA E ISOLADA -->
 <div id="combate" class="tab-content">
     <div class="combate-container">
         
@@ -3262,7 +3262,7 @@ body::before {
                         <!-- Barra de PV -->
                         <div class="status-bar-container">
                             <div class="status-bar">
-                                <div class="bar-fill" id="pvFill" style="width: 100%"></div>
+                                <div class="bar-fill" id="pvFill"></div>
                             </div>
                         </div>
                         
@@ -3271,8 +3271,7 @@ body::before {
                             <button class="control-btn damage" onclick="danoPV5()">-5</button>
                             <button class="control-btn damage" onclick="danoPV2()">-2</button>
                             <button class="control-btn damage" onclick="danoPV1()">-1</button>
-                            <input type="text" id="pvAtualDisplay" value="10" 
-                                   class="status-input" onchange="atualizarPVInput()">
+                            <input type="text" id="pvAtualDisplay" value="10" class="status-input" onchange="atualizarPVInput()">
                             <button class="control-btn heal" onclick="curaPV1()">+1</button>
                             <button class="control-btn heal" onclick="curaPV2()">+2</button>
                             <button class="control-btn heal" onclick="curaPV5()">+5</button>
@@ -3293,8 +3292,8 @@ body::before {
                         <!-- Barra de PF -->
                         <div class="status-bar-container">
                             <div class="status-bar">
-                                <div class="bar-fill" id="pfFill" style="width: 100%"></div>
-                                <div class="fatigue-marker" style="left: 33.33%"></div>
+                                <div class="bar-fill" id="pfFill"></div>
+                                <div class="fatigue-marker"></div>
                             </div>
                         </div>
                         
@@ -3302,8 +3301,7 @@ body::before {
                         <div class="status-controls">
                             <button class="control-btn fatigue" onclick="fadigaPF3()">-3</button>
                             <button class="control-btn fatigue" onclick="fadigaPF1()">-1</button>
-                            <input type="text" id="pfAtualDisplay" value="10" 
-                                   class="status-input" onchange="atualizarPFInput()">
+                            <input type="text" id="pfAtualDisplay" value="10" class="status-input" onchange="atualizarPFInput()">
                             <button class="control-btn rest" onclick="descansoPF1()">+1</button>
                             <button class="control-btn rest" onclick="descansoPF3()">+3</button>
                         </div>
@@ -3311,6 +3309,7 @@ body::before {
                 </div>
             </div>
         </div>
+        <!-- FIM SEÇÃO 1 -->
         
         <!-- SEÇÃO 2: DANO -->
         <div class="combate-section">
@@ -3363,6 +3362,7 @@ body::before {
                 </div>
             </div>
         </div>
+        <!-- FIM SEÇÃO 2 -->
         
         <!-- SEÇÃO 3: DEFESAS ATIVAS -->
         <div class="combate-section">
@@ -3448,7 +3448,6 @@ body::before {
                 </div>
                 
                 <div class="bonus-grid">
-                    <!-- REFLEXOS -->
                     <div class="bonus-card">
                         <div class="bonus-icon">
                             <i class="fas fa-bolt"></i>
@@ -3459,7 +3458,6 @@ body::before {
                         </div>
                     </div>
                     
-                    <!-- ESCUDO -->
                     <div class="bonus-card">
                         <div class="bonus-icon">
                             <i class="fas fa-shield"></i>
@@ -3470,7 +3468,6 @@ body::before {
                         </div>
                     </div>
                     
-                    <!-- CAPA -->
                     <div class="bonus-card">
                         <div class="bonus-icon">
                             <i class="fas fa-vest"></i>
@@ -3481,7 +3478,6 @@ body::before {
                         </div>
                     </div>
                     
-                    <!-- OUTROS -->
                     <div class="bonus-card">
                         <div class="bonus-icon">
                             <i class="fas fa-star"></i>
@@ -3493,221 +3489,18 @@ body::before {
                     </div>
                 </div>
                 
-                <!-- TOTAL DE BÔNUS -->
                 <div class="bonus-total">
                     <span>Total de Bônus:</span>
                     <span id="totalBonus">+0</span>
                 </div>
             </div>
         </div>
+        <!-- FIM SEÇÃO 3 -->
         
-        <!-- SEÇÃO 4: RESISTÊNCIA A DANO (RD) -->
-        <div class="combate-section">
-            <div class="section-header">
-                <i class="fas fa-user-shield"></i>
-                <h3>RESISTÊNCIA A DANO</h3>
-                <div class="rd-total">
-                    <span>Total:</span>
-                    <span id="rdTotal">0</span>
-                </div>
-            </div>
-            
-            <div class="rd-grid">
-                <!-- PARTES DO CORPO -->
-                <div class="rd-parte" data-parte="cabeca">
-                    <i class="fas fa-head-side-virus"></i>
-                    <span>Cabeça</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="tronco">
-                    <i class="fas fa-user"></i>
-                    <span>Tronco</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="rosto">
-                    <i class="fas fa-heart"></i>
-                    <span>Rosto</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="crânio">
-                    <i class="fas fa-skull"></i>
-                    <span>Crânio</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="pescoco">
-                    <i class="fas fa-user-slash"></i>
-                    <span>Pescoço</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="virilha">
-                    <i class="fas fa-user-injured"></i>
-                    <span>Virilha</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="bracos">
-                    <i class="fas fa-hand-paper"></i>
-                    <span>Braços</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="pernas">
-                    <i class="fas fa-running"></i>
-                    <span>Pernas</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="maos">
-                    <i class="fas fa-hand"></i>
-                    <span>Mãos</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-                
-                <div class="rd-parte" data-parte="pes">
-                    <i class="fas fa-shoe-prints"></i>
-                    <span>Pés</span>
-                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
-                </div>
-            </div>
-            
-            <!-- PENALIDADES DE ATAQUE -->
-            <div class="penalidades-container">
-                <h4><i class="fas fa-crosshairs"></i> Penalidades para Ataque</h4>
-                <div class="penalidades-grid">
-                    <div class="penalidade-item" data-local="tronco">
-                        <span>Tronco</span>
-                        <span class="penalidade-valor">0</span>
-                    </div>
-                    <div class="penalidade-item" data-local="crânio">
-                        <span>Crânio</span>
-                        <span class="penalidade-valor">-7</span>
-                    </div>
-                    <div class="penalidade-item" data-local="pescoco">
-                        <span>Pescoço</span>
-                        <span class="penalidade-valor">-5</span>
-                    </div>
-                    <div class="penalidade-item" data-local="virilha">
-                        <span>Virilha</span>
-                        <span class="penalidade-valor">-3</span>
-                    </div>
-                    <div class="penalidade-item" data-local="bracos">
-                        <span>Braços</span>
-                        <span class="penalidade-valor">-2</span>
-                    </div>
-                    <div class="penalidade-item" data-local="pernas">
-                        <span>Pernas</span>
-                        <span class="penalidade-valor">-2</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- SEÇÃO 5: CONDIÇÕES E ESCUDO -->
-        <div class="combate-section">
-            <div class="section-header">
-                <i class="fas fa-clipboard-list"></i>
-                <h3>CONDIÇÕES E ESCUDO</h3>
-                <div class="condicoes-count">
-                    <span>Ativas:</span>
-                    <span id="condicoesAtivas">0</span>
-                </div>
-            </div>
-            
-            <div class="condicoes-escudo-grid">
-                <!-- CONDIÇÕES -->
-                <div class="condicoes-container">
-                    <h4><i class="fas fa-clipboard-check"></i> Condições de Combate</h4>
-                    <div class="condicoes-grid">
-                        <div class="condicao-item" data-condicao="inconsciente" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Inconsciente</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="machucado" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Machucado</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="ferido" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Ferido</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="fadigado" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Fadigado</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="atordoado" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Atordoado</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="enjoado" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Enjoado</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="cego" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Cego</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="surdo" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Surdo</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="paralisado" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Paralisado</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="envenenado" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Envenenado</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="sangrando" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Sangrando</span>
-                        </div>
-                        <div class="condicao-item" data-condicao="queimando" onclick="alternarCondicao(this)">
-                            <div class="condicao-checkbox"></div>
-                            <span>Queimando</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ESCUDO -->
-                <div class="escudo-container">
-                    <div class="escudo-header">
-                        <i class="fas fa-shield"></i>
-                        <div>
-                            <h4>ESCUDO</h4>
-                            <div id="escudoNome" class="escudo-nome">Nenhum escudo equipado</div>
-                        </div>
-                        <span class="status-badge inativo" id="escudoStatus">Inativo</span>
-                    </div>
-                    
-                    <!-- Barra de PV do Escudo -->
-                    <div class="escudo-pv-container">
-                        <div class="pv-header">
-                            <i class="fas fa-heart"></i>
-                            <span class="pv-texto" id="escudoPVTexto">0/0</span>
-                        </div>
-                        <div class="status-bar">
-                            <div class="bar-fill" id="escudoPVFill" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Controles do Escudo -->
-                    <div class="escudo-controles">
-                        <button class="control-btn damage" onclick="danoEscudo(5)">-5</button>
-                        <button class="control-btn damage" onclick="danoEscudo(1)">-1</button>
-                        <button class="control-btn heal" onclick="curaEscudo(1)">+1</button>
-                        <button class="control-btn heal" onclick="curaEscudo(5)">+5</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+    <!-- FIM combate-container -->
 </div>
+<!-- FIM #combate -->
 
         
         <!-- SUB-ABAS DE EQUIPAMENTO -->
