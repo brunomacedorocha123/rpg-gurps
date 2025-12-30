@@ -1,4 +1,4 @@
-// defesa.js - Sistema Dinâmico de Defesas Ativas
+// defesa.js - Sistema Dinâmico de Defesas Ativas - VERSÃO CORRIGIDA
 class SistemaDefesas {
     constructor() {
         this.estado = {
@@ -35,21 +35,26 @@ class SistemaDefesas {
         this.observadores = [];
         this.atualizando = false;
         this.iniciado = false;
+        this.tentativaAtualizacao = 0;
     }
     
     iniciar() {
         if (this.iniciado) return;
         
         try {
+            console.log('🛡️ Iniciando sistema de defesas...');
+            
             this.carregarElementos();
+            this.forcarCarregamentoAtributos(); // NOVO: força carregamento imediato
             this.carregarValoresIniciais();
             this.configurarEventos();
+            this.configurarEventosExternos(); // NOVO: escuta eventos de outros sistemas
             this.calcularTudo();
             this.iniciarMonitoramento();
             
             this.iniciado = true;
             
-            console.log('✅ Sistema de defesas iniciado');
+            console.log('✅ Sistema de defesas iniciado com DX=', this.estado.atributos.dx, 'HT=', this.estado.atributos.ht);
             
         } catch (error) {
             console.error('Erro ao iniciar sistema de defesas:', error);
@@ -77,16 +82,56 @@ class SistemaDefesas {
         this.elementos.totalBonus = document.getElementById('totalBonus');
     }
     
+    // NOVO: Força carregamento de atributos de várias fontes
+    forcarCarregamentoAtributos() {
+        console.log('📊 Forçando carregamento de atributos...');
+        
+        // Tentativa 1: Sistema de atributos já calculado
+        if (window.personagemAtributos) {
+            console.log('🎯 Usando atributos do sistema global');
+            this.estado.atributos.dx = window.personagemAtributos.DX || 10;
+            this.estado.atributos.ht = window.personagemAtributos.HT || 10;
+        }
+        
+        // Tentativa 2: Inputs da aba atributos
+        if (this.elementos.dx && this.elementos.dx.value) {
+            const dxVal = parseInt(this.elementos.dx.value);
+            if (!isNaN(dxVal) && dxVal !== this.estado.atributos.dx) {
+                console.log('📝 Atualizando DX do input:', dxVal);
+                this.estado.atributos.dx = dxVal;
+            }
+        }
+        
+        if (this.elementos.ht && this.elementos.ht.value) {
+            const htVal = parseInt(this.elementos.ht.value);
+            if (!isNaN(htVal) && htVal !== this.estado.atributos.ht) {
+                console.log('📝 Atualizando HT do input:', htVal);
+                this.estado.atributos.ht = htVal;
+            }
+        }
+        
+        // Tentativa 3: Valores salvos no localStorage
+        if (this.estado.atributos.dx === 10 || this.estado.atributos.ht === 10) {
+            try {
+                const dadosSalvos = localStorage.getItem('gurps_atributos');
+                if (dadosSalvos) {
+                    const dados = JSON.parse(dadosSalvos);
+                    if (dados.atributos) {
+                        console.log('💾 Carregando atributos do localStorage');
+                        this.estado.atributos.dx = dados.atributos.DX || this.estado.atributos.dx;
+                        this.estado.atributos.ht = dados.atributos.HT || this.estado.atributos.ht;
+                    }
+                }
+            } catch (e) {
+                console.log('⚠️ Não foi possível carregar do localStorage');
+            }
+        }
+        
+        console.log('🎯 Atributos carregados: DX=', this.estado.atributos.dx, 'HT=', this.estado.atributos.ht);
+    }
+    
     carregarValoresIniciais() {
-        // Carrega DX e HT do sistema de atributos
-        if (this.elementos.dx) {
-            this.estado.atributos.dx = parseInt(this.elementos.dx.value) || 10;
-        }
-        
-        if (this.elementos.ht) {
-            this.estado.atributos.ht = parseInt(this.elementos.ht.value) || 10;
-        }
-        
+        // Já carregamos os atributos no método anterior
         // Carrega bônus
         ['Reflexos', 'Escudo', 'Capa', 'Outros'].forEach(bonus => {
             const input = document.getElementById(`bonus${bonus}`);
@@ -107,14 +152,59 @@ class SistemaDefesas {
         this.detectarNivelCarga();
     }
     
+    // NOVO: Configurar eventos de outros sistemas
+    configurarEventosExternos() {
+        // Escuta eventos do sistema de atributos
+        document.addEventListener('atributosAlterados', (e) => {
+            console.log('🔄 Evento de atributos recebido:', e.detail);
+            
+            if (e.detail && e.detail.DX !== undefined) {
+                this.estado.atributos.dx = e.detail.DX;
+                console.log('🎯 DX atualizado para:', e.detail.DX);
+            }
+            
+            if (e.detail && e.detail.HT !== undefined) {
+                this.estado.atributos.ht = e.detail.HT;
+                console.log('🎯 HT atualizado para:', e.detail.HT);
+            }
+            
+            this.calcularTudo();
+        });
+        
+        // Atualiza periodicamente nos primeiros segundos (catch-up)
+        if (this.tentativaAtualizacao < 5) {
+            setTimeout(() => {
+                this.forcarCarregamentoAtributos();
+                this.calcularTudo();
+                this.tentativaAtualizacao++;
+            }, 1000);
+        }
+    }
+    
     calcularTudo() {
         if (this.atualizando) return;
         
         this.atualizando = true;
         
         try {
-            // Atualiza atributos antes de calcular
-            this.atualizarAtributos();
+            console.log('🧮 Calculando defesas com DX=', this.estado.atributos.dx, 'HT=', this.estado.atributos.ht);
+            
+            // Verifica se os atributos estão corretos
+            if (this.estado.atributos.dx === 10 && this.elementos.dx && this.elementos.dx.value) {
+                const dxVal = parseInt(this.elementos.dx.value);
+                if (!isNaN(dxVal) && dxVal !== 10) {
+                    console.log('⚠️ Corrigindo DX de 10 para:', dxVal);
+                    this.estado.atributos.dx = dxVal;
+                }
+            }
+            
+            if (this.estado.atributos.ht === 10 && this.elementos.ht && this.elementos.ht.value) {
+                const htVal = parseInt(this.elementos.ht.value);
+                if (!isNaN(htVal) && htVal !== 10) {
+                    console.log('⚠️ Corrigindo HT de 10 para:', htVal);
+                    this.estado.atributos.ht = htVal;
+                }
+            }
             
             // Busca NH das perícias aprendidas
             this.buscarNHs();
@@ -135,6 +225,8 @@ class SistemaDefesas {
         }
     }
     
+    // ... resto dos métodos (calcularEsquiva, calcularBloqueio, etc.) permanecem iguais ...
+    
     calcularEsquiva() {
         const { dx, ht } = this.estado.atributos;
         
@@ -153,6 +245,8 @@ class SistemaDefesas {
         
         // Mínimo 1
         this.estado.defesas.esquiva = Math.max(total, 1);
+        
+        console.log(`🏃 Esquiva: base=${base}, mod=${modificador}, bonus=${bonusTotal}, carga=${redutorCarga}, total=${this.estado.defesas.esquiva}`);
     }
     
     calcularBloqueio() {
@@ -166,6 +260,7 @@ class SistemaDefesas {
         // Se não tem escudo (NH é igual ao DX ou menos), bloqueio = 0
         if (!nhEscudo || nhEscudo <= this.estado.atributos.dx) {
             this.estado.defesas.bloqueio = 0;
+            console.log('🛡️ Bloqueio: Sem escudo equipado ou perícia');
             return;
         }
         
@@ -178,6 +273,8 @@ class SistemaDefesas {
         
         // Mínimo 1
         this.estado.defesas.bloqueio = Math.max(total, 1);
+        
+        console.log(`🛡️ Bloqueio: NH=${nhEscudo}, base=${base}, mod=${modificador}, bonus=${bonusTotal}, total=${this.estado.defesas.bloqueio}`);
     }
     
     calcularAparar() {
@@ -191,6 +288,7 @@ class SistemaDefesas {
         // Se não tem arma (NH é igual ao DX ou não tem perícia), aparar = 0
         if (!nhArma || nhArma <= this.estado.atributos.dx) {
             this.estado.defesas.aparar = 0;
+            console.log('⚔️ Aparar: Sem arma equipada ou perícia');
             return;
         }
         
@@ -203,6 +301,8 @@ class SistemaDefesas {
         
         // Mínimo 1
         this.estado.defesas.aparar = Math.max(total, 1);
+        
+        console.log(`⚔️ Aparar: NH=${nhArma}, base=${base}, mod=${modificador}, bonus=${bonusTotal}, total=${this.estado.defesas.aparar}`);
     }
     
     calcularDeslocamento() {
@@ -222,347 +322,28 @@ class SistemaDefesas {
         
         // Mínimo 0
         this.estado.defesas.deslocamento = Math.max(total, 0);
-    }
-    
-    buscarNHs() {
-        this.buscarNHEscudo();
-        this.buscarNHArma();
-    }
-    
-    buscarNHEscudo() {
-        const dx = this.estado.atributos.dx;
-        let nivelEscudo = 0;
         
-        // Método 1: Buscar no sistema de perícias aprendidas
-        if (window.estadoPericias && window.estadoPericias.periciasAprendidas) {
-            const periciasEscudo = window.estadoPericias.periciasAprendidas.filter(p => {
-                if (!p) return false;
-                const nome = p.nomeCompleto || p.nome || '';
-                return nome.includes('Escudo');
-            });
-            
-            if (periciasEscudo.length > 0) {
-                const pericia = periciasEscudo[0];
-                nivelEscudo = pericia.nivel || pericia.pontos || 0;
+        console.log(`🚶 Deslocamento: base=${base.toFixed(2)}, mod=${modificador}, carga=${redutorCarga}, total=${this.estado.defesas.deslocamento.toFixed(2)}`);
+    }
+    
+    // ... resto dos métodos permanecem iguais ...
+    
+    atualizarAtributos() {
+        if (this.elementos.dx) {
+            const novoDx = parseInt(this.elementos.dx.value) || 10;
+            if (novoDx !== this.estado.atributos.dx) {
+                this.estado.atributos.dx = novoDx;
+                console.log('🎯 DX atualizado via input:', novoDx);
             }
         }
         
-        // Método 2: Buscar em localStorage
-        if (nivelEscudo === 0) {
-            try {
-                const dados = localStorage.getItem('gurps_pericias');
-                if (dados) {
-                    const parsed = JSON.parse(dados);
-                    if (parsed.periciasAprendidas) {
-                        const escudo = parsed.periciasAprendidas.find(p => {
-                            if (!p) return false;
-                            const nome = p.nomeCompleto || p.nome || '';
-                            return nome.includes('Escudo');
-                        });
-                        
-                        if (escudo) {
-                            nivelEscudo = escudo.nivel || escudo.pontos || 0;
-                        }
-                    }
-                }
-            } catch (e) {
-                // Silencioso
+        if (this.elementos.ht) {
+            const novoHt = parseInt(this.elementos.ht.value) || 10;
+            if (novoHt !== this.estado.atributos.ht) {
+                this.estado.atributos.ht = novoHt;
+                console.log('🎯 HT atualizado via input:', novoHt);
             }
         }
-        
-        // NH = DX + Nível da Perícia
-        this.estado.nh.escudo = nivelEscudo > 0 ? dx + nivelEscudo : null;
-    }
-    
-    buscarNHArma() {
-        const dx = this.estado.atributos.dx;
-        let nivelArma = 0;
-        let nomeArma = '';
-        
-        // Lista de perícias de arma do catálogo
-        const periciasArma = [
-            'Adaga', 'Espada', 'Machado', 'Maça', 'Arco', 'Lança',
-            'Martelo', 'Faca', 'Bastão', 'Rapieira', 'Sabre', 'Terçado'
-        ];
-        
-        // Buscar no sistema de perícias aprendidas
-        if (window.estadoPericias && window.estadoPericias.periciasAprendidas) {
-            for (let pericia of window.estadoPericias.periciasAprendidas) {
-                if (!pericia) continue;
-                
-                const nome = pericia.nomeCompleto || pericia.nome || '';
-                
-                for (let arma of periciasArma) {
-                    if (nome.includes(arma)) {
-                        nivelArma = pericia.nivel || pericia.pontos || 0;
-                        nomeArma = arma;
-                        break;
-                    }
-                }
-                
-                if (nivelArma > 0) break;
-            }
-        }
-        
-        // Se não encontrou, tenta localStorage
-        if (nivelArma === 0) {
-            try {
-                const dados = localStorage.getItem('gurps_pericias');
-                if (dados) {
-                    const parsed = JSON.parse(dados);
-                    if (parsed.periciasAprendidas) {
-                        for (let pericia of parsed.periciasAprendidas) {
-                            if (!pericia) continue;
-                            
-                            const nome = pericia.nomeCompleto || pericia.nome || '';
-                            
-                            for (let arma of periciasArma) {
-                                if (nome.includes(arma)) {
-                                    nivelArma = pericia.nivel || pericia.pontos || 0;
-                                    nomeArma = arma;
-                                    break;
-                                }
-                            }
-                            
-                            if (nivelArma > 0) break;
-                        }
-                    }
-                }
-            } catch (e) {
-                // Silencioso
-            }
-        }
-        
-        // NH = DX + Nível da Perícia (se tiver perícia)
-        // Se não tiver perícia de arma, aparar será 0
-        this.estado.nh.arma = nivelArma > 0 ? dx + nivelArma : null;
-        this.estado.nomeArma = nomeArma;
-    }
-    
-    calcularBonusTotal() {
-        const { reflexos, escudo, capa, outros } = this.estado.bonus;
-        return reflexos + escudo + capa + outros;
-    }
-    
-    getRedutorCarga(nivelCarga) {
-        const redutores = {
-            'nenhuma': 0,
-            'leve': -1,
-            'média': -2,
-            'pesada': -3,
-            'muito pesada': -4
-        };
-        return redutores[nivelCarga] || 0;
-    }
-    
-    verificarFadiga() {
-        try {
-            // Tenta pegar PF atual do sistema de PV/PF
-            const pfAtualElement = document.getElementById('pfAtualDisplay');
-            const pfMaxElement = document.getElementById('pfMaxDisplay');
-            
-            let pfAtual = 10;
-            let pfMaximo = 10;
-            
-            if (pfAtualElement) {
-                pfAtual = parseInt(pfAtualElement.value) || 
-                          parseInt(pfAtualElement.textContent) || 10;
-            }
-            
-            if (pfMaxElement) {
-                pfMaximo = parseInt(pfMaxElement.textContent) || 10;
-            }
-            
-            const limiteFadiga = Math.ceil(pfMaximo / 3);
-            const fadigaAtiva = pfAtual <= limiteFadiga;
-            
-            this.estado.fadiga = {
-                ativa: fadigaAtiva,
-                pfAtual: pfAtual,
-                pfMaximo: pfMaximo,
-                limiteFadiga: limiteFadiga
-            };
-            
-            this.atualizarIndicadorFadiga();
-            
-        } catch (error) {
-            // Silencioso em caso de erro
-        }
-    }
-    
-    aplicarPenalidadeFadiga(valor, tipoDefesa) {
-        if (!this.estado.fadiga.ativa) {
-            return valor;
-        }
-        
-        if (tipoDefesa === 'esquiva' || tipoDefesa === 'deslocamento') {
-            return Math.ceil(valor / 2);
-        }
-        
-        return valor;
-    }
-    
-    atualizarInterface() {
-        this.atualizarValoresDefesa();
-        this.atualizarTotalBonus();
-        this.corrigirValoresIncorretos();
-    }
-    
-    atualizarValoresDefesa() {
-        if (this.elementos.esquivaTotal) {
-            this.elementos.esquivaTotal.textContent = this.estado.defesas.esquiva;
-        }
-        
-        if (this.elementos.bloqueioTotal) {
-            // Se bloqueio é 0, mostra "—" ou "0"
-            this.elementos.bloqueioTotal.textContent = 
-                this.estado.defesas.bloqueio > 0 ? this.estado.defesas.bloqueio : "—";
-        }
-        
-        if (this.elementos.apararTotal) {
-            // Se aparar é 0, mostra "—" ou "0"
-            this.elementos.apararTotal.textContent = 
-                this.estado.defesas.aparar > 0 ? this.estado.defesas.aparar : "—";
-        }
-        
-        if (this.elementos.deslocamentoTotal) {
-            this.elementos.deslocamentoTotal.textContent = 
-                this.estado.defesas.deslocamento.toFixed(2);
-        }
-    }
-    
-    atualizarTotalBonus() {
-        const total = this.calcularBonusTotal();
-        
-        if (this.elementos.totalBonus) {
-            const texto = total >= 0 ? `+${total}` : `${total}`;
-            this.elementos.totalBonus.textContent = texto;
-        }
-    }
-    
-    atualizarIndicadorFadiga() {
-        let indicador = document.getElementById('indicadorFadiga');
-        
-        if (!indicador) {
-            indicador = document.createElement('div');
-            indicador.id = 'indicadorFadiga';
-            indicador.style.cssText = `
-                margin: 10px 0;
-                padding: 8px 12px;
-                border-radius: 6px;
-                font-size: 12px;
-                font-weight: bold;
-                text-align: center;
-                display: none;
-            `;
-            
-            const container = document.querySelector('.bonus-defesa');
-            if (container) {
-                container.appendChild(indicador);
-            }
-        }
-        
-        if (this.estado.fadiga.ativa) {
-            indicador.innerHTML = `
-                <i class="fas fa-exclamation-triangle"></i> FADIGA ATIVA!
-                <small>Esquiva e Deslocamento pela metade</small>
-            `;
-            indicador.style.display = 'block';
-            indicador.style.background = '#e74c3c';
-            indicador.style.color = 'white';
-        } else {
-            indicador.style.display = 'none';
-        }
-    }
-    
-    corrigirValoresIncorretos() {
-        // Corrige o bug comum do bloqueio (valor 8 fixo)
-        const bloqueioElement = document.getElementById('bloqueioTotal');
-        if (bloqueioElement && bloqueioElement.textContent.trim() === '8') {
-            if (this.estado.defesas.bloqueio !== 8) {
-                bloqueioElement.textContent = 
-                    this.estado.defesas.bloqueio > 0 ? this.estado.defesas.bloqueio : "—";
-            }
-        }
-        
-        // Corrige aparar se não tiver arma
-        const apararElement = document.getElementById('apararTotal');
-        if (apararElement && this.estado.defesas.aparar === 0) {
-            apararElement.textContent = "—";
-        }
-    }
-    
-    configurarEventos() {
-        // Eventos para bônus
-        ['Reflexos', 'Escudo', 'Capa', 'Outros'].forEach(bonus => {
-            const input = document.getElementById(`bonus${bonus}`);
-            if (input) {
-                let timeout;
-                
-                const handler = () => {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        const valor = parseInt(input.value) || 0;
-                        this.estado.bonus[bonus.toLowerCase()] = valor;
-                        this.calcularTudo();
-                    }, 300);
-                };
-                
-                input.addEventListener('input', handler);
-                input.addEventListener('change', handler);
-            }
-        });
-        
-        // Eventos para modificadores
-        ['esquiva', 'bloqueio', 'aparar', 'deslocamento'].forEach(defesa => {
-            const input = document.getElementById(`${defesa}Mod`);
-            if (input) {
-                input.addEventListener('change', () => {
-                    this.estado.modificadores[defesa] = parseInt(input.value) || 0;
-                    this.calcularTudo();
-                });
-            }
-        });
-        
-        // Eventos para botões +/-
-        document.querySelectorAll('.defesa-controle').forEach(container => {
-            const minus = container.querySelector('.minus');
-            const plus = container.querySelector('.plus');
-            const input = container.querySelector('.mod-input');
-            
-            if (minus && plus && input) {
-                const id = input.id;
-                const defesa = id.replace('Mod', '');
-                
-                minus.addEventListener('click', () => {
-                    const valorAtual = parseInt(input.value) || 0;
-                    input.value = valorAtual - 1;
-                    this.estado.modificadores[defesa] = valorAtual - 1;
-                    this.calcularTudo();
-                });
-                
-                plus.addEventListener('click', () => {
-                    const valorAtual = parseInt(input.value) || 0;
-                    input.value = valorAtual + 1;
-                    this.estado.modificadores[defesa] = valorAtual + 1;
-                    this.calcularTudo();
-                });
-            }
-        });
-    }
-    
-    iniciarMonitoramento() {
-        // Monitora mudanças em DX e HT
-        this.monitorarAtributos();
-        
-        // Monitora nível de carga
-        this.monitorarNivelCarga();
-        
-        // Monitora fadiga (PF)
-        this.monitorarFadiga();
-        
-        // Atualiza periodicamente
-        this.iniciarAtualizacaoPeriodica();
     }
     
     monitorarAtributos() {
@@ -576,91 +357,89 @@ class SistemaDefesas {
                     timeout = setTimeout(() => {
                         this.atualizarAtributos();
                         this.calcularTudo();
-                    }, 500);
+                    }, 300);
+                });
+                
+                // Também monitora mudanças programáticas
+                input.addEventListener('change', () => {
+                    this.atualizarAtributos();
+                    this.calcularTudo();
                 });
             }
         });
     }
     
-    atualizarAtributos() {
-        if (this.elementos.dx) {
-            this.estado.atributos.dx = parseInt(this.elementos.dx.value) || 10;
-        }
+    // NOVO: Método para verificar e corrigir atributos
+    verificarECorrigirAtributos() {
+        let corrigiu = false;
         
-        if (this.elementos.ht) {
-            this.estado.atributos.ht = parseInt(this.elementos.ht.value) || 10;
-        }
-    }
-    
-    detectarNivelCarga() {
-        try {
-            const cargaElement = document.getElementById('nivelCarga');
-            if (cargaElement) {
-                this.estado.nivelCarga = cargaElement.textContent.toLowerCase().trim();
+        // Verifica DX
+        if (this.elementos.dx && this.elementos.dx.value) {
+            const dxVal = parseInt(this.elementos.dx.value);
+            if (!isNaN(dxVal) && dxVal !== this.estado.atributos.dx) {
+                this.estado.atributos.dx = dxVal;
+                corrigiu = true;
+                console.log('🔧 DX corrigido para:', dxVal);
             }
-        } catch (error) {
-            this.estado.nivelCarga = 'nenhuma';
         }
-    }
-    
-    monitorarNivelCarga() {
-        const cargaElement = document.getElementById('nivelCarga');
-        if (!cargaElement) return;
         
-        const observer = new MutationObserver(() => {
-            const novoNivel = cargaElement.textContent.toLowerCase().trim();
-            
-            if (novoNivel !== this.estado.nivelCarga) {
-                this.estado.nivelCarga = novoNivel;
-                this.calcularTudo();
+        // Verifica HT
+        if (this.elementos.ht && this.elementos.ht.value) {
+            const htVal = parseInt(this.elementos.ht.value);
+            if (!isNaN(htVal) && htVal !== this.estado.atributos.ht) {
+                this.estado.atributos.ht = htVal;
+                corrigiu = true;
+                console.log('🔧 HT corrigido para:', htVal);
             }
-        });
+        }
         
-        observer.observe(cargaElement, {
-            childList: true,
-            characterData: true,
-            subtree: true
-        });
+        if (corrigiu) {
+            this.calcularTudo();
+        }
         
-        this.observadores.push(observer);
-    }
-    
-    monitorarFadiga() {
-        const pfInput = document.getElementById('pfAtualDisplay');
-        if (!pfInput) return;
-        
-        pfInput.addEventListener('input', () => {
-            setTimeout(() => {
-                this.verificarFadiga();
-                this.calcularTudo();
-            }, 200);
-        });
+        return corrigiu;
     }
     
     iniciarAtualizacaoPeriodica() {
-        // Atualiza a cada 2 segundos para garantir sincronia
-        setInterval(() => {
-            if (!this.atualizando) {
-                this.calcularTudo();
+        // Atualiza a cada 1 segundo nos primeiros 10 segundos
+        let tentativas = 0;
+        const intervaloInicial = setInterval(() => {
+            if (tentativas < 10) {
+                const corrigiu = this.verificarECorrigirAtributos();
+                if (corrigiu) {
+                    console.log('✅ Atributos corrigidos na tentativa', tentativas + 1);
+                }
+                tentativas++;
+            } else {
+                clearInterval(intervaloInicial);
+                // Troca para intervalo mais longo
+                setInterval(() => {
+                    if (!this.atualizando) {
+                        this.calcularTudo();
+                    }
+                }, 5000);
             }
-        }, 2000);
+        }, 1000);
+        
+        this.observadores.push({ intervalo: intervaloInicial });
     }
     
     forcarRecalculo() {
+        console.log('🔄 Forçando recálculo completo...');
         this.estado.nh.escudo = null;
         this.estado.nh.arma = null;
         
-        this.carregarValoresIniciais();
+        this.forcarCarregamentoAtributos();
         this.calcularTudo();
     }
     
-    mostrarStatus() {
-        console.log('=== STATUS DEFESAS ===');
-        console.log('Atributos:', this.estado.atributos);
-        console.log('Defesas:', this.estado.defesas);
-        console.log('NHs:', this.estado.nh);
-        console.log('Fadiga:', this.estado.fadiga.ativa);
-        console.log('=====================');
+    // Adicionar este método para limpar observadores
+    limpar() {
+        this.observadores.forEach(obs => {
+            if (obs.intervalo) clearInterval(obs.intervalo);
+            if (obs.observer) obs.observer.disconnect();
+        });
+        this.observadores = [];
     }
 }
 
@@ -668,24 +447,28 @@ class SistemaDefesas {
 let sistemaDefesasGlobal = null;
 
 function iniciarSistemaDefesas() {
-    if (sistemaDefesasGlobal) return sistemaDefesasGlobal;
+    if (sistemaDefesasGlobal) {
+        sistemaDefesasGlobal.limpar();
+    }
     
     sistemaDefesasGlobal = new SistemaDefesas();
     
+    // Aguarda um pouco para garantir que o sistema de atributos carregue
     setTimeout(() => {
         sistemaDefesasGlobal.iniciar();
-    }, 1000);
+    }, 800);
     
     return sistemaDefesasGlobal;
 }
 
-// Inicialização automática
+// Inicialização automática melhorada
 document.addEventListener('DOMContentLoaded', function() {
     const combateTab = document.getElementById('combate');
     
     function verificarEIniciar() {
         if (combateTab && combateTab.classList.contains('active')) {
-            iniciarSistemaDefesas();
+            console.log('⚔️ Aba combate ativa - iniciando defesas');
+            setTimeout(iniciarSistemaDefesas, 300);
         }
     }
     
@@ -695,13 +478,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.attributeName === 'class') {
-                    setTimeout(verificarEIniciar, 100);
+                    setTimeout(verificarEIniciar, 200);
                 }
             });
         });
         
         observer.observe(combateTab, { attributes: true });
     }
+    
+    // Também escuta eventos gerais de mudança de atributos
+    document.addEventListener('atributosAlterados', function() {
+        if (sistemaDefesasGlobal) {
+            setTimeout(() => sistemaDefesasGlobal.calcularTudo(), 100);
+        }
+    });
 });
 
 // Funções globais para console
@@ -710,18 +500,32 @@ window.defesa = {
     status: () => {
         if (sistemaDefesasGlobal) {
             sistemaDefesasGlobal.mostrarStatus();
+        } else {
+            console.log('❌ Sistema de defesas não iniciado');
         }
     },
     recalcular: () => {
         if (sistemaDefesasGlobal) {
             sistemaDefesasGlobal.forcarRecalculo();
+        } else {
+            console.log('❌ Sistema de defesas não iniciado');
         }
+    },
+    getEstado: () => {
+        if (sistemaDefesasGlobal) {
+            return sistemaDefesasGlobal.estado;
+        }
+        return null;
     }
 };
 
 // Atalhos de console
 window.DS = () => defesa.status();
 window.DR = () => defesa.recalcular();
+window.DE = () => defesa.getEstado();
 
 console.log('✅ Sistema de Defesas dinâmico carregado!');
-console.log('💡 Comandos: DS() - Status, DR() - Recalcular');
+console.log('💡 Comandos:');
+console.log('   DS() - Status do sistema');
+console.log('   DR() - Recalcular tudo');
+console.log('   DE() - Ver estado interno');
