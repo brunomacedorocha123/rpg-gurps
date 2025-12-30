@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="style-vantagens.css">
     <link rel="stylesheet" href="style-peculiaridades.css">
     <link rel="stylesheet" href="style-pericias.css">
+    <link rel="stylesheet" href="style-magia.css">
    <style>
 * {
     margin: 0;
@@ -2563,7 +2564,7 @@ body::before {
             </div>
         </template>
 
-      <!-- ABA PERÍCIAS - HTML COMPLETO E FUNCIONAL -->
+      <!-- ABA PERÍCIAS - HTML COMPLETO SEM CONTEÚDO FIXO -->
 <div id="pericias" class="tab-content">
     <div class="pericias-container">
         <!-- CABEÇALHO -->
@@ -2654,7 +2655,7 @@ body::before {
                         </div>
                         <div class="lista-pericias-scroll" id="lista-pericias">
                             <!-- Perícias serão inseridas aqui via JS -->
-                            <div class="empty-state">
+                            <div class="loading-state">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 <h4>Carregando catálogo...</h4>
                                 <p>Aguarde enquanto as perícias são carregadas</p>
@@ -2670,7 +2671,7 @@ body::before {
                         </div>
                         <div class="lista-pericias-scroll" id="pericias-aprendidas">
                             <!-- Perícias aprendidas serão inseridas aqui via JS -->
-                            <div class="nenhuma-pericia-aprendida">
+                            <div class="empty-state">
                                 <i class="fas fa-graduation-cap"></i>
                                 <div>Nenhuma perícia aprendida</div>
                                 <small>As perícias que você aprender aparecerão aqui</small>
@@ -2730,15 +2731,15 @@ body::before {
                         <div class="card-header">
                             <h3><i class="fas fa-bullseye"></i> Técnicas Disponíveis</h3>
                             <div class="lista-status">
-                                <small id="contador-tecnicas">0 técnicas</small>
+                                <small id="contador-tecnicas">Carregando...</small>
                             </div>
                         </div>
                         <div class="lista-pericias-scroll" id="lista-tecnicas">
                             <!-- Técnicas serão inseridas aqui via JS -->
                             <div class="empty-state">
                                 <i class="fas fa-tools"></i>
-                                <h4>Carregando técnicas...</h4>
-                                <p>Aguarde enquanto as técnicas são carregadas</p>
+                                <h4>Nenhuma técnica disponível</h4>
+                                <p>As técnicas aparecerão aqui quando você aprender as perícias necessárias</p>
                             </div>
                         </div>
                     </div>
@@ -2751,7 +2752,7 @@ body::before {
                         </div>
                         <div class="lista-pericias-scroll" id="tecnicas-aprendidas">
                             <!-- Técnicas aprendidas serão inseridas aqui via JS -->
-                            <div class="nenhuma-tecnica-aprendida">
+                            <div class="empty-state">
                                 <i class="fas fa-tools"></i>
                                 <div>Nenhuma técnica aprendida</div>
                                 <small>As técnicas que você adquirir aparecerão aqui</small>
@@ -2794,138 +2795,15 @@ body::before {
     </div>
 </div>
 
-<!-- MODAL PARA TÉCNICAS -->
+<!-- MODAL PARA TÉCNICAS (VERSÃO SIMPLIFICADA) -->
 <div id="modal-tecnica-overlay" class="modal-tecnica-overlay" style="display: none;">
     <div id="modal-tecnica" class="modal-tecnica">
-        <div class="modal-tecnica-loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Carregando técnica...</p>
-        </div>
+        <!-- Conteúdo será gerado via JavaScript -->
     </div>
 </div>
 
-<!-- TEMPLATE DO MODAL DE TÉCNICA -->
-<template id="template-modal-tecnica">
-    <div class="modal-tecnica-content">
-        <div class="modal-tecnica-header">
-            <h3><i class="fas fa-tools"></i> <span class="modal-tecnica-nome">Nome da Técnica</span></h3>
-            <button class="modal-tecnica-close" onclick="fecharModalTecnica()">&times;</button>
-        </div>
-        
-        <div class="modal-tecnica-body">
-            <div class="modal-tecnica-info">
-                <div class="info-row">
-                    <span class="info-label">Dificuldade:</span>
-                    <span class="info-value modal-tecnica-dificuldade">Difícil</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Perícia Base:</span>
-                    <span class="info-value modal-tecnica-pericia">Arco</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Modificador Base:</span>
-                    <span class="info-value modal-tecnica-modificador">-4</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Pré-requisitos:</span>
-                    <span class="info-value modal-tecnica-prereq">Arco 4, Cavalgar</span>
-                </div>
-            </div>
-            
-            <div class="modal-tecnica-descricao">
-                <h4>Descrição</h4>
-                <p class="modal-tecnica-descricao-texto">Descrição da técnica.</p>
-            </div>
-            
-            <!-- PRÉ-REQUISITOS STATUS -->
-            <div class="modal-tecnica-prereq-status" id="modal-prereq-status">
-                <h4>Status dos Pré-requisitos</h4>
-                <div class="prereq-status-list">
-                    <!-- Será preenchido via JS -->
-                </div>
-            </div>
-            
-            <!-- CONTROLE DE PONTOS -->
-            <div class="modal-tecnica-controles">
-                <div class="controle-pontos">
-                    <h4>Investir Pontos</h4>
-                    <div class="pontos-opcoes">
-                        <div class="opcao-pontos" data-pontos="2" data-niveis="1">
-                            <span class="pontos-valor">2 pts</span>
-                            <span class="niveis-valor">= +1 nível</span>
-                        </div>
-                        <div class="opcao-pontos" data-pontos="3" data-niveis="2">
-                            <span class="pontos-valor">3 pts</span>
-                            <span class="niveis-valor">= +2 níveis</span>
-                        </div>
-                        <div class="opcao-pontos" data-pontos="4" data-niveis="3">
-                            <span class="pontos-valor">4 pts</span>
-                            <span class="niveis-valor">= +3 níveis</span>
-                        </div>
-                        <div class="opcao-pontos" data-pontos="5" data-niveis="4">
-                            <span class="pontos-valor">5 pts</span>
-                            <span class="niveis-valor">= +4 níveis</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- VISUALIZAÇÃO DO NH -->
-                <div class="visualizacao-nh">
-                    <h4>Nível de Habilidade (NH)</h4>
-                    <div class="nh-calculado">
-                        <div class="nh-base">
-                            <span>Perícia Base: </span>
-                            <strong id="nh-base-tecnica">10</strong>
-                        </div>
-                        <div class="nh-modificador">
-                            <span>Modificador Técnica: </span>
-                            <strong id="nh-mod-tecnica">+0</strong>
-                        </div>
-                        <div class="nh-total">
-                            <span>NH Final: </span>
-                            <strong id="nh-total-tecnica">10</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- RESUMO DO CUSTO -->
-            <div class="modal-tecnica-resumo">
-                <div class="resumo-item">
-                    <span>Pontos Investidos:</span>
-                    <strong id="resumo-pontos">0</strong>
-                </div>
-                <div class="resumo-item">
-                    <span>Níveis Adquiridos:</span>
-                    <strong id="resumo-niveis">+0</strong>
-                </div>
-                <div class="resumo-item">
-                    <span>NH da Técnica:</span>
-                    <strong id="resumo-nh">10</strong>
-                </div>
-            </div>
-        </div>
-        
-        <div class="modal-tecnica-footer">
-            <div class="modal-custo-total">
-                <span class="label">Custo Total:</span>
-                <span class="valor" id="modal-custo-total-tecnica">0</span>
-                <span> pontos</span>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-modal btn-modal-cancelar" onclick="fecharModalTecnica()">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <button class="btn-modal btn-modal-confirmar" onclick="confirmarTecnica()" id="btn-confirmar-tecnica" disabled>
-                    <i class="fas fa-check"></i> Adquirir Técnica
-                </button>
-            </div>
-        </div>
-    </div>
-</template>
-
-<!-- TEMPLATE PARA ITEM DE TÉCNICA NO CATÁLOGO -->
-<template id="template-item-tecnica">
+<!-- TEMPLATES PARA O JAVASCRIPT USAR -->
+<template id="template-tecnica-item">
     <div class="tecnica-item" data-id="{id}">
         <div class="tecnica-header">
             <div class="tecnica-nome-container">
@@ -2947,11 +2825,11 @@ body::before {
         <div class="tecnica-info-rapida">
             <div class="info-item">
                 <i class="fas fa-bullseye"></i>
-                <span>Base: {periciaBase}</span>
+                <span>Perícia Base: {periciaBase}</span>
             </div>
             <div class="info-item">
                 <i class="fas fa-arrow-up"></i>
-                <span>Mod: {modificadorBase}</span>
+                <span>Modificador: {modificadorBase}</span>
             </div>
             <div class="info-item">
                 <i class="fas fa-coins"></i>
@@ -2961,18 +2839,17 @@ body::before {
         
         <div class="tecnica-prereq">
             <strong><i class="fas fa-clipboard-check"></i> Pré-requisitos:</strong>
-            <span>{prereq-text}</span>
+            <span id="prereq-{id}">Verificando...</span>
         </div>
         
         <div class="tecnica-actions">
-            <button class="btn-tecnica btn-adquirir" onclick="abrirModalTecnica('{id}')">
-                <i class="fas fa-plus-circle"></i> {btn-text}
+            <button class="btn-tecnica btn-adquirir" onclick="abrirModalTecnica('{id}')" id="btn-tecnica-{id}">
+                <i class="fas fa-plus-circle"></i> Adquirir
             </button>
         </div>
     </div>
 </template>
 
-<!-- TEMPLATE PARA TÉCNICA APRENDIDA -->
 <template id="template-tecnica-aprendida">
     <div class="tecnica-aprendida-item" data-id="{id}">
         <div class="tecnica-aprendida-header">
@@ -2991,11 +2868,11 @@ body::before {
                 <strong>{periciaBase}</strong>
             </div>
             <div class="info-row">
-                <span>Níveis:</span>
+                <span>Níveis Adquiridos:</span>
                 <strong>+{niveis}</strong>
             </div>
             <div class="info-row">
-                <span>Pontos:</span>
+                <span>Pontos Investidos:</span>
                 <strong>{pontos} pts</strong>
             </div>
         </div>
@@ -3016,6 +2893,80 @@ body::before {
     </div>
 </template>
 
+<template id="template-modal-tecnica">
+    <div class="modal-tecnica-content">
+        <div class="modal-tecnica-header">
+            <h3><i class="{icone}"></i> <span class="modal-tecnica-nome">{nome}</span></h3>
+            <button class="modal-tecnica-close" onclick="fecharModalTecnica()">&times;</button>
+        </div>
+        
+        <div class="modal-tecnica-body">
+            <div class="modal-tecnica-info">
+                <div class="info-row">
+                    <span class="info-label">Dificuldade:</span>
+                    <span class="info-value modal-tecnica-dificuldade">{dificuldade}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Perícia Base:</span>
+                    <span class="info-value modal-tecnica-pericia">{periciaBase}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Modificador Base:</span>
+                    <span class="info-value modal-tecnica-modificador">{modificadorBase}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pré-requisitos:</span>
+                    <span class="info-value modal-tecnica-prereq">{prereq-text}</span>
+                </div>
+            </div>
+            
+            <div class="modal-tecnica-descricao">
+                <h4>Descrição</h4>
+                <p class="modal-tecnica-descricao-texto">{descricao}</p>
+            </div>
+            
+            <!-- STATUS DOS PRÉ-REQUISITOS -->
+            <div class="modal-tecnica-prereq-status" id="modal-prereq-status">
+                <h4>Status dos Pré-requisitos</h4>
+                <div class="prereq-status-list" id="prereq-status-list">
+                    <!-- Será preenchido via JS -->
+                </div>
+            </div>
+            
+            <!-- CONTROLE DE PONTOS -->
+            <div class="modal-tecnica-controles" id="modal-tecnica-controles">
+                <!-- Será preenchido via JS -->
+            </div>
+            
+            <!-- VISUALIZAÇÃO DO NH -->
+            <div class="visualizacao-nh" id="visualizacao-nh">
+                <!-- Será preenchido via JS -->
+            </div>
+            
+            <!-- RESUMO DO CUSTO -->
+            <div class="modal-tecnica-resumo" id="modal-tecnica-resumo">
+                <!-- Será preenchido via JS -->
+            </div>
+        </div>
+        
+        <div class="modal-tecnica-footer">
+            <div class="modal-custo-total">
+                <span class="label">Custo Total:</span>
+                <span class="valor" id="modal-custo-total-tecnica">0</span>
+                <span> pontos</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancelar" onclick="fecharModalTecnica()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn-modal btn-modal-confirmar" onclick="confirmarTecnica()" id="btn-confirmar-tecnica" disabled>
+                    <i class="fas fa-check"></i> Adquirir Técnica
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
 <!-- ESTRUTURA OCULTA PARA CONTROLES -->
 <div style="display: none;">
     <button id="btn-fechar-modal-pericia" onclick="fecharModalPericia()">Fechar</button>
@@ -3023,16 +2974,266 @@ body::before {
     <button id="btn-fechar-modal-tecnica" onclick="fecharModalTecnica()">Fechar</button>
 </div>
 
-
-
-        <!-- MAGIA -->
-        <div id="magia" class="tab-content">
-            <div class="content-placeholder">
+<!-- MAGIA -->
+<div id="magia" class="tab-content">
+    <div class="pericias-container" style="margin-top: 0;">
+        
+        <!-- CABEÇALHO -->
+        <div class="pericias-header">
+            <h2>
                 <i class="fas fa-hat-wizard"></i>
-                <h3>Sistema Mágico</h3>
-                <p>Configure magias, poderes, mana e habilidades sobrenaturais.</p>
+                Sistema Mágico
+            </h2>
+            <div class="pontos-badge">
+                <span id="pontos-magia-total">[0 pts]</span>
             </div>
         </div>
+
+        <!-- STATUS MÁGICO RÁPIDO -->
+        <div class="stats-cards-grid">
+            <div class="stat-card" onclick="document.getElementById('aptidao-magica').focus()">
+                <div class="stat-categoria">Aptidão Mágica</div>
+                <div class="stat-valor">
+                    <input type="number" id="aptidao-magica" value="0" min="0" max="10" 
+                           style="background: transparent; border: none; color: var(--text-light); width: 60px; text-align: center; font-size: 2rem; font-weight: bold; font-family: 'Cinzel', serif;">
+                </div>
+                <div class="stat-pontos">Bônus ao NH</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-categoria">IQ Mágico</div>
+                <div class="stat-valor" id="iq-magico">10</div>
+                <div class="stat-pontos">IQ + Aptidão</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-categoria">Mana Total</div>
+                <div class="stat-valor" id="mana-base">10</div>
+                <div class="stat-pontos">Base: HT</div>
+            </div>
+            
+            <div class="stat-card" onclick="document.getElementById('mana-atual').focus()">
+                <div class="stat-categoria">Mana Atual</div>
+                <div class="stat-valor">
+                    <input type="number" id="mana-atual" value="10" min="0" 
+                           style="background: transparent; border: none; color: var(--text-light); width: 60px; text-align: center; font-size: 2rem; font-weight: bold; font-family: 'Cinzel', serif;">
+                </div>
+                <div class="stat-pontos">Máx: <span id="mana-max-display">10</span></div>
+            </div>
+        </div>
+
+        <!-- BARRA DE BUSCA E FILTROS -->
+        <div class="pericias-actions-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="busca-magias" placeholder="Buscar magias por nome ou descrição...">
+            </div>
+        </div>
+
+        <!-- FILTROS RÁPIDOS COM SUBMENUS -->
+        <div class="filtros-rapidos">
+            <!-- FILTRO ESCOLAS -->
+            <div class="filtro-grupo">
+                <div class="filtro-header" onclick="toggleSubmenu('escolas-submenu')">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Escolas</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="filtro-submenu" id="escolas-submenu">
+                    <div class="filtro-option">
+                        <input type="checkbox" id="escola-todas" checked>
+                        <label for="escola-todas">Todas as Escolas</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="escola-agua" class="escola-checkbox" checked>
+                        <label for="escola-agua">Água</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="escola-ar" class="escola-checkbox" checked>
+                        <label for="escola-ar">Ar</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTRO CLASSES -->
+            <div class="filtro-grupo">
+                <div class="filtro-header" onclick="toggleSubmenu('classes-submenu')">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Classes</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="filtro-submenu" id="classes-submenu">
+                    <div class="filtro-option">
+                        <input type="checkbox" id="classe-todas" checked>
+                        <label for="classe-todas">Todas as Classes</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="classe-comuns" class="classe-checkbox" checked>
+                        <label for="classe-comuns">Comuns</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="classe-area" class="classe-checkbox" checked>
+                        <label for="classe-area">Área</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="classe-informacao" class="classe-checkbox" checked>
+                        <label for="classe-informacao">Informação</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="classe-especiais" class="classe-checkbox" checked>
+                        <label for="classe-especiais">Especiais</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="classe-projetil" class="classe-checkbox" checked>
+                        <label for="classe-projetil">Projétil</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTRO DIFICULDADE -->
+            <div class="filtro-grupo">
+                <div class="filtro-header" onclick="toggleSubmenu('dificuldade-submenu')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dificuldade</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="filtro-submenu" id="dificuldade-submenu">
+                    <div class="filtro-option">
+                        <input type="checkbox" id="dificuldade-todas" checked>
+                        <label for="dificuldade-todas">Todas</label>
+                    </div>
+                    <div class="filtro-option">
+                        <input type="checkbox" id="dificuldade-dificil" class="dificuldade-checkbox" checked>
+                        <label for="dificuldade-dificil">Difícil</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYOUT DUPLO: CATÁLOGO E APRENDIDAS -->
+        <div class="catalogo-grid-duplo">
+            
+            <!-- COLUNA ESQUERDA: CATÁLOGO DE MAGIAS -->
+            <div class="catalogo-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-book-open"></i>
+                        Catálogo de Magias
+                    </h3>
+                    <div class="lista-status">
+                        <span id="contador-magias">17 magias</span>
+                    </div>
+                </div>
+                
+                <div class="lista-pericias-scroll" id="lista-magias">
+                    <!-- Magias carregadas dinamicamente pelo JavaScript -->
+                    <div class="loading-magias">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div>Carregando catálogo de magias...</div>
+                        <small>Por favor, aguarde</small>
+                    </div>
+                </div>
+                
+                <div class="resumo-escolhidas">
+                    <div class="resumo-item">
+                        <span>Magias no Catálogo</span>
+                        <span id="total-magias-catalogo">17</span>
+                    </div>
+                    <div class="resumo-item">
+                        <span>Filtradas</span>
+                        <span id="magias-filtradas">17</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUNA DIREITA: MAGIAS APRENDIDAS -->
+            <div class="catalogo-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-graduation-cap"></i>
+                        Minhas Magias
+                    </h3>
+                    <div class="lista-status">
+                        <span id="contador-aprendidas">0 magias</span>
+                    </div>
+                </div>
+                
+                <div class="lista-pericias-scroll" id="magias-aprendidas">
+                    <div class="nenhuma-magia-aprendida">
+                        <i class="fas fa-hat-wizard"></i>
+                        <div>Nenhuma magia aprendida</div>
+                        <small>Clique em "Aprender" nas magias do catálogo</small>
+                    </div>
+                </div>
+                
+                <div class="resumo-escolhidas">
+                    <div class="resumo-item">
+                        <span>Total Gasto</span>
+                        <span id="total-gasto-magia">0</span> pts
+                    </div>
+                    <div class="resumo-item">
+                        <span>Pontos Restantes</span>
+                        <span id="pontos-restantes-magia">?</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO DE DETALHES -->
+        <div class="detalhes-section" style="margin-top: 25px;">
+            <div class="catalogo-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-info-circle"></i>
+                        Detalhes da Magia
+                    </h3>
+                    <div class="lista-status">
+                        <span id="status-selecionada">Nenhuma selecionada</span>
+                    </div>
+                </div>
+                
+                <div class="lista-pericias-scroll" id="detalhes-magia-content">
+                    <div class="nenhuma-selecionada">
+                        <i class="fas fa-search"></i>
+                        <div>Selecione uma magia para ver os detalhes</div>
+                        <small>Clique em uma magia no catálogo ou em suas magias aprendidas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESUMO DO SISTEMA MÁGICO -->
+        <div class="resumo-magico" style="margin-top: 20px; background: rgba(44, 32, 8, 0.6); border-radius: 8px; padding: 15px;">
+            <div class="resumo-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="resumo-item">
+                    <div class="resumo-label">
+                        <i class="fas fa-brain"></i> IQ Atual
+                    </div>
+                    <div class="resumo-valor" id="iq-atual-display">10</div>
+                </div>
+                <div class="resumo-item">
+                    <div class="resumo-label">
+                        <i class="fas fa-heart"></i> HT Atual
+                    </div>
+                    <div class="resumo-valor" id="ht-atual-display">10</div>
+                </div>
+                <div class="resumo-item">
+                    <div class="resumo-label">
+                        <i class="fas fa-star"></i> Aptidão Mágica
+                    </div>
+                    <div class="resumo-valor" id="aptidao-atual-display">0</div>
+                </div>
+                <div class="resumo-item">
+                    <div class="resumo-label">
+                        <i class="fas fa-bolt"></i> Mana Disponível
+                    </div>
+                    <div class="resumo-valor" id="mana-disponivel-display">10/10</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
 
         <!-- COMBATE -->
         <div id="combate" class="tab-content">
@@ -3083,6 +3284,8 @@ body::before {
 <script src="catalogo-pericias.js"></script>
 <script src="pericias.js"></script>
 <script src="tecnicas.js"></script>
+<script src="catalogo-magias.js"></script>
+<script src="magia.js"></script>
 
     <script>
     // ===========================================
