@@ -1,66 +1,355 @@
 /* =========================================== */
-/* ABA COMBATE - style-combate.css            */
-/* Compatível com style-atributos.css         */
+/* ABA COMBATE - style-combate.css COMPLETO  */
 /* =========================================== */
 
-/* VARIÁVEIS COMPATÍVEIS COM O SITE */
+/* VARIÁVEIS PRINCIPAIS */
 :root {
-    /* CORES PRINCIPAIS */
-    --wood-light: #d4af37;       /* Dourado madeira claro */
-    --wood-dark: #8b4513;        /* Marrom madeira escuro */
-    --primary-gold: #ffd700;     /* Dourado principal */
-    --secondary-gold: #daa520;   /* Dourado secundário */
-    --text-gold: #f4d03f;        /* Texto dourado */
-    --text-light: #f5f5dc;       /* Texto claro (bege) */
-    --text-dark: #2c2008;        /* Texto escuro */
-    --accent-red: #e74c3c;       /* Vermelho para destaques */
-    --accent-green: #27ae60;     /* Verde para cura */
-    --accent-blue: #3498db;      /* Azul para PF */
+    /* CORES DO SITE (mantenha igual às outras abas) */
+    --primary-gold: #d4af37;
+    --secondary-gold: #b8941f;
+    --wood-light: #8b7355;
+    --wood-dark: #5d4037;
+    --text-light: #f5f5dc;
+    --text-dark: #2c2008;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --info: #3498db;
+    --warning: #f39c12;
+    
+    /* CORES ESPECÍFICAS COMBATE */
+    --pv-color: #e74c3c;
+    --pf-color: #3498db;
+    --dano-color: #f39c12;
+    --defesa-color: #27ae60;
 }
-
-/* FONTES */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&family=Uncial+Antiqua&display=swap');
 
 /* CONTAINER PRINCIPAL */
 .combate-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 25px;
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 35px;
 }
 
-/* SEÇÕES PRINCIPAIS - Estilo similar aos cards de atributos */
+/* SEÇÕES PRINCIPAIS */
 .combate-section {
-    background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
-    border: 2px solid var(--wood-light);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.98));
+    border: 3px solid var(--wood-light);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     position: relative;
     overflow: hidden;
 }
 
-.combate-section:hover {
-    border-color: var(--primary-gold);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* CABEÇALHO DAS SEÇÕES - Similar ao header de atributos */
+/* CABEÇALHO DAS SEÇÕES */
 .section-header {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid var(--primary-gold);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--primary-gold);
 }
 
 .section-header i {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
+    color: var(--primary-gold);
+    background: rgba(212, 175, 55, 0.1);
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--primary-gold);
+}
+
+.section-header h3 {
+    color: var(--text-light);
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    margin: 0;
+    flex: 1;
+}
+
+/* ==================== */
+/* SEÇÃO 1: ESTADO DO PERSONAGEM */
+/* ==================== */
+
+.status-principais-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-top: 20px;
+}
+
+/* CARDS DE STATUS */
+.status-card {
+    background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.95));
+    border: 3px solid;
+    border-radius: 15px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* CARD PV */
+.status-card.pv-card {
+    border-color: var(--pv-color);
+    background: linear-gradient(145deg, 
+        rgba(231, 76, 60, 0.1), 
+        rgba(26, 18, 0, 0.95));
+}
+
+/* CARD PF */
+.status-card.pf-card {
+    border-color: var(--pf-color);
+    background: linear-gradient(145deg, 
+        rgba(52, 152, 219, 0.1), 
+        rgba(26, 18, 0, 0.95));
+}
+
+/* CABEÇALHO DOS CARDS */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.card-header i {
+    font-size: 2rem;
+    color: inherit;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border: 2px solid currentColor;
+}
+
+.card-header h4 {
+    font-family: 'Cinzel', serif;
+    color: var(--text-light);
+    font-size: 1.6rem;
+    margin: 0;
+    flex: 1;
+}
+
+/* CORPO DOS CARDS */
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px 0;
+}
+
+/* VALORES DOS STATUS */
+.status-value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+    font-family: 'MedievalSharp', cursive;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.pv-card .status-value {
+    color: var(--pv-color);
+}
+
+.pf-card .status-value {
+    color: var(--pf-color);
+}
+
+/* LABELS DOS STATUS */
+.status-label {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    text-align: center;
+    margin: 15px 0 25px;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.9;
+}
+
+/* BARRAS DE STATUS */
+.status-bar-container {
+    margin: 30px 0;
+    position: relative;
+}
+
+.status-bar {
+    height: 25px;
+    background: rgba(26, 18, 0, 0.8);
+    border-radius: 12px;
+    border: 2px solid var(--wood-dark);
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.8s ease;
+}
+
+#pvFill {
+    background: linear-gradient(90deg, #e74c3c, #ff8a80);
+}
+
+#pfFill {
+    background: linear-gradient(90deg, #3498db, #64b5f6);
+}
+
+/* CONTROLES DOS STATUS */
+.status-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: 3px solid;
+    font-size: 1.4rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn.damage {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: var(--pv-color);
+    color: #ff8a80;
+}
+
+.control-btn.damage:hover {
+    background: rgba(231, 76, 60, 0.4);
+    transform: scale(1.1);
+}
+
+.control-btn.heal {
+    background: rgba(39, 174, 96, 0.2);
+    border-color: var(--success);
+    color: #81c784;
+}
+
+.control-btn.heal:hover {
+    background: rgba(39, 174, 96, 0.4);
+    transform: scale(1.1);
+}
+
+.control-btn.fatigue {
+    background: rgba(243, 156, 18, 0.2);
+    border-color: var(--warning);
+    color: #ffd54f;
+}
+
+.control-btn.rest {
+    background: rgba(52, 152, 219, 0.2);
+    border-color: var(--info);
+    color: #90caf9;
+}
+
+/* INPUT DE STATUS */
+.status-input {
+    width: 120px;
+    height: 60px;
+    background: rgba(212, 175, 55, 0.15);
+    border: 3px solid var(--primary-gold);
+    border-radius: 12px;
+    color: var(--primary-gold);
+    font-family: 'MedievalSharp', cursive;
+    font-size: 2rem;
+    text-align: center;
+    font-weight: bold;
+    margin: 0 15px;
+    transition: all 0.3s ease;
+}
+
+.status-input:focus {
+    outline: none;
+    background: rgba(212, 175, 55, 0.25);
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+    transform: scale(1.05);
+}
+
+/* ==================== */
+/* SEÇÃO 2: CAPACIDADES DE COMBATE */
+/* ==================== */
+
+.capacidades-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
+    .capacidades-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .capacidades-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* CARDS DE DANO */
+.dano-card {
+    background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.95));
+    border: 3px solid var(--wood-light);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.4s ease;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dano-card:hover {
+    border-color: var(--primary-gold);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(212, 175, 55, 0.2);
+}
+
+.dano-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.dano-header i {
+    font-size: 2rem;
     color: var(--primary-gold);
     width: 60px;
     height: 60px;
@@ -72,349 +361,105 @@
     border: 2px solid var(--primary-gold);
 }
 
-.section-header h3 {
-    font-family: 'Uncial Antiqua', cursive;
-    color: var(--text-gold);
-    font-size: 1.6rem;
-    margin: 0;
-    flex: 1;
-}
-
-/* ==================== */
-/* SEÇÃO 1: ESTADO DO PERSONAGEM */
-/* ==================== */
-.status-principais-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
-    margin-top: 10px;
-}
-
-/* CARD PV - Estilo similar aos cards de atributos */
-.status-card {
-    background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
-    border: 2px solid var(--wood-light);
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* Variações de cor para cada card */
-.status-card.pv-card {
-    border-left: 4px solid var(--accent-red);
-}
-
-.status-card.pf-card {
-    border-left: 4px solid var(--accent-blue);
-}
-
-.status-card.bars-card {
-    border-left: 4px solid var(--accent-green);
-}
-
-/* CABEÇALHO DOS CARDS */
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.card-header i {
-    font-size: 1.8rem;
-    color: var(--primary-gold);
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(212, 175, 55, 0.1);
-    border-radius: 50%;
-    border: 2px solid var(--primary-gold);
-}
-
-.card-header h4 {
-    font-family: 'Cinzel', serif;
-    color: var(--text-light);
-    font-size: 1.3rem;
-    margin: 0;
-    flex: 1;
-    text-align: left;
-}
-
-/* CORPO DOS CARDS */
-.card-body {
-    padding: 15px 0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* VALORES DOS STATUS - Similar aos valores de atributos */
-.status-value {
-    font-size: 2.8rem;
-    font-weight: bold;
-    color: var(--text-gold);
-    text-align: center;
-    margin: 15px 0;
-    font-family: 'MedievalSharp', cursive;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* LABELS DOS STATUS */
-.status-label {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    text-align: center;
-    margin: 10px 0 20px;
-    font-style: italic;
-    opacity: 0.8;
-}
-
-/* BARRAS DE STATUS */
-.status-bar-container {
-    margin: 20px 0;
-    position: relative;
-}
-
-.status-bar {
-    height: 20px;
-    background: rgba(26, 18, 0, 0.8);
-    border-radius: 10px;
-    border: 2px solid var(--wood-light);
-    overflow: hidden;
-    position: relative;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-.bar-fill {
-    height: 100%;
-    border-radius: 8px;
-    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* CORES ESPECÍFICAS DAS BARRAS */
-#pvFill {
-    background: linear-gradient(90deg, #e74c3c 0%, #ff6b6b 100%);
-}
-
-#pfFill {
-    background: linear-gradient(90deg, #3498db 0%, #5dade2 100%);
-}
-
-/* CONTROLES DOS STATUS - Similar aos controles de atributos */
-.status-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.control-btn {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    border: 2px solid var(--wood-light);
-    background: rgba(26, 18, 0, 0.7);
-    color: var(--text-light);
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.control-btn:hover {
-    border-color: var(--primary-gold);
-    transform: scale(1.1);
-}
-
-/* TIPOS DE BOTÕES */
-.control-btn.damage {
-    background: rgba(139, 0, 0, 0.2);
-}
-
-.control-btn.damage:hover {
-    background: rgba(231, 76, 60, 0.3);
-    color: #ff6b6b;
-}
-
-.control-btn.heal {
-    background: rgba(46, 92, 58, 0.2);
-}
-
-.control-btn.heal:hover {
-    background: rgba(39, 174, 96, 0.3);
-    color: #2ecc71;
-}
-
-.control-btn.fatigue {
-    background: rgba(155, 89, 182, 0.2);
-}
-
-.control-btn.rest {
-    background: rgba(41, 128, 185, 0.2);
-}
-
-/* INPUT DE STATUS - Similar aos inputs de atributos */
-.status-input {
-    width: 100px;
-    height: 50px;
-    background: rgba(212, 175, 55, 0.1);
-    border: 2px solid var(--primary-gold);
-    border-radius: 8px;
-    color: var(--text-gold);
-    font-family: 'MedievalSharp', cursive;
-    font-size: 1.8rem;
-    text-align: center;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    margin: 0 5px;
-}
-
-.status-input:focus {
-    outline: none;
-    background: rgba(212, 175, 55, 0.2);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-}
-
-/* ==================== */
-/* SEÇÃO 2: CAPACIDADES DE COMBATE */
-/* ==================== */
-.capacidades-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-top: 15px;
-}
-
-/* CARDS DE DANO - Estilo similar aos cards secundários */
-.dano-card {
-    background: rgba(212, 175, 55, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.dano-card:hover {
-    border-color: var(--primary-gold);
-    background: rgba(212, 175, 55, 0.1);
-    transform: translateY(-2px);
-}
-
-.dano-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.dano-header i {
-    font-size: 1.8rem;
-    color: var(--primary-gold);
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(212, 175, 55, 0.1);
-    border-radius: 50%;
-    border: 2px solid var(--primary-gold);
-}
-
 .dano-header h4 {
     color: var(--text-light);
     font-family: 'Cinzel', serif;
-    font-size: 1.3rem;
+    font-size: 1.6rem;
     margin: 0;
 }
 
 .dano-value {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: bold;
-    color: var(--text-gold);
-    margin: 15px 0;
+    color: var(--dano-color);
+    margin: 20px 0;
     font-family: 'Courier New', monospace;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid rgba(212, 175, 55, 0.3);
 }
 
 .dano-label {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    opacity: 0.8;
+    color: var(--wood-light);
+    font-size: 1.1rem;
+    margin-top: 10px;
     font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
 }
 
-/* CARTA DE ARMA - Card especial */
+/* CARTA DE ARMA */
 .arma-card {
-    grid-column: span 2;
-    border-left: 4px solid #9b59b6;
+    grid-column: span 1;
+    border-color: #9b59b6;
+    background: linear-gradient(145deg, 
+        rgba(155, 89, 182, 0.1), 
+        rgba(26, 18, 0, 0.95));
+}
+
+.arma-card .dano-header i {
+    color: #9b59b6;
+    border-color: #9b59b6;
 }
 
 .no-weapon {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
     color: var(--text-light);
-    opacity: 0.7;
+    opacity: 0.8;
 }
 
 .no-weapon i {
-    font-size: 3rem;
-    color: rgba(212, 175, 55, 0.5);
+    font-size: 3.5rem;
+    color: rgba(212, 175, 55, 0.6);
 }
 
 .no-weapon div {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--text-light);
+    font-weight: bold;
 }
 
 .no-weapon small {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     opacity: 0.8;
 }
 
 /* DETALHES DA ARMA */
+.weapon-details {
+    text-align: center;
+}
+
 .weapon-name {
-    color: var(--text-gold);
-    font-size: 1.5rem;
-    font-family: 'Cinzel', serif;
-    margin-bottom: 10px;
+    color: var(--primary-gold);
+    font-size: 1.8rem;
     font-weight: bold;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
 }
 
 .weapon-damage {
     color: var(--text-light);
-    font-size: 1.3rem;
+    font-size: 1.6rem;
     font-family: 'Courier New', monospace;
-    margin-bottom: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 6px;
+    margin-bottom: 15px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 .weapon-type {
     color: var(--wood-light);
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-style: italic;
-    padding: 5px 15px;
+    padding: 8px 20px;
     background: rgba(212, 175, 55, 0.1);
     border-radius: 20px;
     display: inline-block;
@@ -423,40 +468,56 @@
 /* ==================== */
 /* SEÇÃO 3: DEFESAS ATIVAS */
 /* ==================== */
+
 .defesas-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-top: 15px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+    .defesas-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .defesas-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* CARDS DE DEFESA */
 .defesa-card {
-    background: rgba(212, 175, 55, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.3s ease;
+    background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.95));
+    border: 3px solid var(--wood-light);
+    border-radius: 12px;
+    padding: 25px;
+    transition: all 0.4s ease;
+    text-align: center;
 }
 
 .defesa-card:hover {
     border-color: var(--primary-gold);
-    background: rgba(212, 175, 55, 0.1);
-    transform: translateY(-2px);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(212, 175, 55, 0.2);
 }
 
 .defesa-header {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 .defesa-header i {
-    font-size: 1.8rem;
+    font-size: 2rem;
     color: var(--primary-gold);
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -467,54 +528,56 @@
 
 .defesa-header div {
     flex: 1;
+    text-align: left;
 }
 
 .defesa-header h4 {
     color: var(--text-light);
     font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     margin: 0 0 5px 0;
 }
 
 .defesa-header small {
-    color: var(--text-light);
-    font-size: 0.8rem;
-    opacity: 0.7;
+    color: var(--wood-light);
+    font-size: 0.9rem;
+    opacity: 0.8;
+    font-style: italic;
 }
 
 .defesa-value {
-    font-size: 2.2rem;
+    font-size: 2.8rem;
     font-weight: bold;
-    color: var(--text-gold);
-    text-align: center;
-    margin: 20px 0;
+    color: var(--defesa-color);
+    margin: 25px 0;
     font-family: 'MedievalSharp', cursive;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 12px;
-    border-radius: 8px;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    border-radius: 10px;
     border: 2px solid rgba(212, 175, 55, 0.2);
 }
 
-/* CONTROLES DAS DEFESAS - Similar aos controles secundários */
+/* CONTROLES DAS DEFESAS */
 .defesa-controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .mod-btn {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    border: 2px solid var(--wood-light);
-    background: rgba(26, 18, 0, 0.7);
+    border: 3px solid var(--wood-light);
+    background: rgba(212, 175, 55, 0.1);
     color: var(--text-light);
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -522,28 +585,29 @@
 
 .mod-btn:hover {
     border-color: var(--primary-gold);
+    background: rgba(212, 175, 55, 0.2);
     transform: scale(1.1);
 }
 
 .mod-btn.plus:hover {
-    background: rgba(46, 92, 58, 0.3);
-    color: #2ecc71;
+    border-color: var(--success);
+    color: #81c784;
 }
 
 .mod-btn.minus:hover {
-    background: rgba(139, 0, 0, 0.3);
-    color: #ff6b6b;
+    border-color: var(--danger);
+    color: #ff8a80;
 }
 
 .mod-input {
-    width: 80px;
-    height: 40px;
-    background: rgba(212, 175, 55, 0.1);
-    border: 2px solid var(--primary-gold);
-    border-radius: 6px;
-    color: var(--text-gold);
+    width: 100px;
+    height: 50px;
+    background: rgba(212, 175, 55, 0.15);
+    border: 3px solid var(--primary-gold);
+    border-radius: 10px;
+    color: var(--primary-gold);
     font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     text-align: center;
     font-weight: bold;
     transition: all 0.3s ease;
@@ -551,34 +615,34 @@
 
 .mod-input:focus {
     outline: none;
-    background: rgba(212, 175, 55, 0.2);
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    background: rgba(212, 175, 55, 0.25);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
 }
 
 /* BÔNUS DE DEFESA */
 .bonus-container {
-    background: linear-gradient(145deg, rgba(44, 32, 8, 0.9), rgba(26, 18, 0, 0.9));
-    border: 2px solid var(--wood-light);
-    border-radius: 10px;
-    padding: 25px;
-    margin-top: 25px;
+    background: linear-gradient(145deg, rgba(44, 32, 8, 0.95), rgba(26, 18, 0, 0.98));
+    border: 3px solid var(--wood-dark);
+    border-radius: 15px;
+    padding: 30px;
+    margin-top: 40px;
 }
 
 .bonus-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     padding-bottom: 15px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
 }
 
 .bonus-header h4 {
     color: var(--text-gold);
-    font-family: 'Uncial Antiqua', cursive;
-    font-size: 1.4rem;
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
     margin: 0;
 }
 
@@ -588,57 +652,74 @@
 
 .bonus-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 1024px) {
+    .bonus-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .bonus-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .bonus-card {
-    background: rgba(26, 18, 0, 0.6);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
-    padding: 15px;
+    background: rgba(26, 18, 0, 0.7);
+    border: 2px solid var(--wood-light);
+    border-radius: 10px;
+    padding: 20px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
     transition: all 0.3s ease;
 }
 
 .bonus-card:hover {
     border-color: var(--primary-gold);
-    background: rgba(44, 32, 8, 0.8);
+    background: rgba(44, 32, 8, 0.9);
+    transform: translateY(-3px);
 }
 
 .bonus-icon {
-    width: 45px;
-    height: 45px;
-    background: rgba(212, 175, 55, 0.1);
+    width: 55px;
+    height: 55px;
+    background: rgba(212, 175, 55, 0.15);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     color: var(--primary-gold);
-    border: 2px solid rgba(212, 175, 55, 0.2);
+    border: 2px solid rgba(212, 175, 55, 0.3);
     flex-shrink: 0;
+}
+
+.bonus-content {
+    flex: 1;
 }
 
 .bonus-content h5 {
     color: var(--text-light);
     font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    margin: 0 0 10px 0;
 }
 
 .bonus-input {
     width: 100%;
-    padding: 8px 12px;
+    padding: 12px;
     background: rgba(212, 175, 55, 0.1);
-    border: 1px solid var(--wood-light);
-    border-radius: 5px;
-    color: var(--text-gold);
+    border: 2px solid var(--wood-light);
+    border-radius: 8px;
+    color: var(--primary-gold);
     font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     text-align: center;
     font-weight: bold;
     transition: all 0.3s ease;
@@ -648,129 +729,106 @@
     outline: none;
     background: rgba(212, 175, 55, 0.2);
     border-color: var(--primary-gold);
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
 }
 
+/* TOTAL DE BÔNUS */
 .bonus-total {
     text-align: center;
-    padding: 15px;
+    padding: 20px;
     background: rgba(26, 18, 0, 0.8);
-    border-radius: 8px;
-    border: 2px solid var(--primary-gold);
-    margin-top: 15px;
+    border-radius: 10px;
+    border: 3px solid var(--primary-gold);
+    margin-top: 20px;
 }
 
 .bonus-total span:first-child {
     color: var(--text-light);
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-family: 'Cinzel', serif;
+    margin-right: 15px;
 }
 
 .bonus-total span:last-child {
-    color: var(--text-gold);
-    font-size: 1.8rem;
+    color: var(--primary-gold);
+    font-size: 2.2rem;
     font-weight: bold;
     font-family: 'MedievalSharp', cursive;
-    margin-left: 10px;
+    text-shadow: 0 2px 10px rgba(212, 175, 55, 0.5);
 }
 
 /* ==================== */
-/* RESPONSIVIDADE COMPLETA */
+/* ANIMAÇÕES */
 /* ==================== */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
 
-/* TABLET LARGO (1024px para baixo) */
-@media (max-width: 1024px) {
+.status-input:focus,
+.mod-input:focus,
+.bonus-input:focus {
+    animation: pulse 0.3s ease;
+}
+
+/* ==================== */
+/* RESPONSIVIDADE */
+/* ==================== */
+@media (max-width: 768px) {
     .combate-container {
         padding: 15px;
-        gap: 20px;
+        gap: 25px;
     }
     
-    .status-principais-grid,
-    .capacidades-grid,
-    .defesas-grid {
-        gap: 15px;
+    .combate-section {
+        padding: 20px;
     }
     
-    .arma-card {
-        grid-column: span 1;
-    }
-    
-    .bonus-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* TABLET (768px para baixo) */
-@media (max-width: 768px) {
     .section-header {
         flex-direction: column;
         text-align: center;
-        gap: 10px;
-    }
-    
-    .section-header i {
-        margin: 0 auto;
+        gap: 15px;
     }
     
     .section-header h3 {
-        text-align: center;
-        font-size: 1.4rem;
-    }
-    
-    .status-principais-grid,
-    .capacidades-grid,
-    .defesas-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .card-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
-    
-    .card-header i {
-        margin: 0 auto;
-    }
-    
-    .card-header h4 {
-        text-align: center;
-    }
-    
-    .status-value {
-        font-size: 2.2rem;
-    }
-    
-    .dano-value,
-    .defesa-value {
         font-size: 1.8rem;
     }
     
-    .status-controls,
-    .defesa-controls {
-        gap: 8px;
+    .status-value {
+        font-size: 2.8rem;
     }
     
-    .control-btn,
+    .dano-value {
+        font-size: 2rem;
+    }
+    
+    .defesa-value {
+        font-size: 2.2rem;
+    }
+    
+    .control-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+    
+    .status-input {
+        width: 100px;
+        height: 50px;
+        font-size: 1.8rem;
+        margin: 0 10px;
+    }
+    
     .mod-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
+        width: 45px;
+        height: 45px;
     }
     
-    .status-input,
     .mod-input {
-        width: 80px;
-        height: 40px;
-        font-size: 1.5rem;
-    }
-    
-    .bonus-grid {
-        grid-template-columns: 1fr;
+        width: 90px;
     }
 }
 
-/* MOBILE (480px para baixo) */
 @media (max-width: 480px) {
     .combate-container {
         padding: 10px;
@@ -781,70 +839,59 @@
     }
     
     .section-header h3 {
-        font-size: 1.3rem;
+        font-size: 1.6rem;
     }
     
     .status-value {
-        font-size: 2rem;
+        font-size: 2.4rem;
     }
     
-    .dano-value,
+    .dano-value {
+        font-size: 1.8rem;
+    }
+    
     .defesa-value {
-        font-size: 1.6rem;
-        padding: 8px;
+        font-size: 2rem;
     }
     
     .status-controls,
     .defesa-controls {
-        gap: 6px;
+        gap: 10px;
     }
     
-    .control-btn,
-    .mod-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 0.9rem;
-    }
-    
-    .status-input,
-    .mod-input {
-        width: 70px;
-        height: 35px;
-        font-size: 1.3rem;
-    }
-    
-    .bonus-container {
-        padding: 15px;
-    }
-    
-    .bonus-total span:first-child {
+    .control-btn {
+        width: 40px;
+        height: 40px;
         font-size: 1rem;
     }
     
-    .bonus-total span:last-child {
+    .status-input {
+        width: 80px;
+        height: 40px;
         font-size: 1.6rem;
     }
-}
-
-/* OTIMIZAÇÃO PARA TOUCH */
-@media (hover: none) and (pointer: coarse) {
-    .control-btn,
-    .mod-btn {
-        min-width: 44px;
-        min-height: 44px;
-    }
     
-    .status-input,
-    .mod-input,
-    .bonus-input {
-        min-height: 44px;
-        font-size: 16px;
+    .mod-input {
+        width: 80px;
+        height: 45px;
     }
 }
 
-/* REMOVER SETAS DE INPUT NUMBER */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+/* ==================== */
+/* ESTILOS GERAIS */
+/* ==================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Remove setas do input number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
@@ -853,28 +900,13 @@ input[type="number"] {
     -moz-appearance: textfield;
 }
 
-/* ANIMAÇÃO PARA MUDANÇAS */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-.status-input.changed,
-.mod-input.changed,
-.bonus-input.changed {
-    animation: pulse 0.3s ease;
-}
-
-/* ESTILOS PARA BÔNUS POSITIVOS/NEGATIVOS */
-.bonus-input.positivo {
-    color: #4CAF50;
-    border-color: #4CAF50;
-    background: rgba(76, 175, 80, 0.1);
-}
-
-.bonus-input.negativo {
-    color: #f44336;
-    border-color: #f44336;
-    background: rgba(244, 67, 54, 0.1);
+/* Garante que tudo seja visível */
+.combate-section,
+.status-card,
+.dano-card,
+.defesa-card,
+.bonus-card {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
