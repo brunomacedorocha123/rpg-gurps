@@ -1,5 +1,5 @@
 // ============================================
-// TECNICAS.JS - SISTEMA COMPLETO
+// TECNICAS.JS - SISTEMA COMPLETO E FUNCIONAL
 // ============================================
 
 // ===== 1. CATÁLOGO DE TÉCNICAS =====
@@ -13,7 +13,7 @@ const CATALOGO_TECNICAS = [
         periciaBase: "Arco",
         atributo: "DX",
         modificadorBase: -4,
-        prereq: ["Arco", "Cavalgar"]
+        prereq: ["Arco", "Cavalgar (Cavalo)"]
     }
 ];
 
@@ -30,96 +30,81 @@ let tecnicasAprendidas = JSON.parse(localStorage.getItem('tecnicas_aprendidas') 
 let pontosTecnicas = parseInt(localStorage.getItem('pontos_tecnicas') || '0');
 let tecnicaSelecionada = null;
 
-// ===== 4. FUNÇÕES PARA BUSCAR PERÍCIAS =====
-function buscarPericiaParaTecnica(nomePericia) {
-    // Primeiro, tenta encontrar no estado global
-    if (window.estadoPericias && window.estadoPericias.periciasAprendidas) {
-        const pericias = window.estadoPericias.periciasAprendidas;
-        
-        for (const pericia of pericias) {
-            if (!pericia || !pericia.nome) continue;
-            
-            // Para Arco
-            if (nomePericia === "Arco" && pericia.nome === "Arco") {
-                return {
-                    tem: true,
-                    nivel: pericia.nivel || pericia.valor || 0,
-                    nome: pericia.nome
-                };
-            }
-            
-            // Para Cavalgar
-            if (nomePericia === "Cavalgar" && pericia.nome.includes("Cavalgar")) {
-                return {
-                    tem: true,
-                    nivel: pericia.nivel || pericia.valor || 0,
-                    nome: pericia.nome
-                };
-            }
-        }
-    }
-    
-    // Fallback: verifica no localStorage
+// ===== 4. FUNÇÃO VERIFICAR PERÍCIA - CORRIGIDA =====
+function verificarPericia(nomePericia) {
     try {
+        // Busca no localStorage principal
         const dados = localStorage.getItem('gurps_pericias');
-        if (dados) {
-            const parsed = JSON.parse(dados);
-            const pericias = parsed.periciasAprendidas || parsed.pericias || parsed;
+        if (!dados) return { tem: false, nivel: 0 };
+        
+        const parsed = JSON.parse(dados);
+        const periciasAprendidas = parsed.periciasAprendidas || [];
+        
+        // PARA ARCO: busca exata
+        if (nomePericia === "Arco") {
+            const arcoEncontrado = periciasAprendidas.find(p => 
+                p && (p.id === "arco" || p.nome === "Arco")
+            );
             
-            if (Array.isArray(pericias)) {
-                for (const pericia of pericias) {
-                    if (!pericia || !pericia.nome) continue;
-                    
-                    if (nomePericia === "Arco" && pericia.nome === "Arco") {
-                        return {
-                            tem: true,
-                            nivel: pericia.nivel || pericia.valor || 0,
-                            nome: pericia.nome
-                        };
-                    }
-                    
-                    if (nomePericia === "Cavalgar" && pericia.nome.includes("Cavalgar")) {
-                        return {
-                            tem: true,
-                            nivel: pericia.nivel || pericia.valor || 0,
-                            nome: pericia.nome
-                        };
-                    }
-                }
+            if (arcoEncontrado) {
+                return { 
+                    tem: true, 
+                    nivel: arcoEncontrado.nivel || arcoEncontrado.valor || 10
+                };
             }
         }
+        
+        // PARA CAVALGAR: QUALQUER especialização serve!
+        if (nomePericia.includes("Cavalgar")) {
+            const qualquerCavalgar = periciasAprendidas.find(p => 
+                p && p.id && p.id.includes("cavalgar")
+            );
+            
+            if (qualquerCavalgar) {
+                return { 
+                    tem: true, 
+                    nivel: qualquerCavalgar.nivel || qualquerCavalgar.valor || 10
+                };
+            }
+        }
+        
     } catch (e) {
-        console.log("Erro ao buscar perícia:", e);
+        console.error("Erro ao verificar perícia:", e);
     }
     
-    return { tem: false, nivel: 0, nome: nomePericia };
+    return { tem: false, nivel: 0 };
 }
 
 // ===== 5. VERIFICAÇÃO DE PRÉ-REQUISITOS =====
 function verificarPrereqTecnica(tecnica) {
-    const arco = buscarPericiaParaTecnica("Arco");
-    const cavalgar = buscarPericiaParaTecnica("Cavalgar");
+    // Para Arco: busca exata
+    const arco = verificarPericia("Arco");
     
-    const todosCumpridos = arco.tem && cavalgar.tem;
+    // Para Cavalgar: pode ser qualquer um
+    const cavalgarQualquer = verificarPericia("Cavalgar");
+    
+    const todosCumpridos = arco.tem && cavalgarQualquer.tem;
     
     return {
         arco: arco,
-        cavalgar: cavalgar,
+        cavalgar: cavalgarQualquer,
         todosCumpridos: todosCumpridos
     };
 }
 
-// ===== 6. CALCULAR NH DA TÉCNICA =====
+// ===== 6. CALCULAR NH DA TÉCNICA - CORRIGIDA =====
 function calcularNHTecnica(tecnicaId, niveisInvestidos = 0) {
     const tecnica = CATALOGO_TECNICAS.find(t => t.id === tecnicaId);
     if (!tecnica) return { nh: 0, nhBase: 0 };
     
-    const arco = buscarPericiaParaTecnica("Arco");
+    const arco = verificarPericia("Arco");
     
+    // SE NÃO TEM ARCO, mostra 0
     if (!arco.tem || arco.nivel <= 0) {
         return {
             nh: 0,
-            nhBase: 0
+            nhBase: 0,
+            bonusNiveis: 0
         };
     }
     
@@ -203,11 +188,11 @@ function renderizarCatalogoTecnicas() {
                     <div class="prereq-titulo">Pré-requisitos:</div>
                     <div class="prereq-item ${prereq.arco.tem ? 'ok' : 'falta'}">
                         <i class="fas fa-${prereq.arco.tem ? 'check' : 'times'}"></i>
-                        ${prereq.arco.nome} ${prereq.arco.tem ? `(NH ${prereq.arco.nivel})` : ''}
+                        Arco ${prereq.arco.tem ? `(NH ${prereq.arco.nivel})` : ''}
                     </div>
                     <div class="prereq-item ${prereq.cavalgar.tem ? 'ok' : 'falta'}">
                         <i class="fas fa-${prereq.cavalgar.tem ? 'check' : 'times'}"></i>
-                        ${prereq.cavalgar.nome} ${prereq.cavalgar.tem ? `(NH ${prereq.cavalgar.nivel})` : ''}
+                        Cavalgar ${prereq.cavalgar.tem ? `(NH ${prereq.cavalgar.nivel})` : ''}
                     </div>
                 </div>
                 
@@ -296,8 +281,8 @@ function abrirModalTecnica(id) {
     const jaAprendida = tecnicasAprendidas.find(t => t.id === id);
     const prereq = verificarPrereqTecnica(tecnica);
     
-    const arco = buscarPericiaParaTecnica("Arco");
-    const cavalgar = buscarPericiaParaTecnica("Cavalgar");
+    const arco = verificarPericia("Arco");
+    const cavalgar = verificarPericia("Cavalgar");
     
     const nhArco = arco.nivel || 0;
     
@@ -391,7 +376,7 @@ function abrirModalTecnica(id) {
                             <i class="fas fa-exclamation-triangle"></i>
                             <div>
                                 <strong>Pré-requisitos não cumpridos</strong>
-                                <p>Você precisa aprender Arco (com pelo menos 1 ponto) e Cavalgar (qualquer).</p>
+                                <p>Você precisa aprender Arco (com pelo menos 1 ponto) e qualquer especialização de Cavalgar.</p>
                             </div>
                         </div>
                         `}
@@ -596,7 +581,7 @@ function renderizarTodasTecnicas() {
 
 // ===== 15. INICIALIZAÇÃO DO SISTEMA =====
 function inicializarSistemaTecnicas() {
-    console.log('Inicializando sistema de técnicas...');
+    console.log('🎯 Inicializando sistema de técnicas...');
     
     // Carrega dados salvos
     try {
@@ -1295,4 +1280,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-console.log('✅ Sistema de técnicas carregado e pronto para uso!');
+console.log('✅ Sistema de técnicas COMPLETO carregado!');
