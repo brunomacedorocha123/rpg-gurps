@@ -1,4 +1,4 @@
-// sistema-dano.js - Sistema de Cálculo de Dano com Suporte a Múltiplas Armas
+// sistema-dano.js - VERSÃO CORRIGIDA - Mostra APENAS os danos que a arma realmente possui
 (function() {
     'use strict';
 
@@ -39,7 +39,7 @@
         // Se já for uma fórmula direta (ex: "2d+2"), retorna como está
         if (!modificador.startsWith('GeB') && !modificador.startsWith('GdP') && 
             !modificador.startsWith('geb') && !modificador.startsWith('gdp')) {
-            return base;
+            return modificador;
         }
         
         // Extrai o sinal e número do modificador
@@ -65,6 +65,16 @@
         }
         
         return baseDados;
+    }
+
+    function determinarTipoDanoFormula(formula) {
+        // Verifica se a fórmula é GeB ou GdP
+        if (formula.toLowerCase().startsWith('geb')) return 'GEB';
+        if (formula.toLowerCase().startsWith('gdp')) return 'GDP';
+        
+        // Para fórmulas diretas, tenta determinar pelo contexto
+        if (formula.includes('corte') || formula.includes('perfuração')) return 'GEB';
+        return 'GDP'; // Padrão
     }
 
     // ========== MONITORAMENTO DE ST ==========
@@ -178,46 +188,51 @@
     // ========== CÁLCULO DE DANO DAS ARMAS ==========
 
     function calcularDanoArma(arma) {
-        if (!arma) return null;
+        if (!arma) return [];
         
         const resultados = [];
         
-        // Processa dano principal (GEB)
+        // Processa dano principal (GEB) - SE EXISTIR
         if (arma.dano && arma.tipoDano) {
             const danoCalculado = calcularModificadorDano(arma.dano, arma.dano);
+            const tipoDano = determinarTipoDanoFormula(arma.dano);
+            
             resultados.push({
-                tipo: 'GEB',
+                tipo: tipoDano, // 'GEB' ou 'GDP'
                 formula: danoCalculado,
                 danoTipo: arma.tipoDano,
-                armaNome: arma.nome
+                armaNome: arma.nome,
+                fonte: 'principal'
             });
         }
         
-        // Processa dano GDP se existir
+        // Processa dano GDP SEPARADO - SE EXISTIR
         if (arma.danoGDP && arma.tipoDanoGDP) {
             const danoCalculado = calcularModificadorDano(arma.danoGDP, arma.danoGDP);
+            
             resultados.push({
                 tipo: 'GDP',
                 formula: danoCalculado,
                 danoTipo: arma.tipoDanoGDP,
-                armaNome: arma.nome
+                armaNome: arma.nome,
+                fonte: 'gdp'
             });
         }
         
-        // Se for uma arma personalizada sem danoGDP, calcula baseado no tipo
-        if (arma.tipo === 'arma-cc' && arma.dano && !arma.danoGDP) {
-            // Para armas corpo a corpo, assume que pode usar GDP
-            const danoGDP = arma.dano.replace('GeB', 'GdP').replace('geb', 'gdp');
-            const danoCalculado = calcularModificadorDano(danoGDP, danoGDP);
-            resultados.push({
-                tipo: 'GDP',
-                formula: danoCalculado,
-                danoTipo: arma.tipoDano || 'contusão',
-                armaNome: arma.nome
-            });
-        }
+        // Verifica duplicados (remover se houver tipo duplicado)
+        const tiposUnicos = new Set();
+        const resultadosFiltrados = [];
         
-        return resultados;
+        resultados.forEach(resultado => {
+            if (!tiposUnicos.has(resultado.tipo)) {
+                tiposUnicos.add(resultado.tipo);
+                resultadosFiltrados.push(resultado);
+            }
+        });
+        
+        console.log(`🎯 Arma "${arma.nome}": ${resultadosFiltrados.length} tipo(s) de dano (${resultadosFiltrados.map(r => r.tipo).join(', ')})`);
+        
+        return resultadosFiltrados;
     }
 
     // ========== ATUALIZAÇÃO DA INTERFACE ==========
@@ -237,8 +252,6 @@
             gebDisplay.classList.add('updated');
             setTimeout(() => gebDisplay.classList.remove('updated'), 500);
         }
-        
-        console.log(`📱 Display atualizado: GdP=${estado.danoBase.gdp}, GeB=${estado.danoBase.geb}`);
     }
 
     function atualizarDanoArmaDisplay() {
@@ -415,6 +428,29 @@
                     }
                 }
                 
+                // Informação de mãos necessárias
+                if (arma.maos) {
+                    const infoMaos = document.createElement('div');
+                    infoMaos.style.cssText = `
+                        font-size: 0.85em;
+                        color: #A3BE8C;
+                        margin-top: 4px;
+                        padding: 4px 8px;
+                        background: rgba(163, 190, 140, 0.1);
+                        border-radius: 4px;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    `;
+                    
+                    const textoMaos = arma.maos === 1 ? '1 mão' : 
+                                     arma.maos === 1.5 ? '1 ou 2 mãos' : 
+                                     arma.maos === 2 ? '2 mãos' : `${arma.maos} mãos`;
+                    
+                    infoMaos.innerHTML = `<i class="fas fa-hand-paper"></i> ${textoMaos}`;
+                    containerDanos.appendChild(infoMaos);
+                }
+                
                 containerArma.appendChild(cabecalho);
                 containerArma.appendChild(containerDanos);
                 containerPrincipal.appendChild(containerArma);
@@ -425,11 +461,9 @@
             // Ajusta altura do container
             const containerPai = comArmaDiv.closest('.arma-info');
             if (containerPai) {
-                if (armas.length === 1) {
-                    containerPai.style.minHeight = '160px';
-                } else {
-                    containerPai.style.minHeight = '240px';
-                }
+                const alturaBase = 160;
+                const alturaPorArma = 100;
+                containerPai.style.minHeight = `${alturaBase + (armas.length - 1) * alturaPorArma}px`;
             }
             
             console.log(`🎯 ${armas.length} arma(s) exibida(s) no card de dano`);
@@ -505,7 +539,6 @@
             estado.sistemaPronto = true;
             
             console.log('✅ Sistema de dano inicializado com sucesso!');
-            console.log(`📊 Estado inicial: ST=${estado.stAtual}, GdP=${estado.danoBase.gdp}, GeB=${estado.danoBase.geb}`);
         }, 500);
     }
 
@@ -545,7 +578,6 @@
     // ========== API PÚBLICA ==========
 
     window.sistemaDano = {
-        // Métodos para uso externo
         getEstado: () => ({ ...estado }),
         getDanoBase: () => ({ ...estado.danoBase }),
         getArmasEquipadas: () => [...estado.armasEquipadas],
