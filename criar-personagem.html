@@ -3237,15 +3237,15 @@ body::before {
     </div>
 </div>
 
-      <!-- ABA COMBATE - COMPLETA E DETALHADA -->
+      <!-- ABA COMBATE - SOMENTE COMBATE! -->
 <div id="combate" class="tab-content">
     <div class="combate-container">
         
-        <!-- SEÇÃO 1: ESTADO DO PERSONAGEM -->
+        <!-- SEÇÃO 1: PV E PF -->
         <div class="combate-section">
             <div class="section-header">
                 <i class="fas fa-heartbeat"></i>
-                <h3>ESTADO DO PERSONAGEM</h3>
+                <h3>PONTOS DE VIDA E FADIGA</h3>
             </div>
             
             <div class="status-principais-grid">
@@ -3258,6 +3258,13 @@ body::before {
                     <div class="card-body">
                         <div class="status-value" id="pvTexto">10/10</div>
                         <div class="status-label" id="pvEstadoDisplay">Saudável</div>
+                        
+                        <!-- Barra de PV -->
+                        <div class="status-bar-container">
+                            <div class="status-bar">
+                                <div class="bar-fill" id="pvFill" style="width: 100%"></div>
+                            </div>
+                        </div>
                         
                         <!-- Controles de PV -->
                         <div class="status-controls">
@@ -3283,6 +3290,14 @@ body::before {
                         <div class="status-value" id="pfTexto">10/10</div>
                         <div class="status-label" id="pfEstadoDisplay">Normal</div>
                         
+                        <!-- Barra de PF -->
+                        <div class="status-bar-container">
+                            <div class="status-bar">
+                                <div class="bar-fill" id="pfFill" style="width: 100%"></div>
+                                <div class="fatigue-marker" style="left: 33.33%"></div>
+                            </div>
+                        </div>
+                        
                         <!-- Controles de PF -->
                         <div class="status-controls">
                             <button class="control-btn fatigue" onclick="fadigaPF3()">-3</button>
@@ -3294,56 +3309,18 @@ body::before {
                         </div>
                     </div>
                 </div>
-                
-                <!-- CARD BARRAS DE STATUS -->
-                <div class="status-card bars-card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-bar"></i>
-                        <h4>BARRAS DE STATUS</h4>
-                    </div>
-                    <div class="card-body">
-                        <!-- Barra de PV -->
-                        <div class="status-bar-container">
-                            <div class="status-bar">
-                                <div class="bar-fill" id="pvFill" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Barra de PF -->
-                        <div class="status-bar-container">
-                            <div class="status-bar">
-                                <div class="bar-fill" id="pfFill" style="width: 100%"></div>
-                                <div class="fatigue-marker" style="left: 33.33%"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Informações adicionais -->
-                        <div style="text-align: center; margin-top: 20px;">
-                            <div style="display: flex; justify-content: space-around; color: var(--wood-light); font-size: 0.9rem;">
-                                <div>
-                                    <div>PV Base</div>
-                                    <div class="status-value" style="font-size: 1.2rem;" id="pvBaseDisplay">10</div>
-                                </div>
-                                <div>
-                                    <div>PF Base</div>
-                                    <div class="status-value" style="font-size: 1.2rem;" id="pfBaseDisplay">10</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         
-        <!-- SEÇÃO 2: CAPACIDADES DE COMBATE -->
+        <!-- SEÇÃO 2: DANO -->
         <div class="combate-section">
             <div class="section-header">
-                <i class="fas fa-fist-raised"></i>
-                <h3>CAPACIDADES DE COMBATE</h3>
+                <i class="fas fa-bolt"></i>
+                <h3>DANO</h3>
             </div>
             
             <div class="capacidades-grid">
-                <!-- CARD DANO GDP -->
+                <!-- DANO GDP -->
                 <div class="dano-card">
                     <div class="dano-header">
                         <i class="fas fa-fist-raised"></i>
@@ -3353,7 +3330,7 @@ body::before {
                     <div class="dano-label">Golpe de Punho</div>
                 </div>
                 
-                <!-- CARD DANO GEB -->
+                <!-- DANO GEB -->
                 <div class="dano-card">
                     <div class="dano-header">
                         <i class="fas fa-hand-rock"></i>
@@ -3363,27 +3340,23 @@ body::before {
                     <div class="dano-label">Golpe de Braço</div>
                 </div>
                 
-                <!-- CARD ARMA EQUIPADA -->
-                <div class="arma-card">
-                    <div class="card-header">
+                <!-- ARMA EQUIPADA -->
+                <div class="dano-card arma-card">
+                    <div class="dano-header">
                         <i class="fas fa-crosshairs"></i>
                         <h4>ARMA EQUIPADA</h4>
                     </div>
-                    
                     <div class="arma-info">
-                        <!-- Sem arma -->
                         <div id="semArma" class="no-weapon">
                             <i class="fas fa-fist-raised"></i>
                             <div>Usando dano corporal</div>
                             <small>Adicione armas na aba de equipamentos</small>
                         </div>
-                        
-                        <!-- Com arma -->
                         <div id="comArma" style="display: none;">
                             <div class="weapon-details">
-                                <div class="weapon-name" id="armaNome">Espada Longa</div>
-                                <div class="weapon-damage" id="armaDano">2d+2 cortante</div>
-                                <div class="weapon-type" id="armaTipo">Arma de Uma Mão</div>
+                                <div class="weapon-name" id="armaNome">-</div>
+                                <div class="weapon-damage" id="armaDano">-</div>
+                                <div class="weapon-type" id="armaTipo">-</div>
                             </div>
                         </div>
                     </div>
@@ -3532,94 +3505,103 @@ body::before {
         <div class="combate-section">
             <div class="section-header">
                 <i class="fas fa-user-shield"></i>
-                <h3>RESISTÊNCIA A DANO (RD)</h3>
-                <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
-                    <span style="color: var(--wood-light); font-size: 1.1rem;">Total:</span>
-                    <span id="rdTotal" style="color: var(--text-gold); font-weight: bold; font-size: 1.8rem; 
-                          background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 10px; border: 2px solid var(--primary-gold);">
-                        0
-                    </span>
+                <h3>RESISTÊNCIA A DANO</h3>
+                <div class="rd-total">
+                    <span>Total:</span>
+                    <span id="rdTotal">0</span>
                 </div>
             </div>
             
-            <div class="capacidades-grid" style="margin-bottom: 25px;">
-                <!-- 10 PARTES DO CORPO (vou colocar 5 aqui, você completa as outras 5) -->
-                <div class="dano-card">
-                    <div class="dano-header">
-                        <i class="fas fa-head-side-virus"></i>
-                        <h4>CABEÇA</h4>
-                    </div>
-                    <input type="number" value="0" min="0" max="99" 
-                           class="status-input" style="width: 120px; margin: 15px auto; display: block;"
-                           onchange="calcularRDTotal()" data-parte="cabeca">
+            <div class="rd-grid">
+                <!-- PARTES DO CORPO -->
+                <div class="rd-parte" data-parte="cabeca">
+                    <i class="fas fa-head-side-virus"></i>
+                    <span>Cabeça</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
                 </div>
                 
-                <div class="dano-card">
-                    <div class="dano-header">
-                        <i class="fas fa-user"></i>
-                        <h4>TRONCO</h4>
-                    </div>
-                    <input type="number" value="0" min="0" max="99" 
-                           class="status-input" style="width: 120px; margin: 15px auto; display: block;"
-                           onchange="calcularRDTotal()" data-parte="tronco">
+                <div class="rd-parte" data-parte="tronco">
+                    <i class="fas fa-user"></i>
+                    <span>Tronco</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
                 </div>
                 
-                <div class="dano-card">
-                    <div class="dano-header">
-                        <i class="fas fa-heart"></i>
-                        <h4>ROSTO</h4>
-                    </div>
-                    <input type="number" value="0" min="0" max="99" 
-                           class="status-input" style="width: 120px; margin: 15px auto; display: block;"
-                           onchange="calcularRDTotal()" data-parte="rosto">
+                <div class="rd-parte" data-parte="rosto">
+                    <i class="fas fa-heart"></i>
+                    <span>Rosto</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
                 </div>
                 
-                <div class="dano-card">
-                    <div class="dano-header">
-                        <i class="fas fa-skull"></i>
-                        <h4>CRÂNIO</h4>
-                    </div>
-                    <input type="number" value="0" min="0" max="99" 
-                           class="status-input" style="width: 120px; margin: 15px auto; display: block;"
-                           onchange="calcularRDTotal()" data-parte="crânio">
+                <div class="rd-parte" data-parte="crânio">
+                    <i class="fas fa-skull"></i>
+                    <span>Crânio</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
                 </div>
                 
-                <div class="dano-card">
-                    <div class="dano-header">
-                        <i class="fas fa-user-slash"></i>
-                        <h4>PESCOÇO</h4>
-                    </div>
-                    <input type="number" value="0" min="0" max="99" 
-                           class="status-input" style="width: 120px; margin: 15px auto; display: block;"
-                           onchange="calcularRDTotal()" data-parte="pescoco">
+                <div class="rd-parte" data-parte="pescoco">
+                    <i class="fas fa-user-slash"></i>
+                    <span>Pescoço</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
+                </div>
+                
+                <div class="rd-parte" data-parte="virilha">
+                    <i class="fas fa-user-injured"></i>
+                    <span>Virilha</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
+                </div>
+                
+                <div class="rd-parte" data-parte="bracos">
+                    <i class="fas fa-hand-paper"></i>
+                    <span>Braços</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
+                </div>
+                
+                <div class="rd-parte" data-parte="pernas">
+                    <i class="fas fa-running"></i>
+                    <span>Pernas</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
+                </div>
+                
+                <div class="rd-parte" data-parte="maos">
+                    <i class="fas fa-hand"></i>
+                    <span>Mãos</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
+                </div>
+                
+                <div class="rd-parte" data-parte="pes">
+                    <i class="fas fa-shoe-prints"></i>
+                    <span>Pés</span>
+                    <input type="number" value="0" min="0" max="99" class="rd-input" onchange="calcularRDTotal()">
                 </div>
             </div>
             
-            <!-- PENALIDADES PARA ATAQUE -->
-            <div class="bonus-container" style="margin-top: 0;">
-                <div class="bonus-header">
-                    <h4><i class="fas fa-crosshairs"></i> PENALIDADES PARA ATAQUE</h4>
-                </div>
-                
-                <div class="bonus-grid">
-                    <div style="text-align: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                        <div style="color: var(--text-light); margin-bottom: 5px;">Tronco</div>
-                        <div style="color: var(--text-gold); font-size: 1.4rem; font-weight: bold;">0</div>
+            <!-- PENALIDADES DE ATAQUE -->
+            <div class="penalidades-container">
+                <h4><i class="fas fa-crosshairs"></i> Penalidades para Ataque</h4>
+                <div class="penalidades-grid">
+                    <div class="penalidade-item" data-local="tronco">
+                        <span>Tronco</span>
+                        <span class="penalidade-valor">0</span>
                     </div>
-                    
-                    <div style="text-align: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                        <div style="color: var(--text-light); margin-bottom: 5px;">Crânio</div>
-                        <div style="color: var(--text-gold); font-size: 1.4rem; font-weight: bold;">-7</div>
+                    <div class="penalidade-item" data-local="crânio">
+                        <span>Crânio</span>
+                        <span class="penalidade-valor">-7</span>
                     </div>
-                    
-                    <div style="text-align: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                        <div style="color: var(--text-light); margin-bottom: 5px;">Pescoço</div>
-                        <div style="color: var(--text-gold); font-size: 1.4rem; font-weight: bold;">-5</div>
+                    <div class="penalidade-item" data-local="pescoco">
+                        <span>Pescoço</span>
+                        <span class="penalidade-valor">-5</span>
                     </div>
-                    
-                    <div style="text-align: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                        <div style="color: var(--text-light); margin-bottom: 5px;">Virilha</div>
-                        <div style="color: var(--text-gold); font-size: 1.4rem; font-weight: bold;">-3</div>
+                    <div class="penalidade-item" data-local="virilha">
+                        <span>Virilha</span>
+                        <span class="penalidade-valor">-3</span>
+                    </div>
+                    <div class="penalidade-item" data-local="bracos">
+                        <span>Braços</span>
+                        <span class="penalidade-valor">-2</span>
+                    </div>
+                    <div class="penalidade-item" data-local="pernas">
+                        <span>Pernas</span>
+                        <span class="penalidade-valor">-2</span>
                     </div>
                 </div>
             </div>
@@ -3629,26 +3611,18 @@ body::before {
         <div class="combate-section">
             <div class="section-header">
                 <i class="fas fa-clipboard-list"></i>
-                <h3>CONDIÇÕES DE COMBATE</h3>
-                <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
-                    <span style="color: var(--wood-light); font-size: 1rem;">Ativas:</span>
-                    <span id="condicoesAtivas" style="color: var(--text-gold); font-weight: bold; font-size: 1.4rem;
-                          background: rgba(231, 76, 60, 0.2); padding: 5px 12px; border-radius: 20px; border: 2px solid #e74c3c;">
-                        0
-                    </span>
+                <h3>CONDIÇÕES E ESCUDO</h3>
+                <div class="condicoes-count">
+                    <span>Ativas:</span>
+                    <span id="condicoesAtivas">0</span>
                 </div>
             </div>
             
-            <div class="capacidades-grid">
+            <div class="condicoes-escudo-grid">
                 <!-- CONDIÇÕES -->
-                <div class="defesa-card" style="grid-column: span 2;">
-                    <div class="card-header">
-                        <i class="fas fa-clipboard-check"></i>
-                        <h4>LISTA DE CONDIÇÕES</h4>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px;">
-                        <!-- 12 condições -->
+                <div class="condicoes-container">
+                    <h4><i class="fas fa-clipboard-check"></i> Condições de Combate</h4>
+                    <div class="condicoes-grid">
                         <div class="condicao-item" data-condicao="inconsciente" onclick="alternarCondicao(this)">
                             <div class="condicao-checkbox"></div>
                             <span>Inconsciente</span>
@@ -3701,54 +3675,39 @@ body::before {
                 </div>
                 
                 <!-- ESCUDO -->
-                <div class="defesa-card">
-                    <div class="card-header">
+                <div class="escudo-container">
+                    <div class="escudo-header">
                         <i class="fas fa-shield"></i>
-                        <h4>ESCUDO</h4>
+                        <div>
+                            <h4>ESCUDO</h4>
+                            <div id="escudoNome" class="escudo-nome">Nenhum escudo equipado</div>
+                        </div>
+                        <span class="status-badge inativo" id="escudoStatus">Inativo</span>
                     </div>
                     
-                    <div style="padding: 15px;">
-                        <!-- Nome do escudo -->
-                        <div id="escudoNome" style="color: var(--wood-light); text-align: center; margin-bottom: 15px; 
-                             font-size: 1.1rem; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                            Nenhum escudo equipado
+                    <!-- Barra de PV do Escudo -->
+                    <div class="escudo-pv-container">
+                        <div class="pv-header">
+                            <i class="fas fa-heart"></i>
+                            <span class="pv-texto" id="escudoPVTexto">0/0</span>
                         </div>
-                        
-                        <!-- Barra de PV do Escudo -->
-                        <div class="status-bar-container" style="margin: 20px 0;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <small style="color: var(--wood-light);">PV do Escudo</small>
-                                <small id="escudoPVTexto" style="color: var(--text-gold); font-weight: bold;">0/0</small>
-                            </div>
-                            <div class="status-bar">
-                                <div class="bar-fill" id="escudoPVFill" style="width: 0%; background: linear-gradient(90deg, #3498db, #5dade2);"></div>
-                            </div>
+                        <div class="status-bar">
+                            <div class="bar-fill" id="escudoPVFill" style="width: 0%"></div>
                         </div>
-                        
-                        <!-- Status do escudo -->
-                        <div style="text-align: center; margin: 15px 0;">
-                            <span class="status-badge" id="escudoStatus" 
-                                  style="display: inline-block; padding: 6px 15px; border-radius: 20px; 
-                                         font-size: 0.9rem; font-weight: bold; background: #e74c3c; color: white;">
-                                Inativo
-                            </span>
-                        </div>
-                        
-                        <!-- Controles do Escudo -->
-                        <div class="status-controls">
-                            <button class="control-btn damage" onclick="danoEscudo(5)">-5</button>
-                            <button class="control-btn damage" onclick="danoEscudo(1)">-1</button>
-                            <button class="control-btn heal" onclick="curaEscudo(1)">+1</button>
-                            <button class="control-btn heal" onclick="curaEscudo(5)">+5</button>
-                        </div>
+                    </div>
+                    
+                    <!-- Controles do Escudo -->
+                    <div class="escudo-controles">
+                        <button class="control-btn damage" onclick="danoEscudo(5)">-5</button>
+                        <button class="control-btn damage" onclick="danoEscudo(1)">-1</button>
+                        <button class="control-btn heal" onclick="curaEscudo(1)">+1</button>
+                        <button class="control-btn heal" onclick="curaEscudo(5)">+5</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- ADICIONE ESSE CSS PARA AS CONDIÇÕES -->
 
         
         <!-- SUB-ABAS DE EQUIPAMENTO -->
