@@ -1,5 +1,6 @@
 // ===========================================
-// pv-pf.js - Sistema de Pontos de Vida e Fadiga
+// pv-pf.js - VERSÃO COMPLETA E CORRIGIDA
+// Compatível com seu HTML
 // ===========================================
 
 (function() {
@@ -9,13 +10,13 @@
     const CONFIG = {
         debug: true,
         atualizacaoAutomatica: true,
-        intervaloAtualizacao: 1000, // ms
+        intervaloAtualizacao: 1000,
         animacaoDuração: 300
     };
 
-    // ========== ESTADO GLOBAL ==========
+    // ========== ESTADO ==========
     let estado = {
-        // Atributos base (serão atualizados em tempo real)
+        // Atributos base
         st: 10,
         ht: 10,
         
@@ -24,7 +25,7 @@
             atual: 10,
             maximo: 10,
             modificador: 0,
-            modificadores: [] // Array de modificadores temporários
+            modificadores: []
         },
         
         // PF
@@ -36,67 +37,175 @@
             modificadores: []
         },
         
-        // Cache para performance
+        // Cache
         cache: {
             stAtual: 10,
-            htAtual: 10,
-            ultimaAtualizacao: Date.now()
+            htAtual: 10
         }
     };
 
-    // ========== SISTEMA DE EVENTOS ==========
-    const Eventos = {
-        listeners: {},
-        
-        on(evento, callback) {
-            if (!this.listeners[evento]) this.listeners[evento] = [];
-            this.listeners[evento].push(callback);
-        },
-        
-        emit(evento, dados) {
-            if (CONFIG.debug) console.log(`📢 Evento: ${evento}`, dados);
-            
-            if (this.listeners[evento]) {
-                this.listeners[evento].forEach(callback => {
-                    try {
-                        callback(dados);
-                    } catch (e) {
-                        console.error(`Erro no evento ${evento}:`, e);
-                    }
-                });
-            }
-        }
-    };
+    // ========== FUNÇÕES PÚBLICAS (HTML) ==========
 
-    // ========== FUNÇÕES PÚBLICAS (chamadas pelo HTML) ==========
-
-    // PV
+    // PV - Controles rápidos
+    window.danoPV = (valor = 1) => alterarPV(-valor);
+    window.curaPV = (valor = 1) => alterarPV(valor);
+    
+    // Botões específicos
     window.danoPV5 = () => alterarPV(-5);
     window.danoPV2 = () => alterarPV(-2);
     window.danoPV1 = () => alterarPV(-1);
     window.curaPV5 = () => alterarPV(5);
     window.curaPV2 = () => alterarPV(2);
     window.curaPV1 = () => alterarPV(1);
-    window.modPVMais = () => modificarPV(1);
-    window.modPVMenos = () => modificarPV(-1);
+    
+    // Modificadores e reset
+    window.modificarPV = (delta) => modificarPV(delta);
     window.resetPV = () => resetPV();
+    window.atualizarPVManual = () => atualizarPVManual();
 
-    // PF
+    // PF - Controles rápidos
+    window.fadigaPF = (valor = 1) => alterarPF(-valor);
+    window.descansoPF = (valor = 1) => alterarPF(valor);
+    
+    // Botões específicos
     window.fadigaPF3 = () => alterarPF(-3);
     window.fadigaPF1 = () => alterarPF(-1);
     window.descansoPF3 = () => alterarPF(3);
     window.descansoPF1 = () => alterarPF(1);
-    window.modPFMais = () => modificarPF(1);
-    window.modPFMenos = () => modificarPF(-1);
+    
+    // Modificadores e reset
+    window.modificarPF = (delta) => modificarPF(delta);
     window.resetPF = () => resetPF();
+    window.atualizarPFManual = () => atualizarPFManual();
 
-    // Inputs manuais
-    window.atualizarPVInput = function() {
-        const input = document.getElementById('pvAtualDisplay');
-        if (!input) return;
+    // ========== FUNÇÕES PRINCIPAIS ==========
+
+    function alterarPV(delta) {
+        if (CONFIG.debug) console.log(`📉 PV: ${delta > 0 ? '+' : ''}${delta}`);
+        
+        const pvAntes = estado.pv.atual;
+        const limiteMorte = -5 * estado.st;
+        
+        estado.pv.atual += delta;
+        estado.pv.atual = Math.max(limiteMorte, Math.min(estado.pv.maximo, estado.pv.atual));
+        
+        // Animação
+        if (delta < 0) {
+            aplicarEfeito('pvFill', 'dano-recebido');
+        } else if (delta > 0) {
+            aplicarEfeito('pvFill', 'cura-recebida');
+        }
+        
+        atualizarInterface();
+        
+        if (CONFIG.debug) {
+            console.log(`PV: ${pvAntes} → ${estado.pv.atual} (max: ${estado.pv.maximo})`);
+        }
+    }
+
+    function alterarPF(delta) {
+        if (CONFIG.debug) console.log(`💨 PF: ${delta > 0 ? '+' : ''}${delta}`);
+        
+        const pfAntes = estado.pf.atual;
+        const limiteExaustao = -estado.ht;
+        
+        estado.pf.atual += delta;
+        estado.pf.atual = Math.max(limiteExaustao, Math.min(estado.pf.maximo, estado.pf.atual));
+        
+        // Verifica dano por exaustão
+        if (estado.pf.atual <= 0 && pfAntes > 0) {
+            aplicarDanoPorExaustao(Math.abs(estado.pf.atual));
+        }
+        
+        // Animação
+        if (delta < 0) {
+            aplicarEfeito('pfFill', 'dano-recebido');
+        } else if (delta > 0) {
+            aplicarEfeito('pfFill', 'cura-recebida');
+        }
+        
+        atualizarInterface();
+        
+        if (CONFIG.debug) {
+            console.log(`PF: ${pfAntes} → ${estado.pf.atual} (max: ${estado.pf.maximo})`);
+        }
+    }
+
+    function modificarPV(delta) {
+        estado.pv.modificador += delta;
+        estado.pv.modificador = Math.max(-10, Math.min(10, estado.pv.modificador));
+        
+        estado.pv.maximo = estado.st + estado.pv.modificador;
+        
+        if (estado.pv.atual > estado.pv.maximo) {
+            estado.pv.atual = estado.pv.maximo;
+        }
+        
+        if (CONFIG.debug) {
+            console.log(`🔧 Modificador PV: ${estado.pv.modificador} (max: ${estado.pv.maximo})`);
+        }
+        
+        atualizarInterface();
+    }
+
+    function modificarPF(delta) {
+        estado.pf.modificador += delta;
+        estado.pf.modificador = Math.max(-10, Math.min(10, estado.pf.modificador));
+        
+        estado.pf.maximo = estado.ht + estado.pf.modificador;
+        
+        if (estado.pf.atual > estado.pf.maximo) {
+            estado.pf.atual = estado.pf.maximo;
+        }
+        
+        if (CONFIG.debug) {
+            console.log(`🔧 Modificador PF: ${estado.pf.modificador} (max: ${estado.pf.maximo})`);
+        }
+        
+        atualizarInterface();
+    }
+
+    function resetPV() {
+        if (CONFIG.debug) console.log('🔄 Resetando PV');
+        
+        const pvAntes = estado.pv.atual;
+        estado.pv.atual = estado.pv.maximo;
+        
+        aplicarEfeito('pvFill', 'reset-aplicado');
+        atualizarInterface();
+        
+        if (CONFIG.debug) {
+            console.log(`PV resetado: ${pvAntes} → ${estado.pv.atual}`);
+        }
+    }
+
+    function resetPF() {
+        if (CONFIG.debug) console.log('🔄 Resetando PF');
+        
+        const pfAntes = estado.pf.atual;
+        estado.pf.atual = estado.pf.maximo;
+        estado.pf.fadigaAtiva = false;
+        
+        aplicarEfeito('pfFill', 'reset-aplicado');
+        atualizarInterface();
+        
+        if (CONFIG.debug) {
+            console.log(`PF resetado: ${pfAntes} → ${estado.pf.atual}`);
+        }
+    }
+
+    function atualizarPVManual() {
+        const input = document.getElementById('pvAtual');
+        if (!input) {
+            console.error('❌ Elemento #pvAtual não encontrado!');
+            return;
+        }
         
         const valor = parseInt(input.value);
-        if (isNaN(valor)) return;
+        if (isNaN(valor)) {
+            input.value = estado.pv.atual;
+            return;
+        }
         
         const limiteMorte = -5 * estado.st;
         const novoValor = Math.max(limiteMorte, Math.min(estado.pv.maximo, valor));
@@ -104,21 +213,25 @@
         estado.pv.atual = novoValor;
         input.value = novoValor;
         
-        Eventos.emit('pv-alterado', { 
-            valor: novoValor,
-            tipo: 'manual',
-            diferenca: novoValor - estado.pv.atual
-        });
-        
         atualizarInterface();
-    };
+        
+        if (CONFIG.debug) {
+            console.log(`📝 PV manual: ${novoValor}`);
+        }
+    }
 
-    window.atualizarPFInput = function() {
-        const input = document.getElementById('pfAtualDisplay');
-        if (!input) return;
+    function atualizarPFManual() {
+        const input = document.getElementById('pfAtual');
+        if (!input) {
+            console.error('❌ Elemento #pfAtual não encontrado!');
+            return;
+        }
         
         const valor = parseInt(input.value);
-        if (isNaN(valor)) return;
+        if (isNaN(valor)) {
+            input.value = estado.pf.atual;
+            return;
+        }
         
         const limiteExaustao = -estado.ht;
         const novoValor = Math.max(limiteExaustao, Math.min(estado.pf.maximo, valor));
@@ -128,139 +241,15 @@
         input.value = novoValor;
         
         // Verifica dano por exaustão
-        if (novoValor <= 0 && pfAntes > 0) {
-            aplicarDanoPorExaustao(Math.abs(novoValor));
-        }
-        
-        Eventos.emit('pf-alterado', { 
-            valor: novoValor,
-            tipo: 'manual',
-            diferenca: novoValor - pfAntes
-        });
-        
-        atualizarInterface();
-    };
-
-    // ========== FUNÇÕES INTERNAS ==========
-
-    function alterarPV(delta) {
-        const pvAntes = estado.pv.atual;
-        const limiteMorte = -5 * estado.st;
-        
-        estado.pv.atual += delta;
-        estado.pv.atual = Math.max(limiteMorte, Math.min(estado.pv.maximo, estado.pv.atual));
-        
-        // Animações
-        if (delta < 0) {
-            aplicarEfeitoDano('pv');
-        } else if (delta > 0) {
-            aplicarEfeitoCura('pv');
-        }
-        
-        Eventos.emit('pv-alterado', {
-            valor: estado.pv.atual,
-            tipo: delta < 0 ? 'dano' : 'cura',
-            diferenca: delta,
-            antes: pvAntes
-        });
-        
-        atualizarInterface();
-    }
-
-    function alterarPF(delta) {
-        const pfAntes = estado.pf.atual;
-        const limiteExaustao = -estado.ht;
-        
-        estado.pf.atual += delta;
-        estado.pf.atual = Math.max(limiteExaustao, Math.min(estado.pf.maximo, estado.pf.atual));
-        
-        // Verifica se entrou em exaustão
         if (estado.pf.atual <= 0 && pfAntes > 0) {
             aplicarDanoPorExaustao(Math.abs(estado.pf.atual));
         }
         
-        // Animações
-        if (delta < 0) {
-            aplicarEfeitoDano('pf');
-        } else if (delta > 0) {
-            aplicarEfeitoCura('pf');
+        atualizarInterface();
+        
+        if (CONFIG.debug) {
+            console.log(`📝 PF manual: ${novoValor}`);
         }
-        
-        Eventos.emit('pf-alterado', {
-            valor: estado.pf.atual,
-            tipo: delta < 0 ? 'fadiga' : 'descanso',
-            diferenca: delta,
-            antes: pfAntes
-        });
-        
-        atualizarInterface();
-    }
-
-    function modificarPV(delta) {
-        estado.pv.modificador += delta;
-        estado.pv.modificador = Math.max(-10, Math.min(10, estado.pv.modificador));
-        
-        // Recalcula máximo
-        estado.pv.maximo = estado.st + estado.pv.modificador;
-        
-        // Ajusta PV atual se necessário
-        if (estado.pv.atual > estado.pv.maximo) {
-            estado.pv.atual = estado.pv.maximo;
-        }
-        
-        Eventos.emit('pv-modificador-alterado', {
-            modificador: estado.pv.modificador,
-            maximo: estado.pv.maximo
-        });
-        
-        atualizarInterface();
-    }
-
-    function modificarPF(delta) {
-        estado.pf.modificador += delta;
-        estado.pf.modificador = Math.max(-10, Math.min(10, estado.pf.modificador));
-        
-        // Recalcula máximo
-        estado.pf.maximo = estado.ht + estado.pf.modificador;
-        
-        // Ajusta PF atual se necessário
-        if (estado.pf.atual > estado.pf.maximo) {
-            estado.pf.atual = estado.pf.maximo;
-        }
-        
-        Eventos.emit('pf-modificador-alterado', {
-            modificador: estado.pf.modificador,
-            maximo: estado.pf.maximo
-        });
-        
-        atualizarInterface();
-    }
-
-    function resetPV() {
-        const pvAntes = estado.pv.atual;
-        estado.pv.atual = estado.pv.maximo;
-        
-        Eventos.emit('pv-reset', {
-            antes: pvAntes,
-            agora: estado.pv.atual
-        });
-        
-        aplicarEfeitoReset('pv');
-        atualizarInterface();
-    }
-
-    function resetPF() {
-        const pfAntes = estado.pf.atual;
-        estado.pf.atual = estado.pf.maximo;
-        estado.pf.fadigaAtiva = false;
-        
-        Eventos.emit('pf-reset', {
-            antes: pfAntes,
-            agora: estado.pf.atual
-        });
-        
-        aplicarEfeitoReset('pf');
-        atualizarInterface();
     }
 
     function aplicarDanoPorExaustao(dano) {
@@ -272,18 +261,14 @@
         estado.pv.atual -= dano;
         estado.pv.atual = Math.max(limiteMorte, estado.pv.atual);
         
-        Eventos.emit('dano-exaustao', {
-            dano: dano,
-            pvAntes: pvAntes,
-            pvAgora: estado.pv.atual,
-            pfAtual: estado.pf.atual
-        });
+        if (CONFIG.debug) {
+            console.log(`🔥 Dano por exaustão: ${dano} PV (${pvAntes} → ${estado.pv.atual})`);
+        }
         
-        // Animação especial para dano por exaustão
-        aplicarEfeitoExaustao();
+        aplicarEfeito('pvFill', 'exaustao-dano');
     }
 
-    // ========== LÓGICA DE FADIGA (1/3 dos PF) ==========
+    // ========== LÓGICA DE FADIGA ==========
 
     function verificarFadiga() {
         const limiteFadiga = Math.ceil(estado.pf.maximo / 3);
@@ -293,34 +278,31 @@
         if (agoraFadigado && !estavaFadigado) {
             // Entrou em fadiga
             estado.pf.fadigaAtiva = true;
-            Eventos.emit('fadiga-ativada', {
-                pfAtual: estado.pf.atual,
-                limite: limiteFadiga
-            });
             
-            // Atualiza condição na lista
+            if (CONFIG.debug) {
+                console.log(`⚠️ FADIGA ATIVADA! PF (${estado.pf.atual}) ≤ ${limiteFadiga} (1/3 do máximo)`);
+            }
+            
             atualizarCondicaoFadigado(true);
             
         } else if (!agoraFadigado && estavaFadigado) {
             // Saiu da fadiga
             estado.pf.fadigaAtiva = false;
-            Eventos.emit('fadiga-desativada', {
-                pfAtual: estado.pf.atual,
-                limite: limiteFadiga
-            });
             
-            // Atualiza condição na lista
+            if (CONFIG.debug) {
+                console.log(`✅ Fadiga removida. PF (${estado.pf.atual}) > ${limiteFadiga}`);
+            }
+            
             atualizarCondicaoFadigado(false);
         }
         
         return agoraFadigado;
     }
 
-    // ========== ATUALIZAÇÃO EM TEMPO REAL DOS ATRIBUTOS ==========
+    // ========== ATUALIZAÇÃO DE ATRIBUTOS EM TEMPO REAL ==========
 
     function obterAtributosTempoReal() {
         try {
-            // Tenta pegar ST e HT da aba de atributos
             const stElement = document.getElementById('ST');
             const htElement = document.getElementById('HT');
             
@@ -328,7 +310,6 @@
                 const novoST = parseInt(stElement.value) || 10;
                 const novoHT = parseInt(htElement.value) || 10;
                 
-                // Verifica se houve mudança
                 if (novoST !== estado.cache.stAtual || novoHT !== estado.cache.htAtual) {
                     estado.st = novoST;
                     estado.ht = novoHT;
@@ -339,18 +320,15 @@
                     estado.pv.maximo = estado.st + estado.pv.modificador;
                     estado.pf.maximo = estado.ht + estado.pf.modificador;
                     
-                    Eventos.emit('atributos-atualizados', {
-                        st: estado.st,
-                        ht: estado.ht,
-                        pvMaximo: estado.pv.maximo,
-                        pfMaximo: estado.pf.maximo
-                    });
+                    if (CONFIG.debug) {
+                        console.log(`📊 Atributos atualizados: ST=${estado.st}, HT=${estado.ht}`);
+                    }
                     
                     return true;
                 }
             }
         } catch (e) {
-            if (CONFIG.debug) console.warn('Erro ao ler atributos:', e);
+            if (CONFIG.debug) console.warn('⚠️ Erro ao ler atributos:', e);
         }
         
         return false;
@@ -359,7 +337,9 @@
     // ========== ATUALIZAÇÃO DA INTERFACE ==========
 
     function atualizarInterface() {
-        // 1. Atualiza atributos em tempo real
+        if (CONFIG.debug) console.log('🔄 Atualizando interface...');
+        
+        // 1. Pega ST/HT atualizados
         obterAtributosTempoReal();
         
         // 2. Verifica fadiga
@@ -382,15 +362,15 @@
 
     function atualizarDisplayPV() {
         // Base
-        const baseEl = document.getElementById('pvBaseDisplay');
+        const baseEl = document.getElementById('pvBase');
         if (baseEl) baseEl.textContent = estado.st;
         
         // Máximo
-        const maxEl = document.getElementById('pvMaxDisplay');
+        const maxEl = document.getElementById('pvMax');
         if (maxEl) maxEl.textContent = estado.pv.maximo;
         
         // Atual
-        const atualEl = document.getElementById('pvAtualDisplay');
+        const atualEl = document.getElementById('pvAtual');
         if (atualEl) atualEl.value = estado.pv.atual;
         
         // Modificador
@@ -404,7 +384,10 @@
 
     function atualizarBarraPV() {
         const barra = document.getElementById('pvFill');
-        if (!barra) return;
+        if (!barra) {
+            console.error('❌ Elemento #pvFill não encontrado!');
+            return;
+        }
         
         const limiteMorte = -5 * estado.st;
         const rangeTotal = estado.st - limiteMorte;
@@ -424,11 +407,18 @@
         if (estado.pv.atual <= -5 * estado.st) cor = '#7f8c8d'; // Cinza escuro - Morto
         
         barra.style.background = cor;
+        
+        if (CONFIG.debug) {
+            console.log(`📊 Barra PV: ${porcentagem.toFixed(1)}% (${estado.pv.atual}/${estado.pv.maximo})`);
+        }
     }
 
     function atualizarEstadoPV() {
-        const elemento = document.getElementById('pvEstadoDisplay');
-        if (!elemento) return;
+        const elemento = document.getElementById('pvEstado');
+        if (!elemento) {
+            console.error('❌ Elemento #pvEstado não encontrado!');
+            return;
+        }
         
         let estadoTexto = 'Saudável';
         let cor = '#27ae60';
@@ -460,19 +450,23 @@
         
         elemento.textContent = estadoTexto;
         elemento.style.color = cor;
+        
+        if (CONFIG.debug) {
+            console.log(`🏥 Estado PV: ${estadoTexto}`);
+        }
     }
 
     function atualizarDisplayPF() {
         // Base
-        const baseEl = document.getElementById('pfBaseDisplay');
+        const baseEl = document.getElementById('pfBase');
         if (baseEl) baseEl.textContent = estado.ht;
         
         // Máximo
-        const maxEl = document.getElementById('pfMaxDisplay');
+        const maxEl = document.getElementById('pfMax');
         if (maxEl) maxEl.textContent = estado.pf.maximo;
         
         // Atual
-        const atualEl = document.getElementById('pfAtualDisplay');
+        const atualEl = document.getElementById('pfAtual');
         if (atualEl) atualEl.value = estado.pf.atual;
         
         // Modificador
@@ -486,7 +480,10 @@
 
     function atualizarBarraPF() {
         const barra = document.getElementById('pfFill');
-        if (!barra) return;
+        if (!barra) {
+            console.error('❌ Elemento #pfFill não encontrado!');
+            return;
+        }
         
         const limiteExaustao = -estado.ht;
         const rangeTotal = estado.ht - limiteExaustao;
@@ -507,11 +504,18 @@
         }
         
         barra.style.background = cor;
+        
+        if (CONFIG.debug) {
+            console.log(`📊 Barra PF: ${porcentagem.toFixed(1)}% (${estado.pf.atual}/${estado.pf.maximo})`);
+        }
     }
 
     function atualizarEstadoPF() {
-        const elemento = document.getElementById('pfEstadoDisplay');
-        if (!elemento) return;
+        const elemento = document.getElementById('pfEstado');
+        if (!elemento) {
+            console.error('❌ Elemento #pfEstado não encontrado!');
+            return;
+        }
         
         let estadoTexto = 'Normal';
         let cor = '#3498db';
@@ -533,11 +537,18 @@
         
         elemento.textContent = estadoTexto;
         elemento.style.color = cor;
+        
+        if (CONFIG.debug) {
+            console.log(`💨 Estado PF: ${estadoTexto}`);
+        }
     }
 
     function atualizarMarcadorFadiga() {
-        const marcador = document.querySelector('.marcador-fadiga');
-        if (!marcador) return;
+        const marcador = document.querySelector('.fatigue-marker');
+        if (!marcador) {
+            console.error('❌ Elemento .fatigue-marker não encontrado!');
+            return;
+        }
         
         // Calcula a posição (1/3 dos PF máximos)
         const limiteFadiga = Math.ceil(estado.pf.maximo / 3);
@@ -553,10 +564,13 @@
             marcador.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
             marcador.style.boxShadow = 'none';
         }
+        
+        if (CONFIG.debug) {
+            console.log(`📍 Marcador fadiga: ${porcentagem.toFixed(1)}% (PF ≤ ${limiteFadiga})`);
+        }
     }
 
     function atualizarModificadores() {
-        // Atualiza os inputs de modificadores
         const modPVEl = document.getElementById('pvModificador');
         if (modPVEl) modPVEl.value = estado.pv.modificador;
         
@@ -578,60 +592,28 @@
             checkbox.classList.remove('checked');
             condicaoItem.classList.remove('ativa');
         }
+        
+        if (CONFIG.debug) {
+            console.log(`📋 Condição "Fadigado": ${fadigado ? 'ATIVA' : 'INATIVA'}`);
+        }
     }
 
     // ========== ANIMAÇÕES ==========
 
-    function aplicarEfeitoDano(tipo) {
-        const elemento = document.getElementById(tipo === 'pv' ? 'pvFill' : 'pfFill');
-        if (!elemento) return;
+    function aplicarEfeito(elementoId, classe) {
+        const elemento = document.getElementById(elementoId);
+        if (!elemento) {
+            console.error(`❌ Elemento #${elementoId} não encontrado para animação!`);
+            return;
+        }
         
-        elemento.classList.remove('dano-recebido');
+        elemento.classList.remove(classe);
         void elemento.offsetWidth; // Força reflow
-        elemento.classList.add('dano-recebido');
+        elemento.classList.add(classe);
         
         setTimeout(() => {
-            elemento.classList.remove('dano-recebido');
+            elemento.classList.remove(classe);
         }, CONFIG.animacaoDuração);
-    }
-
-    function aplicarEfeitoCura(tipo) {
-        const elemento = document.getElementById(tipo === 'pv' ? 'pvFill' : 'pfFill');
-        if (!elemento) return;
-        
-        elemento.classList.remove('cura-recebida');
-        void elemento.offsetWidth;
-        elemento.classList.add('cura-recebida');
-        
-        setTimeout(() => {
-            elemento.classList.remove('cura-recebida');
-        }, CONFIG.animacaoDuração);
-    }
-
-    function aplicarEfeitoReset(tipo) {
-        const elemento = document.getElementById(tipo === 'pv' ? 'pvFill' : 'pfFill');
-        if (!elemento) return;
-        
-        elemento.classList.remove('reset-aplicado');
-        void elemento.offsetWidth;
-        elemento.classList.add('reset-aplicado');
-        
-        setTimeout(() => {
-            elemento.classList.remove('reset-aplicado');
-        }, CONFIG.animacaoDuração);
-    }
-
-    function aplicarEfeitoExaustao() {
-        const elemento = document.getElementById('pvFill');
-        if (!elemento) return;
-        
-        elemento.classList.remove('exaustao-dano');
-        void elemento.offsetWidth;
-        elemento.classList.add('exaustao-dano');
-        
-        setTimeout(() => {
-            elemento.classList.remove('exaustao-dano');
-        }, CONFIG.animacaoDuração * 2);
     }
 
     // ========== INICIALIZAÇÃO ==========
@@ -639,24 +621,41 @@
     function inicializar() {
         if (CONFIG.debug) console.log('🚀 Inicializando sistema PV-PF...');
         
+        // Verifica elementos críticos
+        const elementosCriticos = ['pvAtual', 'pfAtual', 'pvFill', 'pfFill'];
+        let elementosOk = true;
+        
+        elementosCriticos.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) {
+                console.error(`❌ Elemento crítico #${id} não encontrado!`);
+                elementosOk = false;
+            }
+        });
+        
+        if (!elementosOk) {
+            console.error('❌ Sistema PV-PF não pode ser inicializado!');
+            return;
+        }
+        
         // Configura eventos dos inputs
-        const pvInput = document.getElementById('pvAtualDisplay');
-        const pfInput = document.getElementById('pfAtualDisplay');
+        const pvInput = document.getElementById('pvAtual');
+        const pfInput = document.getElementById('pfAtual');
         
         if (pvInput) {
-            pvInput.addEventListener('change', window.atualizarPVInput);
-            pvInput.addEventListener('blur', window.atualizarPVInput);
+            pvInput.addEventListener('change', window.atualizarPVManual);
+            pvInput.addEventListener('blur', window.atualizarPVManual);
         }
         
         if (pfInput) {
-            pfInput.addEventListener('change', window.atualizarPFInput);
-            pfInput.addEventListener('blur', window.atualizarPFInput);
+            pfInput.addEventListener('change', window.atualizarPFManual);
+            pfInput.addEventListener('blur', window.atualizarPFManual);
         }
         
         // Atualização inicial
         atualizarInterface();
         
-        // Atualização contínua (se configurado)
+        // Atualização contínua
         if (CONFIG.atualizacaoAutomatica) {
             setInterval(() => {
                 if (obterAtributosTempoReal()) {
@@ -665,71 +664,86 @@
             }, CONFIG.intervaloAtualizacao);
         }
         
-        // Adiciona classes CSS para animações
+        // Adiciona estilos CSS para animações
         adicionarEstilosAnimacoes();
         
-        if (CONFIG.debug) console.log('✅ Sistema PV-PF inicializado!');
+        // Teste rápido
+        if (CONFIG.debug) {
+            console.log('✅ Sistema PV-PF inicializado com sucesso!');
+            console.log('🎯 Teste os botões: danoPV(1), curaPV(1), fadigaPF(1), descansoPF(1)');
+            
+            // Exibe estado inicial no console
+            console.log('📊 Estado inicial:', {
+                ST: estado.st,
+                HT: estado.ht,
+                PV: estado.pv.atual + '/' + estado.pv.maximo,
+                PF: estado.pf.atual + '/' + estado.pf.maximo,
+                Fadiga: estado.pf.fadigaAtiva
+            });
+        }
     }
 
     function adicionarEstilosAnimacoes() {
+        if (document.getElementById('estilos-pv-pf')) return;
+        
         const estilo = document.createElement('style');
+        estilo.id = 'estilos-pv-pf';
         estilo.textContent = `
             .dano-recebido {
-                animation: flashVermelho 0.3s ease;
+                animation: flashVermelhoPV 0.3s ease;
             }
             
             .cura-recebida {
-                animation: flashVerde 0.3s ease;
+                animation: flashVerdePV 0.3s ease;
             }
             
             .reset-aplicado {
-                animation: pulseDourado 0.5s ease;
+                animation: pulseDouradoPV 0.5s ease;
             }
             
             .exaustao-dano {
-                animation: pulseRoxo 0.8s ease;
+                animation: pulseRoxoPV 0.8s ease;
             }
             
-            @keyframes flashVermelho {
+            @keyframes flashVermelhoPV {
                 0%, 100% { filter: brightness(1); }
                 50% { filter: brightness(1.5); }
             }
             
-            @keyframes flashVerde {
+            @keyframes flashVerdePV {
                 0%, 100% { filter: brightness(1); }
                 50% { filter: brightness(1.3); }
             }
             
-            @keyframes pulseDourado {
+            @keyframes pulseDouradoPV {
                 0%, 100% { box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
                 50% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.8); }
             }
             
-            @keyframes pulseRoxo {
+            @keyframes pulseRoxoPV {
                 0%, 100% { filter: brightness(1); }
                 25% { filter: brightness(1.8); }
                 50% { filter: brightness(1); }
                 75% { filter: brightness(1.5); }
             }
         `;
+        
         document.head.appendChild(estilo);
     }
 
-    // ========== OBSERVADOR DA ABA DE COMBATE ==========
+    // ========== OBSERVADOR DA ABA COMBATE ==========
 
     function observarAbaCombate() {
         const combateTab = document.getElementById('combate');
         if (!combateTab) {
-            if (CONFIG.debug) console.log('Aguardando aba de combate...');
+            if (CONFIG.debug) console.log('⏳ Aguardando aba de combate...');
             setTimeout(observarAbaCombate, 500);
             return;
         }
         
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'class' && 
-                    combateTab.classList.contains('active')) {
-                    
+                if (mutation.attributeName === 'class' && combateTab.classList.contains('active')) {
                     if (CONFIG.debug) console.log('🎯 Aba Combate ativada');
                     setTimeout(inicializar, 100);
                 }
@@ -738,7 +752,7 @@
         
         observer.observe(combateTab, { attributes: true });
         
-        // Inicializa imediatamente se já estiver ativa
+        // Inicializa se já estiver ativa
         if (combateTab.classList.contains('active')) {
             setTimeout(inicializar, 300);
         }
@@ -754,9 +768,15 @@
         window.sistemaPVPF = {
             estado: () => ({ ...estado }),
             atualizar: atualizarInterface,
-            eventos: Eventos,
-            config: CONFIG
+            testar: {
+                danoPV: (valor) => alterarPV(-valor),
+                curaPV: (valor) => alterarPV(valor),
+                fadigaPF: (valor) => alterarPF(-valor),
+                descansoPF: (valor) => alterarPF(valor)
+            }
         };
+        
+        console.log('🔧 Sistema PV-PF carregado. Use window.sistemaPVPF para debug.');
     }
 
 })();
