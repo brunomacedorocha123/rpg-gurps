@@ -15,8 +15,8 @@
     <link rel="stylesheet" href="style-peculiaridades.css">
     <link rel="stylesheet" href="style-pericias.css">
     <link rel="stylesheet" href="style-magia.css">
-     <link rel="stylesheet" href="style-equipamentos.css">
-       <link rel="stylesheet" href="style-combate.css">
+    <link rel="stylesheet" href="style-equipamentos.css">
+    <link rel="stylesheet" href="style-combate.css">
    <style>
 * {
     margin: 0;
@@ -3237,44 +3237,91 @@ body::before {
     </div>
 </div>
 
-     <!-- ABA COMBATE - COMPLETA E ISOLADA -->
+     <!-- ABA COMBATE - COMPLETA E ORGANIZADA -->
 <div id="combate" class="tab-content">
     <div class="combate-container">
         
         <!-- SEÇÃO 1: PV E PF -->
-        <div class="combate-section">
+        <div class="combate-section pv-pf-section">
             <div class="section-header">
                 <i class="fas fa-heartbeat"></i>
                 <h3>PONTOS DE VIDA E FADIGA</h3>
             </div>
             
-            <div class="status-principais-grid">
+            <div class="pv-pf-grid">
                 <!-- CARD PV -->
                 <div class="status-card pv-card">
                     <div class="card-header">
-                        <i class="fas fa-heart"></i>
-                        <h4>PONTOS DE VIDA</h4>
+                        <div class="header-left">
+                            <i class="fas fa-heart"></i>
+                            <div>
+                                <h4>PONTOS DE VIDA</h4>
+                                <small>Saúde do Personagem</small>
+                            </div>
+                        </div>
+                        <div class="header-right">
+                            <div class="modificador-container">
+                                <span class="mod-label">Mod:</span>
+                                <button class="mod-btn minus" onclick="modificarPV(-1)">-</button>
+                                <input type="number" id="pvModificador" value="0" class="mod-input" readonly>
+                                <button class="mod-btn plus" onclick="modificarPV(1)">+</button>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div class="card-body">
-                        <div class="status-value" id="pvTexto">10/10</div>
-                        <div class="status-label" id="pvEstadoDisplay">Saudável</div>
-                        
-                        <!-- Barra de PV -->
-                        <div class="status-bar-container">
-                            <div class="status-bar">
-                                <div class="bar-fill" id="pvFill"></div>
+                        <!-- Info Básica -->
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Base</span>
+                                <span class="info-value" id="pvBase">10</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Máx</span>
+                                <span class="info-value" id="pvMax">10</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Atual</span>
+                                <input type="number" id="pvAtual" value="10" class="info-input" 
+                                       onchange="atualizarPVManual()">
+                            </div>
+                            <div class="info-item estado">
+                                <span class="info-label">Estado</span>
+                                <span class="estado-value" id="pvEstado">Saudável</span>
                             </div>
                         </div>
                         
-                        <!-- Controles de PV -->
-                        <div class="status-controls">
-                            <button class="control-btn damage" onclick="danoPV5()">-5</button>
-                            <button class="control-btn damage" onclick="danoPV2()">-2</button>
-                            <button class="control-btn damage" onclick="danoPV1()">-1</button>
-                            <input type="text" id="pvAtualDisplay" value="10" class="status-input" onchange="atualizarPVInput()">
-                            <button class="control-btn heal" onclick="curaPV1()">+1</button>
-                            <button class="control-btn heal" onclick="curaPV2()">+2</button>
-                            <button class="control-btn heal" onclick="curaPV5()">+5</button>
+                        <!-- Barra de PV -->
+                        <div class="barra-container">
+                            <div class="barra-wrapper">
+                                <div class="status-bar pv-bar">
+                                    <div class="bar-fill" id="pvFill" style="width: 100%"></div>
+                                    <div class="bar-text" id="pvTexto">10/10</div>
+                                </div>
+                                <div class="barra-legenda">
+                                    <span class="legenda-item verde">Saudável</span>
+                                    <span class="legenda-item amarelo">Machucado</span>
+                                    <span class="legenda-item laranja">Ferido</span>
+                                    <span class="legenda-item vermelho">Crítico</span>
+                                    <span class="legenda-item roxo">Morrendo</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controles Rápidos -->
+                        <div class="controles-rapidos">
+                            <h5>Controle Rápido</h5>
+                            <div class="controles-grid">
+                                <button class="btn-dano btn-rapido" onclick="danoPV(5)">-5</button>
+                                <button class="btn-dano btn-rapido" onclick="danoPV(2)">-2</button>
+                                <button class="btn-dano btn-rapido" onclick="danoPV(1)">-1</button>
+                                <button class="btn-cura btn-rapido" onclick="curaPV(1)">+1</button>
+                                <button class="btn-cura btn-rapido" onclick="curaPV(2)">+2</button>
+                                <button class="btn-cura btn-rapido" onclick="curaPV(5)">+5</button>
+                                <button class="btn-reset btn-rapido" onclick="resetPV()">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3282,225 +3329,559 @@ body::before {
                 <!-- CARD PF -->
                 <div class="status-card pf-card">
                     <div class="card-header">
-                        <i class="fas fa-wind"></i>
-                        <h4>PONTOS DE FADIGA</h4>
+                        <div class="header-left">
+                            <i class="fas fa-wind"></i>
+                            <div>
+                                <h4>PONTOS DE FADIGA</h4>
+                                <small>Energia do Personagem</small>
+                            </div>
+                        </div>
+                        <div class="header-right">
+                            <div class="modificador-container">
+                                <span class="mod-label">Mod:</span>
+                                <button class="mod-btn minus" onclick="modificarPF(-1)">-</button>
+                                <input type="number" id="pfModificador" value="0" class="mod-input" readonly>
+                                <button class="mod-btn plus" onclick="modificarPF(1)">+</button>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div class="card-body">
-                        <div class="status-value" id="pfTexto">10/10</div>
-                        <div class="status-label" id="pfEstadoDisplay">Normal</div>
+                        <!-- Info Básica -->
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Base</span>
+                                <span class="info-value" id="pfBase">10</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Máx</span>
+                                <span class="info-value" id="pfMax">10</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Atual</span>
+                                <input type="number" id="pfAtual" value="10" class="info-input"
+                                       onchange="atualizarPFManual()">
+                            </div>
+                            <div class="info-item estado">
+                                <span class="info-label">Estado</span>
+                                <span class="estado-value" id="pfEstado">Normal</span>
+                            </div>
+                        </div>
                         
                         <!-- Barra de PF -->
-                        <div class="status-bar-container">
-                            <div class="status-bar">
-                                <div class="bar-fill" id="pfFill"></div>
-                                <div class="fatigue-marker"></div>
+                        <div class="barra-container">
+                            <div class="barra-wrapper">
+                                <div class="status-bar pf-bar">
+                                    <div class="bar-fill" id="pfFill" style="width: 100%"></div>
+                                    <div class="bar-text" id="pfTexto">10/10</div>
+                                    <div class="fatigue-marker" style="left: 33%"></div>
+                                </div>
+                                <div class="pf-estados">
+                                    <div class="pf-estado normal">
+                                        <div class="estado-dot"></div>
+                                        <span>Normal</span>
+                                    </div>
+                                    <div class="pf-estado fadigado">
+                                        <div class="estado-dot"></div>
+                                        <span>Fadigado</span>
+                                    </div>
+                                    <div class="pf-estado exausto">
+                                        <div class="estado-dot"></div>
+                                        <span>Exausto</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- Controles de PF -->
-                        <div class="status-controls">
-                            <button class="control-btn fatigue" onclick="fadigaPF3()">-3</button>
-                            <button class="control-btn fatigue" onclick="fadigaPF1()">-1</button>
-                            <input type="text" id="pfAtualDisplay" value="10" class="status-input" onchange="atualizarPFInput()">
-                            <button class="control-btn rest" onclick="descansoPF1()">+1</button>
-                            <button class="control-btn rest" onclick="descansoPF3()">+3</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- FIM SEÇÃO 1 -->
-        
-        <!-- SEÇÃO 2: DANO -->
-        <div class="combate-section">
-            <div class="section-header">
-                <i class="fas fa-bolt"></i>
-                <h3>DANO</h3>
-            </div>
-            
-            <div class="capacidades-grid">
-                <!-- DANO GDP -->
-                <div class="dano-card">
-                    <div class="dano-header">
-                        <i class="fas fa-fist-raised"></i>
-                        <h4>GDP</h4>
-                    </div>
-                    <div class="dano-value" id="danoGdp">1d-2</div>
-                    <div class="dano-label">Golpe de Punho</div>
-                </div>
-                
-                <!-- DANO GEB -->
-                <div class="dano-card">
-                    <div class="dano-header">
-                        <i class="fas fa-hand-rock"></i>
-                        <h4>GEB</h4>
-                    </div>
-                    <div class="dano-value" id="danoGeb">1d</div>
-                    <div class="dano-label">Golpe de Braço</div>
-                </div>
-                
-                <!-- ARMA EQUIPADA -->
-                <div class="dano-card arma-card">
-                    <div class="dano-header">
-                        <i class="fas fa-crosshairs"></i>
-                        <h4>ARMA EQUIPADA</h4>
-                    </div>
-                    <div class="arma-info">
-                        <div id="semArma" class="no-weapon">
-                            <i class="fas fa-fist-raised"></i>
-                            <div>Usando dano corporal</div>
-                            <small>Adicione armas na aba de equipamentos</small>
-                        </div>
-                        <div id="comArma" style="display: none;">
-                            <div class="weapon-details">
-                                <div class="weapon-name" id="armaNome">-</div>
-                                <div class="weapon-damage" id="armaDano">-</div>
-                                <div class="weapon-type" id="armaTipo">-</div>
+                        <!-- Controles Rápidos -->
+                        <div class="controles-rapidos">
+                            <h5>Controle Rápido</h5>
+                            <div class="controles-grid">
+                                <button class="btn-fadiga btn-rapido" onclick="fadigaPF(3)">-3</button>
+                                <button class="btn-fadiga btn-rapido" onclick="fadigaPF(1)">-1</button>
+                                <button class="btn-descanso btn-rapido" onclick="descansoPF(1)">+1</button>
+                                <button class="btn-descanso btn-rapido" onclick="descansoPF(3)">+3</button>
+                                <button class="btn-reset btn-rapido" onclick="resetPF()">
+                                    <i class="fas fa-redo"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- FIM SEÇÃO 2 -->
         
-        <!-- SEÇÃO 3: DEFESAS ATIVAS -->
-        <div class="combate-section">
-            <div class="section-header">
-                <i class="fas fa-shield-alt"></i>
-                <h3>DEFESAS ATIVAS</h3>
-            </div>
-            
-            <div class="defesas-grid">
-                <!-- ESQUIVA -->
-                <div class="defesa-card">
-                    <div class="defesa-header">
-                        <i class="fas fa-running"></i>
-                        <div>
-                            <h4>ESQUIVA</h4>
-                            <small>DX + HT/4 + 3</small>
-                        </div>
+        <!-- SEÇÃO 2: DANO E DEFESAS -->
+        <div class="combate-section dano-defesas-section">
+            <div class="dano-defesas-grid">
+                <!-- CARD DANO -->
+                <div class="dano-card">
+                    <div class="card-header">
+                        <i class="fas fa-bolt"></i>
+                        <h3>DANO</h3>
                     </div>
-                    <div class="defesa-value" id="esquivaTotal">10</div>
-                    <div class="defesa-controls">
-                        <button class="mod-btn minus" onclick="modificarDefesa('esquiva', -1)">-</button>
-                        <input type="number" id="esquivaMod" value="0" class="mod-input" onchange="atualizarDefesa('esquiva')">
-                        <button class="mod-btn plus" onclick="modificarDefesa('esquiva', 1)">+</button>
+                    
+                    <div class="card-body">
+                        <div class="dano-base">
+                            <div class="dano-item">
+                                <div class="dano-header">
+                                    <i class="fas fa-fist-raised"></i>
+                                    <h4>GDP</h4>
+                                </div>
+                                <div class="dano-value" id="danoGdp">1d-2</div>
+                                <div class="dano-label">Golpe de Punho</div>
+                            </div>
+                            
+                            <div class="dano-item">
+                                <div class="dano-header">
+                                    <i class="fas fa-hand-rock"></i>
+                                    <h4>GEB</h4>
+                                </div>
+                                <div class="dano-value" id="danoGeb">1d</div>
+                                <div class="dano-label">Golpe de Braço</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arma-equipada">
+                            <div class="arma-header">
+                                <i class="fas fa-crosshairs"></i>
+                                <h4>ARMA EQUIPADA</h4>
+                            </div>
+                            <div class="arma-info">
+                                <div class="sem-arma" id="semArma">
+                                    <i class="fas fa-fist-raised"></i>
+                                    <div>
+                                        <div class="arma-mensagem">Usando dano corporal</div>
+                                        <small>Adicione armas na aba de equipamentos</small>
+                                    </div>
+                                </div>
+                                <div class="com-arma" id="comArma" style="display: none;">
+                                    <div class="arma-detalhes">
+                                        <div class="arma-nome" id="armaNome">-</div>
+                                        <div class="arma-dano" id="armaDano">-</div>
+                                        <div class="arma-tipo" id="armaTipo">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- BLOQUEIO -->
-                <div class="defesa-card">
-                    <div class="defesa-header">
+                <!-- CARD DEFESAS -->
+                <div class="defesas-card">
+                    <div class="card-header">
                         <i class="fas fa-shield-alt"></i>
-                        <div>
-                            <h4>BLOQUEIO</h4>
-                            <small>Escudo/2 + 3</small>
-                        </div>
-                    </div>
-                    <div class="defesa-value" id="bloqueioTotal">11</div>
-                    <div class="defesa-controls">
-                        <button class="mod-btn minus" onclick="modificarDefesa('bloqueio', -1)">-</button>
-                        <input type="number" id="bloqueioMod" value="0" class="mod-input" onchange="atualizarDefesa('bloqueio')">
-                        <button class="mod-btn plus" onclick="modificarDefesa('bloqueio', 1)">+</button>
-                    </div>
-                </div>
-                
-                <!-- APARAR -->
-                <div class="defesa-card">
-                    <div class="defesa-header">
-                        <i class="fas fa-sword"></i>
-                        <div>
-                            <h4>APARAR</h4>
-                            <small>Arma/2 + 3</small>
-                        </div>
-                    </div>
-                    <div class="defesa-value" id="apararTotal">3</div>
-                    <div class="defesa-controls">
-                        <button class="mod-btn minus" onclick="modificarDefesa('aparar', -1)">-</button>
-                        <input type="number" id="apararMod" value="0" class="mod-input" onchange="atualizarDefesa('aparar')">
-                        <button class="mod-btn plus" onclick="modificarDefesa('aparar', 1)">+</button>
-                    </div>
-                </div>
-                
-                <!-- DESLOCAMENTO -->
-                <div class="defesa-card">
-                    <div class="defesa-header">
-                        <i class="fas fa-walking"></i>
-                        <div>
-                            <h4>DESLOCAMENTO</h4>
-                            <small>(DX + HT)/4</small>
-                        </div>
-                    </div>
-                    <div class="defesa-value" id="deslocamentoTotal">5.00</div>
-                    <div class="defesa-controls">
-                        <button class="mod-btn minus" onclick="modificarDefesa('deslocamento', -1)">-</button>
-                        <input type="number" id="deslocamentoMod" value="0" class="mod-input" onchange="atualizarDefesa('deslocamento')">
-                        <button class="mod-btn plus" onclick="modificarDefesa('deslocamento', 1)">+</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- BÔNUS DE DEFESA -->
-            <div class="bonus-container">
-                <div class="bonus-header">
-                    <h4><i class="fas fa-star"></i> BÔNUS DE DEFESA</h4>
-                </div>
-                
-                <div class="bonus-grid">
-                    <div class="bonus-card">
-                        <div class="bonus-icon">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <div class="bonus-content">
-                            <h5>REFLEXOS</h5>
-                            <input type="number" id="bonusReflexos" value="0" class="bonus-input" onchange="atualizarBonus()">
-                        </div>
+                        <h3>DEFESAS ATIVAS</h3>
                     </div>
                     
-                    <div class="bonus-card">
-                        <div class="bonus-icon">
-                            <i class="fas fa-shield"></i>
+                    <div class="card-body">
+                        <div class="defesas-lista">
+                            <!-- ESQUIVA -->
+                            <div class="defesa-item">
+                                <div class="defesa-info">
+                                    <i class="fas fa-running"></i>
+                                    <div>
+                                        <div class="defesa-nome">Esquiva</div>
+                                        <small>DX + HT/4 + 3</small>
+                                    </div>
+                                </div>
+                                <div class="defesa-controle">
+                                    <div class="defesa-mod">
+                                        <button class="mod-btn minus" onclick="modDefesa('esquiva', -1)">-</button>
+                                        <input type="number" id="esquivaMod" value="0" class="mod-input" 
+                                               onchange="atualizarDefesa('esquiva')">
+                                        <button class="mod-btn plus" onclick="modDefesa('esquiva', 1)">+</button>
+                                    </div>
+                                    <div class="defesa-total" id="esquivaTotal">10</div>
+                                </div>
+                            </div>
+                            
+                            <!-- BLOQUEIO -->
+                            <div class="defesa-item">
+                                <div class="defesa-info">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div>
+                                        <div class="defesa-nome">Bloqueio</div>
+                                        <small>Escudo/2 + 3</small>
+                                    </div>
+                                </div>
+                                <div class="defesa-controle">
+                                    <div class="defesa-mod">
+                                        <button class="mod-btn minus" onclick="modDefesa('bloqueio', -1)">-</button>
+                                        <input type="number" id="bloqueioMod" value="0" class="mod-input"
+                                               onchange="atualizarDefesa('bloqueio')">
+                                        <button class="mod-btn plus" onclick="modDefesa('bloqueio', 1)">+</button>
+                                    </div>
+                                    <div class="defesa-total" id="bloqueioTotal">11</div>
+                                </div>
+                            </div>
+                            
+                            <!-- APARAR -->
+                            <div class="defesa-item">
+                                <div class="defesa-info">
+                                    <i class="fas fa-sword"></i>
+                                    <div>
+                                        <div class="defesa-nome">Aparar</div>
+                                        <small>Arma/2 + 3</small>
+                                    </div>
+                                </div>
+                                <div class="defesa-controle">
+                                    <div class="defesa-mod">
+                                        <button class="mod-btn minus" onclick="modDefesa('aparar', -1)">-</button>
+                                        <input type="number" id="apararMod" value="0" class="mod-input"
+                                               onchange="atualizarDefesa('aparar')">
+                                        <button class="mod-btn plus" onclick="modDefesa('aparar', 1)">+</button>
+                                    </div>
+                                    <div class="defesa-total" id="apararTotal">3</div>
+                                </div>
+                            </div>
+                            
+                            <!-- DESLOCAMENTO -->
+                            <div class="defesa-item">
+                                <div class="defesa-info">
+                                    <i class="fas fa-walking"></i>
+                                    <div>
+                                        <div class="defesa-nome">Deslocamento</div>
+                                        <small>(DX + HT)/4</small>
+                                    </div>
+                                </div>
+                                <div class="defesa-controle">
+                                    <div class="defesa-mod">
+                                        <button class="mod-btn minus" onclick="modDefesa('deslocamento', -1)">-</button>
+                                        <input type="number" id="deslocamentoMod" value="0" class="mod-input"
+                                               onchange="atualizarDefesa('deslocamento')">
+                                        <button class="mod-btn plus" onclick="modDefesa('deslocamento', 1)">+</button>
+                                    </div>
+                                    <div class="defesa-total" id="deslocamentoTotal">5.00</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="bonus-content">
-                            <h5>ESCUDO</h5>
-                            <input type="number" id="bonusEscudo" value="0" class="bonus-input" onchange="atualizarBonus()">
+                        
+                        <!-- BÔNUS DE DEFESA -->
+                        <div class="bonus-defesa">
+                            <div class="bonus-header">
+                                <i class="fas fa-star"></i>
+                                <h4>BÔNUS DE DEFESA</h4>
+                            </div>
+                            <div class="bonus-grid">
+                                <div class="bonus-item">
+                                    <div class="bonus-icon">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <div class="bonus-content">
+                                        <h5>REFLEXOS</h5>
+                                        <input type="number" id="bonusReflexos" value="0" class="bonus-input"
+                                               onchange="atualizarBonusDefesa()">
+                                    </div>
+                                </div>
+                                
+                                <div class="bonus-item">
+                                    <div class="bonus-icon">
+                                        <i class="fas fa-shield"></i>
+                                    </div>
+                                    <div class="bonus-content">
+                                        <h5>ESCUDO</h5>
+                                        <input type="number" id="bonusEscudo" value="0" class="bonus-input"
+                                               onchange="atualizarBonusDefesa()">
+                                    </div>
+                                </div>
+                                
+                                <div class="bonus-item">
+                                    <div class="bonus-icon">
+                                        <i class="fas fa-vest"></i>
+                                    </div>
+                                    <div class="bonus-content">
+                                        <h5>CAPA</h5>
+                                        <input type="number" id="bonusCapa" value="0" class="bonus-input"
+                                               onchange="atualizarBonusDefesa()">
+                                    </div>
+                                </div>
+                                
+                                <div class="bonus-item">
+                                    <div class="bonus-icon">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="bonus-content">
+                                        <h5>OUTROS</h5>
+                                        <input type="number" id="bonusOutros" value="0" class="bonus-input"
+                                               onchange="atualizarBonusDefesa()">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bonus-total">
+                                <span>Total de Bônus:</span>
+                                <span id="totalBonus">+0</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="bonus-card">
-                        <div class="bonus-icon">
-                            <i class="fas fa-vest"></i>
-                        </div>
-                        <div class="bonus-content">
-                            <h5>CAPA</h5>
-                            <input type="number" id="bonusCapa" value="0" class="bonus-input" onchange="atualizarBonus()">
-                        </div>
-                    </div>
-                    
-                    <div class="bonus-card">
-                        <div class="bonus-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="bonus-content">
-                            <h5>OUTROS</h5>
-                            <input type="number" id="bonusOutros" value="0" class="bonus-input" onchange="atualizarBonus()">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bonus-total">
-                    <span>Total de Bônus:</span>
-                    <span id="totalBonus">+0</span>
                 </div>
             </div>
         </div>
-        <!-- FIM SEÇÃO 3 -->
         
+        <!-- SEÇÃO 3: RESISTÊNCIA A DANO (RD) -->
+        <div class="combate-section rd-section">
+            <div class="card-header">
+                <i class="fas fa-user-shield"></i>
+                <h3>RESISTÊNCIA A DANO (RD)</h3>
+                <div class="rd-total-display">
+                    Total: <span id="rdTotal">0</span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="rd-grid">
+                    <!-- PARTES DO CORPO -->
+                    <div class="rd-parte" data-parte="cabeca">
+                        <div class="rd-icon">
+                            <i class="fas fa-head-side-virus"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Cabeça</span>
+                            <input type="number" id="rdCabeca" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="tronco">
+                        <div class="rd-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Tronco</span>
+                            <input type="number" id="rdTronco" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="crânio">
+                        <div class="rd-icon">
+                            <i class="fas fa-skull"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Crânio</span>
+                            <input type="number" id="rdCrânio" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="pescoco">
+                        <div class="rd-icon">
+                            <i class="fas fa-user-slash"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Pescoço</span>
+                            <input type="number" id="rdPescoco" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="virilha">
+                        <div class="rd-icon">
+                            <i class="fas fa-user-injured"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Virilha</span>
+                            <input type="number" id="rdVirilha" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="bracos">
+                        <div class="rd-icon">
+                            <i class="fas fa-hand-paper"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Braços</span>
+                            <input type="number" id="rdBracos" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="pernas">
+                        <div class="rd-icon">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Pernas</span>
+                            <input type="number" id="rdPernas" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="maos">
+                        <div class="rd-icon">
+                            <i class="fas fa-hand"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Mãos</span>
+                            <input type="number" id="rdMaos" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                    
+                    <div class="rd-parte" data-parte="pes">
+                        <div class="rd-icon">
+                            <i class="fas fa-shoe-prints"></i>
+                        </div>
+                        <div class="rd-info">
+                            <span class="rd-nome">Pés</span>
+                            <input type="number" id="rdPes" value="0" min="0" max="99" 
+                                   class="rd-input" onchange="calcularRDTotal()">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- PENALIDADES DE ATAQUE -->
+                <div class="penalidades-container">
+                    <div class="penalidades-header">
+                        <i class="fas fa-crosshairs"></i>
+                        <h4>PENALIDADES PARA ATAQUE</h4>
+                    </div>
+                    <div class="penalidades-grid">
+                        <div class="penalidade-item">
+                            <span>Tronco</span>
+                            <span class="penalidade-valor">0</span>
+                        </div>
+                        <div class="penalidade-item">
+                            <span>Órgãos</span>
+                            <span class="penalidade-valor">-3</span>
+                        </div>
+                        <div class="penalidade-item">
+                            <span>Crânio</span>
+                            <span class="penalidade-valor">-7</span>
+                        </div>
+                        <div class="penalidade-item">
+                            <span>Pescoço</span>
+                            <span class="penalidade-valor">-5</span>
+                        </div>
+                        <div class="penalidade-item">
+                            <span>Virilha</span>
+                            <span class="penalidade-valor">-3</span>
+                        </div>
+                        <div class="penalidade-item">
+                            <span>Olho</span>
+                            <span class="penalidade-valor">-9</span>
+                        </div>
+                        <div class="penalidade-item">
+                            <span>Braços/Pernas</span>
+                            <span class="penalidade-valor">-2</span>
+                        </div>
+                        <div class="penalidade-item">
+                            <span>Mãos/Pés</span>
+                            <span class="penalidade-valor">-4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SEÇÃO 4: ESCUDO -->
+        <div class="combate-section escudo-section">
+            <div class="card-header">
+                <i class="fas fa-shield"></i>
+                <h3>ESCUDO</h3>
+                <div class="escudo-status">
+                    <span class="status-badge inativo" id="escudoStatus">Inativo</span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="escudo-info">
+                    <div class="escudo-nome" id="escudoNome">Nenhum escudo equipado</div>
+                    <div class="escudo-dr">
+                        <span class="dr-label">DR:</span>
+                        <span class="dr-valor" id="escudoDR">0</span>
+                    </div>
+                </div>
+                
+                <div class="escudo-pv-container">
+                    <div class="pv-header">
+                        <i class="fas fa-heart"></i>
+                        <span class="pv-texto" id="escudoPVTexto">0/0</span>
+                    </div>
+                    <div class="barra-pv-escudo">
+                        <div class="barra-fill" id="escudoPVFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="escudo-controles">
+                    <button class="btn-escudo dano-5" onclick="danoEscudo(5)">-5</button>
+                    <button class="btn-escudo dano-1" onclick="danoEscudo(1)">-1</button>
+                    <button class="btn-escudo cura-1" onclick="curaEscudo(1)">+1</button>
+                    <button class="btn-escudo cura-5" onclick="curaEscudo(5)">+5</button>
+                    <button class="btn-escudo reset" onclick="resetEscudo()">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SEÇÃO 5: CONDIÇÕES DE COMBATE -->
+        <div class="combate-section condicoes-section">
+            <div class="card-header">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>CONDIÇÕES DE COMBATE</h3>
+                <div class="condicoes-count">
+                    <span id="condicoesAtivas">0</span> ativas
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="condicoes-grid">
+                    <div class="condicao-item" data-condicao="inconsciente" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Inconsciente</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="machucado" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Machucado</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="ferido" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Ferido</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="fadigado" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Fadigado</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="atordoado" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Atordoado</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="enjoado" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Enjoado</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="cego" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Cego</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="surdo" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Surdo</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="paralisado" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Paralisado</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="envenenado" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Envenenado</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="sangrando" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Sangrando</span>
+                    </div>
+                    <div class="condicao-item" data-condicao="queimando" onclick="toggleCondicao(this)">
+                        <div class="condicao-checkbox"></div>
+                        <span class="condicao-nome">Queimando</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- FIM combate-container -->
 </div>
-<!-- FIM #combate -->
 
         
       <!-- ABA EQUIPAMENTO - CORRIGIDA E ISOLADA -->
