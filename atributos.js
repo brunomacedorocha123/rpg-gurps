@@ -104,6 +104,26 @@ function alterarAtributo(atributo, valor) {
     setTimeout(() => input.classList.remove('changed'), 300);
     
     atualizarTudo();
+    
+    // NOTIFICAÇÃO SEGURA para sistema de defesas (apenas DX/HT)
+    if ((atributo === 'DX' || atributo === 'HT')) {
+        setTimeout(() => {
+            try {
+                // Verifica se o sistema de defesas existe e está funcionando
+                if (window.sistemaDefesasGlobal && 
+                    typeof window.sistemaDefesasGlobal.atualizarAtributosDireto === 'function' &&
+                    typeof window.sistemaDefesasGlobal.calcularTudo === 'function') {
+                    
+                    console.log(`🔄 Notificando defesas sobre mudança em ${atributo}`);
+                    window.sistemaDefesasGlobal.atualizarAtributosDireto();
+                    window.sistemaDefesasGlobal.calcularTudo();
+                }
+            } catch (e) {
+                // Não quebra se houver erro na notificação
+                console.warn('Aviso: Não foi possível notificar sistema de defesas', e);
+            }
+        }, 100);
+    }
 }
 
 // Função para ajustar atributos secundários
@@ -296,6 +316,24 @@ function salvarLocal() {
             bonus: personagemAtributos.bonus
         };
         localStorage.setItem('gurps_atributos', JSON.stringify(dados));
+        
+        // NOTIFICAÇÃO SEGURA para sistema de defesas
+        setTimeout(() => {
+            try {
+                if (window.sistemaDefesasGlobal && 
+                    typeof window.sistemaDefesasGlobal.atualizarAtributosDireto === 'function' &&
+                    typeof window.sistemaDefesasGlobal.calcularTudo === 'function') {
+                    
+                    console.log('🔄 Notificando defesas sobre salvamento de atributos');
+                    window.sistemaDefesasGlobal.atualizarAtributosDireto();
+                    window.sistemaDefesasGlobal.calcularTudo();
+                }
+            } catch (e) {
+                // Não quebra o fluxo se a notificação falhar
+                console.warn('Aviso: Notificação para defesas falhou', e);
+            }
+        }, 50);
+        
     } catch (error) {
         console.warn('Não foi possível salvar:', error);
     }
