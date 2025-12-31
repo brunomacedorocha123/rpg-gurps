@@ -1,5 +1,5 @@
-// defesa.js - SISTEMA COMPLETO E FUNCIONAL - VERSÃO FINAL
-// Usa o mesmo padrão de tecnicas.js para atualização automática
+// defesa.js - SISTEMA COMPLETO E FUNCIONAL - VERSÃO FINAL CORRIGIDA
+// Problema da esquiva/deslocamento resolvido - Atualização automática garantida
 
 class SistemaDefesas {
   constructor() {
@@ -53,6 +53,10 @@ class SistemaDefesas {
       bonusOutros: 0
     };
     
+    // Flag para controlar polling
+    this.pollingAtivo = false;
+    this.pollingInterval = null;
+    
     console.log('🛡️ SistemaDefesas instanciado');
   }
   
@@ -67,19 +71,22 @@ class SistemaDefesas {
     try {
       console.log('🚀 Iniciando Sistema de Defesas...');
       
-      // 1. Carregar elementos da aba Combate
+      // 1. Sobrescrever a função de alteração de atributos (PONTO CRÍTICO)
+      this.configurarInterceptacaoAtributos();
+      
+      // 2. Carregar elementos da aba Combate
       this.carregarElementosCombate();
       
-      // 2. Carregar valores iniciais (usando localStorage)
+      // 3. Carregar valores iniciais
       this.carregarValoresIniciais();
       
-      // 3. Configurar eventos da aba Combate
+      // 4. Configurar eventos da aba Combate
       this.configurarEventosCombate();
       
-      // 4. Iniciar monitoramento automático
+      // 5. Iniciar monitoramento automático
       this.iniciarMonitoramento();
       
-      // 5. Calcular valores iniciais
+      // 6. Calcular valores iniciais
       this.calcularTudo();
       
       this.iniciado = true;
@@ -99,7 +106,89 @@ class SistemaDefesas {
     }
   }
   
-  // MÉTODO IMPORTANTE: Carrega elementos APENAS da aba Combate
+  // MÉTODO NOVO E CRÍTICO: Interceptar função de atributos.js
+  configurarInterceptacaoAtributos() {
+    console.log('🎯 Configurando interceptação de atributos...');
+    
+    // Sobrescrever a função global alterarAtributo do atributos.js
+    const funcaoOriginal = window.alterarAtributo;
+    
+    if (funcaoOriginal) {
+      window.alterarAtributo = (atributo, valor) => {
+        console.log(`🎯 Interceptado: alterarAtributo(${atributo}, ${valor})`);
+        
+        // Executar função original
+        const resultado = funcaoOriginal(atributo, valor);
+        
+        // Se for DX ou HT, atualizar imediatamente as defesas
+        if (atributo === 'DX' || atributo === 'HT') {
+          setTimeout(() => {
+            this.atualizarAtributosDireto();
+            this.calcularTudo();
+            console.log(`🔄 Atualização imediata por alteração de ${atributo}`);
+          }, 50);
+        }
+        
+        return resultado;
+      };
+      console.log('✅ Função alterarAtributo interceptada com sucesso');
+    } else {
+      console.warn('⚠️ Função alterarAtributo não encontrada, usando polling aprimorado');
+    }
+    
+    // Também interceptar a função de input dos atributos
+    ['DX', 'HT'].forEach(atributo => {
+      const input = document.getElementById(atributo);
+      if (input) {
+        // Remover event listeners antigos para evitar duplicação
+        const novoInput = input.cloneNode(true);
+        input.parentNode.replaceChild(novoInput, input);
+        
+        // Adicionar novo listener
+        novoInput.addEventListener('input', (e) => {
+          console.log(`⌨️ Input direto em ${atributo}: ${e.target.value}`);
+          setTimeout(() => {
+            this.atualizarAtributosDireto();
+            this.calcularTudo();
+          }, 200);
+        });
+        
+        // Adicionar ao cache
+        this.elementos[`input${atributo}`] = novoInput;
+      }
+    });
+  }
+  
+  // MÉTODO NOVO: Atualização direta dos atributos sem localStorage
+  atualizarAtributosDireto() {
+    const dxAnterior = this.estado.atributos.dx;
+    const htAnterior = this.estado.atributos.ht;
+    
+    // Buscar valores diretamente dos inputs
+    const inputDX = document.getElementById('DX');
+    const inputHT = document.getElementById('HT');
+    
+    if (inputDX) {
+      const novoDX = parseInt(inputDX.value) || 10;
+      if (novoDX !== this.estado.atributos.dx) {
+        console.log(`🔄 DX alterado: ${this.estado.atributos.dx} → ${novoDX}`);
+        this.estado.atributos.dx = novoDX;
+        this.cache.dx = novoDX;
+      }
+    }
+    
+    if (inputHT) {
+      const novoHT = parseInt(inputHT.value) || 10;
+      if (novoHT !== this.estado.atributos.ht) {
+        console.log(`🔄 HT alterado: ${this.estado.atributos.ht} → ${novoHT}`);
+        this.estado.atributos.ht = novoHT;
+        this.cache.ht = novoHT;
+      }
+    }
+    
+    return (dxAnterior !== this.estado.atributos.dx || htAnterior !== this.estado.atributos.ht);
+  }
+  
   carregarElementosCombate() {
     console.log('🔍 Carregando elementos da aba Combate...');
     
@@ -127,12 +216,11 @@ class SistemaDefesas {
     console.log('✅ Elementos da aba Combate carregados');
   }
   
-  // MÉTODO IMPORTANTE: Carrega valores do localStorage (igual técnicas.js faz)
   carregarValoresIniciais() {
-    console.log('📥 Carregando valores iniciais do localStorage...');
+    console.log('📥 Carregando valores iniciais...');
     
-    // 1. Carregar DX e HT do localStorage (atualizado por atributos.js)
-    this.carregarAtributosLocalStorage();
+    // 1. Carregar DX e HT diretamente dos inputs
+    this.carregarAtributosDireto();
     
     // 2. Carregar bônus da aba Combate
     this.carregarBonusCombate();
@@ -149,29 +237,22 @@ class SistemaDefesas {
     });
   }
   
-  // MÉTODO NOVO: Carrega atributos do localStorage (padrão igual técnicas.js)
-  carregarAtributosLocalStorage() {
-    try {
-      const dados = localStorage.getItem('gurps_atributos');
-      if (dados) {
-        const parsed = JSON.parse(dados);
-        if (parsed.atributos) {
-          // DX e HT do localStorage (atualizado por atributos.js)
-          this.estado.atributos.dx = parsed.atributos.DX || 10;
-          this.estado.atributos.ht = parsed.atributos.HT || 10;
-          
-          // Atualizar cache
-          this.cache.dx = this.estado.atributos.dx;
-          this.cache.ht = this.estado.atributos.ht;
-          
-          console.log(`🎯 Atributos do localStorage: DX=${this.estado.atributos.dx}, HT=${this.estado.atributos.ht}`);
-        }
-      }
-    } catch (error) {
-      console.warn('⚠️ Não foi possível carregar atributos do localStorage:', error);
-      this.estado.atributos.dx = 10;
-      this.estado.atributos.ht = 10;
+  // MÉTODO MODIFICADO: Carrega atributos diretamente dos inputs
+  carregarAtributosDireto() {
+    const inputDX = document.getElementById('DX');
+    const inputHT = document.getElementById('HT');
+    
+    if (inputDX) {
+      this.estado.atributos.dx = parseInt(inputDX.value) || 10;
+      this.cache.dx = this.estado.atributos.dx;
     }
+    
+    if (inputHT) {
+      this.estado.atributos.ht = parseInt(inputHT.value) || 10;
+      this.cache.ht = this.estado.atributos.ht;
+    }
+    
+    console.log(`🎯 Atributos diretos: DX=${this.estado.atributos.dx}, HT=${this.estado.atributos.ht}`);
   }
   
   carregarBonusCombate() {
@@ -242,12 +323,12 @@ class SistemaDefesas {
     }
   }
   
-  // MÉTODO IMPORTANTE: Inicia monitoramento automático
+  // MÉTODO OTIMIZADO: Monitoramento automático
   iniciarMonitoramento() {
     console.log('👁️ Iniciando monitoramento automático...');
     
-    // 1. Observar localStorage (igual técnicas.js faz)
-    this.iniciarObservadorLocalStorage();
+    // 1. Observar mudanças de atributos via MutationObserver (MUITO EFICAZ)
+    this.iniciarObservadorAtributos();
     
     // 2. Observar eventos do sistema de equipamentos
     this.iniciarObservadorEquipamentos();
@@ -255,43 +336,49 @@ class SistemaDefesas {
     // 3. Observar mudanças na própria aba Combate
     this.iniciarObservadorCombate();
     
-    // 4. Polling leve como fallback
-    this.iniciarPollingLeve();
+    // 4. Polling inteligente e leve
+    this.iniciarPollingInteligente();
     
     console.log('✅ Monitoramento configurado');
   }
   
-  // MÉTODO NOVO: Observa mudanças no localStorage (padrão igual técnicas.js)
-  iniciarObservadorLocalStorage() {
-    // Evento disparado quando localStorage muda
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'gurps_atributos') {
-        console.log('🔄 localStorage "gurps_atributos" alterado!');
-        this.atualizarAtributos();
-        this.calcularTudo();
-      }
+  // MÉTODO NOVO: MutationObserver para detectar mudanças nos atributos
+  iniciarObservadorAtributos() {
+    // Observar o container dos atributos
+    const atributosContainer = document.querySelector('.atributos-container');
+    
+    if (atributosContainer) {
+      const observer = new MutationObserver((mutations) => {
+        let atributosAlterados = false;
+        
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList' || mutation.type === 'characterData') {
+            // Verificar se algum atributo mudou
+            const dxAntigo = this.estado.atributos.dx;
+            const htAntigo = this.estado.atributos.ht;
+            
+            this.atualizarAtributosDireto();
+            
+            if (dxAntigo !== this.estado.atributos.dx || htAntigo !== this.estado.atributos.ht) {
+              atributosAlterados = true;
+            }
+          }
+        });
+        
+        if (atributosAlterados) {
+          console.log('🔍 MutationObserver detectou mudança nos atributos');
+          this.calcularTudo();
+        }
+      });
       
-      if (e.key === 'gurps_nivel_carga') {
-        console.log('🔄 localStorage "gurps_nivel_carga" alterado!');
-        this.carregarNivelCarga();
-        this.calcularTudo();
-      }
-    });
-  }
-  
-  // MÉTODO NOVO: Atualiza atributos quando localStorage muda
-  atualizarAtributos() {
-    const dxAnterior = this.estado.atributos.dx;
-    const htAnterior = this.estado.atributos.ht;
-    
-    this.carregarAtributosLocalStorage();
-    
-    if (dxAnterior !== this.estado.atributos.dx || htAnterior !== this.estado.atributos.ht) {
-      console.log(`🔄 Atributos atualizados: DX ${dxAnterior}→${this.estado.atributos.dx}, HT ${htAnterior}→${this.estado.atributos.ht}`);
-      return true;
+      observer.observe(atributosContainer, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+      
+      console.log('👁️ MutationObserver configurado para atributos');
     }
-    
-    return false;
   }
   
   iniciarObservadorEquipamentos() {
@@ -317,6 +404,16 @@ class SistemaDefesas {
             this.calcularTudo();
           }
         });
+        
+        // Também escutar input para atualização em tempo real
+        input.addEventListener('input', () => {
+          const valor = parseInt(input.value) || 0;
+          if (this.cache[`bonus${bonus}`] !== valor) {
+            this.cache[`bonus${bonus}`] = valor;
+            this.estado.bonus[bonus.toLowerCase()] = valor;
+            this.calcularTudo();
+          }
+        });
       }
     });
     
@@ -328,35 +425,54 @@ class SistemaDefesas {
           this.estado.modificadores[defesa] = parseInt(input.value) || 0;
           this.calcularTudo();
         });
+        
+        input.addEventListener('input', () => {
+          this.estado.modificadores[defesa] = parseInt(input.value) || 0;
+          this.calcularTudo();
+        });
       }
     });
   }
   
-  // MÉTODO NOVO: Polling leve (verifica a cada 2 segundos)
-  iniciarPollingLeve() {
-    console.log('⏰ Polling leve iniciado (2s)');
+  // MÉTODO NOVO: Polling inteligente e leve
+  iniciarPollingInteligente() {
+    console.log('⏰ Polling inteligente iniciado (1.5s)');
     
-    setInterval(() => {
-      if (this.atualizando) return;
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+    
+    this.pollingInterval = setInterval(() => {
+      if (this.atualizando || document.hidden) return;
       
-      // Verificar se atributos mudaram
-      const mudou = this.atualizarAtributos();
+      let mudou = false;
       
-      // Verificar se carga mudou
+      // 1. Verificar atributos DX e HT
+      mudou = this.atualizarAtributosDireto() || mudou;
+      
+      // 2. Verificar carga
       if (window.sistemaEquipamentos && 
           window.sistemaEquipamentos.nivelCargaAtual &&
           window.sistemaEquipamentos.nivelCargaAtual !== this.cache.carga) {
         
-        console.log(`🔄 Polling detectou carga: ${this.cache.carga} → ${window.sistemaEquipamentos.nivelCargaAtual}`);
+        console.log(`📦 Polling detectou carga: ${this.cache.carga} → ${window.sistemaEquipamentos.nivelCargaAtual}`);
         this.atualizarNivelCarga(window.sistemaEquipamentos.nivelCargaAtual);
         mudou = true;
       }
       
-      // Se algo mudou, recalcular
+      // 3. Se algo mudou, recalcular
       if (mudou) {
         this.calcularTudo();
       }
-    }, 2000); // Apenas 2 segundos
+    }, 1500); // 1.5 segundos é o ideal
+  }
+  
+  // MÉTODO NOVO: Verificação forçada quando a aba é ativada
+  verificarAoAtivarAba() {
+    console.log('🔍 Verificação ao ativar aba Combate');
+    this.atualizarAtributosDireto();
+    this.carregarNivelCarga();
+    this.calcularTudo();
   }
   
   atualizarNivelCarga(novoNivel, pesoAtual = null, pesoMaximo = null) {
@@ -376,18 +492,6 @@ class SistemaDefesas {
     
     if (pesoAtual !== null) this.estado.pesoAtual = pesoAtual;
     if (pesoMaximo !== null) this.estado.pesoMaximo = pesoMaximo;
-    
-    // Salvar no localStorage
-    try {
-      localStorage.setItem('gurps_nivel_carga', JSON.stringify({
-        nivel: nivelFormatado,
-        pesoAtual: this.estado.pesoAtual,
-        pesoMaximo: this.estado.pesoMaximo,
-        timestamp: new Date().getTime()
-      }));
-    } catch (e) {
-      // Silencioso
-    }
     
     // Feedback visual se redutor mudou
     if (redutorAnterior !== this.estado.redutorCarga) {
@@ -412,7 +516,6 @@ class SistemaDefesas {
     return redutores[nivel] || 0;
   }
   
-  // MÉTODO IMPORTANTE: Configurar eventos da aba Combate
   configurarEventosCombate() {
     console.log('⚙️ Configurando eventos da aba Combate...');
     
@@ -445,10 +548,10 @@ class SistemaDefesas {
     console.log('✅ Eventos da aba Combate configurados');
   }
   
-  // CÁLCULOS (mantidos iguais)
+  // CÁLCULOS
   calcularTudo() {
     if (this.atualizando) return;
-    if (Date.now() - this.ultimoUpdate < 100) return; // Debounce 100ms
+    if (Date.now() - this.ultimoUpdate < 100) return;
     
     this.atualizando = true;
     this.ultimoUpdate = Date.now();
@@ -690,7 +793,6 @@ class SistemaDefesas {
     }
   }
   
-  // ATUALIZAÇÃO DA INTERFACE
   atualizarInterface() {
     // Valores das defesas
     if (this.elementos.esquivaTotal) {
@@ -848,7 +950,8 @@ class SistemaDefesas {
   
   forcarRecalculo() {
     console.log('🔄 Forçando recálculo completo...');
-    this.carregarValoresIniciais();
+    this.atualizarAtributosDireto();
+    this.carregarNivelCarga();
     this.calcularTudo();
   }
   
@@ -860,6 +963,15 @@ class SistemaDefesas {
     console.log('Fadiga:', this.estado.fadiga.ativa ? 'Ativa' : 'Inativa');
     console.log('=====================');
   }
+  
+  // MÉTODO PARA DESTRUIR O SISTEMA (limpeza)
+  destruir() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+    this.iniciado = false;
+    console.log('🗑️ Sistema de defesas destruído');
+  }
 }
 
 // SISTEMA GLOBAL
@@ -867,8 +979,8 @@ let sistemaDefesasGlobal = null;
 
 function iniciarSistemaDefesas() {
   if (sistemaDefesasGlobal && sistemaDefesasGlobal.iniciado) {
-    console.log('⚠️ Sistema já iniciado, recalculando...');
-    sistemaDefesasGlobal.forcarRecalculo();
+    console.log('⚠️ Sistema já iniciado, verificando atributos...');
+    sistemaDefesasGlobal.verificarAoAtivarAba();
     return sistemaDefesasGlobal;
   }
   
@@ -883,7 +995,7 @@ function iniciarSistemaDefesas() {
   return sistemaDefesasGlobal;
 }
 
-// INICIALIZAÇÃO AUTOMÁTICA (igual técnicas.js)
+// INICIALIZAÇÃO AUTOMÁTICA
 document.addEventListener('DOMContentLoaded', function() {
   console.log('📄 DOM carregado, preparando sistema de defesas...');
   
@@ -897,8 +1009,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (mutation.attributeName === 'class') {
           if (combateTab.classList.contains('active')) {
             console.log('🎯 Aba Combate ativada! Iniciando sistema...');
+            
+            // Pequeno delay para garantir que todos os elementos estejam carregados
             setTimeout(() => {
               iniciarSistemaDefesas();
+              
+              // Forçar verificação após 500ms para garantir
+              setTimeout(() => {
+                if (sistemaDefesasGlobal) {
+                  sistemaDefesasGlobal.verificarAoAtivarAba();
+                }
+              }, 500);
             }, 300);
           }
         }
@@ -912,6 +1033,13 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('🎯 Aba Combate já ativa, iniciando...');
       setTimeout(() => {
         iniciarSistemaDefesas();
+        
+        // Forçar verificação após 500ms
+        setTimeout(() => {
+          if (sistemaDefesasGlobal) {
+            sistemaDefesasGlobal.verificarAoAtivarAba();
+          }
+        }, 500);
       }, 500);
     }
   }
@@ -930,7 +1058,8 @@ window.defesa = {
       sistemaDefesasGlobal.estado.atributos.ht = 12;
       sistemaDefesasGlobal.calcularTudo();
     }
-  }
+  },
+  destruir: () => sistemaDefesasGlobal?.destruir()
 };
 
 // ATALHOS DE CONSOLE
@@ -938,6 +1067,24 @@ window.DS = () => window.defesa.status();
 window.DR = () => window.defesa.recalcular();
 window.DC = (nivel) => window.defesa.atualizarCarga(nivel);
 window.DT = () => window.defesa.testar();
+window.DX = () => {
+  console.log('🎯 Estado atual do sistema:');
+  if (sistemaDefesasGlobal) {
+    console.log('Atributos DX/HT:', sistemaDefesasGlobal.estado.atributos);
+    console.log('Cache DX/HT:', sistemaDefesasGlobal.cache.dx, sistemaDefesasGlobal.cache.ht);
+    
+    // Mostrar valores atuais dos inputs
+    const inputDX = document.getElementById('DX');
+    const inputHT = document.getElementById('HT');
+    console.log('Input DX atual:', inputDX?.value);
+    console.log('Input HT atual:', inputHT?.value);
+  }
+};
 
 console.log('✅ Sistema de Defesas carregado!');
-console.log('🎮 Comandos: DS() - Status, DR() - Recalcular, DC("leve") - Testar carga, DT() - Teste rápido');
+console.log('🎮 Comandos:');
+console.log('  DS() - Status do sistema');
+console.log('  DR() - Recalcular tudo');
+console.log('  DC("leve") - Testar carga');
+console.log('  DT() - Teste rápido');
+console.log('  DX() - Diagnóstico detalhado');
