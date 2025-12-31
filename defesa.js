@@ -1,4 +1,6 @@
-// defesa.js - SISTEMA COMPLETO E FUNCIONAL - VERSÃO FINAL CORRIGIDA
+// defesa.js - SISTEMA COMPLETO E FUNCIONAL - VERSÃO FINAL
+// Usa o mesmo padrão de tecnicas.js para atualização automática
+
 class SistemaDefesas {
   constructor() {
     this.estado = {
@@ -38,91 +40,70 @@ class SistemaDefesas {
     this.observadores = [];
     this.atualizando = false;
     this.iniciado = false;
-    this.ultimaCargaDetectada = null;
+    this.ultimoUpdate = 0;
     
-    // Cache para verificar mudanças
-    this.cacheAtributos = { dx: 10, ht: 10 };
-    this.cacheCarga = 'nenhuma';
+    // Cache para evitar cálculos desnecessários
+    this.cache = {
+      dx: 10,
+      ht: 10,
+      carga: 'nenhuma',
+      bonusReflexos: 0,
+      bonusEscudo: 0,
+      bonusCapa: 0,
+      bonusOutros: 0
+    };
     
-    console.log('🆕 SistemaDefesas criado');
+    console.log('🛡️ SistemaDefesas instanciado');
   }
   
+  // MÉTODO PRINCIPAL DE INICIALIZAÇÃO
   iniciar() {
     if (this.iniciado) {
-      console.log('⚠️ Sistema já iniciado');
+      console.log('⚠️ Sistema já iniciado, recalculando...');
+      this.calcularTudo();
       return;
     }
     
     try {
-      console.log('🚀 INICIANDO SISTEMA DE DEFESAS...');
+      console.log('🚀 Iniciando Sistema de Defesas...');
       
-      // 1. Carregar elementos
-      this.carregarElementos();
-      console.log('✅ Elementos carregados');
+      // 1. Carregar elementos da aba Combate
+      this.carregarElementosCombate();
       
-      // 2. Carregar valores iniciais
+      // 2. Carregar valores iniciais (usando localStorage)
       this.carregarValoresIniciais();
-      console.log('✅ Valores iniciais:', this.estado.atributos);
       
-      // 3. Configurar observadores de atributos
-      this.configurarObservadoresAtributos();
-      console.log('✅ Observadores configurados');
+      // 3. Configurar eventos da aba Combate
+      this.configurarEventosCombate();
       
-      // 4. Detectar carga inicial
-      this.detectarNivelCargaInicial();
-      console.log('✅ Carga detectada:', this.estado.nivelCarga);
-      
-      // 5. Configurar eventos
-      this.configurarEventos();
-      console.log('✅ Eventos configurados');
-      
-      // 6. Iniciar monitoramento de carga
-      this.iniciarMonitoramentoCarga();
-      console.log('✅ Monitoramento de carga ativo');
-      
-      // 7. Calcular tudo
-      this.calcularTudo();
-      console.log('✅ Cálculos realizados');
-      
-      // 8. Iniciar monitoramento geral
+      // 4. Iniciar monitoramento automático
       this.iniciarMonitoramento();
-      console.log('✅ Monitoramento geral ativo');
+      
+      // 5. Calcular valores iniciais
+      this.calcularTudo();
       
       this.iniciado = true;
       
-      console.log('🎉 SISTEMA DE DEFESAS INICIADO COM SUCESSO!');
-      console.log('📊 Estado final:', {
-        dx: this.estado.atributos.dx,
-        ht: this.estado.atributos.ht,
-        esquiva: this.estado.defesas.esquiva,
-        deslocamento: this.estado.defesas.deslocamento,
-        carga: this.estado.nivelCarga,
-        redutor: this.estado.redutorCarga
+      console.log('✅ Sistema de defesas iniciado com sucesso!');
+      console.log('📊 Estado inicial:', {
+        DX: this.estado.atributos.dx,
+        HT: this.estado.atributos.ht,
+        Esquiva: this.estado.defesas.esquiva,
+        Deslocamento: this.estado.defesas.deslocamento,
+        Carga: this.estado.nivelCarga,
+        Redutor: this.estado.redutorCarga
       });
       
     } catch (error) {
-      console.error('❌ ERRO ao iniciar sistema:', error);
+      console.error('❌ Erro ao iniciar sistema:', error);
     }
   }
   
-  carregarElementos() {
-    console.log('🔍 Buscando elementos...');
+  // MÉTODO IMPORTANTE: Carrega elementos APENAS da aba Combate
+  carregarElementosCombate() {
+    console.log('🔍 Carregando elementos da aba Combate...');
     
-    // ATENÇÃO: Os inputs de atributos têm IDs 'DX', 'HT', 'ST', 'IQ'
-    this.elementos.dx = document.getElementById('DX');
-    this.elementos.ht = document.getElementById('HT');
-    
-    console.log('📌 Elemento DX:', this.elementos.dx ? 'ENCONTRADO' : 'NÃO ENCONTRADO');
-    console.log('📌 Elemento HT:', this.elementos.ht ? 'ENCONTRADO' : 'NÃO ENCONTRADO');
-    
-    if (this.elementos.dx) {
-      console.log('📊 Valor do DX:', this.elementos.dx.value);
-    }
-    if (this.elementos.ht) {
-      console.log('📊 Valor do HT:', this.elementos.ht.value);
-    }
-    
-    // Elementos da aba Combate
+    // Apenas elementos que existem na aba Combate
     this.elementos.bonusReflexos = document.getElementById('bonusReflexos');
     this.elementos.bonusEscudo = document.getElementById('bonusEscudo');
     this.elementos.bonusCapa = document.getElementById('bonusCapa');
@@ -135,187 +116,91 @@ class SistemaDefesas {
     
     this.elementos.totalBonus = document.getElementById('totalBonus');
     
-    // Para indicador de carga
+    // Elementos para indicador de carga
     this.elementos.esquivaInfo = document.querySelector('.defesa-item:nth-child(1) .defesa-info');
+    
+    // Inputs de modificadores
+    ['esquiva', 'bloqueio', 'aparar', 'deslocamento'].forEach(defesa => {
+      this.elementos[`${defesa}Mod`] = document.getElementById(`${defesa}Mod`);
+    });
+    
+    console.log('✅ Elementos da aba Combate carregados');
   }
   
+  // MÉTODO IMPORTANTE: Carrega valores do localStorage (igual técnicas.js faz)
   carregarValoresIniciais() {
-    console.log('📥 Carregando valores iniciais dos atributos...');
+    console.log('📥 Carregando valores iniciais do localStorage...');
     
-    // DX
-    if (this.elementos.dx) {
-      const dxValor = parseInt(this.elementos.dx.value);
-      this.estado.atributos.dx = isNaN(dxValor) ? 10 : dxValor;
-      this.cacheAtributos.dx = this.estado.atributos.dx;
-      console.log(`🎯 DX: ${this.estado.atributos.dx}`);
-    } else {
-      console.warn('⚠️ Input DX não encontrado, usando valor padrão 10');
+    // 1. Carregar DX e HT do localStorage (atualizado por atributos.js)
+    this.carregarAtributosLocalStorage();
+    
+    // 2. Carregar bônus da aba Combate
+    this.carregarBonusCombate();
+    
+    // 3. Carregar modificadores da aba Combate
+    this.carregarModificadoresCombate();
+    
+    // 4. Carregar nível de carga
+    this.carregarNivelCarga();
+    
+    console.log('✅ Valores iniciais carregados:', {
+      dx: this.estado.atributos.dx,
+      ht: this.estado.atributos.ht
+    });
+  }
+  
+  // MÉTODO NOVO: Carrega atributos do localStorage (padrão igual técnicas.js)
+  carregarAtributosLocalStorage() {
+    try {
+      const dados = localStorage.getItem('gurps_atributos');
+      if (dados) {
+        const parsed = JSON.parse(dados);
+        if (parsed.atributos) {
+          // DX e HT do localStorage (atualizado por atributos.js)
+          this.estado.atributos.dx = parsed.atributos.DX || 10;
+          this.estado.atributos.ht = parsed.atributos.HT || 10;
+          
+          // Atualizar cache
+          this.cache.dx = this.estado.atributos.dx;
+          this.cache.ht = this.estado.atributos.ht;
+          
+          console.log(`🎯 Atributos do localStorage: DX=${this.estado.atributos.dx}, HT=${this.estado.atributos.ht}`);
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Não foi possível carregar atributos do localStorage:', error);
       this.estado.atributos.dx = 10;
-      this.cacheAtributos.dx = 10;
-    }
-    
-    // HT
-    if (this.elementos.ht) {
-      const htValor = parseInt(this.elementos.ht.value);
-      this.estado.atributos.ht = isNaN(htValor) ? 10 : htValor;
-      this.cacheAtributos.ht = this.estado.atributos.ht;
-      console.log(`🎯 HT: ${this.estado.atributos.ht}`);
-    } else {
-      console.warn('⚠️ Input HT não encontrado, usando valor padrão 10');
       this.estado.atributos.ht = 10;
-      this.cacheAtributos.ht = 10;
     }
-    
-    // Bônus da aba Combate
+  }
+  
+  carregarBonusCombate() {
     ['Reflexos', 'Escudo', 'Capa', 'Outros'].forEach(bonus => {
       const input = document.getElementById(`bonus${bonus}`);
       if (input) {
-        this.estado.bonus[bonus.toLowerCase()] = parseInt(input.value) || 0;
+        const valor = parseInt(input.value) || 0;
+        this.estado.bonus[bonus.toLowerCase()] = valor;
+        this.cache[`bonus${bonus}`] = valor;
       }
     });
-    
-    // Modificadores da aba Combate
+  }
+  
+  carregarModificadoresCombate() {
     ['esquiva', 'bloqueio', 'aparar', 'deslocamento'].forEach(defesa => {
       const input = document.getElementById(`${defesa}Mod`);
       if (input) {
         this.estado.modificadores[defesa] = parseInt(input.value) || 0;
       }
     });
-    
-    console.log('✅ Valores iniciais carregados com sucesso');
   }
   
-  // MÉTODO CORRIGIDO: Configurar observadores de atributos
-  configurarObservadoresAtributos() {
-    console.log('👁️ Configurando observadores de atributos...');
-    
-    // Observar mudanças em DX
-    if (this.elementos.dx) {
-      console.log('✅ Observador para DX configurado');
-      
-      this.elementos.dx.addEventListener('input', (e) => {
-        this.handleAtributoChange('dx', e.target.value);
-      });
-      
-      this.elementos.dx.addEventListener('change', (e) => {
-        this.handleAtributoChange('dx', e.target.value);
-      });
-      
-      // Observador de mutação (para mudanças via código)
-      const observerDX = new MutationObserver(() => {
-        const novoValor = this.elementos.dx.value;
-        this.handleAtributoChange('dx', novoValor);
-      });
-      
-      observerDX.observe(this.elementos.dx, {
-        attributes: true,
-        attributeFilter: ['value'],
-        childList: false,
-        subtree: false
-      });
-      
-      this.observadores.push(observerDX);
-    }
-    
-    // Observar mudanças em HT
-    if (this.elementos.ht) {
-      console.log('✅ Observador para HT configurado');
-      
-      this.elementos.ht.addEventListener('input', (e) => {
-        this.handleAtributoChange('ht', e.target.value);
-      });
-      
-      this.elementos.ht.addEventListener('change', (e) => {
-        this.handleAtributoChange('ht', e.target.value);
-      });
-      
-      // Observador de mutação
-      const observerHT = new MutationObserver(() => {
-        const novoValor = this.elementos.ht.value;
-        this.handleAtributoChange('ht', novoValor);
-      });
-      
-      observerHT.observe(this.elementos.ht, {
-        attributes: true,
-        attributeFilter: ['value'],
-        childList: false,
-        subtree: false
-      });
-      
-      this.observadores.push(observerHT);
-    }
-    
-    // Fallback: Polling a cada 1 segundo
-    this.iniciarPollingAtributos();
-  }
-  
-  handleAtributoChange(atributo, valorString) {
-    const valor = parseInt(valorString) || 10;
-    
-    // Validar limites
-    if (valor < 1 || valor > 40) {
-      console.warn(`⚠️ Valor de ${atributo.toUpperCase()} fora dos limites: ${valor}`);
-      return;
-    }
-    
-    // Verificar se mudou
-    if (this.cacheAtributos[atributo] === valor) {
-      return; // Não mudou
-    }
-    
-    console.log(`🔄 ${atributo.toUpperCase()} alterado: ${this.cacheAtributos[atributo]} → ${valor}`);
-    
-    // Atualizar cache e estado
-    this.cacheAtributos[atributo] = valor;
-    this.estado.atributos[atributo] = valor;
-    
-    // Recalcular tudo
-    this.calcularTudo();
-    
-    // Feedback visual
-    this.mostrarFeedbackAtributo(atributo, valor);
-  }
-  
-  iniciarPollingAtributos() {
-    console.log('⏰ Polling de atributos iniciado (1s)');
-    
-    setInterval(() => {
-      if (this.atualizando) return;
-      
-      // Verificar DX
-      if (this.elementos.dx) {
-        const novoDX = parseInt(this.elementos.dx.value) || 10;
-        if (novoDX !== this.cacheAtributos.dx) {
-          console.log(`🔄 Polling detectou mudança DX: ${this.cacheAtributos.dx} → ${novoDX}`);
-          this.cacheAtributos.dx = novoDX;
-          this.estado.atributos.dx = novoDX;
-          this.calcularTudo();
-        }
-      }
-      
-      // Verificar HT
-      if (this.elementos.ht) {
-        const novoHT = parseInt(this.elementos.ht.value) || 10;
-        if (novoHT !== this.cacheAtributos.ht) {
-          console.log(`🔄 Polling detectou mudança HT: ${this.cacheAtributos.ht} → ${novoHT}`);
-          this.cacheAtributos.ht = novoHT;
-          this.estado.atributos.ht = novoHT;
-          this.calcularTudo();
-        }
-      }
-    }, 1000); // Verificar a cada 1 segundo
-  }
-  
-  detectarNivelCargaInicial() {
+  carregarNivelCarga() {
     try {
-      console.log('📦 Detectando nível de carga inicial...');
-      
       // Método 1: Sistema de equipamentos
       if (window.sistemaEquipamentos && window.sistemaEquipamentos.nivelCargaAtual) {
         this.estado.nivelCarga = window.sistemaEquipamentos.nivelCargaAtual;
         this.estado.pesoAtual = window.sistemaEquipamentos.pesoAtual || 0;
         this.estado.pesoMaximo = window.sistemaEquipamentos.pesoMaximo || 100;
-        console.log(`🎯 Carga do sistema: ${this.estado.nivelCarga}`);
       }
       
       // Método 2: Elemento HTML
@@ -324,86 +209,190 @@ class SistemaDefesas {
         const nivel = cargaElement.textContent.toLowerCase().trim();
         if (nivel && nivel !== 'undefined') {
           this.estado.nivelCarga = nivel;
-          console.log(`🎯 Carga do elemento: ${nivel}`);
         }
       }
       
-      // Garantir valor padrão
+      // Método 3: localStorage
+      const cargaSalva = localStorage.getItem('gurps_nivel_carga');
+      if (cargaSalva) {
+        const dados = JSON.parse(cargaSalva);
+        if (dados.nivel) {
+          this.estado.nivelCarga = dados.nivel;
+          this.estado.pesoAtual = dados.pesoAtual || 0;
+          this.estado.pesoMaximo = dados.pesoMaximo || 100;
+        }
+      }
+      
+      // Valor padrão
       if (!this.estado.nivelCarga || this.estado.nivelCarga === 'undefined') {
         this.estado.nivelCarga = 'nenhuma';
       }
       
       // Calcular redutor
       this.estado.redutorCarga = this.getRedutorCarga(this.estado.nivelCarga);
-      this.cacheCarga = this.estado.nivelCarga;
+      this.cache.carga = this.estado.nivelCarga;
       
-      console.log(`✅ Carga: ${this.estado.nivelCarga}, Redutor: ${this.estado.redutorCarga}`);
+      console.log(`📦 Carga: ${this.estado.nivelCarga}, Redutor: ${this.estado.redutorCarga}`);
       
     } catch (error) {
-      console.warn('⚠️ Erro detectando carga:', error);
+      console.warn('⚠️ Erro ao carregar nível de carga:', error);
       this.estado.nivelCarga = 'nenhuma';
       this.estado.redutorCarga = 0;
-      this.cacheCarga = 'nenhuma';
+      this.cache.carga = 'nenhuma';
     }
   }
   
-  iniciarMonitoramentoCarga() {
-    console.log('👁️ Iniciando monitoramento de carga...');
+  // MÉTODO IMPORTANTE: Inicia monitoramento automático
+  iniciarMonitoramento() {
+    console.log('👁️ Iniciando monitoramento automático...');
     
+    // 1. Observar localStorage (igual técnicas.js faz)
+    this.iniciarObservadorLocalStorage();
+    
+    // 2. Observar eventos do sistema de equipamentos
+    this.iniciarObservadorEquipamentos();
+    
+    // 3. Observar mudanças na própria aba Combate
+    this.iniciarObservadorCombate();
+    
+    // 4. Polling leve como fallback
+    this.iniciarPollingLeve();
+    
+    console.log('✅ Monitoramento configurado');
+  }
+  
+  // MÉTODO NOVO: Observa mudanças no localStorage (padrão igual técnicas.js)
+  iniciarObservadorLocalStorage() {
+    // Evento disparado quando localStorage muda
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'gurps_atributos') {
+        console.log('🔄 localStorage "gurps_atributos" alterado!');
+        this.atualizarAtributos();
+        this.calcularTudo();
+      }
+      
+      if (e.key === 'gurps_nivel_carga') {
+        console.log('🔄 localStorage "gurps_nivel_carga" alterado!');
+        this.carregarNivelCarga();
+        this.calcularTudo();
+      }
+    });
+  }
+  
+  // MÉTODO NOVO: Atualiza atributos quando localStorage muda
+  atualizarAtributos() {
+    const dxAnterior = this.estado.atributos.dx;
+    const htAnterior = this.estado.atributos.ht;
+    
+    this.carregarAtributosLocalStorage();
+    
+    if (dxAnterior !== this.estado.atributos.dx || htAnterior !== this.estado.atributos.ht) {
+      console.log(`🔄 Atributos atualizados: DX ${dxAnterior}→${this.estado.atributos.dx}, HT ${htAnterior}→${this.estado.atributos.ht}`);
+      return true;
+    }
+    
+    return false;
+  }
+  
+  iniciarObservadorEquipamentos() {
     // Eventos do sistema de equipamentos
     document.addEventListener('equipamentosAtualizados', (e) => {
       if (e.detail && e.detail.nivelCargaAtual) {
         console.log('📦 Evento de carga:', e.detail.nivelCargaAtual);
-        this.atualizarNivelCarga(e.detail.nivelCargaAtual, e.detail.pesoAtual, e.detail.pesoMaximo);
+        this.atualizarNivelCarga(e.detail.nivelCargaAtual);
+      }
+    });
+  }
+  
+  iniciarObservadorCombate() {
+    // Observar mudanças nos inputs da aba Combate
+    ['Reflexos', 'Escudo', 'Capa', 'Outros'].forEach(bonus => {
+      const input = document.getElementById(`bonus${bonus}`);
+      if (input) {
+        input.addEventListener('change', () => {
+          const valor = parseInt(input.value) || 0;
+          if (this.cache[`bonus${bonus}`] !== valor) {
+            this.cache[`bonus${bonus}`] = valor;
+            this.estado.bonus[bonus.toLowerCase()] = valor;
+            this.calcularTudo();
+          }
+        });
       }
     });
     
-    // Polling para carga
+    // Observar modificadores
+    ['esquiva', 'bloqueio', 'aparar', 'deslocamento'].forEach(defesa => {
+      const input = document.getElementById(`${defesa}Mod`);
+      if (input) {
+        input.addEventListener('change', () => {
+          this.estado.modificadores[defesa] = parseInt(input.value) || 0;
+          this.calcularTudo();
+        });
+      }
+    });
+  }
+  
+  // MÉTODO NOVO: Polling leve (verifica a cada 2 segundos)
+  iniciarPollingLeve() {
+    console.log('⏰ Polling leve iniciado (2s)');
+    
     setInterval(() => {
       if (this.atualizando) return;
       
+      // Verificar se atributos mudaram
+      const mudou = this.atualizarAtributos();
+      
+      // Verificar se carga mudou
       if (window.sistemaEquipamentos && 
           window.sistemaEquipamentos.nivelCargaAtual &&
-          window.sistemaEquipamentos.nivelCargaAtual !== this.cacheCarga) {
+          window.sistemaEquipamentos.nivelCargaAtual !== this.cache.carga) {
         
-        console.log(`🔄 Polling detectou carga: ${this.cacheCarga} → ${window.sistemaEquipamentos.nivelCargaAtual}`);
-        
-        this.atualizarNivelCarga(
-          window.sistemaEquipamentos.nivelCargaAtual,
-          window.sistemaEquipamentos.pesoAtual,
-          window.sistemaEquipamentos.pesoMaximo
-        );
+        console.log(`🔄 Polling detectou carga: ${this.cache.carga} → ${window.sistemaEquipamentos.nivelCargaAtual}`);
+        this.atualizarNivelCarga(window.sistemaEquipamentos.nivelCargaAtual);
+        mudou = true;
       }
-    }, 2000);
+      
+      // Se algo mudou, recalcular
+      if (mudou) {
+        this.calcularTudo();
+      }
+    }, 2000); // Apenas 2 segundos
   }
   
   atualizarNivelCarga(novoNivel, pesoAtual = null, pesoMaximo = null) {
     const nivelFormatado = novoNivel.toLowerCase().trim();
     
-    if (!nivelFormatado || nivelFormatado === 'undefined') {
-      return;
-    }
+    if (!nivelFormatado || nivelFormatado === 'undefined') return;
+    if (nivelFormatado === this.cache.carga) return;
     
-    if (nivelFormatado === this.cacheCarga) {
-      return;
-    }
+    console.log(`📦 Atualizando carga: ${this.cache.carga} → ${nivelFormatado}`);
     
-    console.log(`📦 Atualizando carga: ${this.cacheCarga} → ${nivelFormatado}`);
+    const nivelAnterior = this.estado.nivelCarga;
+    const redutorAnterior = this.estado.redutorCarga;
     
     this.estado.nivelCarga = nivelFormatado;
     this.estado.redutorCarga = this.getRedutorCarga(nivelFormatado);
-    this.cacheCarga = nivelFormatado;
+    this.cache.carga = nivelFormatado;
     
     if (pesoAtual !== null) this.estado.pesoAtual = pesoAtual;
     if (pesoMaximo !== null) this.estado.pesoMaximo = pesoMaximo;
     
-    // Recalcular esquiva e deslocamento
-    this.calcularEsquiva();
-    this.calcularDeslocamento();
-    this.atualizarInterface();
+    // Salvar no localStorage
+    try {
+      localStorage.setItem('gurps_nivel_carga', JSON.stringify({
+        nivel: nivelFormatado,
+        pesoAtual: this.estado.pesoAtual,
+        pesoMaximo: this.estado.pesoMaximo,
+        timestamp: new Date().getTime()
+      }));
+    } catch (e) {
+      // Silencioso
+    }
     
-    // Feedback
-    this.mostrarFeedbackCarga(nivelFormatado);
+    // Feedback visual se redutor mudou
+    if (redutorAnterior !== this.estado.redutorCarga) {
+      this.mostrarFeedbackCarga(nivelFormatado, nivelAnterior);
+    }
   }
   
   getRedutorCarga(nivelCarga) {
@@ -416,22 +405,59 @@ class SistemaDefesas {
       'media': -2,
       'pesada': -3,
       'muito pesada': -4,
-      'muito-pesada': -4
+      'muito-pesada': -4,
+      'sobrecarregado': -4
     };
     
     return redutores[nivel] || 0;
   }
   
+  // MÉTODO IMPORTANTE: Configurar eventos da aba Combate
+  configurarEventosCombate() {
+    console.log('⚙️ Configurando eventos da aba Combate...');
+    
+    // Botões + e - dos modificadores
+    document.querySelectorAll('.defesa-controle').forEach(container => {
+      const minus = container.querySelector('.minus');
+      const plus = container.querySelector('.plus');
+      const input = container.querySelector('.mod-input');
+      
+      if (minus && plus && input) {
+        const id = input.id;
+        const defesa = id.replace('Mod', '');
+        
+        minus.addEventListener('click', () => {
+          const valorAtual = parseInt(input.value) || 0;
+          input.value = valorAtual - 1;
+          this.estado.modificadores[defesa] = valorAtual - 1;
+          this.calcularTudo();
+        });
+        
+        plus.addEventListener('click', () => {
+          const valorAtual = parseInt(input.value) || 0;
+          input.value = valorAtual + 1;
+          this.estado.modificadores[defesa] = valorAtual + 1;
+          this.calcularTudo();
+        });
+      }
+    });
+    
+    console.log('✅ Eventos da aba Combate configurados');
+  }
+  
+  // CÁLCULOS (mantidos iguais)
   calcularTudo() {
     if (this.atualizando) return;
+    if (Date.now() - this.ultimoUpdate < 100) return; // Debounce 100ms
     
     this.atualizando = true;
+    this.ultimoUpdate = Date.now();
     
     try {
-      // Buscar NHs
+      // Buscar NHs das perícias
       this.buscarNHs();
       
-      // Calcular defesas
+      // Calcular todas as defesas
       this.calcularEsquiva();
       this.calcularBloqueio();
       this.calcularAparar();
@@ -664,6 +690,7 @@ class SistemaDefesas {
     }
   }
   
+  // ATUALIZAÇÃO DA INTERFACE
   atualizarInterface() {
     // Valores das defesas
     if (this.elementos.esquivaTotal) {
@@ -693,6 +720,9 @@ class SistemaDefesas {
     
     // Indicador de carga
     this.atualizarIndicadorCarga();
+    
+    // Indicador de fadiga
+    this.atualizarIndicadorFadiga();
   }
   
   atualizarIndicadorCarga() {
@@ -715,7 +745,7 @@ class SistemaDefesas {
       
       if (nivel !== 'nenhuma' && redutor < 0) {
         indicadorCarga.innerHTML = `
-          <div class="carga-info" title="Carga atual: ${this.estado.nivelCarga}">
+          <div class="carga-info" title="Carga: ${this.estado.nivelCarga} (${this.estado.pesoAtual.toFixed(1)}kg)">
             <span class="carga-icone">⚖️</span>
             <span class="carga-texto">${nivel.charAt(0).toUpperCase() + nivel.slice(1)} (${redutor})</span>
           </div>
@@ -728,49 +758,54 @@ class SistemaDefesas {
     }
   }
   
-  mostrarFeedbackAtributo(atributo, valor) {
+  atualizarIndicadorFadiga() {
+    this.verificarFadiga();
+    
+    let indicador = document.getElementById('indicadorFadiga');
+    
+    if (!indicador) {
+      indicador = document.createElement('div');
+      indicador.id = 'indicadorFadiga';
+      indicador.style.cssText = `
+        margin: 10px 0;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: bold;
+        text-align: center;
+        display: none;
+        background: #e74c3c;
+        color: white;
+      `;
+      
+      const container = document.querySelector('.bonus-defesa');
+      if (container) {
+        container.appendChild(indicador);
+      }
+    }
+    
+    if (this.estado.fadiga.ativa) {
+      indicador.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i> FADIGA ATIVA!
+        <small>Esquiva e Deslocamento pela metade</small>
+      `;
+      indicador.style.display = 'block';
+    } else {
+      indicador.style.display = 'none';
+    }
+  }
+  
+  mostrarFeedbackCarga(novoNivel, nivelAnterior = null) {
     const feedback = document.createElement('div');
-    feedback.className = 'feedback-atributo';
-    feedback.innerHTML = `<i class="fas fa-sync-alt"></i> ${atributo.toUpperCase()}: ${valor}`;
+    feedback.className = 'feedback-carga';
+    feedback.innerHTML = `
+      <i class="fas fa-weight-hanging"></i>
+      <span>Carga: ${novoNivel.toUpperCase()} (${this.estado.redutorCarga})</span>
+    `;
     
     feedback.style.cssText = `
       position: fixed;
       top: 20px;
-      right: 20px;
-      background: rgba(41, 128, 185, 0.9);
-      color: white;
-      padding: 8px 15px;
-      border-radius: 5px;
-      font-size: 13px;
-      font-weight: bold;
-      z-index: 9999;
-      opacity: 0;
-      transform: translateX(100px);
-      transition: all 0.3s;
-    `;
-    
-    document.body.appendChild(feedback);
-    
-    setTimeout(() => {
-      feedback.style.opacity = '1';
-      feedback.style.transform = 'translateX(0)';
-    }, 10);
-    
-    setTimeout(() => {
-      feedback.style.opacity = '0';
-      feedback.style.transform = 'translateX(100px)';
-      setTimeout(() => feedback.remove(), 300);
-    }, 2000);
-  }
-  
-  mostrarFeedbackCarga(novoNivel) {
-    const feedback = document.createElement('div');
-    feedback.className = 'feedback-carga';
-    feedback.innerHTML = `<i class="fas fa-weight-hanging"></i> Carga: ${novoNivel.toUpperCase()} (${this.estado.redutorCarga})`;
-    
-    feedback.style.cssText = `
-      position: fixed;
-      top: 60px;
       right: 20px;
       background: rgba(0, 0, 0, 0.9);
       color: white;
@@ -796,7 +831,7 @@ class SistemaDefesas {
       feedback.style.opacity = '0';
       feedback.style.transform = 'translateX(100px)';
       setTimeout(() => feedback.remove(), 300);
-    }, 2000);
+    }, 1500);
   }
   
   getCorCarga(nivel) {
@@ -811,38 +846,6 @@ class SistemaDefesas {
     return cores[nivel] || '#95a5a6';
   }
   
-  configurarEventos() {
-    // Bônus da aba Combate
-    ['Reflexos', 'Escudo', 'Capa', 'Outros'].forEach(bonus => {
-      const input = document.getElementById(`bonus${bonus}`);
-      if (input) {
-        input.addEventListener('change', () => {
-          this.estado.bonus[bonus.toLowerCase()] = parseInt(input.value) || 0;
-          this.calcularTudo();
-        });
-      }
-    });
-    
-    // Modificadores da aba Combate
-    ['esquiva', 'bloqueio', 'aparar', 'deslocamento'].forEach(defesa => {
-      const input = document.getElementById(`${defesa}Mod`);
-      if (input) {
-        input.addEventListener('change', () => {
-          this.estado.modificadores[defesa] = parseInt(input.value) || 0;
-          this.calcularTudo();
-        });
-      }
-    });
-  }
-  
-  iniciarMonitoramento() {
-    // Verificar fadiga periodicamente
-    setInterval(() => {
-      this.verificarFadiga();
-      this.calcularTudo();
-    }, 3000);
-  }
-  
   forcarRecalculo() {
     console.log('🔄 Forçando recálculo completo...');
     this.carregarValoresIniciais();
@@ -854,11 +857,12 @@ class SistemaDefesas {
     console.log('Atributos:', this.estado.atributos);
     console.log('Defesas:', this.estado.defesas);
     console.log('Carga:', this.estado.nivelCarga, `(${this.estado.redutorCarga})`);
+    console.log('Fadiga:', this.estado.fadiga.ativa ? 'Ativa' : 'Inativa');
     console.log('=====================');
   }
 }
 
-// Sistema global
+// SISTEMA GLOBAL
 let sistemaDefesasGlobal = null;
 
 function iniciarSistemaDefesas() {
@@ -871,14 +875,15 @@ function iniciarSistemaDefesas() {
   console.log('🎮 Iniciando novo sistema de defesas...');
   sistemaDefesasGlobal = new SistemaDefesas();
   
+  // Pequeno delay para garantir que a aba esteja carregada
   setTimeout(() => {
     sistemaDefesasGlobal.iniciar();
-  }, 500);
+  }, 100);
   
   return sistemaDefesasGlobal;
 }
 
-// Inicialização automática
+// INICIALIZAÇÃO AUTOMÁTICA (igual técnicas.js)
 document.addEventListener('DOMContentLoaded', function() {
   console.log('📄 DOM carregado, preparando sistema de defesas...');
   
@@ -890,9 +895,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
-          console.log('🔄 Classe da aba Combate alterada');
           if (combateTab.classList.contains('active')) {
-            console.log('🎯 Aba Combate ativada!');
+            console.log('🎯 Aba Combate ativada! Iniciando sistema...');
             setTimeout(() => {
               iniciarSistemaDefesas();
             }, 300);
@@ -910,23 +914,30 @@ document.addEventListener('DOMContentLoaded', function() {
         iniciarSistemaDefesas();
       }, 500);
     }
-  } else {
-    console.warn('⚠️ Aba Combate não encontrada!');
   }
 });
 
-// Funções globais
+// FUNÇÕES GLOBAIS (para console)
 window.defesa = {
   iniciar: () => iniciarSistemaDefesas(),
   status: () => sistemaDefesasGlobal?.mostrarStatus(),
   recalcular: () => sistemaDefesasGlobal?.forcarRecalculo(),
-  atualizarCarga: (nivel) => sistemaDefesasGlobal?.atualizarNivelCarga(nivel)
+  atualizarCarga: (nivel) => sistemaDefesasGlobal?.atualizarNivelCarga(nivel),
+  testar: () => {
+    if (sistemaDefesasGlobal) {
+      console.log('🧪 Testando sistema...');
+      sistemaDefesasGlobal.estado.atributos.dx = 12;
+      sistemaDefesasGlobal.estado.atributos.ht = 12;
+      sistemaDefesasGlobal.calcularTudo();
+    }
+  }
 };
 
-// Atalhos de console
+// ATALHOS DE CONSOLE
 window.DS = () => window.defesa.status();
 window.DR = () => window.defesa.recalcular();
 window.DC = (nivel) => window.defesa.atualizarCarga(nivel);
+window.DT = () => window.defesa.testar();
 
 console.log('✅ Sistema de Defesas carregado!');
-console.log('🎮 Comandos: DS() - Status, DR() - Recalcular, DC("leve") - Testar carga');
+console.log('🎮 Comandos: DS() - Status, DR() - Recalcular, DC("leve") - Testar carga, DT() - Teste rápido');
