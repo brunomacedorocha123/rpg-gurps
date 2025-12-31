@@ -262,3 +262,112 @@ window.resetEscudo = function() {
         window.sistemaEscudo.resetar();
     }
 };
+
+
+// ===========================================
+// SISTEMA SIMPLES DE CONDIÇÕES DE COMBATE
+// ===========================================
+
+class SistemaCondicoes {
+    constructor() {
+        this.condicoesAtivas = new Set();
+        this.iniciar();
+    }
+
+    iniciar() {
+        this.carregarSalvo();
+        this.atualizarTudo();
+    }
+
+    carregarSalvo() {
+        const salvo = localStorage.getItem('condicoes_combate');
+        if (salvo) {
+            try {
+                JSON.parse(salvo).forEach(cond => {
+                    this.condicoesAtivas.add(cond);
+                });
+            } catch(e) {}
+        }
+    }
+
+    salvar() {
+        localStorage.setItem('condicoes_combate', 
+            JSON.stringify([...this.condicoesAtivas]));
+    }
+
+    toggle(condicao) {
+        if (this.condicoesAtivas.has(condicao)) {
+            this.condicoesAtivas.delete(condicao);
+        } else {
+            this.condicoesAtivas.add(condicao);
+        }
+        
+        this.salvar();
+        this.atualizarVisual(condicao);
+        this.atualizarContador();
+    }
+
+    atualizarVisual(condicao) {
+        const elemento = document.querySelector(`[data-condicao="${condicao}"]`);
+        if (elemento) {
+            elemento.classList.toggle('ativa', this.condicoesAtivas.has(condicao));
+        }
+    }
+
+    atualizarContador() {
+        const contador = document.getElementById('condicoesAtivas');
+        if (contador) {
+            contador.textContent = this.condicoesAtivas.size;
+        }
+    }
+
+    atualizarTudo() {
+        this.condicoesAtivas.forEach(cond => {
+            this.atualizarVisual(cond);
+        });
+        this.atualizarContador();
+    }
+}
+
+// Inicializa quando a aba de combate estiver ativa
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const secao = document.querySelector('.condicoes-section');
+        if (secao && !window.sistemaCondicoes) {
+            window.sistemaCondicoes = new SistemaCondicoes();
+        }
+    }, 500);
+});
+
+// Observa quando a aba de combate é aberta
+const obsAba = new MutationObserver((mutations) => {
+    mutations.forEach((mut) => {
+        if (mut.attributeName === 'class' && 
+            mut.target.id === 'combate' && 
+            mut.target.classList.contains('active')) {
+            
+            setTimeout(() => {
+                if (!window.sistemaCondicoes) {
+                    window.sistemaCondicoes = new SistemaCondicoes();
+                }
+            }, 100);
+        }
+    });
+});
+
+const abaCombate = document.getElementById('combate');
+if (abaCombate) obsAba.observe(abaCombate, { attributes: true });
+
+// Função global para o onclick do HTML
+window.toggleCondicao = function(elemento) {
+    if (window.sistemaCondicoes) {
+        const condicao = elemento.getAttribute('data-condicao');
+        window.sistemaCondicoes.toggle(condicao);
+        
+        // Efeito visual simples
+        elemento.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            elemento.style.transform = '';
+        }, 150);
+    }
+};
