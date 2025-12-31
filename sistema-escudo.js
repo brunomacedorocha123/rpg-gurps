@@ -1,4 +1,4 @@
-// sistema-escudo.js - SISTEMA FUNCIONAL DE ESCUDO
+// sistema-escudo.js - SISTEMA COMPLETO DE ESCUDO
 
 class SistemaEscudo {
     constructor() {
@@ -8,37 +8,52 @@ class SistemaEscudo {
         this.PVMaximo = 0;
         this.PVAtual = 0;
         
-        this.init();
+        console.log('🛡️ Sistema de escudo iniciado');
+        this.inicializar();
     }
 
-    init() {
-        // Configura botões
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-escudo');
-            if (!btn) return;
-            
-            if (btn.classList.contains('dano-5')) {
-                this.aplicarDano(5);
-            } else if (btn.classList.contains('dano-1')) {
-                this.aplicarDano(1);
-            } else if (btn.classList.contains('cura-1')) {
-                this.aplicarCura(1);
-            } else if (btn.classList.contains('cura-5')) {
-                this.aplicarCura(5);
-            } else if (btn.classList.contains('reset')) {
-                this.resetarEscudo();
-            }
-        });
+    inicializar() {
+        // Configura os botões
+        this.configurarBotoes();
         
-        // Verifica escudo imediatamente
-        setTimeout(() => this.verificarEscudo(), 500);
+        // Inicia a verificação
+        this.verificarEscudo();
         
-        // Verifica a cada segundo
-        setInterval(() => this.verificarEscudo(), 1000);
+        // Verifica a cada 2 segundos
+        setInterval(() => this.verificarEscudo(), 2000);
         
-        // Observa mudanças no sistema de equipamentos
+        // Escuta eventos de equipamentos
         document.addEventListener('equipamentosAtualizados', () => {
             setTimeout(() => this.verificarEscudo(), 300);
+        });
+    }
+
+    configurarBotoes() {
+        // Remove eventos antigos
+        const botoes = document.querySelectorAll('.btn-escudo');
+        botoes.forEach(botao => {
+            botao.replaceWith(botao.cloneNode(true));
+        });
+        
+        // Adiciona novos eventos
+        document.addEventListener('click', (e) => {
+            const botao = e.target.closest('.btn-escudo');
+            if (!botao) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (botao.classList.contains('dano-5')) {
+                this.aplicarDano(5);
+            } else if (botao.classList.contains('dano-1')) {
+                this.aplicarDano(1);
+            } else if (botao.classList.contains('cura-1')) {
+                this.aplicarCura(1);
+            } else if (botao.classList.contains('cura-5')) {
+                this.aplicarCura(5);
+            } else if (botao.classList.contains('reset')) {
+                this.resetarEscudo();
+            }
         });
     }
 
@@ -46,259 +61,357 @@ class SistemaEscudo {
         if (!window.sistemaEquipamentos) return;
         
         try {
-            // Procura escudo equipado
+            // Busca escudos equipados
             let escudoEncontrado = null;
             
-            // 1. Escudos na lista de escudos equipados
-            if (window.sistemaEquipamentos.equipamentosEquipados && 
-                window.sistemaEquipamentos.equipamentosEquipados.escudos &&
-                window.sistemaEquipamentos.equipamentosEquipados.escudos.length > 0) {
-                
+            // 1. Escudos na lista de escudos
+            if (window.sistemaEquipamentos.equipamentosEquipados?.escudos?.length > 0) {
                 escudoEncontrado = window.sistemaEquipamentos.equipamentosEquipados.escudos[0];
             }
             
-            // 2. Se não encontrou, procura em maos (armas/escudos)
-            if (!escudoEncontrado && 
-                window.sistemaEquipamentos.equipamentosEquipados &&
-                window.sistemaEquipamentos.equipamentosEquipados.maos) {
-                
-                for (const item of window.sistemaEquipamentos.equipamentosEquipados.maos) {
-                    if (item.bd !== undefined || (item.rdpv && item.rdpv.includes('RD') || item.rdpv.includes('PV'))) {
+            // 2. Escudos nas mãos
+            if (!escudoEncontrado && window.sistemaEquipamentos.equipamentosEquipados?.maos) {
+                for (let item of window.sistemaEquipamentos.equipamentosEquipados.maos) {
+                    if (item.bd !== undefined || item.rdpv !== undefined) {
                         escudoEncontrado = item;
                         break;
                     }
                 }
             }
             
-            // 3. Se não encontrou, procura em itens no corpo
-            if (!escudoEncontrado && 
-                window.sistemaEquipamentos.equipamentosEquipados &&
-                window.sistemaEquipamentos.equipamentosEquipados.corpo) {
-                
-                for (const item of window.sistemaEquipamentos.equipamentosEquipados.corpo) {
-                    if (item.bd !== undefined || (item.rdpv && (item.rdpv.includes('RD') || item.rdpv.includes('PV')))) {
+            // 3. Escudos no corpo
+            if (!escudoEncontrado && window.sistemaEquipamentos.equipamentosEquipados?.corpo) {
+                for (let item of window.sistemaEquipamentos.equipamentosEquipados.corpo) {
+                    if (item.bd !== undefined || item.rdpv !== undefined) {
                         escudoEncontrado = item;
                         break;
                     }
                 }
             }
             
-            // Se encontrou um escudo
+            // 4. Procura em todos os equipamentos adquiridos (fallback)
+            if (!escudoEncontrado && window.sistemaEquipamentos.equipamentosAdquiridos) {
+                for (let item of window.sistemaEquipamentos.equipamentosAdquiridos) {
+                    if (item.equipado && (item.bd !== undefined || item.rdpv !== undefined)) {
+                        escudoEncontrado = item;
+                        break;
+                    }
+                }
+            }
+            
+            // Processa o escudo encontrado
             if (escudoEncontrado) {
-                // Verifica se é um escudo diferente do atual
                 if (!this.escudoEquipado || this.escudoEquipado.idUnico !== escudoEncontrado.idUnico) {
+                    console.log(`✅ Escudo equipado: ${escudoEncontrado.nome}`);
                     this.escudoEquipado = escudoEncontrado;
                     this.carregarDadosEscudo(escudoEncontrado);
-                    this.atualizarCard();
+                    this.atualizarInterface();
                 }
             } else {
-                // Se tinha escudo antes mas agora não tem
                 if (this.escudoEquipado) {
+                    console.log('❌ Escudo removido');
                     this.escudoEquipado = null;
-                    this.atualizarCardVazio();
+                    this.atualizarInterfaceVazia();
                 }
             }
             
         } catch (error) {
-            console.log('Erro ao verificar escudo:', error);
+            console.error('Erro ao verificar escudo:', error);
         }
     }
 
     carregarDadosEscudo(escudo) {
-        // BD (Bônus de Defesa)
+        // Extrai BD
+        this.BD = 0;
         if (escudo.bd) {
-            const bdStr = escudo.bd.toString();
-            const match = bdStr.match(/\d+/);
+            const match = escudo.bd.toString().match(/\d+/);
             this.BD = match ? parseInt(match[0]) : 0;
-        } else {
-            this.BD = 0;
         }
         
-        // RD/PV
+        // Extrai RD e PV
         this.RD = 0;
         this.PVMaximo = 0;
         
         if (escudo.rdpv) {
-            const rdpvStr = escudo.rdpv.toString().trim();
+            const str = escudo.rdpv.toString();
             
-            // Formato: "5/20" ou "7/40"
-            if (rdpvStr.includes('/')) {
-                const partes = rdpvStr.split('/');
+            // Formato "5/20" ou "7/40"
+            if (str.includes('/')) {
+                const partes = str.split('/');
                 this.RD = parseInt(partes[0]) || 0;
                 this.PVMaximo = parseInt(partes[1]) || 0;
             }
-            // Formato: "RD 5" ou "RD5"
-            else if (rdpvStr.toUpperCase().includes('RD')) {
-                this.RD = parseInt(rdpvStr.replace(/\D/g, '')) || 0;
+            // Formato "RD 5" ou "RD5"
+            else if (str.toLowerCase().includes('rd')) {
+                this.RD = parseInt(str.replace(/\D/g, '')) || 0;
             }
-            // Formato: "PV 50" ou "PV50"
-            else if (rdpvStr.toUpperCase().includes('PV')) {
-                this.PVMaximo = parseInt(rdpvStr.replace(/\D/g, '')) || 0;
-            }
-            // Apenas número
-            else {
-                const num = parseInt(rdpvStr);
-                if (!isNaN(num)) {
-                    this.RD = num;
-                }
+            // Formato "PV 50" ou "PV50"
+            else if (str.toLowerCase().includes('pv')) {
+                this.PVMaximo = parseInt(str.replace(/\D/g, '')) || 0;
             }
         }
         
         // Carrega PV salvo
-        if (escudo.idUnico && this.PVMaximo > 0) {
-            const chave = `escudo_${escudo.idUnico}`;
+        if (escudo.idUnico) {
+            const chave = `escudo_${escudo.idUnico}_pv`;
             const salvo = localStorage.getItem(chave);
             this.PVAtual = salvo ? parseInt(salvo) : this.PVMaximo;
         } else {
             this.PVAtual = this.PVMaximo;
         }
+        
+        console.log(`📊 Dados escudo: BD=${this.BD}, RD=${this.RD}, PV=${this.PVAtual}/${this.PVMaximo}`);
     }
 
     aplicarDano(dano) {
-        if (!this.escudoEquipado) return;
+        console.log(`⚔️ Aplicando ${dano} de dano no escudo`);
+        
+        if (!this.escudoEquipado) {
+            console.log('⚠️ Nenhum escudo equipado');
+            return;
+        }
         
         let danoFinal = dano;
         
-        // Aplica RD se existir
+        // Aplica redução por RD
         if (this.RD > 0) {
             danoFinal = Math.max(0, dano - this.RD);
+            console.log(`🛡️ RD ${this.RD} reduz dano para ${danoFinal}`);
         }
         
-        // Se tem PV, reduz
+        // Aplica dano nos PV
         if (this.PVMaximo > 0) {
+            const pvAntes = this.PVAtual;
             this.PVAtual = Math.max(0, this.PVAtual - danoFinal);
+            
+            console.log(`💔 PV: ${pvAntes} → ${this.PVAtual} (dano: ${danoFinal})`);
+            
+            // Salva no localStorage
             this.salvarPV();
+            
+            // Mostra feedback visual
+            this.mostrarFeedback(`${danoFinal} de dano no escudo`);
+            
+            // Se quebrou
+            if (this.PVAtual === 0) {
+                console.log('🛡️ Escudo quebrado!');
+            }
+        } else {
+            console.log(`🛡️ Escudo sem PV, apenas RD ${this.RD}`);
+            this.mostrarFeedback(`Escudo absorveu ${dano} de dano`);
         }
         
-        this.atualizarCard();
+        this.atualizarInterface();
     }
 
     aplicarCura(cura) {
-        if (!this.escudoEquipado || this.PVMaximo === 0) return;
+        console.log(`❤️ Aplicando ${cura} de cura no escudo`);
         
+        if (!this.escudoEquipado) {
+            console.log('⚠️ Nenhum escudo equipado');
+            return;
+        }
+        
+        if (this.PVMaximo === 0) {
+            console.log('⚠️ Escudo não tem pontos de vida');
+            this.mostrarFeedback('Este escudo não tem PV para curar');
+            return;
+        }
+        
+        if (this.PVAtual >= this.PVMaximo) {
+            console.log('⚠️ Escudo já está com PV máximo');
+            this.mostrarFeedback('Escudo já está com PV máximo');
+            return;
+        }
+        
+        const pvAntes = this.PVAtual;
         this.PVAtual = Math.min(this.PVMaximo, this.PVAtual + cura);
+        const curaEfetiva = this.PVAtual - pvAntes;
+        
+        console.log(`❤️ PV: ${pvAntes} → ${this.PVAtual} (cura: ${curaEfetiva})`);
+        
+        // Salva no localStorage
         this.salvarPV();
-        this.atualizarCard();
+        
+        // Feedback visual
+        this.mostrarFeedback(`+${curaEfetiva} PV no escudo`);
+        
+        this.atualizarInterface();
     }
 
     resetarEscudo() {
-        if (!this.escudoEquipado || this.PVMaximo === 0) return;
+        if (!this.escudoEquipado) {
+            this.mostrarFeedback('Nenhum escudo equipado');
+            return;
+        }
         
-        this.PVAtual = this.PVMaximo;
-        this.salvarPV();
-        this.atualizarCard();
+        if (this.PVMaximo === 0) {
+            this.mostrarFeedback('Este escudo não tem pontos de vida');
+            return;
+        }
+        
+        if (confirm('Restaurar escudo para PV máximo?')) {
+            this.PVAtual = this.PVMaximo;
+            this.salvarPV();
+            this.atualizarInterface();
+            this.mostrarFeedback('Escudo restaurado');
+        }
     }
 
     salvarPV() {
         if (this.escudoEquipado && this.escudoEquipado.idUnico && this.PVMaximo > 0) {
-            localStorage.setItem(`escudo_${this.escudoEquipado.idUnico}`, this.PVAtual.toString());
+            localStorage.setItem(`escudo_${this.escudoEquipado.idUnico}_pv`, this.PVAtual.toString());
         }
     }
 
-    atualizarCard() {
-        if (!this.escudoEquipado) {
-            this.atualizarCardVazio();
-            return;
+    atualizarInterface() {
+        // Nome do escudo
+        const nomeElement = document.getElementById('escudoNome');
+        if (nomeElement) {
+            nomeElement.textContent = this.escudoEquipado ? this.escudoEquipado.nome : 'Nenhum escudo equipado';
         }
-
-        // Nome
-        const nome = document.getElementById('escudoNome');
-        if (nome) nome.textContent = this.escudoEquipado.nome;
         
-        // DR (mostra BD ou RD, o que for maior)
-        const dr = document.getElementById('escudoDR');
-        if (dr) {
-            const valorDR = Math.max(this.BD, this.RD);
-            dr.textContent = valorDR;
+        // DR (BD ou RD, o que for maior)
+        const drElement = document.getElementById('escudoDR');
+        if (drElement) {
+            const drValor = Math.max(this.BD, this.RD);
+            drElement.textContent = drValor;
         }
         
         // Status
-        const status = document.getElementById('escudoStatus');
-        if (status) {
-            if (this.PVMaximo > 0) {
+        const statusElement = document.getElementById('escudoStatus');
+        if (statusElement) {
+            if (!this.escudoEquipado) {
+                statusElement.textContent = 'Inativo';
+                statusElement.className = 'status-badge inativo';
+            } else if (this.PVMaximo > 0) {
                 if (this.PVAtual > 0) {
-                    status.textContent = 'Ativo';
-                    status.className = 'status-badge ativo';
+                    statusElement.textContent = 'Ativo';
+                    statusElement.className = 'status-badge ativo';
                 } else {
-                    status.textContent = 'Quebrado';
-                    status.className = 'status-badge quebrado';
+                    statusElement.textContent = 'Quebrado';
+                    statusElement.className = 'status-badge quebrado';
                 }
             } else {
-                status.textContent = 'Ativo';
-                status.className = 'status-badge ativo';
+                statusElement.textContent = 'Ativo';
+                statusElement.className = 'status-badge ativo';
             }
         }
         
-        // PV/RD
-        const pvTexto = document.getElementById('escudoPVTexto');
-        const pvFill = document.getElementById('escudoPVFill');
+        // Barra de PV
+        const pvTextoElement = document.getElementById('escudoPVTexto');
+        const pvFillElement = document.getElementById('escudoPVFill');
         
-        if (pvTexto && pvFill) {
-            if (this.PVMaximo > 0) {
-                // Escudo com PV
-                const porcentagem = (this.PVAtual / this.PVMaximo) * 100;
-                pvTexto.textContent = `${this.PVAtual}/${this.PVMaximo}`;
-                pvFill.style.width = `${porcentagem}%`;
-                
-                // Cor da barra
-                if (porcentagem > 50) {
-                    pvFill.style.background = '#2ecc71';
-                } else if (porcentagem > 25) {
-                    pvFill.style.background = '#f39c12';
-                } else if (porcentagem > 0) {
-                    pvFill.style.background = '#e74c3c';
+        if (pvTextoElement && pvFillElement) {
+            if (this.escudoEquipado) {
+                if (this.PVMaximo > 0) {
+                    // Escudo com PV
+                    const porcentagem = (this.PVAtual / this.PVMaximo) * 100;
+                    pvTextoElement.textContent = `${this.PVAtual}/${this.PVMaximo}`;
+                    pvFillElement.style.width = `${porcentagem}%`;
+                    
+                    // Cor da barra
+                    if (porcentagem > 50) {
+                        pvFillElement.style.background = '#27ae60'; // Verde
+                    } else if (porcentagem > 25) {
+                        pvFillElement.style.background = '#f39c12'; // Amarelo
+                    } else if (porcentagem > 0) {
+                        pvFillElement.style.background = '#e74c3c'; // Vermelho
+                    } else {
+                        pvFillElement.style.background = '#7f8c8d'; // Cinza (quebrado)
+                    }
                 } else {
-                    pvFill.style.background = '#95a5a6';
+                    // Escudo sem PV (apenas RD)
+                    pvTextoElement.textContent = `RD ${this.RD}`;
+                    pvFillElement.style.width = '100%';
+                    pvFillElement.style.background = '#3498db'; // Azul
                 }
             } else {
-                // Escudo apenas com RD
-                pvTexto.textContent = `RD ${this.RD}`;
-                pvFill.style.width = '100%';
-                pvFill.style.background = '#3498db';
+                // Sem escudo
+                pvTextoElement.textContent = '0/0';
+                pvFillElement.style.width = '0%';
+                pvFillElement.style.background = '#95a5a6';
             }
         }
     }
 
-    atualizarCardVazio() {
-        const nome = document.getElementById('escudoNome');
-        const dr = document.getElementById('escudoDR');
-        const status = document.getElementById('escudoStatus');
-        const pvTexto = document.getElementById('escudoPVTexto');
-        const pvFill = document.getElementById('escudoPVFill');
+    atualizarInterfaceVazia() {
+        const nomeElement = document.getElementById('escudoNome');
+        const drElement = document.getElementById('escudoDR');
+        const statusElement = document.getElementById('escudoStatus');
+        const pvTextoElement = document.getElementById('escudoPVTexto');
+        const pvFillElement = document.getElementById('escudoPVFill');
 
-        if (nome) nome.textContent = 'Nenhum escudo equipado';
-        if (dr) dr.textContent = '0';
-        if (status) {
-            status.textContent = 'Inativo';
-            status.className = 'status-badge inativo';
+        if (nomeElement) nomeElement.textContent = 'Nenhum escudo equipado';
+        if (drElement) drElement.textContent = '0';
+        if (statusElement) {
+            statusElement.textContent = 'Inativo';
+            statusElement.className = 'status-badge inativo';
         }
-        if (pvTexto) pvTexto.textContent = '0/0';
-        if (pvFill) {
-            pvFill.style.width = '0%';
-            pvFill.style.background = '#95a5a6';
+        if (pvTextoElement) pvTextoElement.textContent = '0/0';
+        if (pvFillElement) {
+            pvFillElement.style.width = '0%';
+            pvFillElement.style.background = '#95a5a6';
         }
+    }
+
+    mostrarFeedback(mensagem) {
+        // Cria feedback simples
+        const feedback = document.createElement('div');
+        feedback.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 10000;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        `;
+        
+        feedback.textContent = `🛡️ ${mensagem}`;
+        document.body.appendChild(feedback);
+        
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.parentNode.removeChild(feedback);
+            }
+        }, 3000);
     }
 }
 
-// Inicialização
+// Inicialização global
 document.addEventListener('DOMContentLoaded', function() {
-    // Espera a aba de combate estar pronta
-    const verificarAbaCombate = () => {
+    // Verifica se a aba de combate existe
+    const verificarSistema = () => {
         const cardEscudo = document.querySelector('.escudo-section');
         if (cardEscudo && !window.sistemaEscudo) {
+            console.log('🛡️ Inicializando sistema de escudo...');
             window.sistemaEscudo = new SistemaEscudo();
+            
+            // Força primeira verificação
+            setTimeout(() => {
+                if (window.sistemaEscudo) {
+                    window.sistemaEscudo.verificarEscudo();
+                    window.sistemaEscudo.configurarBotoes();
+                }
+            }, 500);
         }
     };
     
-    verificarAbaCombate();
+    // Verifica imediatamente
+    verificarSistema();
     
-    // Observa quando a aba muda
+    // Verifica quando a aba de combate é ativada
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 const tab = mutation.target;
                 if (tab.id === 'combate' && tab.classList.contains('active')) {
-                    setTimeout(verificarAbaCombate, 100);
+                    setTimeout(verificarSistema, 100);
                 }
             }
         });
@@ -308,23 +421,45 @@ document.addEventListener('DOMContentLoaded', function() {
     if (abaCombate) {
         observer.observe(abaCombate, { attributes: true });
     }
+    
+    // Se já está ativa
+    const abaAtiva = document.querySelector('#combate.active');
+    if (abaAtiva) {
+        setTimeout(verificarSistema, 300);
+    }
 });
 
-// Funções globais para os botões
-function danoEscudo(dano) {
-    if (window.sistemaEscudo) {
+// Funções globais para os botões HTML
+window.danoEscudo = function(dano) {
+    if (window.sistemaEscudo && window.sistemaEscudo.aplicarDano) {
         window.sistemaEscudo.aplicarDano(dano);
+    } else {
+        console.error('Sistema de escudo não está disponível');
     }
-}
+};
 
-function curaEscudo(cura) {
-    if (window.sistemaEscudo) {
+window.curaEscudo = function(cura) {
+    if (window.sistemaEscudo && window.sistemaEscudo.aplicarCura) {
         window.sistemaEscudo.aplicarCura(cura);
+    } else {
+        console.error('Sistema de escudo não está disponível');
     }
-}
+};
 
-function resetEscudo() {
-    if (window.sistemaEscudo) {
+window.resetEscudo = function() {
+    if (window.sistemaEscudo && window.sistemaEscudo.resetarEscudo) {
         window.sistemaEscudo.resetarEscudo();
+    } else {
+        console.error('Sistema de escudo não está disponível');
     }
-}
+};
+
+// Forçar recálculo manual
+window.recarregarEscudo = function() {
+    if (window.sistemaEscudo && window.sistemaEscudo.verificarEscudo) {
+        window.sistemaEscudo.verificarEscudo();
+        window.sistemaEscudo.atualizarInterface();
+    }
+};
+
+console.log('✅ sistema-escudo.js carregado');
