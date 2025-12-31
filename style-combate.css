@@ -1701,3 +1701,206 @@ input[type="number"] {
         transform: translateX(-50%) translateY(0);
     }
 }
+
+/* Estilos para o sistema de escudo */
+.escudo-section {
+    background: linear-gradient(135deg, rgba(41, 128, 185, 0.1), rgba(52, 152, 219, 0.05));
+    border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+.escudo-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.escudo-nome {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #2c3e50;
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.escudo-dr {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(52, 152, 219, 0.2);
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.dr-label {
+    font-size: 0.9em;
+    color: #2c3e50;
+}
+
+.dr-valor {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #2980b9;
+}
+
+.escudo-pv-container {
+    margin: 15px 0;
+}
+
+.pv-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.pv-texto {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.barra-pv-escudo {
+    height: 20px;
+    background: rgba(236, 240, 241, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.barra-fill {
+    height: 100%;
+    transition: width 0.5s ease, background 0.5s ease;
+    border-radius: 10px;
+}
+
+.escudo-controles {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.btn-escudo {
+    flex: 1;
+    padding: 10px 5px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+}
+
+.btn-escudo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-escudo:active {
+    transform: translateY(0);
+}
+
+.btn-escudo.dano-5 {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.btn-escudo.dano-1 {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: white;
+}
+
+.btn-escudo.cura-1 {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+}
+
+.btn-escudo.cura-5 {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.btn-escudo.reset {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+    flex: 0.5;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.excelente {
+    background: rgba(46, 204, 113, 0.2);
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+
+.status-badge.bom {
+    background: rgba(52, 152, 219, 0.2);
+    color: #2980b9;
+    border: 1px solid #2980b9;
+}
+
+.status-badge.danificado {
+    background: rgba(243, 156, 18, 0.2);
+    color: #f39c12;
+    border: 1px solid #f39c12;
+}
+
+.status-badge.critico {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}
+
+.status-badge.quebrado {
+    background: rgba(149, 165, 166, 0.2);
+    color: #7f8c8d;
+    border: 1px solid #7f8c8d;
+}
+
+.status-badge.ativo {
+    background: rgba(155, 89, 182, 0.2);
+    color: #9b59b6;
+    border: 1px solid #9b59b6;
+}
+
+.status-badge.inativo {
+    background: rgba(189, 195, 199, 0.2);
+    color: #95a5a6;
+    border: 1px solid #95a5a6;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
