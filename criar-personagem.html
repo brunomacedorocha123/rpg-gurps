@@ -903,13 +903,12 @@ body::before {
 
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
-      <!-- DASHBOARD CORRETA - INTEGRADA COM SEU SISTEMA -->
-<div id="dashboard" class="tab-content">
+     <div id="dashboard" class="tab-content">
     <div class="dashboard-container">
         
         <!-- CABEÇALHO CONSISTENTE -->
         <div class="dashboard-header">
-            <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard GURPS</h2>
             <p>Visão geral do personagem</p>
         </div>
 
@@ -919,21 +918,22 @@ body::before {
             <!-- LINHA 1 -->
             <div class="dashboard-row">
                 
-                <!-- CARD 1: IDENTIFICAÇÃO (25% largura) -->
+                <!-- CARD 1: IDENTIFICAÇÃO (30% largura) -->
                 <div class="dashboard-card id-card">
                     <div class="card-header">
                         <i class="fas fa-user-tag"></i>
                         <h3>Identificação</h3>
                     </div>
                     <div class="card-content">
-                        <!-- UPLOAD MINI (proporcional) -->
-                        <div class="mini-upload-area">
-                            <div class="mini-image-preview" id="dashboardImagePreview">
+                        <!-- ÁREA DE UPLOAD MAIOR E MELHOR -->
+                        <div class="upload-area">
+                            <div class="image-preview" id="dashboardImagePreview">
                                 <i class="fas fa-user"></i>
+                                <div class="upload-overlay">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Adicionar Foto</span>
+                                </div>
                             </div>
-                            <button class="btn-mini-upload" onclick="triggerImageUpload()">
-                                <i class="fas fa-camera"></i>
-                            </button>
                             <input type="file" id="dashboardImageUpload" accept="image/*" style="display: none;">
                         </div>
                         
@@ -944,27 +944,22 @@ body::before {
                                    placeholder="Nome do Personagem"
                                    value="">
                             <div class="id-details">
-                                <select class="id-class-select" id="dashboardCharClass">
-                                    <option value="">Classe</option>
-                                    <option value="guerreiro">Guerreiro</option>
-                                    <option value="mago">Mago</option>
-                                </select>
-                                <input type="number" class="id-level-input" 
-                                       id="dashboardCharLevel" 
-                                       value="1" min="1" max="20">
+                                <!-- TROQUEI SELECT POR INPUT PARA DESCRIÇÃO LIVRE -->
+                                <input type="text" class="id-description-input" 
+                                       id="dashboardCharDescription" 
+                                       placeholder="Descrição (Ex: Mercenário, Mago, etc)">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- CARD 2: ATRIBUTOS PRINCIPAIS (75% largura) -->
+                <!-- CARD 2: ATRIBUTOS PRINCIPAIS (70% largura) -->
                 <div class="dashboard-card attributes-card">
                     <div class="card-header">
                         <i class="fas fa-dumbbell"></i>
                         <h3>Atributos Principais</h3>
                     </div>
                     <div class="card-content">
-                        <!-- TODOS OS 4 ATRIBUTOS, BEM DISTRIBUÍDOS -->
                         <div class="attributes-display">
                             <!-- ST -->
                             <div class="attribute-display-item">
@@ -1006,7 +1001,7 @@ body::before {
             <!-- LINHA 2 -->
             <div class="dashboard-row">
                 
-                <!-- CARD 3: ATRIBUTOS SECUNDÁRIOS -->
+                <!-- CARD 3: ATRIBUTOS SECUNDÁRIOS REFORMADO -->
                 <div class="dashboard-card secondary-card">
                     <div class="card-header">
                         <i class="fas fa-chart-line"></i>
@@ -1014,46 +1009,62 @@ body::before {
                     </div>
                     <div class="card-content">
                         <div class="secondary-grid">
-                            <div class="secondary-item">
-                                <div class="secondary-label">
+                            <div class="secondary-item" data-tooltip="Pontos de Vida">
+                                <div class="secondary-icon">
                                     <i class="fas fa-heartbeat"></i>
-                                    <span>PV</span>
                                 </div>
-                                <div class="secondary-value" id="dashboardPV">10</div>
-                                <div class="secondary-max">/10</div>
+                                <div class="secondary-content">
+                                    <div class="secondary-label">PV</div>
+                                    <div class="secondary-value-container">
+                                        <span class="secondary-current" id="dashboardPV">10</span>
+                                        <span class="secondary-separator">/</span>
+                                        <span class="secondary-max" id="dashboardPVMax">10</span>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="secondary-item">
-                                <div class="secondary-label">
+                            <div class="secondary-item" data-tooltip="Pontos de Fadiga">
+                                <div class="secondary-icon">
                                     <i class="fas fa-wind"></i>
-                                    <span>PF</span>
                                 </div>
-                                <div class="secondary-value" id="dashboardPF">10</div>
-                                <div class="secondary-max">/10</div>
+                                <div class="secondary-content">
+                                    <div class="secondary-label">PF</div>
+                                    <div class="secondary-value-container">
+                                        <span class="secondary-current" id="dashboardPF">10</span>
+                                        <span class="secondary-separator">/</span>
+                                        <span class="secondary-max" id="dashboardPFMax">10</span>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="secondary-item">
-                                <div class="secondary-label">
+                            <div class="secondary-item" data-tooltip="Vontade">
+                                <div class="secondary-icon">
                                     <i class="fas fa-brain"></i>
-                                    <span>Vontade</span>
                                 </div>
-                                <div class="secondary-value" id="dashboardWill">10</div>
+                                <div class="secondary-content">
+                                    <div class="secondary-label">Vontade</div>
+                                    <div class="secondary-single-value" id="dashboardWill">10</div>
+                                </div>
                             </div>
                             
-                            <div class="secondary-item">
-                                <div class="secondary-label">
+                            <div class="secondary-item" data-tooltip="Percepção">
+                                <div class="secondary-icon">
                                     <i class="fas fa-eye"></i>
-                                    <span>Percepção</span>
                                 </div>
-                                <div class="secondary-value" id="dashboardPer">10</div>
+                                <div class="secondary-content">
+                                    <div class="secondary-label">Percepção</div>
+                                    <div class="secondary-single-value" id="dashboardPer">10</div>
+                                </div>
                             </div>
                             
-                            <div class="secondary-item">
-                                <div class="secondary-label">
+                            <div class="secondary-item" data-tooltip="Deslocamento">
+                                <div class="secondary-icon">
                                     <i class="fas fa-running"></i>
-                                    <span>Deslocamento</span>
                                 </div>
-                                <div class="secondary-value" id="dashboardMove">5.00</div>
+                                <div class="secondary-content">
+                                    <div class="secondary-label">Desloc.</div>
+                                    <div class="secondary-single-value" id="dashboardMove">5.00</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1198,14 +1209,18 @@ body::before {
                     <div class="card-content">
                         <div class="equipment-stats">
                             <div class="equip-stat">
-                                <i class="fas fa-weight-hanging"></i>
+                                <div class="stat-icon">
+                                    <i class="fas fa-weight-hanging"></i>
+                                </div>
                                 <div class="stat-info">
                                     <div class="stat-label">Peso Total</div>
                                     <div class="stat-value" id="equipWeight">0.0 kg</div>
                                 </div>
                             </div>
                             <div class="equip-stat">
-                                <i class="fas fa-coins"></i>
+                                <div class="stat-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
                                 <div class="stat-info">
                                     <div class="stat-label">Valor Total</div>
                                     <div class="stat-value" id="equipValue">$0</div>
@@ -1215,6 +1230,9 @@ body::before {
                         <div class="equipment-encumbrance">
                             <span class="enc-label">Carga:</span>
                             <span class="enc-value" id="encumbranceStatus">Nenhuma</span>
+                            <div class="enc-bar">
+                                <div class="enc-fill" style="width: 0%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1228,28 +1246,46 @@ body::before {
                     <div class="card-content">
                         <div class="summary-grid">
                             <div class="summary-item">
-                                <span class="item-label">Vantagens:</span>
-                                <span class="item-value" id="summaryAdvantages">0</span>
+                                <i class="fas fa-award"></i>
+                                <div class="summary-content">
+                                    <div class="item-label">Vantagens</div>
+                                    <div class="item-value" id="summaryAdvantages">0</div>
+                                </div>
                             </div>
                             <div class="summary-item">
-                                <span class="item-label">Desvantagens:</span>
-                                <span class="item-value" id="summaryDisadvantages">0</span>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div class="summary-content">
+                                    <div class="item-label">Desvantagens</div>
+                                    <div class="item-value" id="summaryDisadvantages">0</div>
+                                </div>
                             </div>
                             <div class="summary-item">
-                                <span class="item-label">Perícias:</span>
-                                <span class="item-value" id="summarySkills">0</span>
+                                <i class="fas fa-tools"></i>
+                                <div class="summary-content">
+                                    <div class="item-label">Perícias</div>
+                                    <div class="item-value" id="summarySkills">0</div>
+                                </div>
                             </div>
                             <div class="summary-item">
-                                <span class="item-label">Magias:</span>
-                                <span class="item-value" id="summarySpells">0</span>
+                                <i class="fas fa-hat-wizard"></i>
+                                <div class="summary-content">
+                                    <div class="item-label">Magias</div>
+                                    <div class="item-value" id="summarySpells">0</div>
+                                </div>
                             </div>
                             <div class="summary-item">
-                                <span class="item-label">Itens:</span>
-                                <span class="item-value" id="summaryItems">0</span>
+                                <i class="fas fa-suitcase"></i>
+                                <div class="summary-content">
+                                    <div class="item-label">Itens</div>
+                                    <div class="item-value" id="summaryItems">0</div>
+                                </div>
                             </div>
                             <div class="summary-item">
-                                <span class="item-label">Idiomas:</span>
-                                <span class="item-value" id="summaryLanguages">1</span>
+                                <i class="fas fa-language"></i>
+                                <div class="summary-content">
+                                    <div class="item-label">Idiomas</div>
+                                    <div class="item-value" id="summaryLanguages">1</div>
+                                </div>
                             </div>
                         </div>
                     </div>
