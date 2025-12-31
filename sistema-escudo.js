@@ -1,4 +1,4 @@
-// sistema-escudo.js - SISTEMA COMPLETO DE ESCUDO
+// sistema-escudo.js - SISTEMA COMPLETO DE ESCUDO - VERSÃO CORRIGIDA
 class SistemaEscudo {
     constructor() {
         this.escudo = null;
@@ -17,16 +17,8 @@ class SistemaEscudo {
     }
 
     configurarBotoes() {
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-escudo');
-            if (!btn) return;
-            
-            if (btn.classList.contains('dano-5')) this.aplicarDano(5);
-            else if (btn.classList.contains('dano-1')) this.aplicarDano(1);
-            else if (btn.classList.contains('cura-1')) this.aplicarCura(1);
-            else if (btn.classList.contains('cura-5')) this.aplicarCura(5);
-            else if (btn.classList.contains('reset')) this.resetar();
-        });
+        // Configura event listeners para os botões específicos
+        // Removemos o listener geral que causava conflito
     }
 
     monitorarEquipamentos() {
@@ -252,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ativa) setTimeout(verificar, 300);
 });
 
+// Funções globais que os botões chamam via onclick
 window.danoEscudo = function(dano) {
     if (window.sistemaEscudo && window.sistemaEscudo.aplicarDano) {
         window.sistemaEscudo.aplicarDano(dano);
