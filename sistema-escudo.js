@@ -126,13 +126,10 @@ class SistemaEscudo {
     aplicarDano(dano) {
         if (!this.escudo) return;
         
-        let danoFinal = dano;
-        if (this.RD > 0) {
-            danoFinal = Math.max(0, dano - this.RD);
-        }
-        
+        // APLICA DANO DIRETO SEM REDUÇÃO POR RD
+        // O RD é apenas informação visual para combate real
         if (this.PV_MAX > 0) {
-            this.PV = Math.max(0, this.PV - danoFinal);
+            this.PV = Math.max(0, this.PV - dano);
             this.salvarPV();
         }
         
@@ -172,7 +169,10 @@ class SistemaEscudo {
         
         if (this.escudo) {
             nome.textContent = this.escudo.nome;
-            dr.textContent = Math.max(this.BD, this.RD);
+            
+            // Mostra RD para informação (não BD)
+            dr.textContent = this.RD;
+            dr.title = `RD ${this.RD} (dano > ${this.RD} afeta o escudo)`;
             
             if (this.PV_MAX > 0) {
                 if (this.PV > 0) {
@@ -197,6 +197,7 @@ class SistemaEscudo {
                 else if (porcentagem > 0) pvFill.style.background = '#e74c3c';
                 else pvFill.style.background = '#7f8c8d';
             } else {
+                // Escudo sem PV, mostra apenas RD
                 pvTexto.textContent = `RD ${this.RD}`;
                 pvFill.style.width = '100%';
                 pvFill.style.background = '#3498db';
