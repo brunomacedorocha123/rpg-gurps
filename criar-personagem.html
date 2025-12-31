@@ -903,517 +903,311 @@ body::before {
 
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
-       <!-- DASHBOARD -->
-<div id="dashboard" class="tab-content">
+      <!-- DASHBOARD REFORMULADA - VERSÃO LIMPA -->
+<div id="dashboard" class="tab-content active">
     <div class="dashboard-container">
         
-        <!-- CABEÇALHO DA DASHBOARD -->
+        <!-- CABEÇALHO SIMPLES -->
         <div class="dashboard-header">
             <h2><i class="fas fa-tachometer-alt"></i> Dashboard do Personagem</h2>
-            <div class="dashboard-status">
-                <i class="fas fa-sync-alt fa-spin"></i>
-                <span>Dashboard atualizado em tempo real</span>
-            </div>
+            <p class="dashboard-subtitle">Resumo geral do personagem (dados das outras abas)</p>
         </div>
 
-        <!-- SEÇÃO 1: IMAGEM DO PERSONAGEM -->
-        <div class="character-image-section fade-in">
-            <div class="image-upload-container">
-                <div class="upload-header">
-                    <i class="fas fa-user-circle"></i>
-                    <h3>Imagem do Personagem</h3>
-                </div>
-                
-                <div class="image-preview-container">
-                    <img id="characterImagePreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232c2008'/%3E%3Ccircle cx='100' cy='80' r='40' fill='%234a3920'/%3E%3Crect x='60' y='130' width='80' height='60' rx='10' fill='%234a3920'/%3E%3Ctext x='100' y='195' font-family='Arial' font-size='14' fill='%23d4af37' text-anchor='middle'%3ESem imagem%3C/text%3E%3C/svg%3E" 
-                         alt="Preview da Imagem">
-                </div>
-                
-                <div class="upload-controls">
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                    <button class="upload-btn" onclick="document.getElementById('imageUpload').click()">
-                        <i class="fas fa-upload"></i> Escolher Imagem
-                    </button>
-                    <button class="upload-btn remove-btn" id="removeImageBtn">
-                        <i class="fas fa-trash-alt"></i> Remover Imagem
-                    </button>
-                </div>
-                
-                <p class="upload-hint">
-                    <i class="fas fa-info-circle"></i> Formatos suportados: JPG, PNG, GIF. Tamanho máximo: 5MB
-                </p>
-            </div>
-        </div>
-
-        <!-- SEÇÃO 2: INFORMAÇÕES BÁSICAS -->
-        <div class="basic-info-grid slide-in-left">
-            <!-- CARD NOME E CLASSE -->
-            <div class="info-card">
-                <div class="info-card-header">
+        <!-- GRID PRINCIPAL -->
+        <div class="dashboard-grid">
+            
+            <!-- CARD 1: IDENTIFICAÇÃO -->
+            <div class="dashboard-card card-identification">
+                <div class="card-header">
                     <i class="fas fa-user-tag"></i>
                     <h3>Identificação</h3>
                 </div>
-                
-                <div class="info-content">
-                    <input type="text" id="dashboardCharacterName" class="dashboard-input" 
-                           placeholder="Nome do Herói" value="" maxlength="50">
-                    
-                    <select id="dashboardCharacterClass" class="dashboard-select">
-                        <option value="">Selecione uma Classe</option>
-                        <option value="guerreiro">Guerreiro</option>
-                        <option value="mago">Mago</option>
-                        <option value="ladino">Ladino</option>
-                        <option value="clerigo">Clérigo</option>
-                        <option value="bardo">Bardo</option>
-                        <option value="ranger">Ranger</option>
-                        <option value="outro">Outro</option>
-                    </select>
-                    
-                    <input type="number" id="dashboardCharacterLevel" class="dashboard-input" 
-                           placeholder="Nível" value="1" min="1" max="20">
+                <div class="card-content">
+                    <div class="id-display">
+                        <div class="id-name" id="dashboardCharName">Nome do Personagem</div>
+                        <div class="id-class-level">
+                            <span id="dashboardCharClass">Classe</span>
+                            <span class="separator">•</span>
+                            <span id="dashboardCharLevel">Nível 1</span>
+                        </div>
+                    </div>
+                    <div class="id-image">
+                        <div class="mini-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- CARD NÍVEL DE RIQUEZA -->
-            <div class="info-card">
-                <div class="info-card-header">
+            <!-- CARD 2: CARACTERÍSTICAS FÍSICAS -->
+            <div class="dashboard-card card-physical">
+                <div class="card-header">
+                    <i class="fas fa-ruler-combined"></i>
+                    <h3>Características Físicas</h3>
+                </div>
+                <div class="card-content">
+                    <div class="physical-grid">
+                        <div class="physical-item">
+                            <span class="physical-label">Altura:</span>
+                            <span class="physical-value" id="dashboardHeight">1.70m</span>
+                        </div>
+                        <div class="physical-item">
+                            <span class="physical-label">Peso:</span>
+                            <span class="physical-value" id="dashboardWeight">70kg</span>
+                        </div>
+                        <div class="physical-item">
+                            <span class="physical-label">Idade:</span>
+                            <span class="physical-value" id="dashboardAge">25 anos</span>
+                        </div>
+                        <div class="physical-item">
+                            <span class="physical-label">Aparência:</span>
+                            <span class="physical-value" id="dashboardAppearance">Comum</span>
+                        </div>
+                    </div>
+                    <div class="physical-description" id="dashboardPhysDesc">
+                        25 anos, pele morena, olhos castanhos, cabelo castanho curto
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3: ATRIBUTOS PRINCIPAIS -->
+            <div class="dashboard-card card-attributes">
+                <div class="card-header">
+                    <i class="fas fa-dumbbell"></i>
+                    <h3>Atributos Principais</h3>
+                </div>
+                <div class="card-content">
+                    <div class="attributes-grid">
+                        <div class="attribute-item">
+                            <div class="attribute-label">ST</div>
+                            <div class="attribute-value" id="dashboardST">10</div>
+                            <div class="attribute-name">Força</div>
+                        </div>
+                        <div class="attribute-item">
+                            <div class="attribute-label">DX</div>
+                            <div class="attribute-value" id="dashboardDX">10</div>
+                            <div class="attribute-name">Destreza</div>
+                        </div>
+                        <div class="attribute-item">
+                            <div class="attribute-label">IQ</div>
+                            <div class="attribute-value" id="dashboardIQ">10</div>
+                            <div class="attribute-name">Inteligência</div>
+                        </div>
+                        <div class="attribute-item">
+                            <div class="attribute-label">HT</div>
+                            <div class="attribute-value" id="dashboardHT">10</div>
+                            <div class="attribute-name">Saúde</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 4: ATRIBUTOS SECUNDÁRIOS -->
+            <div class="dashboard-card card-secondary">
+                <div class="card-header">
+                    <i class="fas fa-heartbeat"></i>
+                    <h3>Atributos Secundários</h3>
+                </div>
+                <div class="card-content">
+                    <div class="secondary-grid">
+                        <div class="secondary-item">
+                            <span class="secondary-label">PV:</span>
+                            <span class="secondary-value" id="dashboardPV">10</span>
+                        </div>
+                        <div class="secondary-item">
+                            <span class="secondary-label">PF:</span>
+                            <span class="secondary-value" id="dashboardPF">10</span>
+                        </div>
+                        <div class="secondary-item">
+                            <span class="secondary-label">Vontade:</span>
+                            <span class="secondary-value" id="dashboardWill">10</span>
+                        </div>
+                        <div class="secondary-item">
+                            <span class="secondary-label">Percepção:</span>
+                            <span class="secondary-value" id="dashboardPer">10</span>
+                        </div>
+                        <div class="secondary-item">
+                            <span class="secondary-label">Deslocamento:</span>
+                            <span class="secondary-value" id="dashboardMove">5.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 5: STATUS SOCIAL -->
+            <div class="dashboard-card card-social">
+                <div class="card-header">
                     <i class="fas fa-crown"></i>
                     <h3>Status Social</h3>
                 </div>
-                
-                <div class="info-content">
-                    <select id="dashboardWealthLevel" class="dashboard-select">
-                        <option value="0">Médio [0 pts]</option>
-                        <option value="-25">Falido [-25 pts]</option>
-                        <option value="-15">Pobre [-15 pts]</option>
-                        <option value="-10">Batalhador [-10 pts]</option>
-                        <option value="10">Confortável [+10 pts]</option>
-                        <option value="20">Rico [+20 pts]</option>
-                        <option value="30">Muito Rico [+30 pts]</option>
-                        <option value="50">Podre de Rico [+50 pts]</option>
-                    </select>
-                    
-                    <div class="wealth-info">
-                        <div class="wealth-level" id="wealthDisplay">Médio</div>
-                        <div class="wealth-description" id="wealthDescription">
-                            Nível de recursos pré-definido padrão
+                <div class="card-content">
+                    <div class="social-item main">
+                        <span class="social-label">Nível de Riqueza:</span>
+                        <span class="social-value" id="dashboardWealth">Médio [0 pts]</span>
+                    </div>
+                    <div class="social-grid">
+                        <div class="social-item">
+                            <span class="social-label">Status:</span>
+                            <span class="social-value" id="dashboardStatus">0</span>
+                        </div>
+                        <div class="social-item">
+                            <span class="social-label">Reputação:</span>
+                            <span class="social-value" id="dashboardRep">0</span>
+                        </div>
+                        <div class="social-item">
+                            <span class="social-label">Aparência:</span>
+                            <span class="social-value" id="dashboardAppBonus">0</span>
                         </div>
                     </div>
+                    <div class="social-total">
+                        <span class="total-label">Modificador de Reação Total:</span>
+                        <span class="total-value" id="dashboardReactTotal">+0</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- CARD TESTE DE RELAÇÃO -->
-            <div class="info-card">
-                <div class="info-card-header">
-                    <i class="fas fa-handshake"></i>
-                    <h3>Teste de Relação</h3>
+            <!-- CARD 6: SISTEMA DE PONTOS (CONFIGURÁVEL) -->
+            <div class="dashboard-card card-points">
+                <div class="card-header">
+                    <i class="fas fa-star"></i>
+                    <h3>Sistema de Pontos</h3>
+                    <span class="card-note">(Configurável pelo GM)</span>
                 </div>
-                
-                <div class="info-content">
-                    <div class="relation-form">
-                        <input type="text" id="relationTarget" class="dashboard-input" 
-                               placeholder="Nome do alvo" maxlength="30">
-                        
-                        <div class="relation-input-group">
-                            <input type="number" id="relationModifier" class="dashboard-input" 
-                                   placeholder="Modificador" value="0">
-                            <select id="relationSkill" class="dashboard-select">
-                                <option value="carisma">Carisma</option>
-                                <option value="diplomacia">Diplomacia</option>
-                                <option value="intimidacao">Intimidação</option>
-                                <option value="empatia">Empatia</option>
-                            </select>
+                <div class="card-content">
+                    <!-- CONFIGURAÇÃO DO GM -->
+                    <div class="points-config">
+                        <div class="config-item">
+                            <label for="initialPoints">Pontos Iniciais:</label>
+                            <input type="number" id="initialPoints" class="points-input" value="100" min="0" max="1000">
+                        </div>
+                        <div class="config-item">
+                            <label for="disadvantageLimit">Limite Desvantagens:</label>
+                            <input type="number" id="disadvantageLimit" class="points-input" value="-75" max="0">
+                            <span class="points-note">(negativo)</span>
                         </div>
                     </div>
-                    
-                    <button class="relation-btn" id="testRelationBtn">
-                        <i class="fas fa-dice-d20"></i> Testar Relação
-                    </button>
-                </div>
-            </div>
-        </div>
 
-        <!-- SEÇÃO 3: ATRIBUTOS PRINCIPAIS -->
-        <div class="attributes-section slide-in-right">
-            <div class="section-header">
-                <h3><i class="fas fa-dumbbell"></i> Atributos Principais</h3>
-                <p>Valores básicos do personagem</p>
-            </div>
-            
-            <div class="attributes-grid">
-                <!-- ST - FORÇA -->
-                <div class="attribute-dashboard-card">
-                    <div class="attribute-icon">
-                        <i class="fas fa-fist-raised"></i>
-                    </div>
-                    <div class="attribute-value" id="dashboardST">10</div>
-                    <div class="attribute-label">FORÇA (ST)</div>
-                    <div class="attribute-modifier">
-                        <span>Dano: </span>
-                        <span id="dashboardSTDamage" class="dashboard-tooltip" 
-                              title="Dano base para golpes desarmados e com arma">1d-2 / 1d</span>
-                    </div>
-                </div>
-
-                <!-- DX - DESTREZA -->
-                <div class="attribute-dashboard-card">
-                    <div class="attribute-icon">
-                        <i class="fas fa-running"></i>
-                    </div>
-                    <div class="attribute-value" id="dashboardDX">10</div>
-                    <div class="attribute-label">DESTREZA (DX)</div>
-                    <div class="attribute-modifier">
-                        <span>Esquiva: </span>
-                        <span id="dashboardDodge" class="dashboard-tooltip" 
-                              title="Valor base para esquiva de ataques">10</span>
-                    </div>
-                </div>
-
-                <!-- IQ - INTELIGÊNCIA -->
-                <div class="attribute-dashboard-card">
-                    <div class="attribute-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <div class="attribute-value" id="dashboardIQ">10</div>
-                    <div class="attribute-label">INTELIGÊNCIA (IQ)</div>
-                    <div class="attribute-modifier">
-                        <span>Perícias: </span>
-                        <span id="dashboardIQSkills" class="dashboard-tooltip" 
-                              title="Número de perícias baseadas em IQ">10+</span>
-                    </div>
-                </div>
-
-                <!-- HT - SAÚDE -->
-                <div class="attribute-dashboard-card">
-                    <div class="attribute-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <div class="attribute-value" id="dashboardHT">10</div>
-                    <div class="attribute-label">SAÚDE (HT)</div>
-                    <div class="attribute-modifier">
-                        <span>Resistência: </span>
-                        <span id="dashboardHTResist" class="dashboard-tooltip" 
-                              title="Base para testes de resistência">10</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SEÇÃO 4: STATUS ATUAL (PV/PF) -->
-        <div class="status-section slide-in-left">
-            <div class="section-header">
-                <h3><i class="fas fa-heartbeat"></i> Status Atual</h3>
-                <p>Controle rápido de Pontos de Vida e Fadiga</p>
-            </div>
-            
-            <div class="status-cards">
-                <!-- PONTOS DE VIDA -->
-                <div class="status-card" id="pvCard">
-                    <div class="status-header">
-                        <h4><i class="fas fa-heart"></i> Pontos de Vida</h4>
-                        <span class="status-indicator" id="pvStatus">Saudável</span>
-                    </div>
-                    
-                    <div class="status-values">
-                        <div class="current-value" id="pvCurrent">10</div>
-                        <div class="max-value">/<span id="pvMax">10</span></div>
-                    </div>
-                    
-                    <div class="status-bar-container">
-                        <div class="status-bar pv-bar" id="pvBar" style="width: 100%"></div>
-                    </div>
-                    
-                    <div class="status-controls">
-                        <button class="status-btn damage-btn" onclick="modifyHP(-1)">
-                            <i class="fas fa-minus"></i> -1
-                        </button>
-                        <button class="status-btn damage-btn" onclick="modifyHP(-5)">
-                            <i class="fas fa-bolt"></i> -5
-                        </button>
-                        <button class="status-btn heal-btn" onclick="modifyHP(1)">
-                            <i class="fas fa-plus"></i> +1
-                        </button>
-                        <button class="status-btn heal-btn" onclick="modifyHP(5)">
-                            <i class="fas fa-plus-circle"></i> +5
-                        </button>
-                    </div>
-                </div>
-
-                <!-- PONTOS DE FADIGA -->
-                <div class="status-card" id="pfCard">
-                    <div class="status-header">
-                        <h4><i class="fas fa-wind"></i> Pontos de Fadiga</h4>
-                        <span class="status-indicator" id="pfStatus">Normal</span>
-                    </div>
-                    
-                    <div class="status-values">
-                        <div class="current-value" id="pfCurrent">10</div>
-                        <div class="max-value">/<span id="pfMax">10</span></div>
-                    </div>
-                    
-                    <div class="status-bar-container">
-                        <div class="status-bar pf-bar" id="pfBar" style="width: 100%"></div>
-                    </div>
-                    
-                    <div class="status-controls">
-                        <button class="status-btn damage-btn" onclick="modifyFP(-1)">
-                            <i class="fas fa-minus"></i> -1
-                        </button>
-                        <button class="status-btn damage-btn" onclick="modifyFP(-3)">
-                            <i class="fas fa-bolt"></i> -3
-                        </button>
-                        <button class="status-btn heal-btn" onclick="modifyFP(1)">
-                            <i class="fas fa-plus"></i> +1
-                        </button>
-                        <button class="status-btn heal-btn" onclick="modifyFP(3)">
-                            <i class="fas fa-plus-circle"></i> +3
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SEÇÃO 5: SISTEMA DE PONTOS -->
-        <div class="points-system-section slide-in-right">
-            <div class="section-header">
-                <h3><i class="fas fa-star"></i> Sistema de Pontos</h3>
-                <p>Controle de pontos de personagem</p>
-            </div>
-            
-            <div class="points-grid">
-                <!-- PONTOS DO GM -->
-                <div class="point-card gm-points highlight-card">
-                    <div class="point-label">Pontos Disponíveis</div>
-                    <div class="point-value neutral-points" id="gmPoints">100</div>
-                    <div class="point-details">
-                        <i class="fas fa-user-shield"></i> Definidos pelo Game Master
-                    </div>
-                </div>
-
-                <!-- GASTOS EM ATRIBUTOS -->
-                <div class="point-card">
-                    <div class="point-label">Gasto em Atributos</div>
-                    <div class="point-value neutral-points" id="attributePoints">0</div>
-                    <div class="point-details">
-                        <i class="fas fa-dumbbell"></i> <span id="attributePercent">0%</span> do total
-                    </div>
-                    <div class="point-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill attributes-progress" id="attributeProgress" style="width: 0%"></div>
+                    <!-- GASTOS ATUAIS (AUTOMÁTICO) -->
+                    <div class="points-spent">
+                        <h4>Gastos Atuais:</h4>
+                        <div class="spent-grid">
+                            <div class="spent-item">
+                                <span class="spent-label">Vantagens:</span>
+                                <span class="spent-value" id="spentAdvantages">0</span>
+                            </div>
+                            <div class="spent-item negative">
+                                <span class="spent-label">Desvantagens:</span>
+                                <span class="spent-value" id="spentDisadvantages">0</span>
+                            </div>
+                            <div class="spent-item negative">
+                                <span class="spent-label">Peculiaridades:</span>
+                                <span class="spent-value" id="spentPeculiarities">0</span>
+                            </div>
+                            <div class="spent-item">
+                                <span class="spent-label">Perícias:</span>
+                                <span class="spent-value" id="spentSkills">0</span>
+                            </div>
+                            <div class="spent-item">
+                                <span class="spent-label">Técnicas:</span>
+                                <span class="spent-value" id="spentTechniques">0</span>
+                            </div>
+                            <div class="spent-item">
+                                <span class="spent-label">Magias:</span>
+                                <span class="spent-value" id="spentSpells">0</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- GASTOS EM VANTAGENS -->
-                <div class="point-card">
-                    <div class="point-label">Gasto em Vantagens</div>
-                    <div class="point-value positive-points" id="vantagePoints">0</div>
-                    <div class="point-details">
-                        <i class="fas fa-star"></i> <span id="vantagePercent">0%</span> do total
-                    </div>
-                    <div class="point-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill vantages-progress" id="vantageProgress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PONTOS EM DESVANTAGENS -->
-                <div class="point-card negative">
-                    <div class="point-label">Limite de Desvantagens</div>
-                    <div class="point-value negative-points" id="disadvantagePoints">0</div>
-                    <div class="point-details">
-                        <i class="fas fa-exclamation-triangle"></i> Máximo: -75 pontos
-                    </div>
-                    <div class="point-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill disadvantages-progress" id="disadvantageProgress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SALDO DE PONTOS -->
-                <div class="point-card" id="balanceCard">
-                    <div class="point-label">Saldo de Pontos</div>
-                    <div class="point-value neutral-points" id="balancePoints">100</div>
-                    <div class="point-details">
-                        <i class="fas fa-scale-balanced"></i> Restante para gastar
-                    </div>
-                </div>
-
-                <!-- RESUMO -->
-                <div class="point-card">
-                    <div class="point-label">Resumo de Gastos</div>
-                    <div class="point-details">
+                    <!-- RESUMO -->
+                    <div class="points-summary">
                         <div class="summary-item">
-                            <span>Atributos:</span>
-                            <span id="summaryAttributes">0 pts</span>
+                            <span class="summary-label">Total Gastado:</span>
+                            <span class="summary-value" id="totalSpent">0</span>
                         </div>
                         <div class="summary-item">
-                            <span>Vantagens:</span>
-                            <span id="summaryVantages">0 pts</span>
-                        </div>
-                        <div class="summary-item">
-                            <span>Desvantagens:</span>
-                            <span id="summaryDisadvantages">0 pts</span>
-                        </div>
-                        <div class="summary-item total">
-                            <span>Total Gasto:</span>
-                            <span id="summaryTotal">0 pts</span>
+                            <span class="summary-label">Pontos Restantes:</span>
+                            <span class="summary-value remaining" id="pointsRemaining">100</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- SEÇÃO 6: FINANCEIRO -->
-        <div class="finance-section slide-in-left">
-            <div class="section-header">
-                <h3><i class="fas fa-coins"></i> Situação Financeira</h3>
-                <p>Controle de dinheiro e recursos</p>
-            </div>
-            
-            <div class="finance-cards">
-                <!-- DINHEIRO ATUAL -->
-                <div class="finance-card">
-                    <div class="info-card-header">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <h3>Dinheiro Disponível</h3>
-                    </div>
-                    
-                    <div class="money-display">
-                        <div class="money-amount" id="currentMoney">$0</div>
-                        <div class="money-label">Saldo em moedas</div>
-                    </div>
-                    
-                    <div class="money-controls">
-                        <button class="money-btn add-money" onclick="addMoney(100)">
-                            <i class="fas fa-plus"></i> Receber
-                        </button>
-                        <button class="money-btn spend-money" onclick="spendMoney(50)">
-                            <i class="fas fa-minus"></i> Gastar
-                        </button>
-                    </div>
-                    
-                    <div class="money-quick-actions">
-                        <button class="money-quick-btn" onclick="addMoney(10)">+$10</button>
-                        <button class="money-quick-btn" onclick="addMoney(50)">+$50</button>
-                        <button class="money-quick-btn" onclick="addMoney(100)">+$100</button>
-                        <button class="money-quick-btn" onclick="setMoney(0)">Zerar</button>
-                    </div>
+            <!-- CARD 7: EQUIPAMENTO -->
+            <div class="dashboard-card card-equipment">
+                <div class="card-header">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Equipamento</h3>
                 </div>
-
-                <!-- RENDA E PATRIMÔNIO -->
-                <div class="finance-card">
-                    <div class="info-card-header">
-                        <i class="fas fa-chart-line"></i>
-                        <h3>Renda & Patrimônio</h3>
-                    </div>
-                    
-                    <div class="finance-details">
-                        <div class="finance-item">
-                            <span>Renda Mensal:</span>
-                            <span class="finance-value" id="monthlyIncome">$1.000</span>
+                <div class="card-content">
+                    <div class="equipment-stats">
+                        <div class="equipment-item">
+                            <i class="fas fa-weight-hanging"></i>
+                            <div class="equipment-info">
+                                <div class="equipment-label">Peso Total</div>
+                                <div class="equipment-value" id="equipWeight">0.0 kg</div>
+                            </div>
                         </div>
-                        <div class="finance-item">
-                            <span>Patrimônio Estimado:</span>
-                            <span class="finance-value" id="estimatedWealth">$10.000</span>
-                        </div>
-                        <div class="finance-item">
-                            <span>Nível de Riqueza:</span>
-                            <span class="finance-value wealth-badge" id="wealthLevelBadge">Médio</span>
-                        </div>
-                        <div class="finance-item">
-                            <span>Modificador de Custo:</span>
-                            <span class="finance-value" id="costModifier">×1</span>
+                        <div class="equipment-item">
+                            <i class="fas fa-coins"></i>
+                            <div class="equipment-info">
+                                <div class="equipment-label">Valor Total</div>
+                                <div class="equipment-value" id="equipValue">$0</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="wealth-description-card">
-                        <h4><i class="fas fa-info-circle"></i> Status Social</h4>
-                        <p id="wealthDescriptionText">
-                            Você possui recursos suficientes para viver confortavelmente sem se preocupar com despesas básicas.
-                        </p>
+                    <div class="equipment-encumbrance">
+                        <div class="encumbrance-label">Carga:</div>
+                        <div class="encumbrance-status" id="encumbranceStatus">Nenhuma</div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- SEÇÃO 7: RESUMO DE CARACTERÍSTICAS -->
-        <div class="traits-summary-section slide-in-right">
-            <div class="section-header">
-                <h3><i class="fas fa-clipboard-list"></i> Resumo de Características</h3>
-                <p>Principais características, vantagens e desvantagens</p>
-            </div>
-            
-            <div class="traits-grid">
-                <!-- VANTAGENS PRINCIPAIS -->
-                <div class="trait-category">
-                    <h4><i class="fas fa-star"></i> Vantagens Principais</h4>
-                    <ul class="trait-list" id="mainVantagesList">
-                        <li class="trait-item">
-                            <span class="trait-name">Nenhuma vantagem adicionada</span>
-                            <span class="trait-value">0 pts</span>
-                        </li>
-                    </ul>
+            <!-- CARD 8: RESUMO RÁPIDO -->
+            <div class="dashboard-card card-quick-summary">
+                <div class="card-header">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Resumo Rápido</h3>
                 </div>
-
-                <!-- DESVANTAGENS PRINCIPAIS -->
-                <div class="trait-category">
-                    <h4><i class="fas fa-exclamation-triangle"></i> Desvantagens Principais</h4>
-                    <ul class="trait-list" id="mainDisadvantagesList">
-                        <li class="trait-item">
-                            <span class="trait-name">Nenhuma desvantagem adicionada</span>
-                            <span class="trait-value">0 pts</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- PERÍCIAS-CHAVE -->
-                <div class="trait-category">
-                    <h4><i class="fas fa-book-open"></i> Perícias-Chave</h4>
-                    <ul class="trait-list" id="keySkillsList">
-                        <li class="trait-item">
-                            <span class="trait-name">Nenhuma perícia aprendida</span>
-                            <span class="trait-value">NH -</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- CARACTERÍSTICAS FÍSICAS -->
-                <div class="trait-category">
-                    <h4><i class="fas fa-user"></i> Características Físicas</h4>
-                    <ul class="trait-list" id="physicalTraitsList">
-                        <li class="trait-item">
-                            <span class="trait-name">Altura</span>
-                            <span class="trait-value" id="heightValue">1.70m</span>
-                        </li>
-                        <li class="trait-item">
-                            <span class="trait-name">Peso</span>
-                            <span class="trait-value" id="weightValue">70kg</span>
-                        </li>
-                        <li class="trait-item">
-                            <span class="trait-name">Idade</span>
-                            <span class="trait-value" id="ageValue">25 anos</span>
-                        </li>
-                        <li class="trait-item">
-                            <span class="trait-name">Aparência</span>
-                            <span class="trait-value" id="appearanceValue">Comum</span>
-                        </li>
-                    </ul>
+                <div class="card-content">
+                    <div class="quick-grid">
+                        <div class="quick-item">
+                            <span class="quick-label">Vantagens:</span>
+                            <span class="quick-value" id="quickAdvCount">0</span>
+                        </div>
+                        <div class="quick-item">
+                            <span class="quick-label">Desvantagens:</span>
+                            <span class="quick-value" id="quickDisCount">0</span>
+                        </div>
+                        <div class="quick-item">
+                            <span class="quick-label">Perícias:</span>
+                            <span class="quick-value" id="quickSkillsCount">0</span>
+                        </div>
+                        <div class="quick-item">
+                            <span class="quick-label">Magias:</span>
+                            <span class="quick-value" id="quickSpellsCount">0</span>
+                        </div>
+                        <div class="quick-item">
+                            <span class="quick-label">Idiomas:</span>
+                            <span class="quick-value" id="quickLanguagesCount">1</span>
+                        </div>
+                        <div class="quick-item">
+                            <span class="quick-label">Itens:</span>
+                            <span class="quick-value" id="quickItemsCount">0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- RODAPÉ DA DASHBOARD -->
+        </div> <!-- Fim do dashboard-grid -->
+
+        <!-- RODAPÉ -->
         <div class="dashboard-footer">
-            <div class="last-updated">
-                <i class="fas fa-clock"></i>
-                <span>Última atualização: </span>
-                <span id="lastUpdatedTime">Agora mesmo</span>
+            <div class="update-info">
+                <i class="fas fa-sync-alt"></i>
+                <span>Atualização automática das outras abas</span>
             </div>
-            <button class="btn-refresh-dashboard" onclick="refreshDashboard()">
-                <i class="fas fa-redo"></i> Atualizar Dashboard
+            <button class="btn-refresh" onclick="refreshDashboard()">
+                <i class="fas fa-redo"></i> Atualizar Agora
             </button>
         </div>
 
