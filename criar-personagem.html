@@ -903,315 +903,370 @@ body::before {
 
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
-      <!-- DASHBOARD REFORMULADA - VERSÃO LIMPA -->
-<div id="dashboard" class="tab-content active">
+      <!-- DASHBOARD CORRETA - INTEGRADA COM SEU SISTEMA -->
+<div id="dashboard" class="tab-content">
     <div class="dashboard-container">
         
-        <!-- CABEÇALHO SIMPLES -->
+        <!-- CABEÇALHO CONSISTENTE -->
         <div class="dashboard-header">
-            <h2><i class="fas fa-tachometer-alt"></i> Dashboard do Personagem</h2>
-            <p class="dashboard-subtitle">Resumo geral do personagem (dados das outras abas)</p>
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+            <p>Visão geral do personagem</p>
         </div>
 
-        <!-- GRID PRINCIPAL -->
-        <div class="dashboard-grid">
+        <!-- GRID PROPORCIONAL (2x2 no desktop) -->
+        <div class="dashboard-main-grid">
             
-            <!-- CARD 1: IDENTIFICAÇÃO -->
-            <div class="dashboard-card card-identification">
-                <div class="card-header">
-                    <i class="fas fa-user-tag"></i>
-                    <h3>Identificação</h3>
-                </div>
-                <div class="card-content">
-                    <div class="id-display">
-                        <div class="id-name" id="dashboardCharName">Nome do Personagem</div>
-                        <div class="id-class-level">
-                            <span id="dashboardCharClass">Classe</span>
-                            <span class="separator">•</span>
-                            <span id="dashboardCharLevel">Nível 1</span>
+            <!-- LINHA 1 -->
+            <div class="dashboard-row">
+                
+                <!-- CARD 1: IDENTIFICAÇÃO (25% largura) -->
+                <div class="dashboard-card id-card">
+                    <div class="card-header">
+                        <i class="fas fa-user-tag"></i>
+                        <h3>Identificação</h3>
+                    </div>
+                    <div class="card-content">
+                        <!-- UPLOAD MINI (proporcional) -->
+                        <div class="mini-upload-area">
+                            <div class="mini-image-preview" id="dashboardImagePreview">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <button class="btn-mini-upload" onclick="triggerImageUpload()">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" id="dashboardImageUpload" accept="image/*" style="display: none;">
+                        </div>
+                        
+                        <!-- DADOS BÁSICOS -->
+                        <div class="id-data">
+                            <input type="text" class="id-name-input" 
+                                   id="dashboardCharName" 
+                                   placeholder="Nome do Personagem"
+                                   value="">
+                            <div class="id-details">
+                                <select class="id-class-select" id="dashboardCharClass">
+                                    <option value="">Classe</option>
+                                    <option value="guerreiro">Guerreiro</option>
+                                    <option value="mago">Mago</option>
+                                </select>
+                                <input type="number" class="id-level-input" 
+                                       id="dashboardCharLevel" 
+                                       value="1" min="1" max="20">
+                            </div>
                         </div>
                     </div>
-                    <div class="id-image">
-                        <div class="mini-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                    </div>
                 </div>
-            </div>
 
-            <!-- CARD 2: CARACTERÍSTICAS FÍSICAS -->
-            <div class="dashboard-card card-physical">
-                <div class="card-header">
-                    <i class="fas fa-ruler-combined"></i>
-                    <h3>Características Físicas</h3>
-                </div>
-                <div class="card-content">
-                    <div class="physical-grid">
-                        <div class="physical-item">
-                            <span class="physical-label">Altura:</span>
-                            <span class="physical-value" id="dashboardHeight">1.70m</span>
-                        </div>
-                        <div class="physical-item">
-                            <span class="physical-label">Peso:</span>
-                            <span class="physical-value" id="dashboardWeight">70kg</span>
-                        </div>
-                        <div class="physical-item">
-                            <span class="physical-label">Idade:</span>
-                            <span class="physical-value" id="dashboardAge">25 anos</span>
-                        </div>
-                        <div class="physical-item">
-                            <span class="physical-label">Aparência:</span>
-                            <span class="physical-value" id="dashboardAppearance">Comum</span>
+                <!-- CARD 2: ATRIBUTOS PRINCIPAIS (75% largura) -->
+                <div class="dashboard-card attributes-card">
+                    <div class="card-header">
+                        <i class="fas fa-dumbbell"></i>
+                        <h3>Atributos Principais</h3>
+                    </div>
+                    <div class="card-content">
+                        <!-- TODOS OS 4 ATRIBUTOS, BEM DISTRIBUÍDOS -->
+                        <div class="attributes-display">
+                            <!-- ST -->
+                            <div class="attribute-display-item">
+                                <div class="attribute-label">ST</div>
+                                <div class="attribute-value" id="dashboardST">10</div>
+                                <div class="attribute-name">Força</div>
+                                <div class="attribute-detail" id="dashboardSTDetail">1d-2 / 1d</div>
+                            </div>
+                            
+                            <!-- DX -->
+                            <div class="attribute-display-item">
+                                <div class="attribute-label">DX</div>
+                                <div class="attribute-value" id="dashboardDX">10</div>
+                                <div class="attribute-name">Destreza</div>
+                                <div class="attribute-detail" id="dashboardDXDetail">Esquiva: 10</div>
+                            </div>
+                            
+                            <!-- IQ -->
+                            <div class="attribute-display-item">
+                                <div class="attribute-label">IQ</div>
+                                <div class="attribute-value" id="dashboardIQ">10</div>
+                                <div class="attribute-name">Inteligência</div>
+                                <div class="attribute-detail" id="dashboardIQDetail">Perícias: 10+</div>
+                            </div>
+                            
+                            <!-- HT -->
+                            <div class="attribute-display-item">
+                                <div class="attribute-label">HT</div>
+                                <div class="attribute-value" id="dashboardHT">10</div>
+                                <div class="attribute-name">Saúde</div>
+                                <div class="attribute-detail" id="dashboardHTDetail">Resistência: 10</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="physical-description" id="dashboardPhysDesc">
-                        25 anos, pele morena, olhos castanhos, cabelo castanho curto
-                    </div>
                 </div>
-            </div>
+                
+            </div> <!-- Fim da linha 1 -->
 
-            <!-- CARD 3: ATRIBUTOS PRINCIPAIS -->
-            <div class="dashboard-card card-attributes">
-                <div class="card-header">
-                    <i class="fas fa-dumbbell"></i>
-                    <h3>Atributos Principais</h3>
-                </div>
-                <div class="card-content">
-                    <div class="attributes-grid">
-                        <div class="attribute-item">
-                            <div class="attribute-label">ST</div>
-                            <div class="attribute-value" id="dashboardST">10</div>
-                            <div class="attribute-name">Força</div>
-                        </div>
-                        <div class="attribute-item">
-                            <div class="attribute-label">DX</div>
-                            <div class="attribute-value" id="dashboardDX">10</div>
-                            <div class="attribute-name">Destreza</div>
-                        </div>
-                        <div class="attribute-item">
-                            <div class="attribute-label">IQ</div>
-                            <div class="attribute-value" id="dashboardIQ">10</div>
-                            <div class="attribute-name">Inteligência</div>
-                        </div>
-                        <div class="attribute-item">
-                            <div class="attribute-label">HT</div>
-                            <div class="attribute-value" id="dashboardHT">10</div>
-                            <div class="attribute-name">Saúde</div>
+            <!-- LINHA 2 -->
+            <div class="dashboard-row">
+                
+                <!-- CARD 3: ATRIBUTOS SECUNDÁRIOS -->
+                <div class="dashboard-card secondary-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Atributos Secundários</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="secondary-grid">
+                            <div class="secondary-item">
+                                <div class="secondary-label">
+                                    <i class="fas fa-heartbeat"></i>
+                                    <span>PV</span>
+                                </div>
+                                <div class="secondary-value" id="dashboardPV">10</div>
+                                <div class="secondary-max">/10</div>
+                            </div>
+                            
+                            <div class="secondary-item">
+                                <div class="secondary-label">
+                                    <i class="fas fa-wind"></i>
+                                    <span>PF</span>
+                                </div>
+                                <div class="secondary-value" id="dashboardPF">10</div>
+                                <div class="secondary-max">/10</div>
+                            </div>
+                            
+                            <div class="secondary-item">
+                                <div class="secondary-label">
+                                    <i class="fas fa-brain"></i>
+                                    <span>Vontade</span>
+                                </div>
+                                <div class="secondary-value" id="dashboardWill">10</div>
+                            </div>
+                            
+                            <div class="secondary-item">
+                                <div class="secondary-label">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Percepção</span>
+                                </div>
+                                <div class="secondary-value" id="dashboardPer">10</div>
+                            </div>
+                            
+                            <div class="secondary-item">
+                                <div class="secondary-label">
+                                    <i class="fas fa-running"></i>
+                                    <span>Deslocamento</span>
+                                </div>
+                                <div class="secondary-value" id="dashboardMove">5.00</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- CARD 4: ATRIBUTOS SECUNDÁRIOS -->
-            <div class="dashboard-card card-secondary">
-                <div class="card-header">
-                    <i class="fas fa-heartbeat"></i>
-                    <h3>Atributos Secundários</h3>
-                </div>
-                <div class="card-content">
-                    <div class="secondary-grid">
-                        <div class="secondary-item">
-                            <span class="secondary-label">PV:</span>
-                            <span class="secondary-value" id="dashboardPV">10</span>
+                <!-- CARD 4: CARACTERÍSTICAS FÍSICAS -->
+                <div class="dashboard-card physical-card">
+                    <div class="card-header">
+                        <i class="fas fa-user"></i>
+                        <h3>Características Físicas</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="physical-list">
+                            <div class="physical-item">
+                                <span class="physical-label">Altura:</span>
+                                <span class="physical-value" id="dashboardHeight">1.70m</span>
+                            </div>
+                            <div class="physical-item">
+                                <span class="physical-label">Peso:</span>
+                                <span class="physical-value" id="dashboardWeight">70kg</span>
+                            </div>
+                            <div class="physical-item">
+                                <span class="physical-label">Idade:</span>
+                                <span class="physical-value" id="dashboardAge">25 anos</span>
+                            </div>
+                            <div class="physical-item">
+                                <span class="physical-label">Aparência:</span>
+                                <span class="physical-value" id="dashboardAppearance">Comum</span>
+                            </div>
                         </div>
-                        <div class="secondary-item">
-                            <span class="secondary-label">PF:</span>
-                            <span class="secondary-value" id="dashboardPF">10</span>
-                        </div>
-                        <div class="secondary-item">
-                            <span class="secondary-label">Vontade:</span>
-                            <span class="secondary-value" id="dashboardWill">10</span>
-                        </div>
-                        <div class="secondary-item">
-                            <span class="secondary-label">Percepção:</span>
-                            <span class="secondary-value" id="dashboardPer">10</span>
-                        </div>
-                        <div class="secondary-item">
-                            <span class="secondary-label">Deslocamento:</span>
-                            <span class="secondary-value" id="dashboardMove">5.00</span>
+                        <div class="physical-description">
+                            <div class="desc-label">Descrição:</div>
+                            <div class="desc-text" id="dashboardPhysDesc">
+                                Pele morena, olhos castanhos, cabelo curto
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                
+            </div> <!-- Fim da linha 2 -->
 
-            <!-- CARD 5: STATUS SOCIAL -->
-            <div class="dashboard-card card-social">
-                <div class="card-header">
-                    <i class="fas fa-crown"></i>
-                    <h3>Status Social</h3>
+            <!-- LINHA 3 -->
+            <div class="dashboard-row">
+                
+                <!-- CARD 5: STATUS SOCIAL -->
+                <div class="dashboard-card social-card">
+                    <div class="card-header">
+                        <i class="fas fa-crown"></i>
+                        <h3>Status Social</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="social-main">
+                            <div class="wealth-display">
+                                <div class="wealth-label">Nível de Riqueza:</div>
+                                <div class="wealth-value" id="dashboardWealth">Médio</div>
+                                <div class="wealth-points" id="dashboardWealthPoints">[0 pts]</div>
+                            </div>
+                        </div>
+                        
+                        <div class="social-modifiers">
+                            <div class="modifier-item">
+                                <div class="modifier-label">Status:</div>
+                                <div class="modifier-value" id="dashboardStatusMod">+0</div>
+                            </div>
+                            <div class="modifier-item">
+                                <div class="modifier-label">Reputação:</div>
+                                <div class="modifier-value" id="dashboardRepMod">+0</div>
+                            </div>
+                            <div class="modifier-item">
+                                <div class="modifier-label">Aparência:</div>
+                                <div class="modifier-value" id="dashboardAppMod">+0</div>
+                            </div>
+                        </div>
+                        
+                        <div class="reaction-total">
+                            <div class="total-label">Modificador de Reação:</div>
+                            <div class="total-value" id="dashboardReactionTotal">+0</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-content">
-                    <div class="social-item main">
-                        <span class="social-label">Nível de Riqueza:</span>
-                        <span class="social-value" id="dashboardWealth">Médio [0 pts]</span>
-                    </div>
-                    <div class="social-grid">
-                        <div class="social-item">
-                            <span class="social-label">Status:</span>
-                            <span class="social-value" id="dashboardStatus">0</span>
-                        </div>
-                        <div class="social-item">
-                            <span class="social-label">Reputação:</span>
-                            <span class="social-value" id="dashboardRep">0</span>
-                        </div>
-                        <div class="social-item">
-                            <span class="social-label">Aparência:</span>
-                            <span class="social-value" id="dashboardAppBonus">0</span>
-                        </div>
-                    </div>
-                    <div class="social-total">
-                        <span class="total-label">Modificador de Reação Total:</span>
-                        <span class="total-value" id="dashboardReactTotal">+0</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- CARD 6: SISTEMA DE PONTOS (CONFIGURÁVEL) -->
-            <div class="dashboard-card card-points">
-                <div class="card-header">
-                    <i class="fas fa-star"></i>
-                    <h3>Sistema de Pontos</h3>
-                    <span class="card-note">(Configurável pelo GM)</span>
-                </div>
-                <div class="card-content">
-                    <!-- CONFIGURAÇÃO DO GM -->
-                    <div class="points-config">
-                        <div class="config-item">
-                            <label for="initialPoints">Pontos Iniciais:</label>
-                            <input type="number" id="initialPoints" class="points-input" value="100" min="0" max="1000">
-                        </div>
-                        <div class="config-item">
-                            <label for="disadvantageLimit">Limite Desvantagens:</label>
-                            <input type="number" id="disadvantageLimit" class="points-input" value="-75" max="0">
-                            <span class="points-note">(negativo)</span>
-                        </div>
+                <!-- CARD 6: SISTEMA DE PONTOS -->
+                <div class="dashboard-card points-card">
+                    <div class="card-header">
+                        <i class="fas fa-star"></i>
+                        <h3>Sistema de Pontos</h3>
                     </div>
-
-                    <!-- GASTOS ATUAIS (AUTOMÁTICO) -->
-                    <div class="points-spent">
-                        <h4>Gastos Atuais:</h4>
-                        <div class="spent-grid">
-                            <div class="spent-item">
-                                <span class="spent-label">Vantagens:</span>
+                    <div class="card-content">
+                        <!-- CONFIGURAÇÃO GM -->
+                        <div class="points-config">
+                            <div class="config-row">
+                                <label>Pontos Iniciais:</label>
+                                <input type="number" id="initialPoints" class="config-input" value="100">
+                            </div>
+                            <div class="config-row">
+                                <label>Limite Desvantagens:</label>
+                                <input type="number" id="disadvantageLimit" class="config-input" value="-75">
+                            </div>
+                        </div>
+                        
+                        <!-- GASTOS -->
+                        <div class="points-spent">
+                            <div class="spent-row">
+                                <span>Vantagens:</span>
                                 <span class="spent-value" id="spentAdvantages">0</span>
                             </div>
-                            <div class="spent-item negative">
-                                <span class="spent-label">Desvantagens:</span>
+                            <div class="spent-row negative">
+                                <span>Desvantagens:</span>
                                 <span class="spent-value" id="spentDisadvantages">0</span>
                             </div>
-                            <div class="spent-item negative">
-                                <span class="spent-label">Peculiaridades:</span>
-                                <span class="spent-value" id="spentPeculiarities">0</span>
-                            </div>
-                            <div class="spent-item">
-                                <span class="spent-label">Perícias:</span>
+                            <div class="spent-row">
+                                <span>Perícias:</span>
                                 <span class="spent-value" id="spentSkills">0</span>
                             </div>
-                            <div class="spent-item">
-                                <span class="spent-label">Técnicas:</span>
-                                <span class="spent-value" id="spentTechniques">0</span>
-                            </div>
-                            <div class="spent-item">
-                                <span class="spent-label">Magias:</span>
+                            <div class="spent-row">
+                                <span>Magias:</span>
                                 <span class="spent-value" id="spentSpells">0</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- RESUMO -->
-                    <div class="points-summary">
-                        <div class="summary-item">
-                            <span class="summary-label">Total Gastado:</span>
-                            <span class="summary-value" id="totalSpent">0</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Pontos Restantes:</span>
-                            <span class="summary-value remaining" id="pointsRemaining">100</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CARD 7: EQUIPAMENTO -->
-            <div class="dashboard-card card-equipment">
-                <div class="card-header">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Equipamento</h3>
-                </div>
-                <div class="card-content">
-                    <div class="equipment-stats">
-                        <div class="equipment-item">
-                            <i class="fas fa-weight-hanging"></i>
-                            <div class="equipment-info">
-                                <div class="equipment-label">Peso Total</div>
-                                <div class="equipment-value" id="equipWeight">0.0 kg</div>
-                            </div>
-                        </div>
-                        <div class="equipment-item">
-                            <i class="fas fa-coins"></i>
-                            <div class="equipment-info">
-                                <div class="equipment-label">Valor Total</div>
-                                <div class="equipment-value" id="equipValue">$0</div>
+                        
+                        <!-- RESUMO -->
+                        <div class="points-summary">
+                            <div class="summary-row">
+                                <span>Saldo:</span>
+                                <span class="summary-value" id="pointsBalance">100</span>
                             </div>
                         </div>
                     </div>
-                    <div class="equipment-encumbrance">
-                        <div class="encumbrance-label">Carga:</div>
-                        <div class="encumbrance-status" id="encumbranceStatus">Nenhuma</div>
-                    </div>
                 </div>
-            </div>
+                
+            </div> <!-- Fim da linha 3 -->
 
-            <!-- CARD 8: RESUMO RÁPIDO -->
-            <div class="dashboard-card card-quick-summary">
-                <div class="card-header">
-                    <i class="fas fa-clipboard-list"></i>
-                    <h3>Resumo Rápido</h3>
-                </div>
-                <div class="card-content">
-                    <div class="quick-grid">
-                        <div class="quick-item">
-                            <span class="quick-label">Vantagens:</span>
-                            <span class="quick-value" id="quickAdvCount">0</span>
+            <!-- LINHA 4 -->
+            <div class="dashboard-row">
+                
+                <!-- CARD 7: EQUIPAMENTO -->
+                <div class="dashboard-card equipment-card">
+                    <div class="card-header">
+                        <i class="fas fa-backpack"></i>
+                        <h3>Equipamento</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="equipment-stats">
+                            <div class="equip-stat">
+                                <i class="fas fa-weight-hanging"></i>
+                                <div class="stat-info">
+                                    <div class="stat-label">Peso Total</div>
+                                    <div class="stat-value" id="equipWeight">0.0 kg</div>
+                                </div>
+                            </div>
+                            <div class="equip-stat">
+                                <i class="fas fa-coins"></i>
+                                <div class="stat-info">
+                                    <div class="stat-label">Valor Total</div>
+                                    <div class="stat-value" id="equipValue">$0</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="quick-item">
-                            <span class="quick-label">Desvantagens:</span>
-                            <span class="quick-value" id="quickDisCount">0</span>
-                        </div>
-                        <div class="quick-item">
-                            <span class="quick-label">Perícias:</span>
-                            <span class="quick-value" id="quickSkillsCount">0</span>
-                        </div>
-                        <div class="quick-item">
-                            <span class="quick-label">Magias:</span>
-                            <span class="quick-value" id="quickSpellsCount">0</span>
-                        </div>
-                        <div class="quick-item">
-                            <span class="quick-label">Idiomas:</span>
-                            <span class="quick-value" id="quickLanguagesCount">1</span>
-                        </div>
-                        <div class="quick-item">
-                            <span class="quick-label">Itens:</span>
-                            <span class="quick-value" id="quickItemsCount">0</span>
+                        <div class="equipment-encumbrance">
+                            <span class="enc-label">Carga:</span>
+                            <span class="enc-value" id="encumbranceStatus">Nenhuma</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-        </div> <!-- Fim do dashboard-grid -->
+                <!-- CARD 8: RESUMO RÁPIDO -->
+                <div class="dashboard-card summary-card">
+                    <div class="card-header">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h3>Resumo</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="item-label">Vantagens:</span>
+                                <span class="item-value" id="summaryAdvantages">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="item-label">Desvantagens:</span>
+                                <span class="item-value" id="summaryDisadvantages">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="item-label">Perícias:</span>
+                                <span class="item-value" id="summarySkills">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="item-label">Magias:</span>
+                                <span class="item-value" id="summarySpells">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="item-label">Itens:</span>
+                                <span class="item-value" id="summaryItems">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="item-label">Idiomas:</span>
+                                <span class="item-value" id="summaryLanguages">1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div> <!-- Fim da linha 4 -->
 
-        <!-- RODAPÉ -->
+        </div> <!-- Fim do grid principal -->
+
+        <!-- RODAPÉ SIMPLES -->
         <div class="dashboard-footer">
-            <div class="update-info">
-                <i class="fas fa-sync-alt"></i>
-                <span>Atualização automática das outras abas</span>
+            <div class="update-time" id="dashboardUpdateTime">
+                Última atualização: Agora
             </div>
-            <button class="btn-refresh" onclick="refreshDashboard()">
-                <i class="fas fa-redo"></i> Atualizar Agora
-            </button>
         </div>
 
-    </div> <!-- Fim do dashboard-container -->
+    </div> <!-- Fim do container -->
 </div> <!-- Fim da tab-content -->
 
         <!-- ATRIBUTOS -->
