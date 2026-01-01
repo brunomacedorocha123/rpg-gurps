@@ -1,19 +1,13 @@
 // ===========================================
-// DASHBOARD.JS - SISTEMA COMPLETO
+// DASHBOARD.JS - SISTEMA COMPLETO DE ATRIBUTOS
 // ===========================================
 
 class DashboardGURPS {
     constructor() {
-        console.log('🎮 Inicializando Dashboard GURPS...');
+        console.log('🎮 Dashboard GURPS - Sistema de Atributos');
         
         this.estado = {
-            // Identificação
-            nome: '',
-            tipo: '',
-            jogador: '',
-            foto: null,
-            
-            // Atributos
+            // Atributos principais (VALORES REAIS)
             ST: 10,
             DX: 10,
             IQ: 10,
@@ -28,303 +22,147 @@ class DashboardGURPS {
             pericias: 0,
             magias: 0,
             
-            // Status Social
-            aparenciaPontos: 0,
-            riquezaPontos: 0,
-            status: 0,
-            reputacao: 0,
-            
-            // Características Físicas
-            altura: '1.70 m',
-            peso: '70 kg',
-            idade: '25 anos',
-            aparencia: 'Comum',
-            descricao: ''
+            // Identificação
+            foto: null
         };
         
-        this.observers = [];
+        this.observandoAtributos = false;
         this.inicializado = false;
     }
 
-    // ===== INICIALIZAÇÃO =====
+    // ===== INICIALIZAÇÃO PRINCIPAL =====
     iniciar() {
         if (this.inicializado) return;
         
-        console.log('⚙️ Configurando sistema...');
+        console.log('⚙️ Inicializando sistema de atributos...');
         
-        // Carregar tudo
-        this.carregarTudo();
+        // 1. Carregar dados
+        this.carregarDados();
         
-        // Configurar eventos
-        this.configurarEventos();
+        // 2. Configurar eventos
+        this.configurarEventosBasicos();
         
-        // Iniciar observadores
-        this.iniciarObservadores();
+        // 3. Configurar upload de foto (arrumado)
+        this.configurarUploadFotoCorrigido();
         
-        // Atualizar interface
-        this.atualizarTudo();
+        // 4. Iniciar observadores de atributos
+        this.iniciarObservadoresAtributos();
+        
+        // 5. Calcular tudo
+        this.calcularTudo();
         
         this.inicializado = true;
-        console.log('✅ Dashboard inicializada');
+        console.log('✅ Sistema de atributos pronto');
     }
 
-    // ===== CARREGAMENTO =====
-    carregarTudo() {
+    // ===== CARREGAMENTO DE DADOS =====
+    carregarDados() {
         console.log('📂 Carregando dados...');
         
-        // Carregar do localStorage
-        this.carregarLocalStorage();
+        // Carregar estado salvo da dashboard
+        this.carregarEstadoSalvo();
         
-        // Carregar de outros sistemas
-        this.carregarDeOutrosSistemas();
+        // Carregar atributos do sistema de atributos
+        this.carregarAtributosDoSistema();
         
-        // Aplicar na interface
-        this.aplicarEstado();
+        // Carregar foto
+        this.carregarFotoSalva();
+        
+        // Aplicar valores iniciais
+        this.aplicarValoresIniciais();
     }
 
-    carregarLocalStorage() {
+    carregarEstadoSalvo() {
         try {
-            const salvo = localStorage.getItem('gurps_dashboard_completo');
+            const salvo = localStorage.getItem('gurps_dashboard_estado');
             if (salvo) {
                 const dados = JSON.parse(salvo);
                 this.estado = { ...this.estado, ...dados };
-                console.log('💾 Estado carregado do localStorage');
+                console.log('💾 Estado carregado');
             }
         } catch (e) {
-            console.warn('Erro ao carregar do localStorage:', e);
+            console.warn('Erro ao carregar estado:', e);
         }
     }
 
-    carregarDeOutrosSistemas() {
-        // Carregar aparência
-        const pontosAparencia = localStorage.getItem('gurps_pontos_aparencia');
-        if (pontosAparencia) {
-            this.estado.aparenciaPontos = parseInt(pontosAparencia) || 0;
-            this.atualizarAparencia(this.estado.aparenciaPontos);
-        }
-
-        // Carregar riqueza
-        const pontosRiqueza = localStorage.getItem('gurps_pontos_riqueza');
-        if (pontosRiqueza) {
-            this.estado.riquezaPontos = parseInt(pontosRiqueza) || 0;
-            this.atualizarRiqueza(this.estado.riquezaPontos);
-        }
-
-        // Carregar atributos
-        const atributosSalvos = localStorage.getItem('gurps_atributos');
-        if (atributosSalvos) {
-            try {
-                const atributos = JSON.parse(atributosSalvos);
-                if (atributos.atributos) {
-                    this.estado.ST = atributos.atributos.ST || 10;
-                    this.estado.DX = atributos.atributos.DX || 10;
-                    this.estado.IQ = atributos.atributos.IQ || 10;
-                    this.estado.HT = atributos.atributos.HT || 10;
-                }
-            } catch (e) {
-                console.warn('Erro ao carregar atributos:', e);
-            }
-        }
-    }
-
-    aplicarEstado() {
-        // Aplicar identificação
-        this.aplicarIdentificacao();
-        
-        // Aplicar atributos
-        this.aplicarAtributos();
-        
-        // Aplicar sistema de pontos
-        this.aplicarSistemaPontos();
-        
-        // Aplicar status social
-        this.aplicarStatusSocial();
-    }
-
-    aplicarIdentificacao() {
-        const elementos = {
-            'char-name': this.estado.nome,
-            'char-type': this.estado.tipo,
-            'char-player': this.estado.jogador,
-            'phys-height': this.estado.altura,
-            'phys-weight': this.estado.peso,
-            'phys-age': this.estado.idade,
-            'phys-appearance': this.estado.aparencia,
-            'phys-description': this.estado.descricao
-        };
-
-        for (const [id, valor] of Object.entries(elementos)) {
-            const element = document.getElementById(id);
-            if (element) {
-                if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
-                    element.value = valor;
-                } else {
-                    element.textContent = valor;
+    carregarAtributosDoSistema() {
+        try {
+            const atributosSalvos = localStorage.getItem('gurps_atributos');
+            if (atributosSalvos) {
+                const dados = JSON.parse(atributosSalvos);
+                
+                if (dados.atributos) {
+                    // Pegar valores REAIS dos atributos
+                    this.estado.ST = dados.atributos.ST || 10;
+                    this.estado.DX = dados.atributos.DX || 10;
+                    this.estado.IQ = dados.atributos.IQ || 10;
+                    this.estado.HT = dados.atributos.HT || 10;
+                    
+                    console.log('⚔️ Atributos carregados:', {
+                        ST: this.estado.ST,
+                        DX: this.estado.DX,
+                        IQ: this.estado.IQ,
+                        HT: this.estado.HT
+                    });
                 }
             }
-        }
-
-        // Aplicar foto
-        if (this.estado.foto) {
-            this.exibirFoto(this.estado.foto);
-        }
-    }
-
-    aplicarAtributos() {
-        // Atualizar atributos principais
-        this.atualizarElemento('attr-st', this.estado.ST);
-        this.atualizarElemento('attr-dx', this.estado.DX);
-        this.atualizarElemento('attr-iq', this.estado.IQ);
-        this.atualizarElemento('attr-ht', this.estado.HT);
-
-        // Calcular detalhes
-        this.calcularDetalhesAtributos();
-        
-        // Atualizar atributos secundários
-        this.atualizarAtributosSecundarios();
-    }
-
-    aplicarSistemaPontos() {
-        // Configurações
-        this.atualizarElemento('start-points', this.estado.pontosIniciais, true);
-        this.atualizarElemento('dis-limit', this.estado.limiteDesvantagens, true);
-        
-        // Calcular pontos
-        this.calcularPontosAtributos();
-        this.atualizarSistemaPontos();
-    }
-
-    aplicarStatusSocial() {
-        // Status e reputação
-        this.atualizarElemento('status-mod', this.estado.status);
-        this.atualizarElemento('rep-mod', this.estado.reputacao);
-        
-        // Aparência já foi atualizada
-        this.atualizarReacaoTotal();
-    }
-
-    // ===== UPLOAD DE FOTO =====
-    configurarUploadFoto() {
-        console.log('📸 Configurando upload de foto...');
-        
-        const uploadInput = document.getElementById('char-upload');
-        const photoFrame = document.querySelector('.photo-frame');
-        const deleteBtn = document.querySelector('.delete-btn');
-        
-        if (!uploadInput || !photoFrame) return;
-
-        // Clique no frame
-        photoFrame.addEventListener('click', () => uploadInput.click());
-
-        // Mudança no input
-        uploadInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                this.processarFoto(file);
-            }
-        });
-
-        // Botão remover
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.removerFoto();
-            });
-        }
-    }
-
-    processarFoto(file) {
-        const reader = new FileReader();
-        
-        reader.onload = (e) => {
-            const fotoData = e.target.result;
-            
-            // Exibir foto
-            this.exibirFoto(fotoData);
-            
-            // Salvar no estado
-            this.estado.foto = fotoData;
-            
-            // Mostrar controles
-            this.mostrarControlesFoto(true);
-            
-            // Salvar
-            this.salvarEstado();
-            
-            console.log('✅ Foto processada');
-        };
-        
-        reader.readAsDataURL(file);
-    }
-
-    exibirFoto(fotoData) {
-        const photoPreview = document.getElementById('photo-preview');
-        if (!photoPreview) return;
-        
-        // Limpar e criar imagem
-        photoPreview.innerHTML = '';
-        const img = document.createElement('img');
-        img.src = fotoData;
-        img.alt = 'Foto do Personagem';
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.borderRadius = '8px';
-        
-        photoPreview.appendChild(img);
-        photoPreview.parentElement.classList.add('has-photo');
-    }
-
-    mostrarControlesFoto(mostrar) {
-        const photoControls = document.getElementById('photo-controls');
-        if (photoControls) {
-            photoControls.style.display = mostrar ? 'flex' : 'none';
+        } catch (e) {
+            console.warn('Erro ao carregar atributos:', e);
         }
     }
 
     carregarFotoSalva() {
-        if (this.estado.foto) {
-            this.exibirFoto(this.estado.foto);
-            this.mostrarControlesFoto(true);
+        try {
+            const fotoSalva = localStorage.getItem('gurps_foto_personagem');
+            if (fotoSalva) {
+                this.estado.foto = fotoSalva;
+                console.log('📸 Foto carregada do cache');
+            }
+        } catch (e) {
+            console.warn('Erro ao carregar foto:', e);
         }
     }
 
-    removerFoto() {
-        console.log('🗑️ Removendo foto...');
+    aplicarValoresIniciais() {
+        // Aplicar pontos iniciais e limite
+        const startPoints = document.getElementById('start-points');
+        const disLimit = document.getElementById('dis-limit');
         
-        const photoPreview = document.getElementById('photo-preview');
-        if (!photoPreview) return;
+        if (startPoints) startPoints.value = this.estado.pontosIniciais;
+        if (disLimit) disLimit.value = this.estado.limiteDesvantagens;
         
-        // Restaurar placeholder
-        photoPreview.innerHTML = `
-            <div class="photo-placeholder">
-                <i class="fas fa-user-circle"></i>
-                <span>Clique para adicionar foto</span>
-                <small>Recomendado: 300x400px</small>
-            </div>
-        `;
+        // Aplicar atributos na interface
+        this.atualizarAtributosNaInterface();
         
-        // Remover classe
-        photoPreview.parentElement.classList.remove('has-photo');
-        
-        // Esconder controles
-        this.mostrarControlesFoto(false);
-        
-        // Limpar input
-        const uploadInput = document.getElementById('char-upload');
-        if (uploadInput) uploadInput.value = '';
-        
-        // Limpar estado
-        this.estado.foto = null;
-        this.salvarEstado();
-        
-        console.log('✅ Foto removida');
+        // Aplicar foto se existir
+        if (this.estado.foto) {
+            this.exibirFoto(this.estado.foto);
+        }
     }
 
     // ===== SISTEMA DE ATRIBUTOS =====
+    atualizarAtributosNaInterface() {
+        console.log('🔄 Atualizando atributos na interface...');
+        
+        // Atualizar valores principais
+        this.atualizarElemento('attr-st', this.estado.ST);
+        this.atualizarElemento('attr-dx', this.estado.DX);
+        this.atualizarElemento('attr-iq', this.estado.IQ);
+        this.atualizarElemento('attr-ht', this.estado.HT);
+        
+        // Atualizar detalhes
+        this.calcularDetalhesAtributos();
+        
+        // Atualizar atributos secundários
+        this.atualizarAtributosSecundarios();
+        
+        // Calcular pontos
+        this.calcularPontosAtributos();
+    }
+
     calcularDetalhesAtributos() {
         // ST: Dano
-        const dano = this.calcularDano(this.estado.ST);
+        const dano = this.calcularDanoBase(this.estado.ST);
         this.atualizarElemento('attr-st-details', `Dano: ${dano.gdp}/${dano.geb}`);
         
         // DX: Esquiva
@@ -338,8 +176,8 @@ class DashboardGURPS {
         this.atualizarElemento('attr-ht-details', `Resistência: ${this.estado.HT}`);
     }
 
-    calcularDano(ST) {
-        // Tabela simplificada de dano GURPS
+    calcularDanoBase(ST) {
+        // Tabela de dano GURPS (simplificada)
         if (ST <= 5) return { gdp: "1d-4", geb: "1d-3" };
         if (ST <= 7) return { gdp: "1d-3", geb: "1d-2" };
         if (ST <= 9) return { gdp: "1d-2", geb: "1d-1" };
@@ -351,7 +189,9 @@ class DashboardGURPS {
         if (ST <= 16) return { gdp: "1d+1", geb: "2d+2" };
         if (ST <= 17) return { gdp: "1d+2", geb: "3d-1" };
         if (ST <= 18) return { gdp: "1d+2", geb: "3d" };
-        return { gdp: "2d-1", geb: "3d+1" };
+        if (ST <= 19) return { gdp: "2d-1", geb: "3d+1" };
+        if (ST <= 20) return { gdp: "2d-1", geb: "3d+2" };
+        return { gdp: "2d", geb: "4d" };
     }
 
     atualizarAtributosSecundarios() {
@@ -374,171 +214,422 @@ class DashboardGURPS {
         this.atualizarElemento('move-value', deslocamento);
     }
 
+    // ===== CÁLCULO DE PONTOS DOS ATRIBUTOS =====
     calcularPontosAtributos() {
-        // Cálculo GURPS padrão
+        console.log('🧮 Calculando pontos dos atributos...');
+        
+        // Cálculo GURPS PADRÃO:
+        // ST: 10 pontos por nível acima/abaixo de 10
+        // DX: 20 pontos por nível
+        // IQ: 20 pontos por nível  
+        // HT: 10 pontos por nível
+        
         const custoST = (this.estado.ST - 10) * 10;
         const custoDX = (this.estado.DX - 10) * 20;
         const custoIQ = (this.estado.IQ - 10) * 20;
         const custoHT = (this.estado.HT - 10) * 10;
         
         this.estado.gastosAtributos = custoST + custoDX + custoIQ + custoHT;
+        
+        console.log(`📊 Cálculo detalhado:`);
+        console.log(`  ST: ${this.estado.ST} = ${custoST} pts`);
+        console.log(`  DX: ${this.estado.DX} = ${custoDX} pts`);
+        console.log(`  IQ: ${this.estado.IQ} = ${custoIQ} pts`);
+        console.log(`  HT: ${this.estado.HT} = ${custoHT} pts`);
+        console.log(`  TOTAL ATRIBUTOS: ${this.estado.gastosAtributos} pts`);
+        
+        // Atualizar sistema de pontos
+        this.atualizarSistemaPontos();
+        
         return this.estado.gastosAtributos;
     }
 
-    // ===== SISTEMA DE PONTOS =====
     atualizarSistemaPontos() {
-        console.log('🧮 Atualizando sistema de pontos...');
+        console.log('💰 Atualizando sistema de pontos...');
         
-        // Separar vantagens e desvantagens
-        const vantagens = Math.max(this.estado.aparenciaPontos, 0) + 
-                         Math.max(this.estado.riquezaPontos, 0);
+        // 1. Gastos com atributos
+        const gastosAtributos = this.estado.gastosAtributos;
         
-        const desvantagens = Math.min(this.estado.aparenciaPontos, 0) + 
-                           Math.min(this.estado.riquezaPontos, 0);
+        // 2. Vantagens e desvantagens (por enquanto zero)
+        const vantagens = 0; // Vamos adicionar depois
+        const desvantagens = 0; // Vamos adicionar depois
         
-        // Atualizar displays
+        // 3. Total gasto
+        const totalGasto = gastosAtributos + vantagens + desvantagens + 
+                          this.estado.pericias + this.estado.magias;
+        
+        // 4. Saldo disponível
+        const saldo = this.estado.pontosIniciais - totalGasto;
+        
+        console.log(`💵 Cálculo do saldo:`);
+        console.log(`  Pontos iniciais: ${this.estado.pontosIniciais}`);
+        console.log(`  Gastos atributos: ${gastosAtributos}`);
+        console.log(`  Vantagens: ${vantagens}`);
+        console.log(`  Desvantagens: ${desvantagens}`);
+        console.log(`  Total gasto: ${totalGasto}`);
+        console.log(`  Saldo disponível: ${saldo}`);
+        
+        // Atualizar interface
         this.atualizarElemento('points-adv', vantagens);
         this.atualizarElemento('points-dis', desvantagens);
+        this.atualizarElemento('points-balance', saldo);
         
         // Atualizar resumo
         this.atualizarElemento('sum-advantages', vantagens);
         this.atualizarElemento('sum-disadvantages', Math.abs(desvantagens));
         
-        // Calcular saldo total
-        const totalGasto = this.estado.gastosAtributos + 
-                          vantagens + 
-                          desvantagens + 
-                          this.estado.pericias + 
-                          this.estado.magias;
+        // Verificar se está negativo ou excedeu limite
+        this.verificarStatusSaldo(saldo, desvantagens);
         
-        const saldo = this.estado.pontosIniciais - totalGasto;
-        
-        // Atualizar saldo
-        this.atualizarElemento('points-balance', saldo);
-        
-        // Verificar limites
-        this.verificarLimites(desvantagens, saldo);
-        
-        console.log(`💰 Saldo: ${saldo} | Vantagens: ${vantagens} | Desvantagens: ${desvantagens}`);
+        // Salvar estado
+        this.salvarEstado();
     }
 
-    verificarLimites(desvantagens, saldo) {
+    verificarStatusSaldo(saldo, desvantagens) {
         const balanceElement = document.getElementById('points-balance');
         if (!balanceElement) return;
         
+        // Remover classes anteriores
         balanceElement.classList.remove('saldo-negativo', 'limite-excedido');
         
+        // Verificar saldo negativo
         if (saldo < 0) {
             balanceElement.classList.add('saldo-negativo');
+            console.warn('⚠️ SALDO NEGATIVO!');
         }
         
+        // Verificar limite de desvantagens
         if (desvantagens < this.estado.limiteDesvantagens) {
             balanceElement.classList.add('limite-excedido');
+            console.warn('⚠️ LIMITE DE DESVANTAGENS EXCEDIDO!');
         }
     }
 
-    // ===== STATUS SOCIAL =====
-    atualizarAparencia(pontos) {
-        this.estado.aparenciaPontos = pontos;
+    // ===== UPLOAD DE FOTO CORRIGIDO =====
+    configurarUploadFotoCorrigido() {
+        console.log('📸 Configurando upload de foto (corrigido)...');
         
-        // Mapear pontos para nome
-        const niveis = {
-            '-24': 'Horrendo', '-20': 'Monstruoso', '-16': 'Hediondo',
-            '-8': 'Feio', '-4': 'Sem Atrativos', '0': 'Comum',
-            '4': 'Atraente', '12': 'Elegante', '16': 'Muito Elegante',
-            '20': 'Lindo'
+        const uploadInput = document.getElementById('char-upload');
+        const photoFrame = document.querySelector('.photo-frame');
+        const photoPreview = document.getElementById('photo-preview');
+        
+        if (!uploadInput || !photoFrame || !photoPreview) {
+            console.error('❌ Elementos de foto não encontrados');
+            return;
+        }
+        
+        // REMOVER TODOS OS EVENTLISTENERS ANTIGOS
+        const newFrame = photoFrame.cloneNode(true);
+        photoFrame.parentNode.replaceChild(newFrame, photoFrame);
+        
+        const newInput = uploadInput.cloneNode(true);
+        uploadInput.parentNode.replaceChild(newInput, uploadInput);
+        
+        // NOVAS REFERÊNCIAS
+        const newUploadInput = document.getElementById('char-upload');
+        const newPhotoFrame = document.querySelector('.photo-frame');
+        
+        // CONFIGURAR CLIQUE ÚNICO - SEM BUG
+        newPhotoFrame.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Clique no frame de foto');
+            newUploadInput.click();
+        }, { once: false });
+        
+        // CONFIGURAR UPLOAD
+        newUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                console.log('📁 Arquivo selecionado:', file.name);
+                this.processarFotoUpload(file);
+            }
+        });
+        
+        // Configurar botão remover
+        const deleteBtn = document.querySelector('.delete-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.removerFoto();
+            });
+        }
+        
+        // Configurar botão editar
+        const editBtn = document.querySelector('.edit-btn');
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                newUploadInput.click();
+            });
+        }
+        
+        console.log('✅ Upload de foto configurado corretamente');
+    }
+
+    processarFotoUpload(file) {
+        console.log('🔄 Processando foto...');
+        
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            console.log('✅ Foto carregada com sucesso');
+            const fotoData = e.target.result;
+            
+            // Exibir foto
+            this.exibirFoto(fotoData);
+            
+            // Salvar
+            this.estado.foto = fotoData;
+            localStorage.setItem('gurps_foto_personagem', fotoData);
+            
+            // Mostrar controles
+            this.mostrarControlesFoto(true);
+            
+            // Salvar estado
+            this.salvarEstado();
         };
         
-        this.estado.aparencia = niveis[pontos] || 'Comum';
-        this.atualizarElemento('phys-appearance', this.estado.aparencia);
-        
-        // Atualizar modificador
-        this.atualizarModificadorAparencia();
-        
-        // Atualizar sistema de pontos
-        this.atualizarSistemaPontos();
-    }
-
-    atualizarRiqueza(pontos) {
-        this.estado.riquezaPontos = pontos;
-        
-        // Mapear pontos para nome
-        const niveis = {
-            '-25': 'Falido', '-15': 'Pobre', '-10': 'Batalhador',
-            '0': 'Médio', '10': 'Confortável', '20': 'Rico',
-            '30': 'Muito Rico', '50': 'Podre de Rico'
+        reader.onerror = () => {
+            console.error('❌ Erro ao ler a foto');
         };
         
-        const nomeRiqueza = niveis[pontos] || 'Médio';
-        this.atualizarElemento('wealth-level', nomeRiqueza);
+        reader.readAsDataURL(file);
+    }
+
+    exibirFoto(fotoData) {
+        const photoPreview = document.getElementById('photo-preview');
+        if (!photoPreview) return;
         
-        // Atualizar custo
-        const wealthCost = document.querySelector('.wealth-cost');
-        if (wealthCost) {
-            wealthCost.textContent = `[${pontos >= 0 ? '+' : ''}${pontos} pts]`;
+        // Limpar completamente
+        photoPreview.innerHTML = '';
+        
+        // Criar nova imagem
+        const img = new Image();
+        img.onload = () => {
+            console.log('🖼️ Imagem carregada no preview');
+        };
+        
+        img.src = fotoData;
+        img.alt = 'Foto do Personagem';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '8px';
+        
+        photoPreview.appendChild(img);
+        
+        // Adicionar classe para CSS
+        const photoContainer = photoPreview.closest('.photo-frame');
+        if (photoContainer) {
+            photoContainer.classList.add('has-photo');
+        }
+    }
+
+    mostrarControlesFoto(mostrar) {
+        const photoControls = document.getElementById('photo-controls');
+        if (photoControls) {
+            photoControls.style.display = mostrar ? 'flex' : 'none';
+        }
+    }
+
+    removerFoto() {
+        console.log('🗑️ Removendo foto...');
+        
+        const photoPreview = document.getElementById('photo-preview');
+        if (!photoPreview) return;
+        
+        // Restaurar placeholder
+        photoPreview.innerHTML = `
+            <div class="photo-placeholder">
+                <i class="fas fa-user-circle"></i>
+                <span>Clique para adicionar foto</span>
+                <small>Recomendado: 300x400px</small>
+            </div>
+        `;
+        
+        // Remover classe has-photo
+        const photoContainer = photoPreview.closest('.photo-frame');
+        if (photoContainer) {
+            photoContainer.classList.remove('has-photo');
         }
         
-        // Atualizar sistema de pontos
-        this.atualizarSistemaPontos();
-    }
-
-    atualizarModificadorAparencia() {
-        const pontos = this.estado.aparenciaPontos;
-        let modificador = 0;
+        // Esconder controles
+        this.mostrarControlesFoto(false);
         
-        if (pontos > 0) {
-            modificador = Math.floor(pontos / 4);
-        } else if (pontos < 0) {
-            modificador = Math.floor(pontos / 4);
+        // Limpar input
+        const uploadInput = document.getElementById('char-upload');
+        if (uploadInput) {
+            uploadInput.value = '';
         }
         
-        this.atualizarElemento('app-mod', modificador);
-        this.atualizarReacaoTotal();
+        // Limpar estado
+        this.estado.foto = null;
+        localStorage.removeItem('gurps_foto_personagem');
+        
+        // Salvar estado
+        this.salvarEstado();
+        
+        console.log('✅ Foto removida');
     }
 
-    atualizarReacaoTotal() {
-        const status = parseInt(document.getElementById('status-mod')?.textContent) || 0;
-        const reputacao = parseInt(document.getElementById('rep-mod')?.textContent) || 0;
-        const aparencia = parseInt(document.getElementById('app-mod')?.textContent) || 0;
+        // ===== OBSERVADORES DE ATRIBUTOS =====
+    iniciarObservadoresAtributos() {
+        if (this.observandoAtributos) return;
         
-        const total = status + reputacao + aparencia;
-        this.atualizarElemento('reaction-total', total >= 0 ? `+${total}` : total.toString());
+        console.log('👀 Iniciando observadores de atributos...');
+        
+        // Observar mudanças nos atributos da interface
+        this.observarAtributosInterface();
+        
+        // Observar localStorage para mudanças do sistema de atributos
+        this.observarLocalStorageAtributos();
+        
+        // Verificar periodicamente
+        this.iniciarVerificacaoPeriodica();
+        
+        this.observandoAtributos = true;
     }
 
-    // ===== CONFIGURAÇÃO DE EVENTOS =====
-    configurarEventos() {
-        console.log('⚡ Configurando eventos...');
+    observarAtributosInterface() {
+        const atributosIds = ['attr-st', 'attr-dx', 'attr-iq', 'attr-ht'];
         
-        // Upload de foto
-        this.configurarUploadFoto();
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                    this.verificarMudancasAtributos();
+                }
+            });
+        });
         
-        // Identificação
-        this.configurarIdentificacao();
-        
-        // Sistema de pontos
-        this.configurarSistemaPontos();
-        
-        // Status social
-        this.configurarStatusSocial();
-        
-        // Características físicas
-        this.configurarCaracteristicasFisicas();
-    }
-
-    configurarIdentificacao() {
-        ['char-name', 'char-type', 'char-player'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) {
-                input.addEventListener('input', (e) => {
-                    const campo = id.replace('char-', '');
-                    this.estado[campo] = e.target.value;
-                    this.salvarEstado();
+        atributosIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                observer.observe(element, { 
+                    characterData: true, 
+                    childList: true, 
+                    subtree: true 
                 });
+                console.log(`👁️ Observando: ${id}`);
             }
         });
     }
 
-    configurarSistemaPontos() {
+    verificarMudancasAtributos() {
+        try {
+            const stElement = document.getElementById('attr-st');
+            const dxElement = document.getElementById('attr-dx');
+            const iqElement = document.getElementById('attr-iq');
+            const htElement = document.getElementById('attr-ht');
+            
+            if (!stElement || !dxElement || !iqElement || !htElement) {
+                console.log('⏳ Aguardando elementos de atributos...');
+                return;
+            }
+            
+            const st = parseInt(stElement.textContent.trim()) || 10;
+            const dx = parseInt(dxElement.textContent.trim()) || 10;
+            const iq = parseInt(iqElement.textContent.trim()) || 10;
+            const ht = parseInt(htElement.textContent.trim()) || 10;
+            
+            // Verificar se realmente mudou
+            if (st !== this.estado.ST || dx !== this.estado.DX || 
+                iq !== this.estado.IQ || ht !== this.estado.HT) {
+                
+                console.log('🔄 Atributos mudaram:', { st, dx, iq, ht });
+                
+                // Atualizar estado
+                this.estado.ST = st;
+                this.estado.DX = dx;
+                this.estado.IQ = iq;
+                this.estado.HT = ht;
+                
+                // Recalcular tudo
+                this.calcularTudo();
+                
+                // Salvar no localStorage do sistema de atributos também
+                this.sincronizarComSistemaAtributos();
+            }
+        } catch (error) {
+            console.warn('Erro ao verificar atributos:', error);
+        }
+    }
+
+    observarLocalStorageAtributos() {
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'gurps_atributos') {
+                console.log('🔄 Mudança nos atributos detectada no localStorage');
+                setTimeout(() => {
+                    this.carregarAtributosDoSistema();
+                    this.calcularTudo();
+                }, 100);
+            }
+        });
+    }
+
+    sincronizarComSistemaAtributos() {
+        try {
+            // Salvar no formato do sistema de atributos
+            const dadosAtributos = {
+                atributos: {
+                    ST: this.estado.ST,
+                    DX: this.estado.DX,
+                    IQ: this.estado.IQ,
+                    HT: this.estado.HT
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('gurps_atributos', JSON.stringify(dadosAtributos));
+            console.log('🔄 Atributos sincronizados com sistema');
+        } catch (e) {
+            console.warn('Erro ao sincronizar atributos:', e);
+        }
+    }
+
+    iniciarVerificacaoPeriodica() {
+        // Verificar a cada 1.5 segundos para garantir sincronização
+        setInterval(() => {
+            this.verificarSincronizacaoAtributos();
+        }, 1500);
+    }
+
+    verificarSincronizacaoAtributos() {
+        // Verificar se os atributos na interface estão iguais ao estado
+        const stElement = document.getElementById('attr-st');
+        const dxElement = document.getElementById('attr-dx');
+        const iqElement = document.getElementById('attr-iq');
+        const htElement = document.getElementById('attr-ht');
+        
+        if (!stElement || !dxElement || !iqElement || !htElement) return;
+        
+        const stInterface = parseInt(stElement.textContent) || 10;
+        const dxInterface = parseInt(dxElement.textContent) || 10;
+        const iqInterface = parseInt(iqElement.textContent) || 10;
+        const htInterface = parseInt(htElement.textContent) || 10;
+        
+        if (stInterface !== this.estado.ST || dxInterface !== this.estado.DX ||
+            iqInterface !== this.estado.IQ || htInterface !== this.estado.HT) {
+            
+            console.log('🔁 Corrigindo sincronização de atributos...');
+            this.atualizarAtributosNaInterface();
+        }
+    }
+
+    // ===== CONFIGURAÇÃO DE EVENTOS =====
+    configurarEventosBasicos() {
+        console.log('⚡ Configurando eventos básicos...');
+        
+        // Sistema de pontos
+        this.configurarEventosPontos();
+        
+        // Características físicas
+        this.configurarEventosCaracteristicas();
+    }
+
+    configurarEventosPontos() {
         // Pontos iniciais
         const startPoints = document.getElementById('start-points');
         if (startPoints) {
@@ -549,7 +640,7 @@ class DashboardGURPS {
             });
         }
 
-        // Limite desvantagens
+        // Limite de desvantagens
         const disLimit = document.getElementById('dis-limit');
         if (disLimit) {
             disLimit.addEventListener('input', (e) => {
@@ -560,157 +651,61 @@ class DashboardGURPS {
         }
     }
 
-    configurarStatusSocial() {
-        ['status-mod', 'rep-mod'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) {
-                input.addEventListener('input', () => {
-                    this.atualizarReacaoTotal();
-                    this.salvarEstado();
-                });
-            }
-        });
-    }
-
-    configurarCaracteristicasFisicas() {
-        const campos = ['phys-height', 'phys-weight', 'phys-age'];
-        
-        campos.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('input', (e) => {
-                    const campo = id.replace('phys-', '');
-                    this.estado[campo] = e.target.value;
-                    this.salvarEstado();
-                });
-            }
-        });
-
-        // Descrição
+    configurarEventosCaracteristicas() {
+        // Descrição física
         const descricao = document.getElementById('phys-description');
         if (descricao) {
             descricao.addEventListener('input', (e) => {
-                this.estado.descricao = e.target.value;
                 this.salvarEstado();
             });
         }
-    }
-
-    // ===== OBSERVADORES =====
-    iniciarObservadores() {
-        console.log('👀 Iniciando observadores...');
         
-        // Observar atributos principais
-        this.observarAtributos();
-        
-        // Observar localStorage para mudanças externas
-        window.addEventListener('storage', (e) => {
-            this.processarMudancaStorage(e);
-        });
-        
-        // Verificar periodicamente
-        setInterval(() => this.verificarMudancas(), 2000);
-    }
-
-    observarAtributos() {
-        const atributos = ['attr-st', 'attr-dx', 'attr-iq', 'attr-ht'];
-        
-        const observer = new MutationObserver(() => {
-            this.atualizarAtributosDaInterface();
-        });
-        
-        atributos.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                observer.observe(el, { 
-                    characterData: true, 
-                    childList: true, 
-                    subtree: true 
+        // Campos de altura, peso, idade
+        ['phys-height', 'phys-weight', 'phys-age'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', (e) => {
+                    this.salvarEstado();
                 });
             }
         });
     }
 
-    atualizarAtributosDaInterface() {
-        try {
-            const st = parseInt(document.getElementById('attr-st')?.textContent) || 10;
-            const dx = parseInt(document.getElementById('attr-dx')?.textContent) || 10;
-            const iq = parseInt(document.getElementById('attr-iq')?.textContent) || 10;
-            const ht = parseInt(document.getElementById('attr-ht')?.textContent) || 10;
-            
-            if (st !== this.estado.ST || dx !== this.estado.DX || 
-                iq !== this.estado.IQ || ht !== this.estado.HT) {
-                
-                this.estado.ST = st;
-                this.estado.DX = dx;
-                this.estado.IQ = iq;
-                this.estado.HT = ht;
-                
-                this.calcularDetalhesAtributos();
-                this.atualizarAtributosSecundarios();
-                this.atualizarSistemaPontos();
-                this.salvarEstado();
-                
-                console.log('📊 Atributos atualizados:', { st, dx, iq, ht });
-            }
-        } catch (error) {
-            console.warn('Erro ao atualizar atributos:', error);
-        }
-    }
-
-    processarMudancaStorage(e) {
-        if (e.key === 'gurps_pontos_aparencia') {
-            const pontos = parseInt(e.newValue) || 0;
-            this.atualizarAparencia(pontos);
-            console.log('🎭 Aparência atualizada:', pontos);
-        }
+    // ===== CÁLCULO GERAL =====
+    calcularTudo() {
+        console.log('🧮 Calculando tudo...');
         
-        if (e.key === 'gurps_pontos_riqueza') {
-            const pontos = parseInt(e.newValue) || 0;
-            this.atualizarRiqueza(pontos);
-            console.log('💰 Riqueza atualizada:', pontos);
-        }
+        // 1. Detalhes dos atributos
+        this.calcularDetalhesAtributos();
         
-        if (e.key === 'gurps_atributos') {
-            try {
-                const dados = JSON.parse(e.newValue);
-                if (dados.atributos) {
-                    this.estado.ST = dados.atributos.ST || 10;
-                    this.estado.DX = dados.atributos.DX || 10;
-                    this.estado.IQ = dados.atributos.IQ || 10;
-                    this.estado.HT = dados.atributos.HT || 10;
-                    
-                    this.aplicarAtributos();
-                    this.atualizarSistemaPontos();
-                    console.log('⚔️ Atributos atualizados do localStorage');
-                }
-            } catch (error) {
-                console.warn('Erro ao processar atributos:', error);
-            }
-        }
-    }
-
-    verificarMudancas() {
-        // Verificar aparência
-        const aparenciaAtual = parseInt(localStorage.getItem('gurps_pontos_aparencia')) || 0;
-        if (aparenciaAtual !== this.estado.aparenciaPontos) {
-            this.atualizarAparencia(aparenciaAtual);
-        }
+        // 2. Atributos secundários
+        this.atualizarAtributosSecundarios();
         
-        // Verificar riqueza
-        const riquezaAtual = parseInt(localStorage.getItem('gurps_pontos_riqueza')) || 0;
-        if (riquezaAtual !== this.estado.riquezaPontos) {
-            this.atualizarRiqueza(riquezaAtual);
-        }
-    }
-
-    // ===== ATUALIZAÇÕES =====
-    atualizarTudo() {
-        console.log('🔄 Atualizando tudo...');
+        // 3. Pontos dos atributos
+        this.calcularPontosAtributos();
         
+        // 4. Sistema de pontos completo
+        this.atualizarSistemaPontos();
+        
+        // 5. Timestamp
         this.atualizarTimestamp();
-        this.atualizarResumo();
-        this.salvarEstado();
+        
+        console.log('✅ Cálculos completos');
+    }
+
+    // ===== UTILITÁRIOS =====
+    atualizarElemento(id, valor) {
+        const element = document.getElementById(id);
+        if (element) {
+            // Verificar se é input ou texto normal
+            if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+                element.value = valor;
+            } else {
+                element.textContent = valor;
+            }
+            return true;
+        }
+        return false;
     }
 
     atualizarTimestamp() {
@@ -723,116 +718,106 @@ class DashboardGURPS {
         this.atualizarElemento('current-time', timeString);
     }
 
-    atualizarResumo() {
-        // Atualizar contagens
-        this.atualizarElemento('sum-skills', this.estado.pericias);
-        this.atualizarElemento('sum-spells', this.estado.magias);
-        
-        // Contar itens (exemplo)
-        const itensCount = 0; // Você pode implementar contagem real aqui
-        this.atualizarElemento('sum-items', itensCount);
-    }
-
-    atualizarElemento(id, valor, isInput = false) {
-        const element = document.getElementById(id);
-        if (!element) return;
-        
-        if (isInput && (element.tagName === 'INPUT' || element.tagName === 'SELECT')) {
-            element.value = valor;
-        } else if (element.tagName === 'TEXTAREA') {
-            element.value = valor;
-        } else {
-            element.textContent = valor;
-        }
-    }
-
     // ===== PERSISTÊNCIA =====
     salvarEstado() {
         try {
-            localStorage.setItem('gurps_dashboard_completo', JSON.stringify(this.estado));
+            localStorage.setItem('gurps_dashboard_estado', JSON.stringify(this.estado));
             console.log('💾 Estado salvo');
         } catch (e) {
             console.warn('Erro ao salvar estado:', e);
         }
     }
 
-    // ===== EXPORTAÇÃO =====
-    exportarDados() {
-        return {
-            ...this.estado,
-            timestamp: new Date().toISOString(),
-            atributosDetalhados: {
-                ST: this.estado.ST,
-                DX: this.estado.DX,
-                IQ: this.estado.IQ,
-                HT: this.estado.HT,
-                dano: this.calcularDano(this.estado.ST),
-                esquiva: Math.floor(this.estado.DX / 2) + 3
+    // ===== INICIALIZAÇÃO AUTOMÁTICA =====
+    static iniciarDashboard() {
+        if (!window.dashboardGURPS) {
+            window.dashboardGURPS = new DashboardGURPS();
+        }
+        
+        // Função para verificar se a dashboard está ativa
+        const verificarDashboardAtiva = () => {
+            const dashboardTab = document.getElementById('dashboard');
+            if (dashboardTab && dashboardTab.classList.contains('active')) {
+                console.log('🎯 Dashboard ativa - Inicializando...');
+                window.dashboardGURPS.iniciar();
             }
         };
-    }
-}
-
-// ===== INICIALIZAÇÃO GLOBAL =====
-let dashboardGURPS = null;
-
-function inicializarDashboard() {
-    if (!dashboardGURPS) {
-        dashboardGURPS = new DashboardGURPS();
-    }
-    
-    // Inicializar quando a dashboard estiver ativa
-    const verificarDashboard = () => {
-        const dashboardTab = document.getElementById('dashboard');
-        if (dashboardTab && dashboardTab.classList.contains('active')) {
-            setTimeout(() => {
-                dashboardGURPS.iniciar();
-            }, 100);
-        }
-    };
-    
-    // Verificar agora
-    verificarDashboard();
-    
-    // Observar mudanças de aba
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                verificarDashboard();
-            }
+        
+        // Verificar agora
+        verificarDashboardAtiva();
+        
+        // Observar mudanças na aba
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    verificarDashboardAtiva();
+                }
+            });
         });
-    });
-    
-    const dashboardTab = document.getElementById('dashboard');
-    if (dashboardTab) {
-        observer.observe(dashboardTab, { attributes: true });
+        
+        const dashboardTab = document.getElementById('dashboard');
+        if (dashboardTab) {
+            observer.observe(dashboardTab, { attributes: true });
+        }
+        
+        // Também verificar após um tempo para garantir
+        setTimeout(verificarDashboardAtiva, 500);
     }
 }
 
 // ===== FUNÇÕES GLOBAIS =====
 function removerFoto() {
-    if (dashboardGURPS) {
-        dashboardGURPS.removerFoto();
+    if (window.dashboardGURPS) {
+        window.dashboardGURPS.removerFoto();
+    } else {
+        console.error('❌ Dashboard não inicializada');
     }
 }
 
-function testarDashboard() {
-    console.log('🧪 Testando dashboard...');
-    console.log('Instância:', dashboardGURPS);
-    console.log('Estado:', dashboardGURPS?.estado);
-    console.log('Pontos aparência:', dashboardGURPS?.estado.aparenciaPontos);
-    console.log('Pontos riqueza:', dashboardGURPS?.estado.riquezaPontos);
+function testarAtributos() {
+    console.log('🧪 Testando sistema de atributos...');
+    
+    if (!window.dashboardGURPS) {
+        console.error('❌ Dashboard não inicializada');
+        return;
+    }
+    
+    console.log('Estado atual:', window.dashboardGURPS.estado);
+    
+    // Teste de cálculo
+    const gastos = window.dashboardGURPS.calcularPontosAtributos();
+    console.log(`Gastos com atributos: ${gastos} pontos`);
+    
+    // Mostrar saldo
+    const saldo = parseInt(document.getElementById('points-balance')?.textContent) || 0;
+    console.log(`Saldo disponível: ${saldo} pontos`);
+    
+    // Verificar se cálculo está correto
+    const pontosIniciais = window.dashboardGURPS.estado.pontosIniciais;
+    const saldoCalculado = pontosIniciais - gastos;
+    console.log(`Cálculo manual: ${pontosIniciais} - ${gastos} = ${saldoCalculado}`);
+    
+    if (saldo !== saldoCalculado) {
+        console.warn('⚠️ DISCREPÂNCIA NO CÁLCULO!');
+    }
 }
 
-// ===== INICIALIZAÇÃO AUTOMÁTICA =====
+// ===== INICIALIZAÇÃO =====
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializarDashboard);
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('📄 DOM carregado - Preparando dashboard');
+        DashboardGURPS.iniciarDashboard();
+    });
 } else {
-    inicializarDashboard();
+    console.log('⚡ DOM já carregado - Inicializando dashboard');
+    DashboardGURPS.iniciarDashboard();
 }
 
 // ===== EXPORTAÇÃO =====
 window.DashboardGURPS = DashboardGURPS;
-window.dashboardGURPS = dashboardGURPS;
 window.removerFoto = removerFoto;
-window.testarDashboard = testarDashboard;
+window.testarAtributos = testarAtributos;
+window.dashboardGURPS = null; // Será inicializado automaticamente
+
+// ===== DEBUG =====
+console.log('🎮 Script dashboard.js carregado');
