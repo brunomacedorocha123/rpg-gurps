@@ -1,5 +1,5 @@
 // ===========================================
-// DASHBOARD.JS - Sistema de Dashboard GURPS
+// DASHBOARD.JS - Sistema Completo de Dashboard GURPS
 // ===========================================
 
 // Estado global do dashboard
@@ -8,11 +8,20 @@ let dashboardState = {
         nome: "",
         tipo: "",
         foto: null,
+        // ATRIBUTOS PRINCIPAIS (serão sincronizados)
         atributos: {
             ST: 10,
             DX: 10,
             IQ: 10,
             HT: 10
+        },
+        // BÔNUS DOS ATRIBUTOS
+        bonus: {
+            PV: 0,
+            PF: 0,
+            Vontade: 0,
+            Percepcao: 0,
+            Deslocamento: 0
         },
         caracteristicasFisicas: {
             altura: "1.70 m",
@@ -54,24 +63,193 @@ let dashboardState = {
     ultimaAtualizacao: null
 };
 
+// ===== FUNÇÕES DE SINCRONIZAÇÃO DE ATRIBUTOS =====
+
+// 1. Função para pegar atributos do localStorage da aba Atributos
+function getAtributosDoStorage() {
+    try {
+        const dados = localStorage.getItem('gurps_atributos');
+        if (dados) {
+            return JSON.parse(dados);
+        }
+    } catch (error) {
+        console.warn('Erro ao ler atributos do storage:', error);
+    }
+    return null;
+}
+
+// 2. Função para sincronizar todos os atributos
+function sincronizarAtributosDashboard() {
+    const dadosAtributos = getAtributosDoStorage();
+    
+    if (dadosAtributos) {
+        // Atualiza atributos principais
+        if (dadosAtributos.atributos) {
+            dashboardState.personagem.atributos.ST = dadosAtributos.atributos.ST || 10;
+            dashboardState.personagem.atributos.DX = dadosAtributos.atributos.DX || 10;
+            dashboardState.personagem.atributos.IQ = dadosAtributos.atributos.IQ || 10;
+            dashboardState.personagem.atributos.HT = dadosAtributos.atributos.HT || 10;
+            
+            // Atualiza valores na tela
+            atualizarAtributosTela();
+        }
+        
+        // Atualiza bônus
+        if (dadosAtributos.bonus) {
+            dashboardState.personagem.bonus.PV = dadosAtributos.bonus.PV || 0;
+            dashboardState.personagem.bonus.PF = dadosAtributos.bonus.PF || 0;
+            dashboardState.personagem.bonus.Vontade = dadosAtributos.bonus.Vontade || 0;
+            dashboardState.personagem.bonus.Percepcao = dadosAtributos.bonus.Percepcao || 0;
+            dashboardState.personagem.bonus.Deslocamento = dadosAtributos.bonus.Deslocamento || 0;
+            
+            // Atualiza atributos secundários
+            atualizarAtributosSecundariosTela();
+        }
+        
+        // Atualiza custos
+        atualizarCustosAtributos();
+        
+        // Atualiza timestamp
+        atualizarTimestamp();
+        
+        console.log('🔄 Atributos sincronizados:', dashboardState.personagem.atributos);
+    }
+}
+
+// 3. Função para atualizar atributos na tela
+function atualizarAtributosTela() {
+    const attrs = dashboardState.personagem.atributos;
+    
+    // Atualiza valores principais
+    document.getElementById('attr-st').textContent = attrs.ST;
+    document.getElementById('attr-dx').textContent = attrs.DX;
+    document.getElementById('attr-iq').textContent = attrs.IQ;
+    document.getElementById('attr-ht').textContent = attrs.HT;
+    
+    // Atualiza detalhes
+    atualizarDetalhesAtributos();
+}
+
+// 4. Função para atualizar detalhes dos atributos
+function atualizarDetalhesAtributos() {
+    const ST = dashboardState.personagem.atributos.ST;
+    const DX = dashboardState.personagem.atributos.DX;
+    const IQ = dashboardState.personagem.atributos.IQ;
+    
+    // Tabela de dano simplificada
+    const danoTable = {
+        1: "1d-6/1d-5", 2: "1d-6/1d-5", 3: "1d-5/1d-4", 4: "1d-5/1d-4",
+        5: "1d-4/1d-3", 6: "1d-4/1d-3", 7: "1d-3/1d-2", 8: "1d-3/1d-2",
+        9: "1d-2/1d-1", 10: "1d-2/1d", 11: "1d-1/1d+1", 12: "1d/1d+2",
+        13: "1d/2d-1", 14: "1d/2d", 15: "1d+1/2d+1", 16: "1d+1/2d+2",
+        17: "1d+2/3d-1", 18: "1d+2/3d", 19: "2d-1/3d+1", 20: "2d-1/3d+2",
+        21: "2d/4d-1", 22: "2d/4d", 23: "2d+1/4d+1", 24: "2d+1/4d+2",
+        25: "2d+2/5d-1", 26: "2d+2/5d", 27: "3d-1/5d+1", 28: "3d-1/5d+1",
+        29: "3d/5d+2", 30: "3d/5d+2", 31: "3d+1/6d-1", 32: "3d+1/6d-1",
+        33: "3d+2/6d", 34: "3d+2/6d", 35: "4d-1/6d+1", 36: "4d-1/6d+1",
+        37: "4d/6d+2", 38: "4d/6d+2", 39: "4d+1/7d-1", 40: "4d+1/7d-1"
+    };
+    
+    const stKey = Math.min(Math.max(ST, 1), 40);
+    const dano = danoTable[stKey] || "1d-2/1d";
+    
+    // Esquiva = 8 + floor((DX - 10) / 2)
+    const esquiva = 8 + Math.floor((DX - 10) / 2);
+    
+    // Vontade base = IQ
+    const vontadeBase = IQ;
+    
+    document.getElementById('attr-st-details').textContent = `Dano: ${dano}`;
+    document.getElementById('attr-dx-details').textContent = `Esquiva: ${esquiva}`;
+    document.getElementById('attr-iq-details').textContent = `Vontade: ${vontadeBase}`;
+    document.getElementById('attr-ht-details').textContent = `Resistência: ${dashboardState.personagem.atributos.HT}`;
+}
+
+// 5. Função para atualizar atributos secundários na tela
+function atualizarAtributosSecundariosTela() {
+    const attrs = dashboardState.personagem.atributos;
+    const bonus = dashboardState.personagem.bonus;
+    
+    // Pontos de Vida (PV = ST + bônus)
+    const pvTotal = Math.max(attrs.ST + bonus.PV, 1);
+    document.getElementById('pv-current').textContent = pvTotal;
+    document.getElementById('pv-max').textContent = pvTotal;
+    
+    // Pontos de Fadiga (PF = HT + bônus)
+    const pfTotal = Math.max(attrs.HT + bonus.PF, 1);
+    document.getElementById('fp-current').textContent = pfTotal;
+    document.getElementById('fp-max').textContent = pfTotal;
+    
+    // Vontade (IQ + bônus)
+    const vontadeTotal = Math.max(attrs.IQ + bonus.Vontade, 1);
+    document.getElementById('will-value').textContent = vontadeTotal;
+    
+    // Percepção (IQ + bônus)
+    const percepcaoTotal = Math.max(attrs.IQ + bonus.Percepcao, 1);
+    document.getElementById('per-value').textContent = percepcaoTotal;
+    
+    // Deslocamento (HT+DX)/4 + bônus
+    const deslocamentoBase = (attrs.HT + attrs.DX) / 4;
+    const deslocamentoTotal = (deslocamentoBase + bonus.Deslocamento).toFixed(2);
+    document.getElementById('move-value').textContent = deslocamentoTotal;
+    
+    // Atualiza também o detalhe de vontade no atributo IQ
+    document.getElementById('attr-iq-details').textContent = `Vontade: ${vontadeTotal}`;
+}
+
+// 6. Função para atualizar custos dos atributos
+function atualizarCustosAtributos() {
+    const attrs = dashboardState.personagem.atributos;
+    
+    // Cálculo de custos
+    const custoST = (attrs.ST - 10) * 10;
+    const custoDX = (attrs.DX - 10) * 20;
+    const custoIQ = (attrs.IQ - 10) * 20;
+    const custoHT = (attrs.HT - 10) * 10;
+    
+    const totalAtributos = custoST + custoDX + custoIQ + custoHT;
+    
+    // Atualiza pontos gastos com atributos
+    dashboardState.personagem.pontos.gastos = totalAtributos + 
+        dashboardState.personagem.pontos.vantagens + 
+        dashboardState.personagem.pontos.pericias + 
+        dashboardState.personagem.pontos.magias +
+        Math.abs(dashboardState.personagem.pontos.desvantagens);
+    
+    // Calcula saldo
+    const saldo = dashboardState.personagem.pontos.iniciais - dashboardState.personagem.pontos.gastos;
+    dashboardState.personagem.pontos.saldo = Math.max(saldo, 0);
+    
+    // Atualiza na tela
+    document.getElementById('points-balance').textContent = dashboardState.personagem.pontos.saldo;
+    
+    // Destaca se estiver negativo
+    const balanceElement = document.getElementById('points-balance');
+    if (saldo < 0) {
+        balanceElement.style.color = '#ff6b6b';
+        balanceElement.style.fontWeight = 'bold';
+    } else {
+        balanceElement.style.color = '';
+        balanceElement.style.fontWeight = '';
+    }
+}
+
 // ===== FUNÇÕES DE INICIALIZAÇÃO =====
 
 function inicializarDashboard() {
     console.log('📊 Inicializando Dashboard GURPS...');
     
-    // Carrega dados salvos
+    // 1. Carrega dados salvos
     carregarDadosDashboard();
     
-    // Configura eventos
+    // 2. Configura eventos
     configurarEventosDashboard();
     
-    // Configura atualização automática de tempo
-    configurarAtualizacaoTempo();
+    // 3. Configura sincronização em tempo real
+    configurarSincronizacaoTempoReal();
     
-    // Configura upload de foto
-    configurarUploadFoto();
-    
-    // Inicializa com valores padrão
+    // 4. Inicializa com valores
+    sincronizarAtributosDashboard(); // Primeira sincronização
     atualizarDashboardCompleto();
     
     console.log('✅ Dashboard inicializado');
@@ -102,15 +280,14 @@ function configurarEventosDashboard() {
     
     if (pontosIniciais) {
         pontosIniciais.addEventListener('change', function() {
-            dashboardState.personagem.pontos.iniciais = parseInt(this.value);
-            atualizarSistemaPontos();
+            dashboardState.personagem.pontos.iniciais = parseInt(this.value) || 100;
+            atualizarCustosAtributos(); // Recalcula saldo
             salvarDadosDashboard();
         });
     }
     
     if (limiteDesvantagens) {
         limiteDesvantagens.addEventListener('change', function() {
-            // Apenas atualiza o estado, o cálculo será feito em atualizarSistemaPontos()
             salvarDadosDashboard();
         });
     }
@@ -124,134 +301,36 @@ function configurarEventosDashboard() {
         });
     }
     
-    // Atualização automática dos atributos quando mudarem na aba de atributos
-    configurarObservadorAtributos();
+    // Configura upload de foto
+    configurarUploadFoto();
 }
 
-function configurarObservadorAtributos() {
-    // Monitora mudanças no localStorage dos atributos
+function configurarSincronizacaoTempoReal() {
+    console.log('⏱️ Configurando sincronização em tempo real...');
+    
+    // 1. Sincroniza a cada 500ms (muito rápido)
+    setInterval(sincronizarAtributosDashboard, 500);
+    
+    // 2. Também monitora eventos de storage (se abrir em outra aba)
     window.addEventListener('storage', function(e) {
         if (e.key === 'gurps_atributos') {
-            console.log('🔄 Atributos atualizados no localStorage');
-            sincronizarAtributos();
+            console.log('📡 Evento de storage detectado, sincronizando...');
+            setTimeout(sincronizarAtributosDashboard, 100);
         }
     });
     
-    // Também verifica periodicamente
-    setInterval(sincronizarAtributos, 1000);
-}
-
-function sincronizarAtributos() {
-    try {
-        const dadosAtributos = localStorage.getItem('gurps_atributos');
-        if (dadosAtributos) {
-            const atributos = JSON.parse(dadosAtributos);
-            
-            // Atualiza os atributos principais no dashboard
-            if (atributos.atributos) {
-                dashboardState.personagem.atributos = atributos.atributos;
-                
-                // Atualiza valores na tela
-                document.getElementById('attr-st').textContent = atributos.atributos.ST || 10;
-                document.getElementById('attr-dx').textContent = atributos.atributos.DX || 10;
-                document.getElementById('attr-iq').textContent = atributos.atributos.IQ || 10;
-                document.getElementById('attr-ht').textContent = atributos.atributos.HT || 10;
-                
-                // Calcula danos baseados em ST
-                atualizarDanosAtributos(atributos.atributos.ST);
-                
-                // Calcula esquiva baseada em DX
-                const esquiva = 8 + Math.floor((atributos.atributos.DX - 10) / 2);
-                document.getElementById('attr-dx-details').textContent = `Esquiva: ${esquiva}`;
-                
-                // Atualiza Vontade e Percepção baseados em IQ
-                if (atributos.bonus) {
-                    const vontade = (atributos.atributos.IQ || 10) + (atributos.bonus.Vontade || 0);
-                    const percepcao = (atributos.atributos.IQ || 10) + (atributos.bonus.Percepcao || 0);
-                    
-                    document.getElementById('attr-iq-details').textContent = `Vontade: ${vontade}`;
-                    document.getElementById('will-value').textContent = vontade;
-                    document.getElementById('per-value').textContent = percepcao;
-                }
-            }
-            
-            // Atualiza atributos secundários
-            if (atributos.bonus) {
-                const ST = atributos.atributos?.ST || 10;
-                const HT = atributos.atributos?.HT || 10;
-                const DX = atributos.atributos?.DX || 10;
-                
-                // Pontos de Vida (PV = ST + bônus)
-                const pvBase = ST;
-                const pvBonus = atributos.bonus.PV || 0;
-                const pvTotal = Math.max(pvBase + pvBonus, 1);
-                
-                document.getElementById('pv-current').textContent = pvTotal;
-                document.getElementById('pv-max').textContent = pvTotal;
-                
-                // Pontos de Fadiga (PF = HT + bônus)
-                const pfBase = HT;
-                const pfBonus = atributos.bonus.PF || 0;
-                const pfTotal = Math.max(pfBase + pfBonus, 1);
-                
-                document.getElementById('fp-current').textContent = pfTotal;
-                document.getElementById('fp-max').textContent = pfTotal;
-                
-                // Deslocamento (HT+DX)/4 + bônus
-                const deslocamentoBase = (HT + DX) / 4;
-                const deslocamentoBonus = atributos.bonus.Deslocamento || 0;
-                const deslocamentoTotal = (deslocamentoBase + deslocamentoBonus).toFixed(2);
-                
-                document.getElementById('move-value').textContent = deslocamentoTotal;
-            }
-            
-            // Atualiza custo dos pontos
-            atualizarCustosAtributos(atributos.atributos);
-            
-            // Atualiza timestamp
-            atualizarTimestamp();
+    // 3. Monitora mudanças nos inputs dos atributos (se estiverem na mesma página)
+    ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
+        const input = document.getElementById(atributo);
+        if (input) {
+            input.addEventListener('input', function() {
+                setTimeout(sincronizarAtributosDashboard, 300);
+            });
         }
-    } catch (error) {
-        console.warn('Erro ao sincronizar atributos:', error);
-    }
-}
-
-function atualizarDanosAtributos(ST) {
-    // Tabela de dano simplificada
-    const danoTable = {
-        1: "1d-6/1d-5", 2: "1d-6/1d-5", 3: "1d-5/1d-4", 4: "1d-5/1d-4",
-        5: "1d-4/1d-3", 6: "1d-4/1d-3", 7: "1d-3/1d-2", 8: "1d-3/1d-2",
-        9: "1d-2/1d-1", 10: "1d-2/1d", 11: "1d-1/1d+1", 12: "1d/1d+2",
-        13: "1d/2d-1", 14: "1d/2d", 15: "1d+1/2d+1", 16: "1d+1/2d+2",
-        17: "1d+2/3d-1", 18: "1d+2/3d", 19: "2d-1/3d+1", 20: "2d-1/3d+2"
-    };
+    });
     
-    const stKey = Math.min(Math.max(ST, 1), 20);
-    const dano = danoTable[stKey] || "1d-2/1d";
-    document.getElementById('attr-st-details').textContent = `Dano: ${dano}`;
-}
-
-function atualizarCustosAtributos(atributos) {
-    const custoST = (atributos.ST - 10) * 10;
-    const custoDX = (atributos.DX - 10) * 20;
-    const custoIQ = (atributos.IQ - 10) * 20;
-    const custoHT = (atributos.HT - 10) * 10;
-    
-    const totalAtributos = custoST + custoDX + custoIQ + custoHT;
-    
-    // Atualiza o saldo de pontos
-    const pontosIniciais = dashboardState.personagem.pontos.iniciais;
-    const outrosGastos = dashboardState.personagem.pontos.vantagens + 
-                        dashboardState.personagem.pontos.pericias + 
-                        dashboardState.personagem.pontos.magias +
-                        Math.abs(dashboardState.personagem.pontos.desvantagens); // desvantagens são negativos
-    
-    const saldo = pontosIniciais - totalAtributos - outrosGastos;
-    
-    dashboardState.personagem.pontos.gastos = totalAtributos + outrosGastos;
-    dashboardState.personagem.pontos.saldo = Math.max(saldo, 0);
-    
-    document.getElementById('points-balance').textContent = dashboardState.personagem.pontos.saldo;
+    // 4. Atualiza o relógio
+    configurarAtualizacaoTempo();
 }
 
 function configurarUploadFoto() {
@@ -266,7 +345,6 @@ function configurarUploadFoto() {
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                // Cria imagem
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.style.width = '100%';
@@ -274,16 +352,12 @@ function configurarUploadFoto() {
                 img.style.objectFit = 'cover';
                 img.style.borderRadius = '5px';
                 
-                // Limpa preview e adiciona imagem
                 photoPreview.innerHTML = '';
                 photoPreview.appendChild(img);
+                photoPreview.classList.add('has-photo');
                 
-                // Salva no estado
                 dashboardState.personagem.foto = e.target.result;
                 salvarDadosDashboard();
-                
-                // Adiciona classe para indicar que tem foto
-                photoPreview.classList.add('has-photo');
             };
             
             reader.readAsDataURL(file);
@@ -306,7 +380,6 @@ function configurarAtualizacaoTempo() {
         dashboardState.ultimaAtualizacao = agora;
     }
     
-    // Atualiza imediatamente e a cada segundo
     atualizarRelogio();
     setInterval(atualizarRelogio, 1000);
 }
@@ -315,8 +388,6 @@ function configurarAtualizacaoTempo() {
 
 function atualizarDashboardCompleto() {
     atualizarIdentificacao();
-    atualizarAtributosPrincipais();
-    atualizarAtributosSecundarios();
     atualizarCaracteristicasFisicas();
     atualizarSistemaPontos();
     atualizarStatusSocial();
@@ -337,7 +408,7 @@ function atualizarIdentificacao() {
         tipoElement.value = dashboardState.personagem.tipo;
     }
     
-    // Restaura foto se existir
+    // Restaura foto
     if (dashboardState.personagem.foto) {
         const photoPreview = document.getElementById('photo-preview');
         if (photoPreview) {
@@ -353,16 +424,6 @@ function atualizarIdentificacao() {
             photoPreview.classList.add('has-photo');
         }
     }
-}
-
-function atualizarAtributosPrincipais() {
-    // Os atributos principais são atualizados via sincronizarAtributos()
-    // Esta função mantém a consistência inicial
-    sincronizarAtributos();
-}
-
-function atualizarAtributosSecundarios() {
-    // Já é feito em sincronizarAtributos()
 }
 
 function atualizarCaracteristicasFisicas() {
@@ -391,12 +452,12 @@ function atualizarSistemaPontos() {
     document.getElementById('points-dis').textContent = pontos.desvantagens;
     document.getElementById('points-skills').textContent = pontos.pericias;
     document.getElementById('points-spells').textContent = pontos.magias;
-    document.getElementById('points-balance').textContent = pontos.saldo;
     
-    // Atualiza limite de desvantagens
+    // O saldo é atualizado em atualizarCustosAtributos()
+    
+    // Verifica limite de desvantagens
     const limiteDesvElement = document.getElementById('dis-limit');
     if (limiteDesvElement) {
-        // Verifica se as desvantagens excedem o limite
         const limite = parseInt(limiteDesvElement.value) || -75;
         if (Math.abs(pontos.desvantagens) > Math.abs(limite)) {
             limiteDesvElement.style.borderColor = '#f44336';
@@ -417,7 +478,6 @@ function atualizarStatusSocial() {
     document.getElementById('app-mod').textContent = status.aparência;
     document.getElementById('reaction-total').textContent = `+${status.reacao}`;
     
-    // Calcula custo da riqueza (simplificado)
     const custoRiqueza = {
         "Pobre": -25,
         "Empobrecido": -15,
@@ -437,57 +497,51 @@ function atualizarEquipamento() {
     
     document.getElementById('equip-weight').textContent = `${equip.peso.toFixed(1)} kg`;
     document.getElementById('equip-value').textContent = `$${equip.valor}`;
-    document.getElementById('enc-level').textContent = equip.carga;
     
-    // Calcula barra de carga (simplificado)
     atualizarBarraCarga(equip.peso);
 }
 
 function atualizarBarraCarga(peso) {
-    // Valores de exemplo baseados em ST 10
-    const limites = {
-        "Nenhuma": 10,
-        "Leve": 20,
-        "Média": 30,
-        "Pesada": 40,
-        "Muito Pesada": 50
-    };
-    
     const barraFill = document.getElementById('enc-fill');
     const encNote = document.getElementById('enc-note');
     
     if (!barraFill || !encNote) return;
     
-    // Determina nível atual
     let nivel = "Nenhuma";
     let porcentagem = 0;
+    let st = dashboardState.personagem.atributos.ST;
     
-    if (peso <= 10) {
+    // Calcula limites baseados na ST
+    const cargaNenhuma = st * 1.0;
+    const cargaLeve = st * 2.0;
+    const cargaMedia = st * 3.0;
+    const cargaPesada = st * 6.0;
+    const cargaMuitoPesada = st * 10.0;
+    
+    if (peso <= cargaNenhuma) {
         nivel = "Nenhuma";
-        porcentagem = (peso / 10) * 100;
-        encNote.textContent = "Até 10 kg";
-    } else if (peso <= 20) {
+        porcentagem = (peso / cargaNenhuma) * 100;
+        encNote.textContent = `Até ${cargaNenhuma.toFixed(1)} kg`;
+    } else if (peso <= cargaLeve) {
         nivel = "Leve";
-        porcentagem = (peso / 20) * 100;
-        encNote.textContent = "Até 20 kg";
-    } else if (peso <= 30) {
+        porcentagem = (peso / cargaLeve) * 100;
+        encNote.textContent = `Até ${cargaLeve.toFixed(1)} kg`;
+    } else if (peso <= cargaMedia) {
         nivel = "Média";
-        porcentagem = (peso / 30) * 100;
-        encNote.textContent = "Até 30 kg";
-    } else if (peso <= 40) {
+        porcentagem = (peso / cargaMedia) * 100;
+        encNote.textContent = `Até ${cargaMedia.toFixed(1)} kg`;
+    } else if (peso <= cargaPesada) {
         nivel = "Pesada";
-        porcentagem = (peso / 40) * 100;
-        encNote.textContent = "Até 40 kg";
+        porcentagem = (peso / cargaPesada) * 100;
+        encNote.textContent = `Até ${cargaPesada.toFixed(1)} kg`;
     } else {
         nivel = "Muito Pesada";
-        porcentagem = Math.min((peso / 50) * 100, 100);
-        encNote.textContent = "Acima de 40 kg";
+        porcentagem = Math.min((peso / cargaMuitoPesada) * 100, 100);
+        encNote.textContent = `Acima de ${cargaPesada.toFixed(1)} kg`;
     }
     
-    // Atualiza visual
     barraFill.style.width = `${Math.min(porcentagem, 100)}%`;
     
-    // Muda cor baseado no nível
     if (nivel === "Muito Pesada") {
         barraFill.style.background = 'linear-gradient(90deg, #ff6b6b, #ff5252)';
     } else if (nivel === "Pesada") {
@@ -496,7 +550,6 @@ function atualizarBarraCarga(peso) {
         barraFill.style.background = 'linear-gradient(90deg, var(--accent-green), var(--primary-gold))';
     }
     
-    // Atualiza nível no estado
     dashboardState.personagem.equipamento.carga = nivel;
     document.getElementById('enc-level').textContent = nivel;
 }
@@ -517,7 +570,8 @@ function atualizarTimestamp() {
     const dataFormatada = agora.toLocaleDateString('pt-BR');
     const horaFormatada = agora.toLocaleTimeString('pt-BR', { 
         hour: '2-digit', 
-        minute: '2-digit' 
+        minute: '2-digit',
+        second: '2-digit'
     });
     
     const timeElement = document.getElementById('current-time');
@@ -531,7 +585,6 @@ function atualizarTimestamp() {
 function salvarDadosDashboard() {
     try {
         localStorage.setItem('gurps_dashboard', JSON.stringify(dashboardState));
-        console.log('💾 Dashboard salvo');
     } catch (error) {
         console.warn('Não foi possível salvar dashboard:', error);
     }
@@ -553,7 +606,7 @@ function carregarDadosDashboard() {
                 }
             };
             
-            console.log('📂 Dashboard carregado');
+            console.log('📂 Dashboard carregado do localStorage');
             return true;
         }
     } catch (error) {
@@ -574,14 +627,13 @@ function atualizarResumoContagens(vantagens, desvantagens, pericias, magias, ite
         idiomas: idiomas || 1
     };
     
-    // Atualiza pontos também
     dashboardState.personagem.pontos.vantagens = vantagens || 0;
-    dashboardState.personagem.pontos.desvantagens = -(desvantagens || 0); // Negativo
+    dashboardState.personagem.pontos.desvantagens = -(desvantagens || 0);
     dashboardState.personagem.pontos.pericias = pericias || 0;
     dashboardState.personagem.pontos.magias = magias || 0;
     
     atualizarResumo();
-    atualizarSistemaPontos();
+    atualizarCustosAtributos(); // Recalcula pontos
     salvarDadosDashboard();
 }
 
@@ -595,7 +647,7 @@ function atualizarEquipamentoContagem(peso, valor) {
         dashboardState.personagem.resumo.desvantagens,
         dashboardState.personagem.resumo.pericias,
         dashboardState.personagem.resumo.magias,
-        Math.floor(peso / 5) || 0, // Estimativa de itens baseada no peso
+        Math.max(Math.floor(peso / 2), 0),
         dashboardState.personagem.resumo.idiomas
     );
 }
@@ -603,16 +655,19 @@ function atualizarEquipamentoContagem(peso, valor) {
 // ===== INICIALIZAÇÃO =====
 
 function initDashboard() {
-    console.log('📊 Inicializando Dashboard...');
+    console.log('🚀 Inicializando Dashboard GURPS...');
     
     // Aguarda um pouco para garantir que o DOM está pronto
     setTimeout(() => {
-        inicializarDashboard();
-        
-        // Atualiza o dashboard periodicamente (a cada 5 segundos)
-        setInterval(() => {
-            sincronizarAtributos();
-        }, 5000);
+        try {
+            inicializarDashboard();
+            console.log('🎉 Dashboard pronto! Os atributos serão atualizados em tempo real.');
+            
+            // Teste inicial
+            console.log('Valores iniciais dos atributos:', dashboardState.personagem.atributos);
+        } catch (error) {
+            console.error('❌ Erro ao inicializar dashboard:', error);
+        }
     }, 100);
 }
 
@@ -621,16 +676,26 @@ function initDashboard() {
 window.initDashboard = initDashboard;
 window.atualizarResumoContagens = atualizarResumoContagens;
 window.atualizarEquipamentoContagem = atualizarEquipamentoContagem;
+window.sincronizarAtributosDashboard = sincronizarAtributosDashboard; // Para testes
 
-// Inicializa automaticamente se a aba estiver visível
+// Inicializa automaticamente
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('dashboard')?.classList.contains('active')) {
+        if (document.getElementById('dashboard')) {
             initDashboard();
         }
     });
 } else {
-    if (document.getElementById('dashboard')?.classList.contains('active')) {
+    if (document.getElementById('dashboard')) {
         initDashboard();
     }
 }
+
+// Debug: Adiciona botão de teste no console
+window.debugDashboard = function() {
+    console.log('=== DEBUG DASHBOARD ===');
+    console.log('Estado:', dashboardState);
+    console.log('Atributos localStorage:', localStorage.getItem('gurps_atributos'));
+    console.log('Dashboard localStorage:', localStorage.getItem('gurps_dashboard'));
+    sincronizarAtributosDashboard();
+};
