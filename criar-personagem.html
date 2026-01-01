@@ -919,35 +919,77 @@ body::before {
             <div class="dashboard-row">
                 
                 <!-- CARD IDENTIFICAÇÃO -->
-                <div class="card identification-card">
-                    <div class="card-header">
-                        <i class="fas fa-id-card"></i>
-                        <h3>Identificação</h3>
+<div class="card identification-card">
+    <div class="card-header">
+        <i class="fas fa-id-card"></i>
+        <h3>Identificação</h3>
+    </div>
+    <div class="card-content">
+        <!-- CONTAINER DA FOTO -->
+        <div class="photo-container">
+            <!-- UPLOAD DE FOTO -->
+            <div class="photo-upload-section">
+                <div class="photo-frame" onclick="document.getElementById('char-upload').click()">
+                    <div class="photo-preview" id="photo-preview">
+                        <div class="photo-placeholder">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Clique para adicionar foto</span>
+                            <small>Recomendado: 300x400px</small>
+                        </div>
                     </div>
-                    <div class="card-content">
-                        <!-- UPLOAD DE FOTO -->
-                        <div class="photo-upload" onclick="document.getElementById('char-upload').click()">
-                            <div class="photo-preview" id="photo-preview">
-                                <i class="fas fa-user-plus"></i>
-                                <span>Adicionar Foto</span>
-                            </div>
-                            <input type="file" id="char-upload" accept="image/*" hidden>
-                        </div>
-                        
-                        <!-- INFORMAÇÕES -->
-                        <div class="identification-info">
-                            <input type="text" class="char-name" 
-                                   id="char-name" 
-                                   placeholder="Nome do Personagem"
-                                   value="">
-                            
-                            <input type="text" class="char-type" 
-                                   id="char-type" 
-                                   placeholder="O que você é? (Ex: Mercenário, Ladino, etc)"
-                                   value="">
-                        </div>
+                    <div class="photo-overlay">
+                        <i class="fas fa-camera"></i>
+                        <span>Alterar Foto</span>
                     </div>
                 </div>
+                <input type="file" id="char-upload" accept="image/*" hidden>
+                
+                <!-- CONTROLES DA FOTO (aparecem depois de upload) -->
+                <div class="photo-controls" id="photo-controls" style="display: none;">
+                    <button class="photo-btn edit-btn" onclick="document.getElementById('char-upload').click()">
+                        <i class="fas fa-edit"></i> Alterar
+                    </button>
+                    <button class="photo-btn delete-btn" onclick="removerFoto()">
+                        <i class="fas fa-trash"></i> Remover
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- INFORMAÇÕES -->
+        <div class="identification-info">
+            <div class="info-field">
+                <label for="char-name">
+                    <i class="fas fa-user"></i> Nome do Personagem
+                </label>
+                <input type="text" class="char-name" 
+                       id="char-name" 
+                       placeholder="Ex: Aragorn, Conan, etc"
+                       value="">
+            </div>
+            
+            <div class="info-field">
+                <label for="char-type">
+                    <i class="fas fa-chess-knight"></i> Ocupação / Tipo
+                </label>
+                <input type="text" class="char-type" 
+                       id="char-type" 
+                       placeholder="Ex: Mercenário, Ladino, Mago, etc"
+                       value="">
+            </div>
+            
+            <div class="info-field">
+                <label for="char-player">
+                    <i class="fas fa-users"></i> Jogador
+                </label>
+                <input type="text" class="char-player" 
+                       id="char-player" 
+                       placeholder="Nome do jogador"
+                       value="">
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- CARD ATRIBUTOS PRINCIPAIS -->
                 <div class="card primary-attributes-card">

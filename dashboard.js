@@ -1,5 +1,5 @@
 // ===========================================
-// DASHBOARD.JS - Sistema Completo de Dashboard GURPS
+// DASHBOARD.JS - Sistema Completo de Dashboard GURPS - 100% ATUALIZADO
 // ===========================================
 
 // Estado global do dashboard
@@ -7,6 +7,7 @@ let dashboardState = {
     personagem: {
         nome: "",
         tipo: "",
+        jogador: "",
         foto: null,
         // ATRIBUTOS PRINCIPAIS (serão sincronizados)
         atributos: {
@@ -85,10 +86,11 @@ function sincronizarAtributosDashboard() {
     if (dadosAtributos) {
         // Atualiza atributos principais
         if (dadosAtributos.atributos) {
-            dashboardState.personagem.atributos.ST = dadosAtributos.atributos.ST || 10;
-            dashboardState.personagem.atributos.DX = dadosAtributos.atributos.DX || 10;
-            dashboardState.personagem.atributos.IQ = dadosAtributos.atributos.IQ || 10;
-            dashboardState.personagem.atributos.HT = dadosAtributos.atributos.HT || 10;
+            const attrs = dadosAtributos.atributos;
+            dashboardState.personagem.atributos.ST = attrs.ST || 10;
+            dashboardState.personagem.atributos.DX = attrs.DX || 10;
+            dashboardState.personagem.atributos.IQ = attrs.IQ || 10;
+            dashboardState.personagem.atributos.HT = attrs.HT || 10;
             
             // Atualiza valores na tela
             atualizarAtributosTela();
@@ -96,11 +98,12 @@ function sincronizarAtributosDashboard() {
         
         // Atualiza bônus
         if (dadosAtributos.bonus) {
-            dashboardState.personagem.bonus.PV = dadosAtributos.bonus.PV || 0;
-            dashboardState.personagem.bonus.PF = dadosAtributos.bonus.PF || 0;
-            dashboardState.personagem.bonus.Vontade = dadosAtributos.bonus.Vontade || 0;
-            dashboardState.personagem.bonus.Percepcao = dadosAtributos.bonus.Percepcao || 0;
-            dashboardState.personagem.bonus.Deslocamento = dadosAtributos.bonus.Deslocamento || 0;
+            const bonus = dadosAtributos.bonus;
+            dashboardState.personagem.bonus.PV = bonus.PV || 0;
+            dashboardState.personagem.bonus.PF = bonus.PF || 0;
+            dashboardState.personagem.bonus.Vontade = bonus.Vontade || 0;
+            dashboardState.personagem.bonus.Percepcao = bonus.Percepcao || 0;
+            dashboardState.personagem.bonus.Deslocamento = bonus.Deslocamento || 0;
             
             // Atualiza atributos secundários
             atualizarAtributosSecundariosTela();
@@ -113,7 +116,9 @@ function sincronizarAtributosDashboard() {
         atualizarTimestamp();
         
         console.log('🔄 Atributos sincronizados:', dashboardState.personagem.atributos);
+        return true;
     }
+    return false;
 }
 
 // 3. Função para atualizar atributos na tela
@@ -128,6 +133,15 @@ function atualizarAtributosTela() {
     
     // Atualiza detalhes
     atualizarDetalhesAtributos();
+    
+    // Adiciona efeito visual de atualização
+    ['attr-st', 'attr-dx', 'attr-iq', 'attr-ht'].forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.classList.add('updated');
+            setTimeout(() => elemento.classList.remove('updated'), 500);
+        }
+    });
 }
 
 // 4. Função para atualizar detalhes dos atributos
@@ -135,6 +149,8 @@ function atualizarDetalhesAtributos() {
     const ST = dashboardState.personagem.atributos.ST;
     const DX = dashboardState.personagem.atributos.DX;
     const IQ = dashboardState.personagem.atributos.IQ;
+    const HT = dashboardState.personagem.atributos.HT;
+    const bonus = dashboardState.personagem.bonus;
     
     // Tabela de dano simplificada
     const danoTable = {
@@ -156,13 +172,16 @@ function atualizarDetalhesAtributos() {
     // Esquiva = 8 + floor((DX - 10) / 2)
     const esquiva = 8 + Math.floor((DX - 10) / 2);
     
-    // Vontade base = IQ
-    const vontadeBase = IQ;
+    // Vontade total = IQ + bônus
+    const vontadeTotal = Math.max(IQ + (bonus.Vontade || 0), 1);
+    
+    // Resistência = HT
+    const resistencia = HT;
     
     document.getElementById('attr-st-details').textContent = `Dano: ${dano}`;
     document.getElementById('attr-dx-details').textContent = `Esquiva: ${esquiva}`;
-    document.getElementById('attr-iq-details').textContent = `Vontade: ${vontadeBase}`;
-    document.getElementById('attr-ht-details').textContent = `Resistência: ${dashboardState.personagem.atributos.HT}`;
+    document.getElementById('attr-iq-details').textContent = `Vontade: ${vontadeTotal}`;
+    document.getElementById('attr-ht-details').textContent = `Resistência: ${resistencia}`;
 }
 
 // 5. Função para atualizar atributos secundários na tela
@@ -193,8 +212,14 @@ function atualizarAtributosSecundariosTela() {
     const deslocamentoTotal = (deslocamentoBase + bonus.Deslocamento).toFixed(2);
     document.getElementById('move-value').textContent = deslocamentoTotal;
     
-    // Atualiza também o detalhe de vontade no atributo IQ
-    document.getElementById('attr-iq-details').textContent = `Vontade: ${vontadeTotal}`;
+    // Efeito visual de atualização
+    ['pv-current', 'fp-current', 'will-value', 'per-value', 'move-value'].forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.classList.add('updated');
+            setTimeout(() => elemento.classList.remove('updated'), 500);
+        }
+    });
 }
 
 // 6. Função para atualizar custos dos atributos
@@ -210,27 +235,193 @@ function atualizarCustosAtributos() {
     const totalAtributos = custoST + custoDX + custoIQ + custoHT;
     
     // Atualiza pontos gastos com atributos
-    dashboardState.personagem.pontos.gastos = totalAtributos + 
+    const outrosGastos = 
         dashboardState.personagem.pontos.vantagens + 
         dashboardState.personagem.pontos.pericias + 
         dashboardState.personagem.pontos.magias +
         Math.abs(dashboardState.personagem.pontos.desvantagens);
     
+    dashboardState.personagem.pontos.gastos = totalAtributos + outrosGastos;
+    
     // Calcula saldo
     const saldo = dashboardState.personagem.pontos.iniciais - dashboardState.personagem.pontos.gastos;
-    dashboardState.personagem.pontos.saldo = Math.max(saldo, 0);
+    dashboardState.personagem.pontos.saldo = saldo;
     
     // Atualiza na tela
-    document.getElementById('points-balance').textContent = dashboardState.personagem.pontos.saldo;
-    
-    // Destaca se estiver negativo
     const balanceElement = document.getElementById('points-balance');
-    if (saldo < 0) {
-        balanceElement.style.color = '#ff6b6b';
-        balanceElement.style.fontWeight = 'bold';
-    } else {
-        balanceElement.style.color = '';
-        balanceElement.style.fontWeight = '';
+    if (balanceElement) {
+        balanceElement.textContent = dashboardState.personagem.pontos.saldo;
+        
+        // Destaca se estiver negativo
+        if (saldo < 0) {
+            balanceElement.classList.add('excedido');
+            balanceElement.classList.remove('positivo');
+        } else if (saldo > 0) {
+            balanceElement.classList.remove('excedido');
+            balanceElement.classList.add('positivo');
+        } else {
+            balanceElement.classList.remove('excedido', 'positivo');
+        }
+        
+        // Efeito visual
+        balanceElement.classList.add('updated');
+        setTimeout(() => balanceElement.classList.remove('updated'), 500);
+    }
+}
+
+// ===== FUNÇÕES PARA GERENCIAR FOTO =====
+
+function configurarUploadFoto() {
+    const uploadInput = document.getElementById('char-upload');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoControls = document.getElementById('photo-controls');
+    
+    if (!uploadInput || !photoPreview) return;
+    
+    uploadInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Verifica tamanho da imagem (máx 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                mostrarNotificacao('A imagem é muito grande. Por favor, escolha uma imagem menor que 5MB.', 'error');
+                return;
+            }
+            
+            // Verifica tipo da imagem
+            if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/gif')) {
+                mostrarNotificacao('Por favor, escolha uma imagem JPEG, PNG ou GIF.', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                atualizarFotoPreview(e.target.result);
+                
+                // Salva no estado
+                dashboardState.personagem.foto = e.target.result;
+                salvarDadosDashboard();
+                
+                mostrarNotificacao('Foto do personagem atualizada com sucesso!', 'success');
+                console.log('📸 Foto atualizada');
+            };
+            
+            reader.onerror = function() {
+                mostrarNotificacao('Erro ao carregar a imagem. Por favor, tente novamente.', 'error');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Carrega foto salva se existir
+    if (dashboardState.personagem.foto) {
+        atualizarFotoPreview(dashboardState.personagem.foto);
+    }
+}
+
+function atualizarFotoPreview(fotoData) {
+    const photoPreview = document.getElementById('photo-preview');
+    const photoControls = document.getElementById('photo-controls');
+    
+    if (!photoPreview) return;
+    
+    // Remove placeholder se existir
+    const placeholder = photoPreview.querySelector('.photo-placeholder');
+    if (placeholder) {
+        placeholder.remove();
+    }
+    
+    // Remove imagem antiga se existir
+    const imgAntiga = photoPreview.querySelector('img');
+    if (imgAntiga) {
+        imgAntiga.remove();
+    }
+    
+    // Cria nova imagem
+    const img = document.createElement('img');
+    img.src = fotoData;
+    img.alt = 'Foto do Personagem';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '8px';
+    
+    // Adiciona animação
+    img.style.opacity = '0';
+    img.style.transform = 'scale(0.9)';
+    
+    photoPreview.appendChild(img);
+    
+    // Animação de entrada
+    setTimeout(() => {
+        img.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        img.style.opacity = '1';
+        img.style.transform = 'scale(1)';
+    }, 10);
+    
+    // Mostra controles
+    if (photoControls) {
+        photoControls.style.display = 'flex';
+        setTimeout(() => {
+            photoControls.style.opacity = '1';
+            photoControls.style.transform = 'translateY(0)';
+        }, 300);
+    }
+    
+    // Adiciona classe para indicar que tem foto
+    photoPreview.classList.add('has-photo');
+}
+
+function removerFoto() {
+    if (confirm('Tem certeza que deseja remover a foto do personagem?')) {
+        const photoPreview = document.getElementById('photo-preview');
+        const photoControls = document.getElementById('photo-controls');
+        const uploadInput = document.getElementById('char-upload');
+        
+        // Remove imagem
+        const img = photoPreview.querySelector('img');
+        if (img) {
+            img.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            img.style.opacity = '0';
+            img.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                img.remove();
+                
+                // Restaura placeholder
+                const placeholder = document.createElement('div');
+                placeholder.className = 'photo-placeholder';
+                placeholder.innerHTML = `
+                    <i class="fas fa-user-circle"></i>
+                    <span>Clique para adicionar foto</span>
+                    <small>Recomendado: 300x400px</small>
+                `;
+                
+                photoPreview.appendChild(placeholder);
+                photoPreview.classList.remove('has-photo');
+                
+                // Esconde controles com animação
+                if (photoControls) {
+                    photoControls.style.opacity = '0';
+                    photoControls.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        photoControls.style.display = 'none';
+                    }, 300);
+                }
+                
+                // Limpa input de upload
+                if (uploadInput) {
+                    uploadInput.value = '';
+                }
+                
+                // Remove do estado
+                dashboardState.personagem.foto = null;
+                salvarDadosDashboard();
+                
+                mostrarNotificacao('Foto removida com sucesso.', 'info');
+            }, 300);
+        }
     }
 }
 
@@ -245,10 +436,16 @@ function inicializarDashboard() {
     // 2. Configura eventos
     configurarEventosDashboard();
     
-    // 3. Configura sincronização em tempo real
+    // 3. Configura upload de foto
+    configurarUploadFoto();
+    
+    // 4. Configura sincronização em tempo real
     configurarSincronizacaoTempoReal();
     
-    // 4. Inicializa com valores
+    // 5. Configura atualização de tempo
+    configurarAtualizacaoTempo();
+    
+    // 6. Inicializa com valores
     sincronizarAtributosDashboard(); // Primeira sincronização
     atualizarDashboardCompleto();
     
@@ -259,19 +456,27 @@ function configurarEventosDashboard() {
     // Identificação
     const nomeInput = document.getElementById('char-name');
     const tipoInput = document.getElementById('char-type');
+    const jogadorInput = document.getElementById('char-player');
     
     if (nomeInput) {
-        nomeInput.addEventListener('input', function() {
+        nomeInput.addEventListener('input', debounce(function() {
             dashboardState.personagem.nome = this.value;
             salvarDadosDashboard();
-        });
+        }, 500));
     }
     
     if (tipoInput) {
-        tipoInput.addEventListener('input', function() {
+        tipoInput.addEventListener('input', debounce(function() {
             dashboardState.personagem.tipo = this.value;
             salvarDadosDashboard();
-        });
+        }, 500));
+    }
+    
+    if (jogadorInput) {
+        jogadorInput.addEventListener('input', debounce(function() {
+            dashboardState.personagem.jogador = this.value;
+            salvarDadosDashboard();
+        }, 500));
     }
     
     // Sistema de Pontos
@@ -280,14 +485,34 @@ function configurarEventosDashboard() {
     
     if (pontosIniciais) {
         pontosIniciais.addEventListener('change', function() {
-            dashboardState.personagem.pontos.iniciais = parseInt(this.value) || 100;
-            atualizarCustosAtributos(); // Recalcula saldo
+            const valor = parseInt(this.value) || 100;
+            if (valor < 0) {
+                this.value = 0;
+                dashboardState.personagem.pontos.iniciais = 0;
+            } else if (valor > 1000) {
+                this.value = 1000;
+                dashboardState.personagem.pontos.iniciais = 1000;
+            } else {
+                dashboardState.personagem.pontos.iniciais = valor;
+            }
+            atualizarCustosAtributos();
             salvarDadosDashboard();
         });
     }
     
     if (limiteDesvantagens) {
         limiteDesvantagens.addEventListener('change', function() {
+            const valor = parseInt(this.value) || -75;
+            if (valor > 0) {
+                this.value = 0;
+                dashboardState.personagem.pontos.limiteDesvantagens = 0;
+            } else if (valor < -200) {
+                this.value = -200;
+                dashboardState.personagem.pontos.limiteDesvantagens = -200;
+            } else {
+                dashboardState.personagem.pontos.limiteDesvantagens = valor;
+            }
+            verificarLimiteDesvantagens();
             salvarDadosDashboard();
         });
     }
@@ -295,23 +520,38 @@ function configurarEventosDashboard() {
     // Características Físicas
     const descricaoFisica = document.getElementById('phys-description');
     if (descricaoFisica) {
-        descricaoFisica.addEventListener('input', function() {
+        descricaoFisica.addEventListener('input', debounce(function() {
             dashboardState.personagem.caracteristicasFisicas.descricao = this.value;
             salvarDadosDashboard();
+        }, 500));
+    }
+    
+    // Configura botões de controle da foto
+    const editBtn = document.querySelector('.edit-btn');
+    const deleteBtn = document.querySelector('.delete-btn');
+    
+    if (editBtn) {
+        editBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('char-upload').click();
         });
     }
     
-    // Configura upload de foto
-    configurarUploadFoto();
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            removerFoto();
+        });
+    }
 }
 
 function configurarSincronizacaoTempoReal() {
     console.log('⏱️ Configurando sincronização em tempo real...');
     
-    // 1. Sincroniza a cada 500ms (muito rápido)
+    // 1. Sincroniza a cada 500ms
     setInterval(sincronizarAtributosDashboard, 500);
     
-    // 2. Também monitora eventos de storage (se abrir em outra aba)
+    // 2. Monitora eventos de storage (se abrir em outra aba)
     window.addEventListener('storage', function(e) {
         if (e.key === 'gurps_atributos') {
             console.log('📡 Evento de storage detectado, sincronizando...');
@@ -319,49 +559,10 @@ function configurarSincronizacaoTempoReal() {
         }
     });
     
-    // 3. Monitora mudanças nos inputs dos atributos (se estiverem na mesma página)
-    ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
-        const input = document.getElementById(atributo);
-        if (input) {
-            input.addEventListener('input', function() {
-                setTimeout(sincronizarAtributosDashboard, 300);
-            });
-        }
-    });
-    
-    // 4. Atualiza o relógio
-    configurarAtualizacaoTempo();
-}
-
-function configurarUploadFoto() {
-    const uploadInput = document.getElementById('char-upload');
-    const photoPreview = document.getElementById('photo-preview');
-    
-    if (!uploadInput || !photoPreview) return;
-    
-    uploadInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '5px';
-                
-                photoPreview.innerHTML = '';
-                photoPreview.appendChild(img);
-                photoPreview.classList.add('has-photo');
-                
-                dashboardState.personagem.foto = e.target.result;
-                salvarDadosDashboard();
-            };
-            
-            reader.readAsDataURL(file);
-        }
+    // 3. Força sincronização ao focar na aba
+    window.addEventListener('focus', function() {
+        console.log('🎯 Dashboard em foco, sincronizando...');
+        setTimeout(sincronizarAtributosDashboard, 100);
     });
 }
 
@@ -399,6 +600,7 @@ function atualizarDashboardCompleto() {
 function atualizarIdentificacao() {
     const nomeElement = document.getElementById('char-name');
     const tipoElement = document.getElementById('char-type');
+    const jogadorElement = document.getElementById('char-player');
     
     if (nomeElement && dashboardState.personagem.nome) {
         nomeElement.value = dashboardState.personagem.nome;
@@ -408,21 +610,8 @@ function atualizarIdentificacao() {
         tipoElement.value = dashboardState.personagem.tipo;
     }
     
-    // Restaura foto
-    if (dashboardState.personagem.foto) {
-        const photoPreview = document.getElementById('photo-preview');
-        if (photoPreview) {
-            const img = document.createElement('img');
-            img.src = dashboardState.personagem.foto;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '5px';
-            
-            photoPreview.innerHTML = '';
-            photoPreview.appendChild(img);
-            photoPreview.classList.add('has-photo');
-        }
+    if (jogadorElement && dashboardState.personagem.jogador) {
+        jogadorElement.value = dashboardState.personagem.jogador;
     }
 }
 
@@ -453,18 +642,21 @@ function atualizarSistemaPontos() {
     document.getElementById('points-skills').textContent = pontos.pericias;
     document.getElementById('points-spells').textContent = pontos.magias;
     
-    // O saldo é atualizado em atualizarCustosAtributos()
-    
     // Verifica limite de desvantagens
+    verificarLimiteDesvantagens();
+}
+
+function verificarLimiteDesvantagens() {
     const limiteDesvElement = document.getElementById('dis-limit');
     if (limiteDesvElement) {
         const limite = parseInt(limiteDesvElement.value) || -75;
-        if (Math.abs(pontos.desvantagens) > Math.abs(limite)) {
-            limiteDesvElement.style.borderColor = '#f44336';
-            limiteDesvElement.style.color = '#f44336';
+        const desvantagens = Math.abs(dashboardState.personagem.pontos.desvantagens);
+        
+        if (desvantagens > Math.abs(limite)) {
+            limiteDesvElement.classList.add('excedido');
+            mostrarNotificacao(`Atenção: Limite de desvantagens excedido em ${desvantagens - Math.abs(limite)} pontos!`, 'warning');
         } else {
-            limiteDesvElement.style.borderColor = '';
-            limiteDesvElement.style.color = '';
+            limiteDesvElement.classList.remove('excedido');
         }
     }
 }
@@ -489,7 +681,10 @@ function atualizarStatusSocial() {
     };
     
     const custo = custoRiqueza[status.riqueza] || 0;
-    document.querySelector('.wealth-cost').textContent = `[${custo >= 0 ? '+' : ''}${custo} pts]`;
+    const wealthCostElement = document.querySelector('.wealth-cost');
+    if (wealthCostElement) {
+        wealthCostElement.textContent = `[${custo >= 0 ? '+' : ''}${custo} pts]`;
+    }
 }
 
 function atualizarEquipamento() {
@@ -504,12 +699,13 @@ function atualizarEquipamento() {
 function atualizarBarraCarga(peso) {
     const barraFill = document.getElementById('enc-fill');
     const encNote = document.getElementById('enc-note');
+    const encLevel = document.getElementById('enc-level');
     
-    if (!barraFill || !encNote) return;
+    if (!barraFill || !encNote || !encLevel) return;
     
     let nivel = "Nenhuma";
     let porcentagem = 0;
-    let st = dashboardState.personagem.atributos.ST;
+    const st = dashboardState.personagem.atributos.ST;
     
     // Calcula limites baseados na ST
     const cargaNenhuma = st * 1.0;
@@ -522,36 +718,40 @@ function atualizarBarraCarga(peso) {
         nivel = "Nenhuma";
         porcentagem = (peso / cargaNenhuma) * 100;
         encNote.textContent = `Até ${cargaNenhuma.toFixed(1)} kg`;
+        barraFill.style.background = 'linear-gradient(90deg, var(--accent-green), var(--primary-gold))';
     } else if (peso <= cargaLeve) {
         nivel = "Leve";
         porcentagem = (peso / cargaLeve) * 100;
         encNote.textContent = `Até ${cargaLeve.toFixed(1)} kg`;
+        barraFill.style.background = 'linear-gradient(90deg, #4CAF50, #8BC34A)';
     } else if (peso <= cargaMedia) {
         nivel = "Média";
         porcentagem = (peso / cargaMedia) * 100;
         encNote.textContent = `Até ${cargaMedia.toFixed(1)} kg`;
+        barraFill.style.background = 'linear-gradient(90deg, #FFC107, #FF9800)';
     } else if (peso <= cargaPesada) {
         nivel = "Pesada";
         porcentagem = (peso / cargaPesada) * 100;
         encNote.textContent = `Até ${cargaPesada.toFixed(1)} kg`;
+        barraFill.style.background = 'linear-gradient(90deg, #FF9800, #F44336)';
     } else {
         nivel = "Muito Pesada";
         porcentagem = Math.min((peso / cargaMuitoPesada) * 100, 100);
         encNote.textContent = `Acima de ${cargaPesada.toFixed(1)} kg`;
+        barraFill.style.background = 'linear-gradient(90deg, #F44336, #D32F2F)';
     }
     
+    // Animação suave da barra
+    barraFill.style.transition = 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
     barraFill.style.width = `${Math.min(porcentagem, 100)}%`;
     
-    if (nivel === "Muito Pesada") {
-        barraFill.style.background = 'linear-gradient(90deg, #ff6b6b, #ff5252)';
-    } else if (nivel === "Pesada") {
-        barraFill.style.background = 'linear-gradient(90deg, #ffa726, #ff9800)';
-    } else {
-        barraFill.style.background = 'linear-gradient(90deg, var(--accent-green), var(--primary-gold))';
-    }
-    
+    // Atualiza nível
     dashboardState.personagem.equipamento.carga = nivel;
-    document.getElementById('enc-level').textContent = nivel;
+    encLevel.textContent = nivel;
+    
+    // Efeito visual
+    encLevel.classList.add('updated');
+    setTimeout(() => encLevel.classList.remove('updated'), 500);
 }
 
 function atualizarResumo() {
@@ -580,11 +780,74 @@ function atualizarTimestamp() {
     }
 }
 
+// ===== FUNÇÕES UTILITÁRIAS =====
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func.apply(this, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function mostrarNotificacao(mensagem, tipo = 'info') {
+    // Remove notificação anterior se existir
+    const notificacaoAnterior = document.querySelector('.dashboard-notification');
+    if (notificacaoAnterior) {
+        notificacaoAnterior.remove();
+    }
+    
+    // Cria nova notificação
+    const notificacao = document.createElement('div');
+    notificacao.className = `dashboard-notification ${tipo}`;
+    notificacao.innerHTML = `
+        <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${mensagem}</span>
+        <button class="notification-close"><i class="fas fa-times"></i></button>
+    `;
+    
+    // Adiciona ao dashboard
+    const dashboard = document.querySelector('.dashboard-gurps');
+    if (dashboard) {
+        dashboard.appendChild(notificacao);
+        
+        // Animação de entrada
+        setTimeout(() => {
+            notificacao.style.opacity = '1';
+            notificacao.style.transform = 'translateY(0)';
+        }, 10);
+        
+        // Configura botão de fechar
+        const closeBtn = notificacao.querySelector('.notification-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                notificacao.style.opacity = '0';
+                notificacao.style.transform = 'translateY(-20px)';
+                setTimeout(() => notificacao.remove(), 300);
+            });
+        }
+        
+        // Remove automaticamente após 5 segundos
+        setTimeout(() => {
+            if (notificacao.parentNode) {
+                notificacao.style.opacity = '0';
+                notificacao.style.transform = 'translateY(-20px)';
+                setTimeout(() => notificacao.remove(), 300);
+            }
+        }, 5000);
+    }
+}
+
 // ===== FUNÇÕES DE SALVAMENTO E CARREGAMENTO =====
 
 function salvarDadosDashboard() {
     try {
         localStorage.setItem('gurps_dashboard', JSON.stringify(dashboardState));
+        console.log('💾 Dashboard salvo');
     } catch (error) {
         console.warn('Não foi possível salvar dashboard:', error);
     }
@@ -633,7 +896,8 @@ function atualizarResumoContagens(vantagens, desvantagens, pericias, magias, ite
     dashboardState.personagem.pontos.magias = magias || 0;
     
     atualizarResumo();
-    atualizarCustosAtributos(); // Recalcula pontos
+    atualizarCustosAtributos();
+    verificarLimiteDesvantagens();
     salvarDadosDashboard();
 }
 
@@ -652,10 +916,122 @@ function atualizarEquipamentoContagem(peso, valor) {
     );
 }
 
+function atualizarStatusSocialValores(riqueza, status, reputacao, aparência, reacao) {
+    dashboardState.personagem.statusSocial = {
+        riqueza: riqueza || "Médio",
+        status: status || 0,
+        reputacao: reputacao || 0,
+        aparência: aparência || 0,
+        reacao: reacao || 0
+    };
+    
+    atualizarStatusSocial();
+    salvarDadosDashboard();
+}
+
+function atualizarCaracteristicasFisicasValores(altura, peso, idade, aparência, descricao) {
+    dashboardState.personagem.caracteristicasFisicas = {
+        altura: altura || "1.70 m",
+        peso: peso || "70 kg",
+        idade: idade || "25 anos",
+        aparência: aparência || "Comum",
+        descricao: descricao || ""
+    };
+    
+    atualizarCaracteristicasFisicas();
+    salvarDadosDashboard();
+}
+
 // ===== INICIALIZAÇÃO =====
 
 function initDashboard() {
     console.log('🚀 Inicializando Dashboard GURPS...');
+    
+    // Adiciona estilos para notificações
+    const style = document.createElement('style');
+    style.textContent = `
+        .dashboard-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(40, 30, 15, 0.95), rgba(30, 22, 10, 0.95));
+            border: 2px solid var(--primary-gold);
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-gold);
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .dashboard-notification.success {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.9), rgba(27, 94, 32, 0.9));
+        }
+        
+        .dashboard-notification.error {
+            border-color: #F44336;
+            background: linear-gradient(135deg, rgba(211, 47, 47, 0.9), rgba(183, 28, 28, 0.9));
+        }
+        
+        .dashboard-notification.warning {
+            border-color: #FF9800;
+            background: linear-gradient(135deg, rgba(245, 124, 0, 0.9), rgba(230, 81, 0, 0.9));
+        }
+        
+        .dashboard-notification.info {
+            border-color: #2196F3;
+            background: linear-gradient(135deg, rgba(30, 136, 229, 0.9), rgba(13, 71, 161, 0.9));
+        }
+        
+        .dashboard-notification i {
+            font-size: 1.2rem;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: auto;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .notification-close:hover {
+            opacity: 1;
+        }
+        
+        .updated {
+            animation: pulse 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .excedido {
+            color: #ff6b6b !important;
+            animation: pulse 2s infinite;
+        }
+        
+        .positivo {
+            color: #4CAF50 !important;
+        }
+    `;
+    document.head.appendChild(style);
     
     // Aguarda um pouco para garantir que o DOM está pronto
     setTimeout(() => {
@@ -663,10 +1039,14 @@ function initDashboard() {
             inicializarDashboard();
             console.log('🎉 Dashboard pronto! Os atributos serão atualizados em tempo real.');
             
+            // Mostra notificação de boas-vindas
+            mostrarNotificacao('Dashboard GURPS inicializado com sucesso!', 'success');
+            
             // Teste inicial
             console.log('Valores iniciais dos atributos:', dashboardState.personagem.atributos);
         } catch (error) {
             console.error('❌ Erro ao inicializar dashboard:', error);
+            mostrarNotificacao('Erro ao inicializar o dashboard. Por favor, recarregue a página.', 'error');
         }
     }, 100);
 }
@@ -676,7 +1056,10 @@ function initDashboard() {
 window.initDashboard = initDashboard;
 window.atualizarResumoContagens = atualizarResumoContagens;
 window.atualizarEquipamentoContagem = atualizarEquipamentoContagem;
-window.sincronizarAtributosDashboard = sincronizarAtributosDashboard; // Para testes
+window.atualizarStatusSocialValores = atualizarStatusSocialValores;
+window.atualizarCaracteristicasFisicasValores = atualizarCaracteristicasFisicasValores;
+window.sincronizarAtributosDashboard = sincronizarAtributosDashboard;
+window.removerFoto = removerFoto;
 
 // Inicializa automaticamente
 if (document.readyState === 'loading') {
@@ -697,5 +1080,10 @@ window.debugDashboard = function() {
     console.log('Estado:', dashboardState);
     console.log('Atributos localStorage:', localStorage.getItem('gurps_atributos'));
     console.log('Dashboard localStorage:', localStorage.getItem('gurps_dashboard'));
+    
+    // Força sincronização
     sincronizarAtributosDashboard();
+    
+    // Testa notificação
+    mostrarNotificacao('Teste de notificação do dashboard!', 'info');
 };
