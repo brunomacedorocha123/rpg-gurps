@@ -1,5 +1,6 @@
 // ===========================================
 // DASHBOARD.JS - Sistema Central de Controle
+// Versão Corrigida e Funcional
 // ===========================================
 
 // Estado global do dashboard
@@ -26,7 +27,7 @@ let dashboardState = {
     idiomas: 1,
     relacionamentos: 0,
     
-    // Atributos (serão sincronizados)
+    // Atributos
     ST: 10,
     DX: 10,
     IQ: 10,
@@ -37,8 +38,146 @@ let dashboardState = {
     Percepcao: 10
 };
 
+// Cache de elementos
+let elementos = {};
+
 // ===========================================
-// SISTEMA DE PONTOS - CÁLCULOS E CONTROLE
+// INICIALIZAÇÃO
+// ===========================================
+
+function inicializarDashboard() {
+    console.log('📊 Inicializando dashboard...');
+    
+    // Cache dos elementos importantes
+    cacheElementos();
+    
+    // Configurar event listeners
+    configurarEventListeners();
+    
+    // Configurar upload de foto
+    configurarUploadFoto();
+    
+    // Carregar estado salvo
+    carregarEstadoDashboard();
+    
+    // Primeira sincronização
+    setTimeout(() => {
+        sincronizarAtributos();
+        sincronizarFinancas();
+        sincronizarContadores();
+        atualizarDashboard();
+    }, 500);
+    
+    // Sincronizar periodicamente
+    setInterval(atualizarDashboard, 3000);
+    
+    console.log('✅ Dashboard inicializado');
+}
+
+function cacheElementos() {
+    elementos = {
+        // Sistema de Pontos
+        startPoints: document.getElementById('start-points'),
+        disLimit: document.getElementById('dis-limit'),
+        totalPointsSpent: document.getElementById('total-points-spent'),
+        pointsAttr: document.getElementById('points-attr'),
+        pointsAdv: document.getElementById('points-adv'),
+        pointsDis: document.getElementById('points-dis'),
+        pointsPec: document.getElementById('points-pec'),
+        pointsSkills: document.getElementById('points-skills'),
+        pointsSpells: document.getElementById('points-spells'),
+        pointsTech: document.getElementById('points-tech'),
+        pointsBalance: document.getElementById('points-balance'),
+        pointsStatusIndicator: document.getElementById('points-status-indicator'),
+        pointsStatusText: document.getElementById('points-status-text'),
+        
+        // Status Social
+        statusValue: document.getElementById('status-value'),
+        repValue: document.getElementById('rep-value'),
+        appValue: document.getElementById('app-value'),
+        statusPointsCompact: document.getElementById('status-points-compact'),
+        reputacaoPointsCompact: document.getElementById('reputacao-points-compact'),
+        aparenciaPointsCompact: document.getElementById('aparencia-points-compact'),
+        socialTotalPoints: document.getElementById('social-total-points'),
+        reactionTotalCompact: document.getElementById('reaction-total-compact'),
+        
+        // Atributos
+        summarySt: document.getElementById('summary-st'),
+        summaryDx: document.getElementById('summary-dx'),
+        summaryIq: document.getElementById('summary-iq'),
+        summaryHt: document.getElementById('summary-ht'),
+        summaryHp: document.getElementById('summary-hp'),
+        summaryFp: document.getElementById('summary-fp'),
+        summaryWill: document.getElementById('summary-will'),
+        summaryPer: document.getElementById('summary-per'),
+        quickHp: document.getElementById('quick-hp'),
+        quickFp: document.getElementById('quick-fp'),
+        
+        // Finanças
+        currentMoney: document.getElementById('current-money'),
+        wealthLevelDisplay: document.getElementById('wealth-level-display'),
+        financeStatus: document.getElementById('finance-status'),
+        equipWeight: document.getElementById('equip-weight'),
+        encLevelDisplay: document.getElementById('enc-level-display'),
+        limitLight: document.getElementById('limit-light'),
+        limitMedium: document.getElementById('limit-medium'),
+        limitHeavy: document.getElementById('limit-heavy'),
+        limitExtreme: document.getElementById('limit-extreme'),
+        
+        // Contadores
+        counterAdvantages: document.getElementById('counter-advantages'),
+        counterDisadvantages: document.getElementById('counter-disadvantages'),
+        counterSkills: document.getElementById('counter-skills'),
+        counterSpells: document.getElementById('counter-spells'),
+        counterLanguages: document.getElementById('counter-languages'),
+        counterRelationships: document.getElementById('counter-relationships'),
+        lastUpdateTime: document.getElementById('last-update-time'),
+        
+        // Foto
+        photoPreview: document.getElementById('photo-preview'),
+        charUpload: document.getElementById('char-upload'),
+        
+        // Inputs de identificação
+        charName: document.getElementById('char-name'),
+        charRace: document.getElementById('char-race'),
+        charType: document.getElementById('char-type'),
+        charPlayer: document.getElementById('char-player')
+    };
+}
+
+function configurarEventListeners() {
+    // Sistema de Pontos
+    if (elementos.startPoints) {
+        elementos.startPoints.addEventListener('change', function() {
+            definirPontosIniciais(this.value);
+        });
+    }
+    
+    if (elementos.disLimit) {
+        elementos.disLimit.addEventListener('change', function() {
+            definirLimiteDesvantagens(this.value);
+        });
+    }
+    
+    // Botão de atualização
+    const refreshBtn = document.querySelector('.refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', atualizarDashboard);
+    }
+    
+    // Nome do personagem
+    const charNameInput = document.getElementById('characterName');
+    if (charNameInput) {
+        charNameInput.addEventListener('input', function() {
+            if (elementos.charName) {
+                elementos.charName.value = this.value;
+            }
+        });
+    }
+}
+
+// ===========================================
+// SISTEMA DE PONTOS
 // ===========================================
 
 function definirPontosIniciais(valor) {
@@ -46,7 +185,10 @@ function definirPontosIniciais(valor) {
     if (valor > 1000) valor = 1000;
     
     dashboardState.pontosIniciais = parseInt(valor);
-    document.getElementById('start-points').value = valor;
+    if (elementos.startPoints) {
+        elementos.startPoints.value = valor;
+    }
+    
     atualizarSistemaPontos();
     salvarEstadoDashboard();
 }
@@ -55,13 +197,63 @@ function definirLimiteDesvantagens(valor) {
     if (valor > 0) valor = 0;
     
     dashboardState.limiteDesvantagens = parseInt(valor);
-    document.getElementById('dis-limit').value = valor;
+    if (elementos.disLimit) {
+        elementos.disLimit.value = valor;
+    }
+    
     atualizarSistemaPontos();
     salvarEstadoDashboard();
 }
 
 function calcularPontosGastos() {
-    // 1. Pontos em Atributos (do atributos.js)
+    // 1. Pontos em Atributos
+    const pontosAtributos = calcularPontosAtributos();
+    
+    // 2. Pontos em Status Social
+    const pontosStatus = dashboardState.status * 5;
+    const pontosReputacao = dashboardState.reputacao * 5;
+    const pontosAparencia = dashboardState.aparencia * 5;
+    const pontosSociais = pontosStatus + pontosReputacao + pontosAparencia;
+    
+    // 3. Outros (valores estimados)
+    const pontosVantagens = dashboardState.vantagens * 5;
+    const pontosDesvantagens = dashboardState.desvantagens * -5;
+    const pontosPericias = dashboardState.pericias * 2;
+    const pontosMagias = dashboardState.magias * 3;
+    const pontosPeculiaridades = 0; // Placeholder
+    const pontosTecnicas = 0; // Placeholder
+    
+    // Atualizar display
+    if (elementos.pointsAttr) elementos.pointsAttr.textContent = pontosAtributos;
+    if (elementos.pointsAdv) elementos.pointsAdv.textContent = pontosVantagens;
+    if (elementos.pointsDis) elementos.pointsDis.textContent = pontosDesvantagens;
+    if (elementos.pointsSkills) elementos.pointsSkills.textContent = pontosPericias;
+    if (elementos.pointsSpells) elementos.pointsSpells.textContent = pontosMagias;
+    if (elementos.pointsPec) elementos.pointsPec.textContent = pontosPeculiaridades;
+    if (elementos.pointsTech) elementos.pointsTech.textContent = pontosTecnicas;
+    
+    // Calcular total gasto
+    const totalGasto = pontosAtributos + pontosVantagens + pontosDesvantagens + 
+                      pontosPericias + pontosMagias + pontosSociais +
+                      pontosPeculiaridades + pontosTecnicas;
+    
+    if (elementos.totalPointsSpent) {
+        elementos.totalPointsSpent.textContent = `${totalGasto} pts`;
+    }
+    
+    // Calcular saldo
+    const saldo = dashboardState.pontosIniciais - totalGasto;
+    if (elementos.pointsBalance) {
+        elementos.pointsBalance.textContent = saldo;
+    }
+    
+    // Atualizar status do saldo
+    atualizarStatusSaldo(saldo);
+    
+    return totalGasto;
+}
+
+function calcularPontosAtributos() {
     const ST = dashboardState.ST || 10;
     const DX = dashboardState.DX || 10;
     const IQ = dashboardState.IQ || 10;
@@ -72,95 +264,55 @@ function calcularPontosGastos() {
     const custoIQ = (IQ - 10) * 20;
     const custoHT = (HT - 10) * 10;
     
-    const pontosAtributos = custoST + custoDX + custoIQ + custoHT;
-    
-    // 2. Pontos em Status Social
-    const pontosStatus = dashboardState.status * 5; // Cada nível de status custa 5 pontos
-    const pontosReputacao = Math.abs(dashboardState.reputacao) * 5; // Cada nível custa 5
-    const pontosAparencia = dashboardState.aparencia * 5; // Cada nível custa 5
-    
-    const pontosSociais = pontosStatus + pontosReputacao + pontosAparencia;
-    
-    // 3. Outros (valores fictícios - serão substituídos por dados reais)
-    const pontosVantagens = dashboardState.vantagens * 5; // Estimativa
-    const pontosDesvantagens = dashboardState.desvantagens * -5; // Negativo
-    const pontosPericias = dashboardState.pericias * 2; // Estimativa
-    const pontosMagias = dashboardState.magias * 3; // Estimativa
-    const pontosPeculiaridades = 0; // Placeholder
-    const pontosTecnicas = 0; // Placeholder
-    
-    // Atualizar display
-    document.getElementById('points-attr').textContent = pontosAtributos;
-    document.getElementById('points-adv').textContent = pontosVantagens;
-    document.getElementById('points-dis').textContent = pontosDesvantagens;
-    document.getElementById('points-skills').textContent = pontosPericias;
-    document.getElementById('points-spells').textContent = pontosMagias;
-    document.getElementById('points-pec').textContent = pontosPeculiaridades;
-    document.getElementById('points-tech').textContent = pontosTecnicas;
-    
-    // Calcular total gasto
-    const totalGasto = pontosAtributos + pontosVantagens + pontosDesvantagens + 
-                      pontosPericias + pontosMagias + pontosSociais +
-                      pontosPeculiaridades + pontosTecnicas;
-    
-    document.getElementById('total-points-spent').textContent = `${totalGasto} pts`;
-    
-    // Calcular saldo
-    const saldo = dashboardState.pontosIniciais - totalGasto;
-    document.getElementById('points-balance').textContent = saldo;
-    
-    // Atualizar status do saldo
-    atualizarStatusSaldo(saldo);
-    
-    return totalGasto;
+    return custoST + custoDX + custoIQ + custoHT;
 }
 
 function atualizarStatusSaldo(saldo) {
-    const indicator = document.getElementById('points-status-indicator');
-    const text = document.getElementById('points-status-text');
+    if (!elementos.pointsStatusIndicator || !elementos.pointsStatusText) return;
     
     if (saldo > 0) {
-        indicator.style.backgroundColor = '#4CAF50'; // Verde
-        text.textContent = 'Personagem válido - pontos disponíveis';
-        text.style.color = '#4CAF50';
+        elementos.pointsStatusIndicator.style.backgroundColor = '#4CAF50';
+        elementos.pointsStatusText.textContent = 'Personagem válido - pontos disponíveis';
+        elementos.pointsStatusText.style.color = '#4CAF50';
     } else if (saldo === 0) {
-        indicator.style.backgroundColor = '#FFC107'; // Amarelo
-        text.textContent = 'Personagem completo - todos pontos usados';
-        text.style.color = '#FFC107';
+        elementos.pointsStatusIndicator.style.backgroundColor = '#FFC107';
+        elementos.pointsStatusText.textContent = 'Personagem completo - todos pontos usados';
+        elementos.pointsStatusText.style.color = '#FFC107';
     } else {
-        indicator.style.backgroundColor = '#f44336'; // Vermelho
-        text.textContent = 'ATENÇÃO: Pontos excedidos!';
-        text.style.color = '#f44336';
+        elementos.pointsStatusIndicator.style.backgroundColor = '#f44336';
+        elementos.pointsStatusText.textContent = 'ATENÇÃO: Pontos excedidos!';
+        elementos.pointsStatusText.style.color = '#f44336';
     }
 }
 
 // ===========================================
-// STATUS SOCIAL - CONTROLE
+// STATUS SOCIAL
 // ===========================================
 
 function ajustarModificador(tipo, valor) {
-    // Mapear tipos para IDs corretos
-    const typeMap = {
-        'status': 'status',
-        'reputacao': 'rep',
-        'aparencia': 'app'
-    };
+    console.log(`Ajustando ${tipo} por ${valor}`);
     
-    const displayId = typeMap[tipo];
-    if (!displayId) {
-        console.error('Tipo inválido:', tipo);
-        return;
+    let currentValue;
+    let currentElement;
+    
+    switch(tipo) {
+        case 'status':
+            currentElement = elementos.statusValue;
+            currentValue = parseInt(currentElement?.textContent || 0);
+            break;
+        case 'reputacao':
+            currentElement = elementos.repValue;
+            currentValue = parseInt(currentElement?.textContent || 0);
+            break;
+        case 'aparencia':
+            currentElement = elementos.appValue;
+            currentValue = parseInt(currentElement?.textContent || 0);
+            break;
+        default:
+            console.error('Tipo inválido:', tipo);
+            return;
     }
     
-    const currentSpan = document.getElementById(`${displayId}-value`);
-    const currentPoints = document.getElementById(`${tipo}-points-compact`);
-    
-    if (!currentSpan) {
-        console.error('Elemento não encontrado:', `${displayId}-value`);
-        return;
-    }
-    
-    let currentValue = parseInt(currentSpan.textContent) || 0;
     let newValue = currentValue + valor;
     
     // Limites
@@ -176,27 +328,43 @@ function ajustarModificador(tipo, valor) {
     dashboardState[tipo] = newValue;
     
     // Atualizar display
-    currentSpan.textContent = newValue;
+    if (currentElement) {
+        currentElement.textContent = newValue;
+    }
     
-    // Calcular pontos (cada nível custa 5 pontos)
+    // Calcular pontos
     const pontos = newValue * 5;
-    if (currentPoints) {
-        currentPoints.textContent = `[${pontos}]`;
+    
+    // Atualizar pontos compactos
+    switch(tipo) {
+        case 'status':
+            if (elementos.statusPointsCompact) {
+                elementos.statusPointsCompact.textContent = `[${pontos}]`;
+            }
+            break;
+        case 'reputacao':
+            if (elementos.reputacaoPointsCompact) {
+                elementos.reputacaoPointsCompact.textContent = `[${pontos}]`;
+            }
+            break;
+        case 'aparencia':
+            if (elementos.aparenciaPointsCompact) {
+                elementos.aparenciaPointsCompact.textContent = `[${pontos}]`;
+            }
+            break;
     }
     
     // Atualizar total de pontos sociais
     const totalSocial = (dashboardState.status + dashboardState.reputacao + dashboardState.aparencia) * 5;
-    const socialPointsElement = document.getElementById('social-total-points');
-    if (socialPointsElement) {
-        socialPointsElement.textContent = `${Math.abs(totalSocial)} pts`;
+    if (elementos.socialTotalPoints) {
+        elementos.socialTotalPoints.textContent = `${Math.abs(totalSocial)} pts`;
     }
     
     // Atualizar modificador total de reação
     const reacaoTotal = dashboardState.status + dashboardState.reputacao + dashboardState.aparencia;
     const display = reacaoTotal >= 0 ? `+${reacaoTotal}` : reacaoTotal.toString();
-    const reactionElement = document.getElementById('reaction-total-compact');
-    if (reactionElement) {
-        reactionElement.textContent = display;
+    if (elementos.reactionTotalCompact) {
+        elementos.reactionTotalCompact.textContent = display;
     }
     
     // Recalcular sistema de pontos
@@ -205,69 +373,90 @@ function ajustarModificador(tipo, valor) {
 }
 
 // ===========================================
-// SINCRONIZAÇÃO COM ATRIBUTOS.JS
+// SINCRONIZAÇÃO COM ATRIBUTOS
 // ===========================================
 
 function sincronizarAtributos() {
-    try {
-        // TENTATIVA 1: Verificar se atributos.js está carregado
-        if (typeof personagemAtributos !== 'undefined') {
-            console.log('✅ atributos.js detectado, sincronizando...');
-            
-            // Pegar valores principais
-            dashboardState.ST = personagemAtributos.ST || 10;
-            dashboardState.DX = personagemAtributos.DX || 10;
-            dashboardState.IQ = personagemAtributos.IQ || 10;
-            dashboardState.HT = personagemAtributos.HT || 10;
-            
-            // Calcular valores secundários
-            const pvBase = dashboardState.ST;
-            const pvBonus = personagemAtributos.bonus?.PV || 0;
-            dashboardState.PV = Math.max(pvBase + pvBonus, 1);
-            
-            const pfBase = dashboardState.HT;
-            const pfBonus = personagemAtributos.bonus?.PF || 0;
-            dashboardState.PF = Math.max(pfBase + pfBonus, 1);
-            
-            const vontadeBase = dashboardState.IQ;
-            const vontadeBonus = personagemAtributos.bonus?.Vontade || 0;
-            dashboardState.Vontade = Math.max(vontadeBase + vontadeBonus, 1);
-            
-            const percepcaoBase = dashboardState.IQ;
-            const percepcaoBonus = personagemAtributos.bonus?.Percepcao || 0;
-            dashboardState.Percepcao = Math.max(percepcaoBase + percepcaoBonus, 1);
-            
-            // Atualizar dashboard
-            atualizarDashboardAtributos();
-        } else {
-            // TENTATIVA 2: Tentar pegar diretamente dos inputs
-            console.log('⚠️ atributos.js não detectado, tentando pegar valores dos inputs...');
-            
-            const stInput = document.getElementById('ST');
-            const dxInput = document.getElementById('DX');
-            const iqInput = document.getElementById('IQ');
-            const htInput = document.getElementById('HT');
-            
-            if (stInput && dxInput && iqInput && htInput) {
-                dashboardState.ST = parseInt(stInput.value) || 10;
-                dashboardState.DX = parseInt(dxInput.value) || 10;
-                dashboardState.IQ = parseInt(iqInput.value) || 10;
-                dashboardState.HT = parseInt(htInput.value) || 10;
-                
-                // Calcular valores secundários
-                dashboardState.PV = dashboardState.ST;
-                dashboardState.PF = dashboardState.HT;
-                dashboardState.Vontade = dashboardState.IQ;
-                dashboardState.Percepcao = dashboardState.IQ;
-                
-                atualizarDashboardAtributos();
-            } else {
-                console.warn('⚠️ Inputs de atributos não encontrados');
+    console.log('🔄 Sincronizando atributos...');
+    
+    // Tenta múltiplas abordagens para pegar atributos
+    let dadosAtributos = null;
+    
+    // Abordagem 1: Objeto global do atributos.js
+    if (typeof personagemAtributos !== 'undefined') {
+        console.log('✅ Encontrado personagemAtributos global');
+        dadosAtributos = personagemAtributos;
+    } 
+    // Abordagem 2: Inputs na página
+    else if (document.getElementById('ST')) {
+        console.log('✅ Encontrado atributos nos inputs');
+        dadosAtributos = {
+            ST: parseInt(document.getElementById('ST').value) || 10,
+            DX: parseInt(document.getElementById('DX').value) || 10,
+            IQ: parseInt(document.getElementById('IQ').value) || 10,
+            HT: parseInt(document.getElementById('HT').value) || 10,
+            bonus: {
+                PV: parseInt(document.getElementById('bonusPV')?.value) || 0,
+                PF: parseInt(document.getElementById('bonusPF')?.value) || 0,
+                Vontade: parseInt(document.getElementById('bonusVontade')?.value) || 0,
+                Percepcao: parseInt(document.getElementById('bonusPercepcao')?.value) || 0,
+                Deslocamento: parseFloat(document.getElementById('bonusDeslocamento')?.value) || 0
             }
-        }
-    } catch (error) {
-        console.error('❌ Erro ao sincronizar atributos:', error);
+        };
     }
+    // Abordagem 3: localStorage
+    else {
+        try {
+            const dados = localStorage.getItem('gurps_atributos');
+            if (dados) {
+                dadosAtributos = JSON.parse(dados);
+                console.log('✅ Atributos carregados do localStorage');
+            }
+        } catch (e) {
+            console.warn('⚠️ Erro ao ler atributos do localStorage:', e);
+        }
+    }
+    
+    if (dadosAtributos) {
+        // Extrair valores
+        if (dadosAtributos.atributos) {
+            // Formato do atributos.js
+            dashboardState.ST = dadosAtributos.atributos.ST || 10;
+            dashboardState.DX = dadosAtributos.atributos.DX || 10;
+            dashboardState.IQ = dadosAtributos.atributos.IQ || 10;
+            dashboardState.HT = dadosAtributos.atributos.HT || 10;
+        } else {
+            // Formato direto
+            dashboardState.ST = dadosAtributos.ST || 10;
+            dashboardState.DX = dadosAtributos.DX || 10;
+            dashboardState.IQ = dadosAtributos.IQ || 10;
+            dashboardState.HT = dadosAtributos.HT || 10;
+        }
+        
+        // Calcular valores secundários
+        const bonus = dadosAtributos.bonus || {};
+        const pvBase = dashboardState.ST;
+        const pvBonus = bonus.PV || 0;
+        dashboardState.PV = Math.max(pvBase + pvBonus, 1);
+        
+        const pfBase = dashboardState.HT;
+        const pfBonus = bonus.PF || 0;
+        dashboardState.PF = Math.max(pfBase + pfBonus, 1);
+        
+        const vontadeBase = dashboardState.IQ;
+        const vontadeBonus = bonus.Vontade || 0;
+        dashboardState.Vontade = Math.max(vontadeBase + vontadeBonus, 1);
+        
+        const percepcaoBase = dashboardState.IQ;
+        const percepcaoBonus = bonus.Percepcao || 0;
+        dashboardState.Percepcao = Math.max(percepcaoBase + percepcaoBonus, 1);
+        
+        atualizarDashboardAtributos();
+        return true;
+    }
+    
+    console.warn('⚠️ Não foi possível encontrar dados de atributos');
+    return false;
 }
 
 function atualizarDashboardAtributos() {
@@ -281,22 +470,22 @@ function atualizarDashboardAtributos() {
     });
     
     // Atualizar resumo de atributos
-    document.getElementById('summary-st').textContent = dashboardState.ST;
-    document.getElementById('summary-dx').textContent = dashboardState.DX;
-    document.getElementById('summary-iq').textContent = dashboardState.IQ;
-    document.getElementById('summary-ht').textContent = dashboardState.HT;
+    if (elementos.summarySt) elementos.summarySt.textContent = dashboardState.ST;
+    if (elementos.summaryDx) elementos.summaryDx.textContent = dashboardState.DX;
+    if (elementos.summaryIq) elementos.summaryIq.textContent = dashboardState.IQ;
+    if (elementos.summaryHt) elementos.summaryHt.textContent = dashboardState.HT;
     
     // Atualizar valores secundários
-    document.getElementById('summary-hp').textContent = dashboardState.PV;
-    document.getElementById('summary-fp').textContent = dashboardState.PF;
-    document.getElementById('summary-will').textContent = dashboardState.Vontade;
-    document.getElementById('summary-per').textContent = dashboardState.Percepcao;
+    if (elementos.summaryHp) elementos.summaryHp.textContent = dashboardState.PV;
+    if (elementos.summaryFp) elementos.summaryFp.textContent = dashboardState.PF;
+    if (elementos.summaryWill) elementos.summaryWill.textContent = dashboardState.Vontade;
+    if (elementos.summaryPer) elementos.summaryPer.textContent = dashboardState.Percepcao;
     
     // Atualizar status rápido
-    document.getElementById('quick-hp').textContent = dashboardState.PV;
-    document.getElementById('quick-fp').textContent = dashboardState.PF;
+    if (elementos.quickHp) elementos.quickHp.textContent = dashboardState.PV;
+    if (elementos.quickFp) elementos.quickFp.textContent = dashboardState.PF;
     
-    // Calcular limites de carga baseados em ST
+    // Calcular limites de carga
     calcularLimitesCarga(dashboardState.ST);
     
     // Recalcular sistema de pontos
@@ -335,57 +524,85 @@ function calcularLimitesCarga(ST) {
     const cargas = cargasTable[stKey] || cargasTable[10];
     
     // Atualizar display
-    document.getElementById('limit-light').textContent = cargas.leve.toFixed(1) + ' kg';
-    document.getElementById('limit-medium').textContent = cargas.media.toFixed(1) + ' kg';
-    document.getElementById('limit-heavy').textContent = cargas.pesada.toFixed(1) + ' kg';
-    document.getElementById('limit-extreme').textContent = cargas.extrema.toFixed(1) + ' kg';
+    if (elementos.limitLight) elementos.limitLight.textContent = cargas.leve.toFixed(1) + ' kg';
+    if (elementos.limitMedium) elementos.limitMedium.textContent = cargas.media.toFixed(1) + ' kg';
+    if (elementos.limitHeavy) elementos.limitHeavy.textContent = cargas.pesada.toFixed(1) + ' kg';
+    if (elementos.limitExtreme) elementos.limitExtreme.textContent = cargas.extrema.toFixed(1) + ' kg';
     
     // Calcular nível de carga atual
     atualizarNivelCarga(dashboardState.pesoEquipamentos, cargas);
 }
 
 function atualizarNivelCarga(peso, limites) {
-    const encLevel = document.getElementById('enc-level-display');
-    if (!encLevel) return;
+    if (!elementos.encLevelDisplay) return;
     
-    // Remover classes anteriores
-    encLevel.classList.remove('safe', 'light', 'medium', 'heavy', 'extreme');
+    elementos.encLevelDisplay.classList.remove('safe', 'light', 'medium', 'heavy', 'extreme');
     
     if (peso <= 0) {
-        encLevel.textContent = 'Nenhuma';
-        encLevel.classList.add('safe');
+        elementos.encLevelDisplay.textContent = 'Nenhuma';
+        elementos.encLevelDisplay.classList.add('safe');
     } else if (peso <= limites.leve) {
-        encLevel.textContent = 'Leve';
-        encLevel.classList.add('light');
+        elementos.encLevelDisplay.textContent = 'Leve';
+        elementos.encLevelDisplay.classList.add('light');
     } else if (peso <= limites.media) {
-        encLevel.textContent = 'Média';
-        encLevel.classList.add('medium');
+        elementos.encLevelDisplay.textContent = 'Média';
+        elementos.encLevelDisplay.classList.add('medium');
     } else if (peso <= limites.pesada) {
-        encLevel.textContent = 'Pesada';
-        encLevel.classList.add('heavy');
+        elementos.encLevelDisplay.textContent = 'Pesada';
+        elementos.encLevelDisplay.classList.add('heavy');
     } else {
-        encLevel.textContent = 'Extrema';
-        encLevel.classList.add('extreme');
+        elementos.encLevelDisplay.textContent = 'Extrema';
+        elementos.encLevelDisplay.classList.add('extreme');
     }
 }
 
 // ===========================================
-// FINANÇAS E CARGA
+// FINANÇAS
 // ===========================================
+
+function sincronizarFinancas() {
+    console.log('💰 Sincronizando finanças...');
+    
+    // Tentar pegar dados do sistema de equipamentos
+    try {
+        // Abordagem 1: Sistema de equipamentos
+        if (typeof window.dinheiroAtual !== 'undefined') {
+            dashboardState.dinheiro = window.dinheiroAtual || 0;
+        }
+        // Abordagem 2: localStorage
+        else {
+            const dados = localStorage.getItem('gurps_equipamentos');
+            if (dados) {
+                const equipData = JSON.parse(dados);
+                dashboardState.dinheiro = equipData.dinheiro || 0;
+                dashboardState.pesoEquipamentos = equipData.pesoTotal || 0;
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ Erro ao sincronizar finanças:', e);
+    }
+    
+    atualizarFinancas();
+}
 
 function atualizarFinancas() {
     // Dinheiro
-    const dinheiro = dashboardState.dinheiro;
-    document.getElementById('current-money').textContent = `$${dinheiro}`;
+    if (elementos.currentMoney) {
+        elementos.currentMoney.textContent = `$${dashboardState.dinheiro}`;
+    }
     
     // Nível de riqueza
     const pontosRiqueza = calcularPontosRiqueza();
-    document.getElementById('wealth-level-display').textContent = 
-        `${dashboardState.nivelRiqueza} [${pontosRiqueza} pts]`;
+    if (elementos.wealthLevelDisplay) {
+        elementos.wealthLevelDisplay.textContent = 
+            `${dashboardState.nivelRiqueza} [${pontosRiqueza} pts]`;
+    }
     
     // Peso
-    document.getElementById('equip-weight').textContent = 
-        `${dashboardState.pesoEquipamentos.toFixed(1)} kg`;
+    if (elementos.equipWeight) {
+        elementos.equipWeight.textContent = 
+            `${dashboardState.pesoEquipamentos.toFixed(1)} kg`;
+    }
     
     // Status financeiro
     atualizarStatusFinanceiro();
@@ -408,42 +625,71 @@ function calcularPontosRiqueza() {
 }
 
 function atualizarStatusFinanceiro() {
-    const statusElement = document.getElementById('finance-status');
-    if (!statusElement) return;
+    if (!elementos.financeStatus) return;
     
     if (dashboardState.dinheiro < 100) {
-        statusElement.textContent = 'Baixo';
-        statusElement.style.backgroundColor = '#f44336';
+        elementos.financeStatus.textContent = 'Baixo';
+        elementos.financeStatus.style.backgroundColor = '#f44336';
     } else if (dashboardState.dinheiro < 1000) {
-        statusElement.textContent = 'Médio';
-        statusElement.style.backgroundColor = '#FFC107';
+        elementos.financeStatus.textContent = 'Médio';
+        elementos.financeStatus.style.backgroundColor = '#FFC107';
     } else {
-        statusElement.textContent = 'Alto';
-        statusElement.style.backgroundColor = '#4CAF50';
+        elementos.financeStatus.textContent = 'Alto';
+        elementos.financeStatus.style.backgroundColor = '#4CAF50';
     }
 }
 
 // ===========================================
-// UPLOAD DE FOTO - CORREÇÃO
+// CONTADORES
+// ===========================================
+
+function sincronizarContadores() {
+    console.log('🔢 Sincronizando contadores...');
+    
+    // Aqui você pode sincronizar com outros sistemas
+    // Por enquanto, mantém os valores atuais
+    
+    atualizarContadores();
+}
+
+function atualizarContadores() {
+    // Atualizar todos os contadores
+    if (elementos.counterAdvantages) elementos.counterAdvantages.textContent = dashboardState.vantagens;
+    if (elementos.counterDisadvantages) elementos.counterDisadvantages.textContent = dashboardState.desvantagens;
+    if (elementos.counterSkills) elementos.counterSkills.textContent = dashboardState.pericias;
+    if (elementos.counterSpells) elementos.counterSpells.textContent = dashboardState.magias;
+    if (elementos.counterLanguages) elementos.counterLanguages.textContent = dashboardState.idiomas;
+    if (elementos.counterRelationships) elementos.counterRelationships.textContent = dashboardState.relacionamentos;
+    
+    // Atualizar horário da última atualização
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    if (elementos.lastUpdateTime) {
+        elementos.lastUpdateTime.textContent = timeString;
+    }
+}
+
+// ===========================================
+// UPLOAD DE FOTO
 // ===========================================
 
 function configurarUploadFoto() {
-    const uploadInput = document.getElementById('char-upload');
-    const photoPreview = document.getElementById('photo-preview');
-    
-    if (!uploadInput || !photoPreview) {
-        console.error('❌ Elementos de upload de foto não encontrados');
+    if (!elementos.charUpload || !elementos.photoPreview) {
+        console.warn('⚠️ Elementos de foto não encontrados');
         return;
     }
     
-    uploadInput.addEventListener('change', function(e) {
+    elementos.charUpload.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file && file.type.startsWith('image/')) {
             const reader = new FileReader();
             
             reader.onload = function(event) {
                 // Limpar placeholder
-                photoPreview.innerHTML = '';
+                elementos.photoPreview.innerHTML = '';
                 
                 // Criar imagem
                 const img = document.createElement('img');
@@ -455,7 +701,7 @@ function configurarUploadFoto() {
                 img.style.borderRadius = '8px';
                 
                 // Adicionar à preview
-                photoPreview.appendChild(img);
+                elementos.photoPreview.appendChild(img);
                 
                 // Adicionar botão de remover
                 const removeBtn = document.createElement('button');
@@ -464,16 +710,19 @@ function configurarUploadFoto() {
                 removeBtn.title = 'Remover foto';
                 removeBtn.onclick = function(e) {
                     e.stopPropagation();
-                    photoPreview.innerHTML = `
+                    elementos.photoPreview.innerHTML = `
                         <div class="photo-placeholder">
                             <i class="fas fa-user-circle"></i>
                             <span>Foto do Personagem</span>
                             <small>Opcional</small>
                         </div>`;
-                    uploadInput.value = '';
+                    elementos.charUpload.value = '';
                 };
                 
-                photoPreview.appendChild(removeBtn);
+                elementos.photoPreview.appendChild(removeBtn);
+                
+                // Salvar no estado
+                salvarEstadoDashboard();
             };
             
             reader.readAsDataURL(file);
@@ -481,33 +730,13 @@ function configurarUploadFoto() {
     });
     
     // Clique na área de upload
-    photoPreview.parentElement.addEventListener('click', function(e) {
-        if (!e.target.closest('.remove-photo-btn')) {
-            uploadInput.click();
-        }
-    });
-}
-
-// ===========================================
-// CONTADORES
-// ===========================================
-
-function atualizarContadores() {
-    // Atualizar todos os contadores
-    document.getElementById('counter-advantages').textContent = dashboardState.vantagens;
-    document.getElementById('counter-disadvantages').textContent = dashboardState.desvantagens;
-    document.getElementById('counter-skills').textContent = dashboardState.pericias;
-    document.getElementById('counter-spells').textContent = dashboardState.magias;
-    document.getElementById('counter-languages').textContent = dashboardState.idiomas;
-    document.getElementById('counter-relationships').textContent = dashboardState.relacionamentos;
-    
-    // Atualizar horário da última atualização
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-    document.getElementById('last-update-time').textContent = timeString;
+    if (elementos.photoPreview.parentElement) {
+        elementos.photoPreview.parentElement.addEventListener('click', function(e) {
+            if (!e.target.closest('.remove-photo-btn')) {
+                elementos.charUpload.click();
+            }
+        });
+    }
 }
 
 // ===========================================
@@ -521,13 +750,21 @@ function atualizarSistemaPontos() {
 function atualizarDashboard() {
     console.log('🔄 Atualizando dashboard...');
     
-    // Sincronizar com atributos.js
+    // Sincronizar com todos os sistemas
     sincronizarAtributos();
+    sincronizarFinancas();
+    sincronizarContadores();
     
     // Atualizar todos os sistemas
     atualizarSistemaPontos();
     atualizarFinancas();
     atualizarContadores();
+    
+    // Sincronizar nome do personagem
+    const charNameInput = document.getElementById('characterName');
+    if (charNameInput && elementos.charName) {
+        elementos.charName.value = charNameInput.value;
+    }
     
     // Salvar estado
     salvarEstadoDashboard();
@@ -554,53 +791,48 @@ function carregarEstadoDashboard() {
         if (dados) {
             const savedState = JSON.parse(dados);
             
-            // Mesclar com estado atual (preservando valores padrão)
+            // Mesclar com estado atual
             Object.keys(savedState).forEach(key => {
                 if (dashboardState.hasOwnProperty(key)) {
                     dashboardState[key] = savedState[key];
                 }
             });
             
-            console.log('📂 Estado do dashboard carregado:', dashboardState);
+            console.log('📂 Estado do dashboard carregado');
             
             // Restaurar configurações
-            if (document.getElementById('start-points')) {
-                document.getElementById('start-points').value = dashboardState.pontosIniciais;
+            if (elementos.startPoints) {
+                elementos.startPoints.value = dashboardState.pontosIniciais;
             }
-            if (document.getElementById('dis-limit')) {
-                document.getElementById('dis-limit').value = dashboardState.limiteDesvantagens;
+            if (elementos.disLimit) {
+                elementos.disLimit.value = dashboardState.limiteDesvantagens;
             }
             
             // Restaurar status social
-            if (document.getElementById('status-value')) {
-                document.getElementById('status-value').textContent = dashboardState.status;
-            }
-            if (document.getElementById('rep-value')) {
-                document.getElementById('rep-value').textContent = dashboardState.reputacao;
-            }
-            if (document.getElementById('app-value')) {
-                document.getElementById('app-value').textContent = dashboardState.aparencia;
-            }
+            if (elementos.statusValue) elementos.statusValue.textContent = dashboardState.status;
+            if (elementos.repValue) elementos.repValue.textContent = dashboardState.reputacao;
+            if (elementos.appValue) elementos.appValue.textContent = dashboardState.aparencia;
             
             // Atualizar pontos sociais
-            if (document.getElementById('status-points-compact')) {
-                document.getElementById('status-points-compact').textContent = 
-                    `[${dashboardState.status * 5}]`;
+            if (elementos.statusPointsCompact) {
+                elementos.statusPointsCompact.textContent = `[${dashboardState.status * 5}]`;
             }
-            if (document.getElementById('reputacao-points-compact')) {
-                document.getElementById('reputacao-points-compact').textContent = 
-                    `[${dashboardState.reputacao * 5}]`;
+            if (elementos.reputacaoPointsCompact) {
+                elementos.reputacaoPointsCompact.textContent = `[${dashboardState.reputacao * 5}]`;
             }
-            if (document.getElementById('aparencia-points-compact')) {
-                document.getElementById('aparencia-points-compact').textContent = 
-                    `[${dashboardState.aparencia * 5}]`;
+            if (elementos.aparenciaPointsCompact) {
+                elementos.aparenciaPointsCompact.textContent = `[${dashboardState.aparencia * 5}]`;
             }
             
             // Atualizar modificador total de reação
             const reacaoTotal = dashboardState.status + dashboardState.reputacao + dashboardState.aparencia;
             const display = reacaoTotal >= 0 ? `+${reacaoTotal}` : reacaoTotal.toString();
-            if (document.getElementById('reaction-total-compact')) {
-                document.getElementById('reaction-total-compact').textContent = display;
+            if (elementos.reactionTotalCompact) {
+                elementos.reactionTotalCompact.textContent = display;
+            }
+            
+            if (elementos.socialTotalPoints) {
+                elementos.socialTotalPoints.textContent = `${Math.abs(reacaoTotal * 5)} pts`;
             }
             
             return true;
@@ -612,177 +844,6 @@ function carregarEstadoDashboard() {
 }
 
 // ===========================================
-// FORÇAR SINCRONIZAÇÃO MANUAL
-// ===========================================
-
-function forcarSincronizacaoAtributos() {
-    console.log('🔄 Forçando sincronização com atributos...');
-    
-    // Tentar múltiplas abordagens
-    const abordagens = [
-        // Abordagem 1: atributos.js global
-        () => {
-            if (typeof personagemAtributos !== 'undefined') {
-                return personagemAtributos;
-            }
-            return null;
-        },
-        
-        // Abordagem 2: Inputs diretos
-        () => {
-            const st = document.getElementById('ST');
-            const dx = document.getElementById('DX');
-            const iq = document.getElementById('IQ');
-            const ht = document.getElementById('HT');
-            
-            if (st && dx && iq && ht) {
-                return {
-                    ST: parseInt(st.value) || 10,
-                    DX: parseInt(dx.value) || 10,
-                    IQ: parseInt(iq.value) || 10,
-                    HT: parseInt(ht.value) || 10,
-                    bonus: {
-                        PV: 0,
-                        PF: 0,
-                        Vontade: 0,
-                        Percepcao: 0
-                    }
-                };
-            }
-            return null;
-        },
-        
-        // Abordagem 3: localStorage
-        () => {
-            try {
-                const dados = localStorage.getItem('gurps_atributos');
-                if (dados) {
-                    return JSON.parse(dados);
-                }
-            } catch (e) {}
-            return null;
-        }
-    ];
-    
-    let dadosAtributos = null;
-    
-    for (let abordagem of abordagens) {
-        dadosAtributos = abordagem();
-        if (dadosAtributos) {
-            console.log('✅ Dados de atributos encontrados via abordagem:', abordagem.name || 'desconhecida');
-            break;
-        }
-    }
-    
-    if (dadosAtributos) {
-        if (dadosAtributos.atributos) {
-            // Formato do atributos.js
-            dashboardState.ST = dadosAtributos.atributos.ST || 10;
-            dashboardState.DX = dadosAtributos.atributos.DX || 10;
-            dashboardState.IQ = dadosAtributos.atributos.IQ || 10;
-            dashboardState.HT = dadosAtributos.atributos.HT || 10;
-        } else {
-            // Formato direto
-            dashboardState.ST = dadosAtributos.ST || 10;
-            dashboardState.DX = dadosAtributos.DX || 10;
-            dashboardState.IQ = dadosAtributos.IQ || 10;
-            dashboardState.HT = dadosAtributos.HT || 10;
-        }
-        
-        atualizarDashboardAtributos();
-        return true;
-    }
-    
-    console.warn('⚠️ Não foi possível encontrar dados de atributos');
-    return false;
-}
-
-// ===========================================
-// INICIALIZAÇÃO
-// ===========================================
-
-function inicializarDashboard() {
-    console.log('📊 Inicializando dashboard...');
-    
-    // Carregar estado salvo
-    carregarEstadoDashboard();
-    
-    // Configurar event listeners
-    if (document.getElementById('start-points')) {
-        document.getElementById('start-points').addEventListener('change', function() {
-            definirPontosIniciais(this.value);
-        });
-    }
-    
-    if (document.getElementById('dis-limit')) {
-        document.getElementById('dis-limit').addEventListener('change', function() {
-            definirLimiteDesvantagens(this.value);
-        });
-    }
-    
-    // Configurar botão de atualização
-    const refreshBtn = document.querySelector('.refresh-btn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', atualizarDashboard);
-    }
-    
-    // Configurar upload de foto
-    configurarUploadFoto();
-    
-    // Forçar sincronização inicial com atributos
-    setTimeout(() => {
-        forcarSincronizacaoAtributos();
-        atualizarDashboard();
-    }, 500);
-    
-    // Sincronizar periodicamente
-    setInterval(() => {
-        forcarSincronizacaoAtributos();
-    }, 3000);
-    
-    // Observar mudanças na aba
-    observarMudancasAba();
-    
-    console.log('✅ Dashboard inicializado');
-}
-
-function observarMudancasAba() {
-    // Observar cliques em tabs
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Quando mudar para dashboard, atualizar
-            if (this.getAttribute('onclick') && this.getAttribute('onclick').includes('dashboard')) {
-                setTimeout(() => {
-                    forcarSincronizacaoAtributos();
-                    atualizarDashboard();
-                }, 300);
-            }
-        });
-    });
-}
-
-// ===========================================
-// FUNÇÕES DE TESTE/DEMO
-// ===========================================
-
-function simularDadosAleatorios() {
-    // Simular contadores
-    dashboardState.vantagens = Math.floor(Math.random() * 10) + 1;
-    dashboardState.desvantagens = Math.floor(Math.random() * 8) + 1;
-    dashboardState.pericias = Math.floor(Math.random() * 20) + 5;
-    dashboardState.magias = Math.floor(Math.random() * 15);
-    dashboardState.idiomas = Math.floor(Math.random() * 3) + 1;
-    dashboardState.relacionamentos = Math.floor(Math.random() * 5);
-    
-    // Simular finanças
-    dashboardState.dinheiro = Math.floor(Math.random() * 5000);
-    dashboardState.pesoEquipamentos = Math.random() * 50;
-    
-    atualizarDashboard();
-}
-
-// ===========================================
 // EXPORTAR FUNÇÕES
 // ===========================================
 
@@ -791,36 +852,24 @@ window.definirLimiteDesvantagens = definirLimiteDesvantagens;
 window.ajustarModificador = ajustarModificador;
 window.atualizarDashboard = atualizarDashboard;
 window.sincronizarAtributos = sincronizarAtributos;
-window.forcarSincronizacaoAtributos = forcarSincronizacaoAtributos;
 window.inicializarDashboard = inicializarDashboard;
-window.simularDadosAleatorios = simularDadosAleatorios;
 
-// ===========================================
-// INICIALIZAÇÃO AUTOMÁTICA
-// ===========================================
-
-// Inicializar quando a página carregar
+// Inicialização automática
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar se estamos na aba dashboard
-    const dashboardTab = document.getElementById('dashboard');
-    const isDashboardActive = dashboardTab && dashboardTab.classList.contains('active');
-    
-    // Se dashboard estiver ativa ou se for a única aba visível
-    if (isDashboardActive || document.querySelector('.dashboard-gurps')) {
-        setTimeout(inicializarDashboard, 1000);
-    }
-    
-    // Também inicializar se detectar elementos do dashboard
-    if (document.getElementById('summary-st')) {
-        setTimeout(inicializarDashboard, 1500);
-    }
+    setTimeout(() => {
+        const dashboardTab = document.getElementById('dashboard');
+        if (dashboardTab && dashboardTab.classList.contains('active')) {
+            inicializarDashboard();
+        } else if (document.querySelector('.dashboard-gurps')) {
+            inicializarDashboard();
+        }
+    }, 1000);
 });
 
-// Fallback: inicializar após um tempo
-setTimeout(() => {
-    if (!window.dashboardInicializado && document.getElementById('summary-st')) {
-        console.log('⏱️ Inicializando dashboard por timeout...');
-        inicializarDashboard();
-        window.dashboardInicializado = true;
+// Observar mudanças de aba
+document.addEventListener('tabChange', function(e) {
+    if (e.detail && e.detail.tab === 'dashboard') {
+        setTimeout(inicializarDashboard, 100);
     }
-}, 2000);
+});
