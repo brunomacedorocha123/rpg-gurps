@@ -11,7 +11,8 @@ let dashboardState = {
     aparencia: 0,
     dinheiro: 0,
     nivelRiqueza: 'Médio',
-    pesoEquipamentos: 0
+    pesoEquipamentos: 0,
+    nivelCarga: 'nenhuma'
 };
 
 // Inicialização DIRETA
@@ -30,7 +31,110 @@ function inicializarDashboard() {
     // Atualizar a cada 2 segundos
     setInterval(atualizarDashboardCompleto, 2000);
     
+    // Escutar eventos do sistema de equipamentos
+    document.addEventListener('equipamentosAtualizados', (e) => {
+        if (e.detail) {
+            console.log('🎒 Evento de equipamentos recebido:', e.detail);
+            sincronizarComEquipamentos(e.detail);
+        }
+    });
+    
     console.log('✅ Dashboard pronto');
+}
+
+// Sincronizar com sistema de equipamentos
+function sincronizarComEquipamentos(dados) {
+    console.log('🔄 Sincronizando com equipamentos...', dados);
+    
+    // Atualizar dinheiro
+    if (dados.dinheiro !== undefined) {
+        dashboardState.dinheiro = dados.dinheiro;
+        document.getElementById('current-money').textContent = `$${dados.dinheiro}`;
+    }
+    
+    // Atualizar peso
+    if (dados.pesoAtual !== undefined) {
+        dashboardState.pesoEquipamentos = dados.pesoAtual;
+        document.getElementById('equip-weight').textContent = `${dados.pesoAtual.toFixed(1)} kg`;
+    }
+    
+    // Atualizar nível de carga
+    if (dados.nivelCargaAtual !== undefined) {
+        dashboardState.nivelCarga = dados.nivelCargaAtual;
+        atualizarDisplayNivelCarga(dados.nivelCargaAtual);
+    }
+    
+    // Atualizar status financeiro
+    atualizarStatusFinanceiro();
+    
+    // Atualizar limites de carga (se tiver peso máximo)
+    if (dados.pesoMaximo !== undefined) {
+        atualizarLimitesCarga(dados.pesoMaximo);
+    }
+}
+
+// Atualizar display do nível de carga
+function atualizarDisplayNivelCarga(nivel) {
+    const encLevel = document.getElementById('enc-level-display');
+    if (!encLevel) return;
+    
+    // Remover classes anteriores
+    encLevel.classList.remove('safe', 'light', 'medium', 'heavy', 'extreme');
+    
+    // Definir texto e classe baseado no nível
+    let texto = 'Nenhuma';
+    let classe = 'safe';
+    
+    switch(nivel.toLowerCase()) {
+        case 'nenhuma':
+            texto = 'Nenhuma';
+            classe = 'safe';
+            break;
+        case 'leve':
+            texto = 'Leve';
+            classe = 'light';
+            break;
+        case 'média':
+        case 'media':
+            texto = 'Média';
+            classe = 'medium';
+            break;
+        case 'pesada':
+            texto = 'Pesada';
+            classe = 'heavy';
+            break;
+        case 'muito pesada':
+            texto = 'Muito Pesada';
+            classe = 'extreme';
+            break;
+        case 'sobrecarregado':
+            texto = 'Sobrecarregado';
+            classe = 'extreme';
+            break;
+    }
+    
+    encLevel.textContent = texto;
+    encLevel.classList.add(classe);
+}
+
+// Atualizar limites de carga
+function atualizarLimitesCarga(pesoMaximo) {
+    // Simplificado: calcular limites baseados no peso máximo
+    // Na verdade, os limites já estão sendo calculados pelo sistema de equipamentos
+    // Aqui apenas exibimos os limites que o sistema de equipamentos já calculou
+    
+    // Se não tivermos os limites específicos, calculamos baseado no peso máximo
+    const limites = {
+        leve: pesoMaximo * 0.2,
+        media: pesoMaximo * 0.3,
+        pesada: pesoMaximo * 0.6,
+        extrema: pesoMaximo
+    };
+    
+    document.getElementById('limit-light').textContent = limites.leve.toFixed(1) + ' kg';
+    document.getElementById('limit-medium').textContent = limites.media.toFixed(1) + ' kg';
+    document.getElementById('limit-heavy').textContent = limites.pesada.toFixed(1) + ' kg';
+    document.getElementById('limit-extreme').textContent = limites.extrema.toFixed(1) + ' kg';
 }
 
 // Atualização COMPLETA e DIRETA
@@ -43,6 +147,28 @@ function atualizarDashboardCompleto() {
     
     // 3. Atualizar horário
     atualizarHorario();
+    
+    // 4. Tentar sincronizar com equipamentos manualmente
+    sincronizarComEquipamentosManual();
+}
+
+// Sincronização manual com sistema de equipamentos
+function sincronizarComEquipamentosManual() {
+    if (window.sistemaEquipamentos) {
+        try {
+            // Pegar dados diretamente do objeto
+            const dados = {
+                dinheiro: window.sistemaEquipamentos.dinheiro || 0,
+                pesoAtual: window.sistemaEquipamentos.pesoAtual || 0,
+                nivelCargaAtual: window.sistemaEquipamentos.nivelCargaAtual || 'nenhuma',
+                pesoMaximo: window.sistemaEquipamentos.pesoMaximo || 100
+            };
+            
+            sincronizarComEquipamentos(dados);
+        } catch (error) {
+            console.warn('⚠️ Erro ao sincronizar manualmente com equipamentos:', error);
+        }
+    }
 }
 
 // Pegar valores DIRETAMENTE dos elementos
@@ -105,9 +231,6 @@ function pegarValoresDiretos() {
         const percepcao = percepcaoTotalElement.textContent || 10;
         document.getElementById('summary-per').textContent = percepcao;
     }
-    
-    // 5. PEGAR STATUS SOCIAL (simulado por enquanto)
-    // Isso será ajustado quando a aba de características estiver pronta
 }
 
 // Atualizar todos os elementos do dashboard
@@ -120,15 +243,13 @@ function atualizarTodosElementos() {
     // 2. Atualizar status social
     atualizarStatusSocial();
     
-    // 3. Atualizar finanças
-    atualizarFinancas();
+    // 3. Atualizar finanças (já atualizado pela sincronização)
+    atualizarStatusFinanceiro();
     
     // 4. Atualizar contadores
     atualizarContadores();
     
-    // 5. Atualizar carga baseado em ST
-    atualizarCarga();
-    
+    // 5. Atualizar carga (já atualizado pela sincronização)
     // 6. Atualizar identificação
     atualizarIdentificacao();
 }
@@ -251,73 +372,34 @@ function atualizarTotalSocial() {
     }
 }
 
-// Finanças simplificadas
-function atualizarFinancas() {
-    // Simulado por enquanto
-    document.getElementById('current-money').textContent = `$${dashboardState.dinheiro}`;
-    document.getElementById('equip-weight').textContent = `${dashboardState.pesoEquipamentos.toFixed(1)} kg`;
-}
-
-// Carga baseada em ST
-function atualizarCarga() {
-    const st = parseInt(document.getElementById('summary-st').textContent) || 10;
+// Atualizar status financeiro
+function atualizarStatusFinanceiro() {
+    const financeStatus = document.getElementById('finance-status');
+    if (!financeStatus) return;
     
-    // Tabela de cargas
-    const cargas = {
-        1: { leve: 0.2, media: 0.3, pesada: 0.6, extrema: 1.0 },
-        5: { leve: 5.0, media: 7.5, pesada: 15.0, extrema: 25.5 },
-        10: { leve: 20.0, media: 30.0, pesada: 60.0, extrema: 100.0 },
-        15: { leve: 45.0, media: 67.5, pesada: 135.0, extrema: 225.0 },
-        20: { leve: 80.0, media: 120.0, pesada: 240.0, extrema: 400.0 }
-    };
+    const dinheiro = dashboardState.dinheiro;
     
-    // Encontrar carga apropriada
-    let stKey = 10;
-    if (st <= 5) stKey = 5;
-    if (st <= 1) stKey = 1;
-    if (st >= 15) stKey = 15;
-    if (st >= 20) stKey = 20;
-    
-    const carga = cargas[stKey];
-    
-    // Atualizar limites
-    document.getElementById('limit-light').textContent = carga.leve.toFixed(1) + ' kg';
-    document.getElementById('limit-medium').textContent = carga.media.toFixed(1) + ' kg';
-    document.getElementById('limit-heavy').textContent = carga.pesada.toFixed(1) + ' kg';
-    document.getElementById('limit-extreme').textContent = carga.extrema.toFixed(1) + ' kg';
-    
-    // Atualizar nível de carga
-    const pesoAtual = dashboardState.pesoEquipamentos;
-    const encLevel = document.getElementById('enc-level-display');
-    
-    if (pesoAtual <= 0) {
-        encLevel.textContent = 'Nenhuma';
-        encLevel.className = 'enc-value safe';
-    } else if (pesoAtual <= carga.leve) {
-        encLevel.textContent = 'Leve';
-        encLevel.className = 'enc-value light';
-    } else if (pesoAtual <= carga.media) {
-        encLevel.textContent = 'Média';
-        encLevel.className = 'enc-value medium';
-    } else if (pesoAtual <= carga.pesada) {
-        encLevel.textContent = 'Pesada';
-        encLevel.className = 'enc-value heavy';
+    if (dinheiro < 100) {
+        financeStatus.textContent = 'Baixo';
+        financeStatus.style.backgroundColor = '#f44336';
+    } else if (dinheiro < 1000) {
+        financeStatus.textContent = 'Médio';
+        financeStatus.style.backgroundColor = '#FFC107';
     } else {
-        encLevel.textContent = 'Extrema';
-        encLevel.className = 'enc-value extreme';
+        financeStatus.textContent = 'Alto';
+        financeStatus.style.backgroundColor = '#4CAF50';
     }
 }
 
-// Contadores
+// Contadores (simulados por enquanto)
 function atualizarContadores() {
-    // Simulado por enquanto
     const contadores = {
-        'counter-advantages': dashboardState.vantagens,
-        'counter-disadvantages': dashboardState.desvantagens,
-        'counter-skills': dashboardState.pericias,
-        'counter-spells': dashboardState.magias,
-        'counter-languages': dashboardState.idiomas,
-        'counter-relationships': dashboardState.relacionamentos
+        'counter-advantages': 0,
+        'counter-disadvantages': 0,
+        'counter-skills': 0,
+        'counter-spells': 0,
+        'counter-languages': 1,
+        'counter-relationships': 0
     };
     
     for (const [id, valor] of Object.entries(contadores)) {
