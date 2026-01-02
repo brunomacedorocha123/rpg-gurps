@@ -11,54 +11,33 @@ let dashboardState = {
   aparencia: 0,
   dinheiro: 0,
   nivelRiqueza: 'Médio',
-  pesoEquipamentos: 0,
-  // NOVO: Para salvar foto
-  fotoBase64: null
+  pesoEquipamentos: 0
 };
 
-
-// Inicialização DIRETA
-function inicializarDashboard() {
-  console.log(' Inicializando dashboard DIRETO...');
-  
-  // 1. Carregar dados salvos PRIMEIRO
-  carregarDadosSalvos();
-  
-  // 2. Configurar upload de foto (COM SALVAMENTO)
-  configurarUploadFotoComSalvamento();
-  
-  // 3. Configurar pontos iniciais (COM SALVAMENTO)
-  configurarPontosIniciaisComSalvamento();
-  
-  // 4. Configurar eventos
-  configurarEventos();
-  
-  // 5. Configurar integração com equipamentos
-  configurarIntegracaoEquipamentos();
-  
-  // 6. Primeira atualização imediata
-  setTimeout(atualizarDashboardCompleto, 100);
-  
-  // 7. Atualizar a cada 2 segundos
-  setInterval(atualizarDashboardCompleto, 2000);
-  
-  console.log('✅ Dashboard pronto');
-}
+// ===========================================
+// NOVO: Sistema para salvar foto e pontos
+// ===========================================
+let dashboardSalvamento = {
+  fotoBase64: null,
+  pontosIniciaisSalvos: 100,
+  carregado: false
+};
 
 // ===========================================
-// 1. SISTEMA DE SALVAR FOTO
+// 1ª MODIFICAÇÃO: Configurar upload COM SALVAMENTO
 // ===========================================
-function configurarUploadFotoComSalvamento() {
+function configurarUploadFoto() {
   const uploadInput = document.getElementById('char-upload');
   const photoPreview = document.getElementById('photo-preview');
   
   if (!uploadInput || !photoPreview) return;
   
-  // Se já tem foto salva, carregar
-  if (dashboardState.fotoBase64) {
-    carregarFotoSalvaNaTela();
+  // PRIMEIRO: Carregar foto salva se existir
+  if (dashboardSalvamento.fotoBase64) {
+    carregarFotoSalvaNoPreview();
   }
   
+  // Configuração ORIGINAL (mantida) + salvamento
   uploadInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
@@ -66,12 +45,13 @@ function configurarUploadFotoComSalvamento() {
       
       reader.onload = function(event) {
         // 1. Salvar em Base64
-        dashboardState.fotoBase64 = event.target.result;
+        dashboardSalvamento.fotoBase64 = event.target.result;
         
-        // 2. Atualizar preview
+        // 2. Atualizar preview (código ORIGINAL mantido)
         photoPreview.innerHTML = '';
+        
         const img = document.createElement('img');
-        img.src = dashboardState.fotoBase64;
+        img.src = event.target.result;
         img.alt = "Foto do Personagem";
         img.style.width = '100%';
         img.style.height = '100%';
@@ -80,7 +60,7 @@ function configurarUploadFotoComSalvamento() {
         
         photoPreview.appendChild(img);
         
-        // 3. Botão de remover
+        // Botão de remover (código ORIGINAL mantido)
         const removeBtn = document.createElement('button');
         removeBtn.innerHTML = '<i class="fas fa-times"></i>';
         removeBtn.className = 'remove-photo-btn';
@@ -94,30 +74,39 @@ function configurarUploadFotoComSalvamento() {
               <small>Opcional</small>
             </div>`;
           uploadInput.value = '';
-          dashboardState.fotoBase64 = null;
-          salvarDadosLocalmente(); // Salvar sem foto
+          // NOVO: Limpar foto salva
+          dashboardSalvamento.fotoBase64 = null;
+          salvarDadosLocalmente();
         };
         
         photoPreview.appendChild(removeBtn);
         
-        // 4. SALVAR automaticamente
+        // 3. SALVAR automaticamente
         salvarDadosLocalmente();
       };
       
       reader.readAsDataURL(file);
     }
   });
+  
+  // Clique na foto (código ORIGINAL mantido)
+  photoPreview.parentElement.addEventListener('click', function(e) {
+    if (!e.target.closest('.remove-photo-btn')) {
+      uploadInput.click();
+    }
+  });
 }
 
-function carregarFotoSalvaNaTela() {
-  if (!dashboardState.fotoBase64) return;
+// Função auxiliar para carregar foto salva
+function carregarFotoSalvaNoPreview() {
+  if (!dashboardSalvamento.fotoBase64) return;
   
   const photoPreview = document.getElementById('photo-preview');
   if (!photoPreview) return;
   
   photoPreview.innerHTML = '';
   const img = document.createElement('img');
-  img.src = dashboardState.fotoBase64;
+  img.src = dashboardSalvamento.fotoBase64;
   img.alt = "Foto do Personagem";
   img.style.width = '100%';
   img.style.height = '100%';
@@ -141,7 +130,7 @@ function carregarFotoSalvaNaTela() {
       </div>`;
     const uploadInput = document.getElementById('char-upload');
     if (uploadInput) uploadInput.value = '';
-    dashboardState.fotoBase64 = null;
+    dashboardSalvamento.fotoBase64 = null;
     salvarDadosLocalmente();
   };
   
@@ -149,116 +138,114 @@ function carregarFotoSalvaNaTela() {
 }
 
 // ===========================================
-// 2. SISTEMA DE SALVAR PONTOS INICIAIS
+// 2ª MODIFICAÇÃO: Configurar eventos COM SALVAMENTO
 // ===========================================
-function configurarPontosIniciaisComSalvamento() {
+function configurarEventos() {
+  // Pontos iniciais (ORIGINAL + salvamento)
   const startPoints = document.getElementById('start-points');
-  if (!startPoints) return;
-  
-  // Se já tem valor salvo, usar ele
-  if (dashboardState.pontosIniciais !== 100) {
-    startPoints.value = dashboardState.pontosIniciais;
+  if (startPoints) {
+    // Carregar valor salvo se existir
+    if (dashboardSalvamento.carregado && dashboardSalvamento.pontosIniciaisSalvos) {
+      startPoints.value = dashboardSalvamento.pontosIniciaisSalvos;
+      dashboardState.pontosIniciais = dashboardSalvamento.pontosIniciaisSalvos;
+    }
+    
+    startPoints.addEventListener('change', function() {
+      const valor = parseInt(this.value) || 100;
+      dashboardState.pontosIniciais = valor;
+      
+      // Salvar
+      dashboardSalvamento.pontosIniciaisSalvos = valor;
+      salvarDadosLocalmente();
+      
+      // Cálculo ORIGINAL mantido
+      calcularSistemaPontos();
+    });
   }
   
-  startPoints.addEventListener('change', function() {
-    const valor = parseInt(this.value) || 100;
-    dashboardState.pontosIniciais = valor;
-    
-    // 1. Atualizar cálculo de pontos
-    calcularSistemaPontos();
-    
-    // 2. SALVAR
-    salvarDadosLocalmente();
-  });
+  // Limite desvantagens (ORIGINAL mantido)
+  const disLimit = document.getElementById('dis-limit');
+  if (disLimit) {
+    disLimit.addEventListener('change', function() {
+      dashboardState.limiteDesvantagens = parseInt(this.value) || -75;
+    });
+  }
+  
+  // Botão de atualização (ORIGINAL mantido)
+  const refreshBtn = document.querySelector('.refresh-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', atualizarDashboardCompleto);
+  }
 }
 
 // ===========================================
-// 3. INTEGRAÇÃO COM EQUIPAMENTOS (SIMPLES)
+// 3ª MODIFICAÇÃO: Atualizar finanças COM DADOS DOS EQUIPAMENTOS
 // ===========================================
+// NOVA função para integrar com equipamentos
 function configurarIntegracaoEquipamentos() {
-  console.log('🔗 Configurando link com equipamentos...');
+  console.log('🔄 Configurando integração com equipamentos...');
   
-  // 1. Escutar eventos do sistema de equipamentos
+  // Escutar eventos do sistema de equipamentos
   document.addEventListener('equipamentosAtualizados', function(e) {
     if (e.detail) {
       console.log('📦 Dados recebidos dos equipamentos:', e.detail);
-      atualizarComDadosEquipamentos(e.detail);
+      
+      // Atualizar dinheiro
+      if (e.detail.dinheiro !== undefined) {
+        dashboardState.dinheiro = e.detail.dinheiro;
+        document.getElementById('current-money').textContent = `$${e.detail.dinheiro}`;
+        
+        // Atualizar também na aba equipamentos
+        const dinheiroEquip = document.getElementById('dinheiro-disponivel');
+        if (dinheiroEquip) {
+          dinheiroEquip.textContent = `$${e.detail.dinheiro}`;
+        }
+      }
+      
+      // Atualizar peso
+      if (e.detail.pesoAtual !== undefined) {
+        dashboardState.pesoEquipamentos = e.detail.pesoAtual;
+        document.getElementById('equip-weight').textContent = `${e.detail.pesoAtual.toFixed(1)} kg`;
+      }
+      
+      // Atualizar nível de carga
+      if (e.detail.nivelCargaAtual !== undefined) {
+        const nivelCargaElem = document.getElementById('enc-level-display');
+        if (nivelCargaElem) {
+          // Traduzir para português
+          const niveis = {
+            'nenhuma': 'Nenhuma',
+            'leve': 'Leve', 
+            'média': 'Média',
+            'pesada': 'Pesada',
+            'muito pesada': 'Muito Pesada'
+          };
+          
+          nivelCargaElem.textContent = niveis[e.detail.nivelCargaAtual] || e.detail.nivelCargaAtual;
+          nivelCargaElem.className = 'enc-value ' + e.detail.nivelCargaAtual.replace(' ', '-');
+        }
+      }
     }
   });
   
-  // 2. Atualizar periodicamente (fallback)
-  setInterval(tentarPegarDadosEquipamentos, 3000);
-}
-
-function tentarPegarDadosEquipamentos() {
-  // Se o sistema de equipamentos existir, pegar dados dele
-  if (window.sistemaEquipamentos) {
-    const dados = {
-      dinheiro: window.sistemaEquipamentos.dinheiro || 0,
-      pesoAtual: window.sistemaEquipamentos.pesoAtual || 0,
-      pesoMaximo: window.sistemaEquipamentos.pesoMaximo || 0,
-      nivelCargaAtual: window.sistemaEquipamentos.nivelCargaAtual || 'nenhuma'
-    };
-    
-    atualizarComDadosEquipamentos(dados);
-  }
-}
-
-function atualizarComDadosEquipamentos(dados) {
-  // 1. DINHEIRO
-  if (dados.dinheiro !== undefined) {
-    const dinheiroElem = document.getElementById('current-money');
-    if (dinheiroElem) {
-      dinheiroElem.textContent = `$${dados.dinheiro}`;
+  // Tentar pegar dados do sistema de equipamentos periodicamente
+  setInterval(function() {
+    if (window.sistemaEquipamentos) {
+      // Forçar atualização
+      if (window.sistemaEquipamentos.atualizarInterface) {
+        window.sistemaEquipamentos.atualizarInterface();
+      }
     }
-    
-    // Atualizar também na aba equipamentos
-    const dinheiroEquip = document.getElementById('dinheiro-disponivel');
-    if (dinheiroEquip) {
-      dinheiroEquip.textContent = `$${dados.dinheiro}`;
-    }
-  }
-  
-  // 2. PESO
-  if (dados.pesoAtual !== undefined) {
-    const pesoElem = document.getElementById('equip-weight');
-    if (pesoElem) {
-      pesoElem.textContent = `${dados.pesoAtual.toFixed(1)} kg`;
-    }
-  }
-  
-  // 3. NÍVEL DE CARGA
-  if (dados.nivelCargaAtual !== undefined) {
-    const nivelElem = document.getElementById('enc-level-display');
-    if (nivelElem) {
-      // Traduzir
-      const niveis = {
-        'nenhuma': 'Nenhuma',
-        'leve': 'Leve', 
-        'média': 'Média',
-        'pesada': 'Pesada',
-        'muito pesada': 'Muito Pesada'
-      };
-      
-      nivelElem.textContent = niveis[dados.nivelCargaAtual] || dados.nivelCargaAtual;
-      nivelElem.className = 'enc-value ' + dados.nivelCargaAtual.replace(' ', '-');
-    }
-  }
+  }, 3000);
 }
 
 // ===========================================
-// 4. SISTEMA DE SALVAMENTO LOCAL (SIMPLES)
+// NOVO: Sistema de salvamento local
 // ===========================================
 function salvarDadosLocalmente() {
   try {
-    const dadosParaSalvar = {
-      fotoBase64: dashboardState.fotoBase64,
-      pontosIniciais: dashboardState.pontosIniciais,
-      limiteDesvantagens: dashboardState.limiteDesvantagens
-    };
-    
-    localStorage.setItem('dashboard_salvo', JSON.stringify(dadosParaSalvar));
-    console.log('💾 Dados do dashboard salvos localmente');
+    localStorage.setItem('dashboard_salvo', JSON.stringify(dashboardSalvamento));
+    console.log('💾 Dados do dashboard salvos');
   } catch (e) {
     console.log('❌ Erro ao salvar:', e);
   }
@@ -268,22 +255,10 @@ function carregarDadosSalvos() {
   try {
     const salvo = localStorage.getItem('dashboard_salvo');
     if (salvo) {
-      const dados = JSON.parse(salvo);
-      
-      // Foto
-      if (dados.fotoBase64) {
-        dashboardState.fotoBase64 = dados.fotoBase64;
-      }
-      
-      // Pontos iniciais
-      if (dados.pontosIniciais) {
-        dashboardState.pontosIniciais = dados.pontosIniciais;
-      }
-      
-      // Limite desvantagens
-      if (dados.limiteDesvantagens) {
-        dashboardState.limiteDesvantagens = dados.limiteDesvantagens;
-      }
+      const dados = JSON.parse(saldo);
+      dashboardSalvamento.fotoBase64 = dados.fotoBase64 || null;
+      dashboardSalvamento.pontosIniciaisSalvos = dados.pontosIniciaisSalvos || 100;
+      dashboardSalvamento.carregado = true;
       
       console.log('📥 Dados do dashboard carregados');
     }
@@ -293,7 +268,55 @@ function carregarDadosSalvos() {
 }
 
 // ===========================================
-// FUNÇÕES ORIGINAIS (EXATAMENTE COMO ESTAVAM)
+// 4ª MODIFICAÇÃO: Inicialização DIRETA (ATUALIZADA)
+// ===========================================
+function inicializarDashboard() {
+  console.log(' Inicializando dashboard DIRETO...');
+  
+  // 1. Carregar dados salvos primeiro
+  carregarDadosSalvos();
+  
+  // 2. Configurar upload de foto (COM SALVAMENTO)
+  configurarUploadFoto();
+  
+  // 3. Configurar eventos (COM SALVAMENTO)
+  configurarEventos();
+  
+  // 4. Configurar integração com equipamentos
+  configurarIntegracaoEquipamentos();
+  
+  // 5. Primeira atualização imediata (ORIGINAL mantido)
+  setTimeout(atualizarDashboardCompleto, 100);
+  
+  // 6. Atualizar a cada 2 segundos (ORIGINAL mantido)
+  setInterval(atualizarDashboardCompleto, 2000);
+  
+  console.log('✅ Dashboard pronto');
+}
+
+// ===========================================
+// 5ª MODIFICAÇÃO: Função definirPontosIniciais atualizada
+// ===========================================
+window.definirPontosIniciais = function(valor) {
+  const valorNumerico = parseInt(valor) || 100;
+  dashboardState.pontosIniciais = valorNumerico;
+  
+  // Salvar
+  dashboardSalvamento.pontosIniciaisSalvos = valorNumerico;
+  salvarDadosLocalmente();
+  
+  // Atualizar input
+  const startPoints = document.getElementById('start-points');
+  if (startPoints) {
+    startPoints.value = valorNumerico;
+  }
+  
+  // Cálculo ORIGINAL mantido
+  calcularSistemaPontos();
+};
+
+// ===========================================
+// FUNÇÕES ORIGINAIS MANTIDAS INTACTAS
 // ===========================================
 
 // Atualização COMPLETA e DIRETA
@@ -399,7 +422,7 @@ function atualizarTodosElementos() {
 // Calcular sistema de pontos DIRETAMENTE
 function calcularSistemaPontos() {
   const pontosAtributos = parseInt(document.getElementById('points-attr').textContent) || 0;
-  const pontosIniciais = parseInt(document.getElementById('start-points').value) || 100;
+  const pontosIniciais = parseInt(document.getElementById('start-points').value) || dashboardSalvamento.pontosIniciaisSalvos || 100;
   
   // Somar outros pontos (simulados por enquanto)
   const pontosVantagens = 0;
@@ -514,10 +537,14 @@ function atualizarTotalSocial() {
   }
 }
 
-// Finanças simplificadas
+// Finanças simplificadas (AGORA USA DADOS DOS EQUIPAMENTOS)
 function atualizarFinancas() {
-  // Agora os dados vêm dos equipamentos via integração
-  // Esta função não precisa fazer nada
+  // Se não tiver dados dos equipamentos, usar dados locais
+  if (dashboardState.dinheiro === 0) {
+    document.getElementById('current-money').textContent = `$${dashboardState.dinheiro}`;
+  }
+  
+  document.getElementById('equip-weight').textContent = `${dashboardState.pesoEquipamentos.toFixed(1)} kg`;
 }
 
 // Carga baseada em ST
@@ -601,24 +628,6 @@ function atualizarIdentificacao() {
   }
 }
 
-// Configurar eventos
-function configurarEventos() {
-  // Limite desvantagens
-  const disLimit = document.getElementById('dis-limit');
-  if (disLimit) {
-    disLimit.addEventListener('change', function() {
-      dashboardState.limiteDesvantagens = parseInt(this.value) || -75;
-      salvarDadosLocalmente();
-    });
-  }
-  
-  // Botão de atualização
-  const refreshBtn = document.querySelector('.refresh-btn');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', atualizarDashboardCompleto);
-  }
-}
-
 // Atualizar horário
 function atualizarHorario() {
   const now = new Date();
@@ -638,22 +647,21 @@ window.definirPontosIniciais = function(valor) {
   const valorNumerico = parseInt(valor) || 100;
   dashboardState.pontosIniciais = valorNumerico;
   
+  // Salvar
+  dashboardSalvamento.pontosIniciaisSalvos = valorNumerico;
+  salvarDadosLocalmente();
+  
   // Atualizar input
   const startPoints = document.getElementById('start-points');
   if (startPoints) {
     startPoints.value = valorNumerico;
   }
   
-  // SALVAR
-  salvarDadosLocalmente();
-  
-  // Recalcular
   calcularSistemaPontos();
 };
 
 window.definirLimiteDesvantagens = function(valor) {
   dashboardState.limiteDesvantagens = parseInt(valor) || -75;
-  salvarDadosLocalmente();
 };
 
 window.ajustarModificador = ajustarModificador;
