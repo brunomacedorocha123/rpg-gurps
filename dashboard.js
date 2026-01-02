@@ -1,24 +1,23 @@
 // ===========================================
-// DASHBOARD.JS - Sistema de Sincronização da Dashboard
+// DASHBOARD.JS - Sistema de Sincronização REAL-TIME
 // ===========================================
 
-// Estado global do personagem para a dashboard
+// Estado global do personagem
 let dashboardPersonagem = {
-    // Identificação (sincronizado com a própria dashboard)
     nome: '',
     raca: 'Humano',
     ocupacao: '',
     jogador: '',
     
-    // Atributos (sincronizado com atributos.js)
+    // Atributos
     ST: 10,
     DX: 10,
     IQ: 10,
     HT: 10,
-    PV: 10,  // ST base + bônus
-    PF: 10,  // HT base + bônus
-    Vontade: 10,  // IQ base + bônus
-    Percepcao: 10, // IQ base + bônus
+    PV: 10,
+    PF: 10,
+    Vontade: 10,
+    Percepcao: 10,
     Deslocamento: 5.00,
     
     // Pontos
@@ -38,12 +37,6 @@ let dashboardPersonagem = {
     aparencia: 0,
     modificadorReacao: 0,
     
-    // Finanças
-    dinheiro: 0,
-    nivelRiqueza: 'Médio',
-    pesoEquipamentos: 0,
-    nivelCarga: 'Nenhuma',
-    
     // Contadores
     totalVantagens: 0,
     totalDesvantagens: 0,
@@ -52,33 +45,265 @@ let dashboardPersonagem = {
     totalIdiomas: 1,
     totalRelacionamentos: 0,
     
-    // Timestamp
     ultimaAtualizacao: null
 };
 
-// ===== SISTEMA DE PONTOS =====
+// ===== SISTEMA DE OBSERVAÇÃO EM TEMPO REAL =====
 
-// Calcular custo dos atributos (mesma lógica do atributos.js)
-function calcularCustoAtributos() {
-    const ST = dashboardPersonagem.ST;
-    const DX = dashboardPersonagem.DX;
-    const IQ = dashboardPersonagem.IQ;
-    const HT = dashboardPersonagem.HT;
+// Observar mudanças nos atributos de forma agressiva
+let observadoresAtivos = [];
+
+function iniciarObservadoresAgressivos() {
+    console.log('🚀 Iniciando observadores agressivos...');
     
-    const custoST = (ST - 10) * 10;
-    const custoDX = (DX - 10) * 20;
-    const custoIQ = (IQ - 10) * 20;
-    const custoHT = (HT - 10) * 10;
+    // Limpar observadores antigos
+    observadoresAtivos.forEach(obs => {
+        if (obs.disconnect) obs.disconnect();
+    });
+    observadoresAtivos = [];
     
-    return custoST + custoDX + custoIQ + custoHT;
+    // Função para observar mudanças em qualquer elemento
+    function observarMudancas(seletor, callback) {
+        const elementos = document.querySelectorAll(seletor);
+        elementos.forEach(elemento => {
+            if (elemento) {
+                // Observar mudanças no valor
+                const observer = new MutationObserver(callback);
+                observer.observe(elemento, {
+                    attributes: true,
+                    attributeFilter: ['value', 'textContent', 'innerText', 'data-value']
+                });
+                
+                // Também observar input events
+                elemento.addEventListener('input', callback);
+                elemento.addEventListener('change', callback);
+                
+                observadoresAtivos.push(observer);
+                
+                // Configurar para remover o event listener quando desconectar
+                elemento._dashboardCallback = callback;
+            }
+        });
+    }
+    
+    // Observar atributos principais
+    observarMudancas('#ST, #DX, #IQ, #HT', () => {
+        console.log('📈 Atributo principal alterado, sincronizando...');
+        sincronizarAtributosImediato();
+    });
+    
+    // Observar bônus
+    observarMudancas('#bonusPV, #bonusPF, #bonusVontade, #bonusPercepcao, #bonusDeslocamento', () => {
+        console.log('📊 Bônus alterado, sincronizando...');
+        sincronizarAtributosImediato();
+    });
+    
+    // Observar custos de atributos (que já estão calculados)
+    observarMudancas('#custoST, #custoDX, #custoIQ, #custoHT', () => {
+        console.log('💰 Custo alterado, atualizando pontos...');
+        setTimeout(sincronizarPontosAtributos, 100);
+    });
+    
+    // Observar pontos totais gastos
+    observarMudancas('#pontosGastos', () => {
+        console.log('💳 Pontos gastos alterados');
+        setTimeout(sincronizarPontosAtributos, 100);
+    });
+    
+    // Verificar periodicamente também (fallback)
+    setInterval(sincronizarTudoComForca, 3000);
+    
+    console.log(`✅ ${observadoresAtivos.length} observadores ativos`);
 }
 
-// Calcular saldo disponível
+// ===== SINCRONIZAÇÃO IMEDIATA DOS ATRIBUTOS =====
+
+function sincronizarAtributosImediato() {
+    console.log('⚡ Sincronização IMEDIATA de atributos');
+    
+    try {
+        // Forçar leitura dos valores ATUAIS
+        const ST = obterValorAtual('#ST');
+        const DX = obterValorAtual('#DX');
+        const IQ = obterValorAtual('#IQ');
+        const HT = obterValorAtual('#HT');
+        
+        const bonusPV = obterValorAtual('#bonusPV');
+        const bonusPF = obterValorAtual('#bonusPF');
+        const bonusVontade = obterValorAtual('#bonusVontade');
+        const bonusPercepcao = obterValorAtual('#bonusPercepcao');
+        const bonusDeslocamento = obterValorAtual('#bonusDeslocamento');
+        
+        // Atualizar estado
+        dashboardPersonagem.ST = ST;
+        dashboardPersonagem.DX = DX;
+        dashboardPersonagem.IQ = IQ;
+        dashboardPersonagem.HT = HT;
+        
+        // Calcular atributos secundários
+        dashboardPersonagem.PV = Math.max(ST + bonusPV, 1);
+        dashboardPersonagem.PF = Math.max(HT + bonusPF, 1);
+        dashboardPersonagem.Vontade = Math.max(IQ + bonusVontade, 1);
+        dashboardPersonagem.Percepcao = Math.max(IQ + bonusPercepcao, 1);
+        
+        const deslocamentoBase = (HT + DX) / 4;
+        dashboardPersonagem.Deslocamento = Math.max(deslocamentoBase + bonusDeslocamento, 0).toFixed(2);
+        
+        // Recalcular custos usando a mesma lógica do atributos.js
+        const custoST = (ST - 10) * 10;
+        const custoDX = (DX - 10) * 20;
+        const custoIQ = (IQ - 10) * 20;
+        const custoHT = (HT - 10) * 10;
+        
+        dashboardPersonagem.pontosGastosAtributos = custoST + custoDX + custoIQ + custoHT;
+        
+        console.log(`📊 Atributos atualizados: ST=${ST} (${custoST} pts), DX=${DX} (${custoDX} pts)`);
+        
+        // Atualizar UI imediatamente
+        atualizarDashboardUIRapido();
+        
+    } catch (error) {
+        console.error('❌ Erro na sincronização:', error);
+    }
+}
+
+function obterValorAtual(seletor) {
+    const elemento = document.querySelector(seletor);
+    if (!elemento) return elemento.defaultValue || 0;
+    
+    // Tentar diferentes métodos para obter o valor
+    const valor = elemento.value || elemento.textContent || elemento.innerText;
+    const tipo = elemento.type;
+    
+    if (tipo === 'number' || tipo === 'text') {
+        const num = parseFloat(valor);
+        return isNaN(num) ? 0 : num;
+    } else {
+        const num = parseFloat(valor);
+        return isNaN(num) ? 0 : num;
+    }
+}
+
+function sincronizarPontosAtributos() {
+    try {
+        // Tentar pegar o valor já calculado do atributos.js
+        const pontosGastosElement = document.querySelector('#pontosGastos');
+        if (pontosGastosElement) {
+            const texto = pontosGastosElement.textContent || pontosGastosElement.innerText;
+            const pontos = parseInt(texto.replace(/[^\d-]/g, '')) || 0;
+            
+            if (pontos !== dashboardPersonagem.pontosGastosAtributos) {
+                console.log(`💡 Pontos gastos atualizados: ${pontos} (anterior: ${dashboardPersonagem.pontosGastosAtributos})`);
+                dashboardPersonagem.pontosGastosAtributos = pontos;
+                atualizarDashboardUIRapido();
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Não foi possível sincronizar pontos:', error);
+    }
+}
+
+// ===== SINCRONIZAÇÃO COMPLETA COM FORÇA =====
+
+function sincronizarTudoComForca() {
+    console.log('💪 Sincronização FORÇADA');
+    
+    // Sincronizar atributos
+    sincronizarAtributosImediato();
+    
+    // Buscar outras informações
+    buscarOutrasInformacoes();
+    
+    // Atualizar timestamp
+    dashboardPersonagem.ultimaAtualizacao = new Date();
+    
+    // Atualizar UI completa
+    atualizarDashboardUI();
+    
+    // Salvar
+    salvarDashboardLocal();
+}
+
+function buscarOutrasInformacoes() {
+    // Buscar custos individuais para verificação
+    const custoST = obterValorTexto('#custoST') || 0;
+    const custoDX = obterValorTexto('#custoDX') || 0;
+    const custoIQ = obterValorTexto('#custoIQ') || 0;
+    const custoHT = obterValorTexto('#custoHT') || 0;
+    
+    const totalCalculado = parseInt(custoST) + parseInt(custoDX) + parseInt(custoIQ) + parseInt(custoHT);
+    
+    console.log(`🧮 Verificação: ST=${custoST}, DX=${custoDX}, IQ=${custoIQ}, HT=${custoHT}, Total=${totalCalculado}`);
+    
+    // Se houver diferença, usar o valor calculado
+    if (totalCalculado !== 0 && totalCalculado !== dashboardPersonagem.pontosGastosAtributos) {
+        dashboardPersonagem.pontosGastosAtributos = totalCalculado;
+    }
+}
+
+function obterValorTexto(seletor) {
+    const el = document.querySelector(seletor);
+    if (!el) return '0';
+    
+    const texto = el.textContent || el.innerText || '0';
+    return texto.replace(/[^\d-]/g, '');
+}
+
+// ===== ATUALIZAÇÃO RÁPIDA DA UI =====
+
+function atualizarDashboardUIRapido() {
+    // Atualizar apenas os valores críticos primeiro
+    const saldo = calcularSaldoDisponivel();
+    
+    // Atributos no resumo
+    atualizarElemento('#summary-st', dashboardPersonagem.ST);
+    atualizarElemento('#summary-dx', dashboardPersonagem.DX);
+    atualizarElemento('#summary-iq', dashboardPersonagem.IQ);
+    atualizarElemento('#summary-ht', dashboardPersonagem.HT);
+    atualizarElemento('#summary-hp', dashboardPersonagem.PV);
+    atualizarElemento('#summary-fp', dashboardPersonagem.PF);
+    atualizarElemento('#summary-will', dashboardPersonagem.Vontade);
+    atualizarElemento('#summary-per', dashboardPersonagem.Percepcao);
+    
+    // Pontos gastos em atributos
+    atualizarElemento('#points-attr', dashboardPersonagem.pontosGastosAtributos);
+    
+    // Saldo
+    atualizarElemento('#points-balance', saldo);
+    
+    // Atualizar status do saldo
+    atualizarStatusSaldo(saldo);
+    
+    // Status rápido
+    atualizarElemento('#quick-hp', dashboardPersonagem.PV);
+    atualizarElemento('#quick-fp', dashboardPersonagem.PF);
+    
+    // Timestamp
+    const timeStr = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+    atualizarElemento('#update-timestamp', timeStr);
+    atualizarElemento('#last-update-time', timeStr);
+}
+
+function atualizarElemento(seletor, valor) {
+    const el = document.querySelector(seletor);
+    if (el) {
+        if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+            if (el.value !== String(valor)) {
+                el.value = valor;
+            }
+        } else {
+            if (el.textContent !== String(valor)) {
+                el.textContent = valor;
+            }
+        }
+    }
+}
+
 function calcularSaldoDisponivel() {
     const pontosIniciais = dashboardPersonagem.pontosIniciais;
     const gastosAtributos = dashboardPersonagem.pontosGastosAtributos;
     const gastosVantagens = dashboardPersonagem.pontosGastosVantagens;
-    const ganhosDesvantagens = Math.abs(dashboardPersonagem.pontosGanhosDesvantagens); // Valor positivo
+    const ganhosDesvantagens = Math.abs(dashboardPersonagem.pontosGanhosDesvantagens);
     const gastosPeculiaridades = dashboardPersonagem.pontosGastosPeculiaridades;
     const gastosPericias = dashboardPersonagem.pontosGastosPericias;
     const gastosTecnicas = dashboardPersonagem.pontosGastosTecnicas;
@@ -87,238 +312,30 @@ function calcularSaldoDisponivel() {
     const totalGastos = gastosAtributos + gastosVantagens + gastosPeculiaridades + 
                        gastosPericias + gastosTecnicas + gastosMagias;
     
-    const totalGanhos = ganhosDesvantagens;
-    
-    return pontosIniciais - totalGastos + totalGanhos;
+    return pontosIniciais - totalGastos + ganhosDesvantagens;
 }
 
-// Calcular porcentagem
-function calcularPorcentagem(valor, total) {
-    if (total === 0) return 0;
-    return Math.round((valor / total) * 100);
-}
-
-// ===== SINCRONIZAÇÃO COM ATRIBUTOS =====
-
-function sincronizarAtributos() {
-    // Buscar valores da aba Atributos
-    const ST = parseInt(document.getElementById('ST')?.value) || 10;
-    const DX = parseInt(document.getElementById('DX')?.value) || 10;
-    const IQ = parseInt(document.getElementById('IQ')?.value) || 10;
-    const HT = parseInt(document.getElementById('HT')?.value) || 10;
+function atualizarStatusSaldo(saldo) {
+    const balanceElement = document.querySelector('#points-balance');
+    const statusElement = document.querySelector('#points-status-indicator');
+    const statusText = document.querySelector('#points-status-text');
     
-    // Buscar bônus
-    const bonusPV = parseInt(document.getElementById('bonusPV')?.value) || 0;
-    const bonusPF = parseInt(document.getElementById('bonusPF')?.value) || 0;
-    const bonusVontade = parseInt(document.getElementById('bonusVontade')?.value) || 0;
-    const bonusPercepcao = parseInt(document.getElementById('bonusPercepcao')?.value) || 0;
-    const bonusDeslocamento = parseFloat(document.getElementById('bonusDeslocamento')?.value) || 0;
+    if (!balanceElement || !statusElement || !statusText) return;
     
-    // Atualizar dashboard
-    dashboardPersonagem.ST = ST;
-    dashboardPersonagem.DX = DX;
-    dashboardPersonagem.IQ = IQ;
-    dashboardPersonagem.HT = HT;
-    
-    // Calcular atributos secundários
-    dashboardPersonagem.PV = Math.max(ST + bonusPV, 1);
-    dashboardPersonagem.PF = Math.max(HT + bonusPF, 1);
-    dashboardPersonagem.Vontade = Math.max(IQ + bonusVontade, 1);
-    dashboardPersonagem.Percepcao = Math.max(IQ + bonusPercepcao, 1);
-    
-    const deslocamentoBase = (HT + DX) / 4;
-    dashboardPersonagem.Deslocamento = Math.max(deslocamentoBase + bonusDeslocamento, 0).toFixed(2);
-    
-    // Atualizar custos
-    dashboardPersonagem.pontosGastosAtributos = calcularCustoAtributos();
-    
-    console.log('✅ Atributos sincronizados:', dashboardPersonagem.ST, dashboardPersonagem.DX);
-}
-
-// ===== SINCRONIZAÇÃO COM VANTAGENS/DESVANTAGENS =====
-
-function sincronizarVantagensDesvantagens() {
-    // Buscar lista de vantagens (exemplo - ajustar conforme sua estrutura)
-    const vantagensList = document.querySelectorAll('.vantagem-item') || [];
-    let totalPontosVantagens = 0;
-    
-    vantagensList.forEach(item => {
-        const pontos = parseInt(item.dataset.pontos) || 0;
-        totalPontosVantagens += pontos;
-    });
-    
-    // Buscar lista de desvantagens
-    const desvantagensList = document.querySelectorAll('.desvantagem-item') || [];
-    let totalPontosDesvantagens = 0;
-    
-    desvantagensList.forEach(item => {
-        const pontos = parseInt(item.dataset.pontos) || 0;
-        totalPontosDesvantagens += pontos;
-    });
-    
-    // Atualizar dashboard
-    dashboardPersonagem.pontosGastosVantagens = totalPontosVantagens;
-    dashboardPersonagem.pontosGanhosDesvantagens = totalPontosDesvantagens; // Negativo
-    dashboardPersonagem.totalVantagens = vantagensList.length;
-    dashboardPersonagem.totalDesvantagens = desvantagensList.length;
-    
-    console.log('✅ Vantagens/Desvantagens sincronizadas');
-}
-
-// ===== SINCRONIZAÇÃO COM PERÍCIAS =====
-
-function sincronizarPericias() {
-    // Buscar lista de perícias (exemplo)
-    const periciasList = document.querySelectorAll('.pericia-item') || [];
-    let totalPontosPericias = 0;
-    
-    periciasList.forEach(item => {
-        const pontos = parseInt(item.dataset.pontos) || 0;
-        totalPontosPericias += pontos;
-    });
-    
-    dashboardPersonagem.pontosGastosPericias = totalPontosPericias;
-    dashboardPersonagem.totalPericias = periciasList.length;
-    
-    console.log('✅ Perícias sincronizadas');
-}
-
-// ===== SINCRONIZAÇÃO COM MAGIAS =====
-
-function sincronizarMagias() {
-    // Buscar lista de magias (exemplo)
-    const magiasList = document.querySelectorAll('.magia-item') || [];
-    let totalPontosMagias = 0;
-    
-    magiasList.forEach(item => {
-        const pontos = parseInt(item.dataset.pontos) || 0;
-        totalPontosMagias += pontos;
-    });
-    
-    dashboardPersonagem.pontosGastosMagias = totalPontosMagias;
-    dashboardPersonagem.totalMagias = magiasList.length;
-    
-    console.log('✅ Magias sincronizadas');
-}
-
-// ===== SINCRONIZAÇÃO COM EQUIPAMENTOS =====
-
-function sincronizarEquipamentos() {
-    // Exemplo - ajustar conforme sua estrutura
-    const pesoTotal = parseFloat(document.getElementById('peso-total')?.textContent) || 0;
-    const dinheiro = parseFloat(document.getElementById('dinheiro-atual')?.value) || 0;
-    
-    dashboardPersonagem.pesoEquipamentos = pesoTotal;
-    dashboardPersonagem.dinheiro = dinheiro;
-    
-    // Calcular nível de carga baseado na ST e peso
-    const ST = dashboardPersonagem.ST;
-    let nivelCarga = 'Nenhuma';
-    
-    if (ST <= 10) {
-        const limites = [1, 2, 3, 6, 10]; // Para ST 10
-        if (pesoTotal <= limites[0]) nivelCarga = 'Nenhuma';
-        else if (pesoTotal <= limites[1]) nivelCarga = 'Leve';
-        else if (pesoTotal <= limites[2]) nivelCarga = 'Média';
-        else if (pesoTotal <= limites[3]) nivelCarga = 'Pesada';
-        else if (pesoTotal <= limites[4]) nivelCarga = 'Extrema';
-    }
-    // Adicionar mais cálculos para outros valores de ST...
-    
-    dashboardPersonagem.nivelCarga = nivelCarga;
-    
-    console.log('✅ Equipamentos sincronizados');
-}
-
-// ===== SINCRONIZAÇÃO COMPLETA =====
-
-function sincronizarTudo() {
-    console.log('🔄 Sincronizando dashboard...');
-    
-    // Sincronizar todas as seções
-    sincronizarAtributos();
-    sincronizarVantagensDesvantagens();
-    sincronizarPericias();
-    sincronizarMagias();
-    sincronizarEquipamentos();
-    
-    // Atualizar timestamp
-    dashboardPersonagem.ultimaAtualizacao = new Date();
-    
-    // Atualizar UI da dashboard
-    atualizarDashboardUI();
-    
-    // Salvar no localStorage
-    salvarDashboardLocal();
-    
-    console.log('✅ Dashboard sincronizada!');
-}
-
-// ===== ATUALIZAR UI DA DASHBOARD =====
-
-function atualizarDashboardUI() {
-    // Atualizar identificação
-    document.getElementById('char-name').value = dashboardPersonagem.nome || '';
-    document.getElementById('char-race').value = dashboardPersonagem.raca || '';
-    document.getElementById('char-type').value = dashboardPersonagem.ocupacao || '';
-    document.getElementById('char-player').value = dashboardPersonagem.jogador || '';
-    
-    // Atualizar atributos no resumo
-    document.getElementById('summary-st').textContent = dashboardPersonagem.ST;
-    document.getElementById('summary-dx').textContent = dashboardPersonagem.DX;
-    document.getElementById('summary-iq').textContent = dashboardPersonagem.IQ;
-    document.getElementById('summary-ht').textContent = dashboardPersonagem.HT;
-    document.getElementById('summary-hp').textContent = dashboardPersonagem.PV;
-    document.getElementById('summary-fp').textContent = dashboardPersonagem.PF;
-    document.getElementById('summary-will').textContent = dashboardPersonagem.Vontade;
-    document.getElementById('summary-per').textContent = dashboardPersonagem.Percepcao;
-    
-    // Atualizar pontos iniciais e limite
-    document.getElementById('start-points').value = dashboardPersonagem.pontosIniciais;
-    document.getElementById('dis-limit').value = dashboardPersonagem.limiteDesvantagens;
-    
-    // Calcular saldo disponível
-    const saldoDisponivel = calcularSaldoDisponivel();
-    const pontosIniciais = dashboardPersonagem.pontosIniciais;
-    
-    // Atualizar distribuição de pontos
-    document.getElementById('points-attr').textContent = dashboardPersonagem.pontosGastosAtributos;
-    document.getElementById('points-adv').textContent = dashboardPersonagem.pontosGastosVantagens;
-    document.getElementById('points-dis').textContent = dashboardPersonagem.pontosGanhosDesvantagens; // Negativo
-    document.getElementById('points-pec').textContent = dashboardPersonagem.pontosGastosPeculiaridades || 0;
-    document.getElementById('points-skills').textContent = dashboardPersonagem.pontosGastosPericias;
-    document.getElementById('points-tech').textContent = dashboardPersonagem.pontosGastosTecnicas || 0;
-    document.getElementById('points-spells').textContent = dashboardPersonagem.pontosGastosMagias;
-    
-    // Atualizar porcentagens
-    document.getElementById('points-attr-percent').textContent = 
-        calcularPorcentagem(dashboardPersonagem.pontosGastosAtributos, pontosIniciais) + '%';
-    document.getElementById('points-adv-percent').textContent = 
-        calcularPorcentagem(dashboardPersonagem.pontosGastosVantagens, pontosIniciais) + '%';
-    document.getElementById('points-dis-percent').textContent = 
-        calcularPorcentagem(Math.abs(dashboardPersonagem.pontosGanhosDesvantagens), pontosIniciais) + '%';
-    document.getElementById('points-skills-percent').textContent = 
-        calcularPorcentagem(dashboardPersonagem.pontosGastosPericias, pontosIniciais) + '%';
-    document.getElementById('points-spells-percent').textContent = 
-        calcularPorcentagem(dashboardPersonagem.pontosGastosMagias, pontosIniciais) + '%';
-    
-    // Atualizar saldo
-    document.getElementById('points-balance').textContent = saldoDisponivel;
-    document.getElementById('points-balance-percent').textContent = 
-        calcularPorcentagem(saldoDisponivel, pontosIniciais) + '%';
-    
-    // Status do saldo
-    const balanceElement = document.getElementById('points-balance');
-    const statusElement = document.getElementById('points-status-indicator');
-    const statusText = document.getElementById('points-status-text');
-    
+    // Remover classes anteriores
     balanceElement.classList.remove('saldo-negativo', 'saldo-baixo', 'saldo-normal');
     
-    if (saldoDisponivel < 0) {
+    // Calcular porcentagem
+    const pontosIniciais = dashboardPersonagem.pontosIniciais;
+    const percentual = Math.round((saldo / pontosIniciais) * 100);
+    document.querySelector('#points-balance-percent')?.textContent = percentual + '%';
+    
+    // Definir status
+    if (saldo < 0) {
         balanceElement.classList.add('saldo-negativo');
         statusElement.style.background = '#f44336';
         statusText.textContent = 'Personagem inválido (pontos negativos)';
-    } else if (saldoDisponivel < 10) {
+    } else if (saldo < pontosIniciais * 0.1) { // Menos de 10%
         balanceElement.classList.add('saldo-baixo');
         statusElement.style.background = '#FF9800';
         statusText.textContent = 'Poucos pontos restantes';
@@ -327,82 +344,61 @@ function atualizarDashboardUI() {
         statusElement.style.background = '#4CAF50';
         statusText.textContent = 'Personagem válido';
     }
-    
-    // Atualizar status social
-    document.getElementById('status-value').textContent = dashboardPersonagem.status;
-    document.getElementById('rep-value').textContent = dashboardPersonagem.reputacao;
-    document.getElementById('app-value').textContent = dashboardPersonagem.aparencia;
-    document.getElementById('reaction-total-compact').textContent = 
-        (dashboardPersonagem.modificadorReacao >= 0 ? '+' : '') + dashboardPersonagem.modificadorReacao;
-    
-    // Atualizar finanças
-    document.getElementById('current-money').textContent = '$' + dashboardPersonagem.dinheiro.toFixed(2);
-    document.getElementById('wealth-level-display').textContent = dashboardPersonagem.nivelRiqueza;
-    document.getElementById('equip-weight').textContent = dashboardPersonagem.pesoEquipamentos.toFixed(1) + ' kg';
-    document.getElementById('enc-level-display').textContent = dashboardPersonagem.nivelCarga;
-    
-    // Atualizar contadores
-    document.getElementById('counter-advantages').textContent = dashboardPersonagem.totalVantagens;
-    document.getElementById('counter-disadvantages').textContent = dashboardPersonagem.totalDesvantagens;
-    document.getElementById('counter-skills').textContent = dashboardPersonagem.totalPericias;
-    document.getElementById('counter-spells').textContent = dashboardPersonagem.totalMagias;
-    document.getElementById('counter-languages').textContent = dashboardPersonagem.totalIdiomas;
-    document.getElementById('counter-relationships').textContent = dashboardPersonagem.totalRelacionamentos;
-    
-    // Atualizar status rápido (PV/PF)
-    document.getElementById('quick-hp').textContent = dashboardPersonagem.PV;
-    document.getElementById('quick-fp').textContent = dashboardPersonagem.PF;
-    
-    // Atualizar timestamp
-    const timeStr = dashboardPersonagem.ultimaAtualizacao 
-        ? dashboardPersonagem.ultimaAtualizacao.toLocaleTimeString('pt-BR', { hour12: false })
-        : '--:--';
-    
-    document.getElementById('update-timestamp').textContent = timeStr;
-    document.getElementById('last-update-time').textContent = timeStr;
-    
-    console.log('✅ UI da dashboard atualizada');
 }
 
-// ===== SALVAR/CARREGAR LOCAL =====
+// ===== FUNÇÕES DE CONTROLE (mantidas do anterior) =====
 
-function salvarDashboardLocal() {
-    try {
-        localStorage.setItem('gurps_dashboard', JSON.stringify(dashboardPersonagem));
-    } catch (error) {
-        console.warn('Não foi possível salvar dashboard:', error);
-    }
+function atualizarDashboardUI() {
+    // ... (mantenha o mesmo código da versão anterior)
+    console.log('🎨 Atualizando UI completa da dashboard');
+    
+    // Chama a rápida primeiro
+    atualizarDashboardUIRapido();
+    
+    // Depois atualiza o resto
+    const saldo = calcularSaldoDisponivel();
+    const pontosIniciais = dashboardPersonagem.pontosIniciais;
+    
+    // Porcentagens
+    const percentAttr = Math.round((dashboardPersonagem.pontosGastosAtributos / pontosIniciais) * 100);
+    const percentAdv = Math.round((dashboardPersonagem.pontosGastosVantagens / pontosIniciais) * 100);
+    const percentDis = Math.round((Math.abs(dashboardPersonagem.pontosGanhosDesvantagens) / pontosIniciais) * 100);
+    const percentSkills = Math.round((dashboardPersonagem.pontosGastosPericias / pontosIniciais) * 100);
+    const percentSpells = Math.round((dashboardPersonagem.pontosGastosMagias / pontosIniciais) * 100);
+    
+    atualizarElemento('#points-attr-percent', percentAttr + '%');
+    atualizarElemento('#points-adv-percent', percentAdv + '%');
+    atualizarElemento('#points-dis-percent', percentDis + '%');
+    atualizarElemento('#points-skills-percent', percentSkills + '%');
+    atualizarElemento('#points-spells-percent', percentSpells + '%');
+    
+    // Status social
+    atualizarElemento('#status-value', dashboardPersonagem.status);
+    atualizarElemento('#rep-value', dashboardPersonagem.reputacao);
+    atualizarElemento('#app-value', dashboardPersonagem.aparencia);
+    
+    const modReacao = dashboardPersonagem.status + dashboardPersonagem.reputacao + dashboardPersonagem.aparencia;
+    const modStr = (modReacao >= 0 ? '+' : '') + modReacao;
+    atualizarElemento('#reaction-total-compact', modStr);
+    
+    // Contadores
+    atualizarElemento('#counter-advantages', dashboardPersonagem.totalVantagens);
+    atualizarElemento('#counter-disadvantages', dashboardPersonagem.totalDesvantagens);
+    atualizarElemento('#counter-skills', dashboardPersonagem.totalPericias);
+    atualizarElemento('#counter-spells', dashboardPersonagem.totalMagias);
+    atualizarElemento('#counter-languages', dashboardPersonagem.totalIdiomas);
+    atualizarElemento('#counter-relationships', dashboardPersonagem.totalRelacionamentos);
 }
-
-function carregarDashboardLocal() {
-    try {
-        const dados = localStorage.getItem('gurps_dashboard');
-        if (dados) {
-            const parsed = JSON.parse(dados);
-            Object.assign(dashboardPersonagem, parsed);
-            
-            // Converter string de data de volta para objeto Date
-            if (parsed.ultimaAtualizacao) {
-                dashboardPersonagem.ultimaAtualizacao = new Date(parsed.ultimaAtualizacao);
-            }
-            
-            return true;
-        }
-    } catch (error) {
-        console.warn('Não foi possível carregar dashboard:', error);
-    }
-    return false;
-}
-
-// ===== FUNÇÕES DE CONTROLE DA DASHBOARD =====
 
 function atualizarPontosIniciais(valor) {
     const pontos = parseInt(valor) || 100;
     if (pontos < 0) return;
     
     dashboardPersonagem.pontosIniciais = pontos;
-    atualizarDashboardUI();
+    atualizarDashboardUIRapido();
     salvarDashboardLocal();
+    
+    console.log(`🎯 Pontos iniciais atualizados: ${pontos}`);
 }
 
 function atualizarLimiteDesvantagens(valor) {
@@ -411,6 +407,8 @@ function atualizarLimiteDesvantagens(valor) {
     
     dashboardPersonagem.limiteDesvantagens = limite;
     salvarDashboardLocal();
+    
+    console.log(`⚠️ Limite de desvantagens atualizado: ${limite}`);
 }
 
 function atualizarStatusSocial(tipo, valor) {
@@ -428,108 +426,125 @@ function atualizarStatusSocial(tipo, valor) {
             break;
     }
     
-    // Calcular modificador total de reação
     dashboardPersonagem.modificadorReacao = 
         dashboardPersonagem.status + 
         dashboardPersonagem.reputacao + 
         dashboardPersonagem.aparencia;
     
-    atualizarDashboardUI();
+    atualizarDashboardUIRapido();
     salvarDashboardLocal();
+    
+    console.log(`👑 Status social atualizado: ${tipo}=${numValor}`);
 }
 
-// ===== OBSERVADOR DE MUDANÇAS =====
+// ===== INICIALIZAÇÃO FORTE =====
 
-// Observar mudanças nos atributos
-function iniciarObservadorAtributos() {
-    // Observar inputs de atributos principais
-    ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
-        const input = document.getElementById(atributo);
-        if (input) {
-            input.addEventListener('input', () => {
-                setTimeout(sincronizarTudo, 100);
-            });
-        }
-    });
+function iniciarDashboardForte() {
+    console.log('💪 Iniciando DASHBOARD FORTE...');
     
-    // Observar bônus de atributos secundários
-    ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
-        const input = document.getElementById('bonus' + atributo);
-        if (input) {
-            input.addEventListener('input', () => {
-                setTimeout(sincronizarTudo, 100);
-            });
-        }
-    });
-    
-    console.log('👀 Observador de atributos iniciado');
-}
-
-// ===== INICIALIZAÇÃO =====
-
-function iniciarDashboard() {
-    console.log('📊 Inicializando dashboard...');
-    
-    // Carregar dados salvos
+    // Carregar dados
     carregarDashboardLocal();
     
-    // Configurar eventos da dashboard
-    document.getElementById('start-points')?.addEventListener('change', function() {
-        atualizarPontosIniciais(this.value);
-    });
+    // Configurar eventos
+    const startPointsInput = document.querySelector('#start-points');
+    const disLimitInput = document.querySelector('#dis-limit');
     
-    document.getElementById('dis-limit')?.addEventListener('change', function() {
-        atualizarLimiteDesvantagens(this.value);
-    });
+    if (startPointsInput) {
+        startPointsInput.addEventListener('change', function() {
+            atualizarPontosIniciais(this.value);
+        });
+    }
     
-    // Configurar botões de status social
+    if (disLimitInput) {
+        disLimitInput.addEventListener('change', function() {
+            atualizarLimiteDesvantagens(this.value);
+        });
+    }
+    
+    // Botões de status social
     document.querySelectorAll('.mod-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            const tipo = this.closest('.mod-compact-row')?.dataset.tipo;
-            const direcao = this.classList.contains('plus') ? 1 : -1;
-            if (tipo) {
-                const valorAtual = dashboardPersonagem[tipo] || 0;
+            const row = this.closest('.mod-compact-row');
+            const tipo = row?.querySelector('.mod-compact-label span')?.textContent;
+            
+            let tipoKey = '';
+            if (tipo?.includes('Status')) tipoKey = 'status';
+            else if (tipo?.includes('Reputação')) tipoKey = 'reputacao';
+            else if (tipo?.includes('Aparência')) tipoKey = 'aparencia';
+            
+            if (tipoKey) {
+                const valorAtual = dashboardPersonagem[tipoKey] || 0;
+                const direcao = this.classList.contains('plus') ? 1 : -1;
                 const novoValor = Math.max(Math.min(valorAtual + direcao, 4), -4);
-                atualizarStatusSocial(tipo, novoValor);
+                
+                // Atualizar o input correspondente
+                const input = row.querySelector('.mod-value');
+                if (input) input.textContent = novoValor;
+                
+                atualizarStatusSocial(tipoKey, novoValor);
             }
         });
     });
     
-    // Configurar botão de atualização manual
-    document.querySelector('.refresh-btn')?.addEventListener('click', sincronizarTudo);
+    // Botão de refresh
+    const refreshBtn = document.querySelector('.refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            console.log('🔄 Atualização manual solicitada');
+            sincronizarTudoComForca();
+        });
+    }
     
-    // Iniciar observador de mudanças
-    iniciarObservadorAtributos();
+    // Iniciar observadores AGORA
+    setTimeout(() => {
+        iniciarObservadoresAgressivos();
+        
+        // Forçar primeira sincronização
+        setTimeout(sincronizarTudoComForca, 500);
+    }, 100);
     
-    // Fazer primeira sincronização
-    setTimeout(sincronizarTudo, 500);
-    
-    console.log('✅ Dashboard inicializada');
+    console.log('✅ Dashboard FORTE inicializada!');
 }
 
-// ===== EXPORTAR FUNÇÕES =====
+// ===== EXPORTAR E INICIALIZAR =====
 
-window.atualizarDashboard = sincronizarTudo;
+window.atualizarDashboard = sincronizarTudoComForca;
 window.definirPontosIniciais = atualizarPontosIniciais;
 window.definirLimiteDesvantagens = atualizarLimiteDesvantagens;
 window.ajustarModificador = atualizarStatusSocial;
+window.sincronizarDashboard = sincronizarTudoComForca;
 
-// Inicializar quando a aba dashboard estiver ativa
+// Inicialização imediata
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('dashboard')?.classList.contains('active')) {
-            iniciarDashboard();
+        if (document.querySelector('#dashboard.active')) {
+            console.log('📱 Dashboard ativa ao carregar, inicializando...');
+            iniciarDashboardForte();
         }
     });
 } else {
-    if (document.getElementById('dashboard')?.classList.contains('active')) {
-        iniciarDashboard();
+    if (document.querySelector('#dashboard.active')) {
+        console.log('📱 Dashboard já carregada e ativa, inicializando...');
+        iniciarDashboardForte();
     }
 }
 
-// Inicializar quando mudar para a aba dashboard
+// Também observar quando a aba for ativada
 document.addEventListener('tabChanged', function(event) {
-    if (event.detail.tabId === 'dashboard') {
-        iniciarDashboard();
+    if (event.detail && event.detail.tabId === 'dashboard') {
+        console.log('🔁 Aba dashboard ativada via evento');
+        setTimeout(iniciarDashboardForte, 100);
     }
 });
+
+// Fallback: verificar a cada segundo se a dashboard está visível
+setInterval(() => {
+    const dashboardActive = document.querySelector('#dashboard.active');
+    if (dashboardActive && !window.dashboardIniciada) {
+        window.dashboardIniciada = true;
+        console.log('👁️ Dashboard detectada como ativa (fallback)');
+        iniciarDashboardForte();
+    }
+}, 1000);
+
+console.log('📊 Dashboard.js carregado e pronto para ação!');
