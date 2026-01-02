@@ -1,34 +1,14 @@
 // ===========================================
-// DASHBOARD.JS - Integração com Atributos
+// DASHBOARD.JS - COMPLETO E FUNCIONAL
+// SÓ USA O QUE JÁ EXISTE NO LOCALSTORAGE
 // ===========================================
 
-function inicializarDashboard() {
-    console.log('📊 Inicializando dashboard...');
-    
-    // Configura upload de foto
-    configurarUploadFoto();
-    
-    // Carrega dados do localStorage
-    carregarDadosDashboard();
-    
-    // Configura sistema de pontos
-    configurarSistemaPontos();
-    
-    // Sincroniza com atributos
-    sincronizarAtributos();
-    
-    // Configura status social
-    configurarStatusSocial();
-    
-    // Atualiza contadores
-    atualizarContadores();
-    
-    // Configura atualização automática
-    configurarAtualizacaoAutomatica();
-    
-    console.log('✅ Dashboard inicializado');
-}
+let configPontos = {
+    iniciais: 100,
+    limite: -75
+};
 
+// ===== 1. UPLOAD DA FOTO =====
 function configurarUploadFoto() {
     const uploadInput = document.getElementById('char-upload');
     const photoPreview = document.getElementById('photo-preview');
@@ -38,9 +18,14 @@ function configurarUploadFoto() {
     // Carrega foto salva
     const fotoSalva = localStorage.getItem('gurps_foto_personagem');
     if (fotoSalva) {
-        photoPreview.innerHTML = `<img src="${fotoSalva}" alt="Foto do Personagem" style="width:100%;height:100%;object-fit:cover;border-radius:7px;">`;
+        photoPreview.innerHTML = `
+            <img src="${fotoSalva}" 
+                 alt="Foto do Personagem" 
+                 style="width:100%;height:100%;object-fit:cover;border-radius:7px;">
+        `;
     }
     
+    // Configura upload
     uploadInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -52,121 +37,102 @@ function configurarUploadFoto() {
         
         const reader = new FileReader();
         reader.onload = function(e) {
-            photoPreview.innerHTML = `<img src="${e.target.result}" alt="Foto do Personagem" style="width:100%;height:100%;object-fit:cover;border-radius:7px;">`;
+            photoPreview.innerHTML = `
+                <img src="${e.target.result}" 
+                     alt="Foto do Personagem" 
+                     style="width:100%;height:100%;object-fit:cover;border-radius:7px;">
+            `;
             localStorage.setItem('gurps_foto_personagem', e.target.result);
         };
         reader.readAsDataURL(file);
     });
 }
 
-function carregarDadosDashboard() {
-    // Carrega identificação
-    const dados = JSON.parse(localStorage.getItem('gurps_dados_identificacao') || '{}');
-    
-    if (dados.nome) document.getElementById('char-name').value = dados.nome;
-    if (dados.raca) document.getElementById('char-race').value = dados.raca;
-    if (dados.ocupacao) document.getElementById('char-type').value = dados.ocupacao;
-    if (dados.jogador) document.getElementById('char-player').value = dados.jogador;
-    
-    // Salva automaticamente ao digitar
-    ['char-name', 'char-race', 'char-type', 'char-player'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('input', function() {
-                const dados = {
-                    nome: document.getElementById('char-name').value,
-                    raca: document.getElementById('char-race').value,
-                    ocupacao: document.getElementById('char-type').value,
-                    jogador: document.getElementById('char-player').value
-                };
-                localStorage.setItem('gurps_dados_identificacao', JSON.stringify(dados));
-            });
-        }
-    });
-}
-
+// ===== 2. SISTEMA DE PONTOS =====
 function configurarSistemaPontos() {
-    const pontosIniciais = document.getElementById('start-points');
-    const limiteDesvantagens = document.getElementById('dis-limit');
+    const pontosIniciaisInput = document.getElementById('start-points');
+    const limiteDesvInput = document.getElementById('dis-limit');
     
-    // Carrega valores salvos
-    const pontosSalvos = JSON.parse(localStorage.getItem('gurps_sistema_pontos') || '{}');
+    // Carrega configuração salva
+    const pontosSalvos = JSON.parse(localStorage.getItem('gurps_config_pontos') || '{"iniciais":100,"limite":-75}');
+    configPontos = pontosSalvos;
     
-    if (pontosSalvos.pontosIniciais) {
-        pontosIniciais.value = pontosSalvos.pontosIniciais;
-    }
+    // Aplica valores
+    pontosIniciaisInput.value = configPontos.iniciais;
+    limiteDesvInput.value = configPontos.limite;
     
-    if (pontosSalvos.limiteDesvantagens) {
-        limiteDesvantagens.value = pontosSalvos.limiteDesvantagens;
-    }
-    
-    // Salva ao alterar
-    pontosIniciais.addEventListener('change', salvarConfigPontos);
-    limiteDesvantagens.addEventListener('change', salvarConfigPontos);
-    
-    function salvarConfigPontos() {
-        const dados = {
-            pontosIniciais: parseInt(pontosIniciais.value) || 100,
-            limiteDesvantagens: parseInt(limiteDesvantagens.value) || -75
-        };
-        localStorage.setItem('gurps_sistema_pontos', JSON.stringify(dados));
+    // Salva quando mudar
+    pontosIniciaisInput.addEventListener('change', function() {
+        configPontos.iniciais = parseInt(this.value) || 100;
+        localStorage.setItem('gurps_config_pontos', JSON.stringify(configPontos));
         calcularSaldoPontos();
-    }
-}
-
-function sincronizarAtributos() {
-    // Tenta obter dados diretamente da aba de atributos
-    if (window.obterDadosAtributos) {
-        const dados = window.obterDadosAtributos();
-        atualizarAtributosNoDashboard(dados);
-    } else {
-        // Fallback: carrega do localStorage
-        const dadosSalvos = localStorage.getItem('gurps_atributos_dashboard');
-        if (dadosSalvos) {
-            const dados = JSON.parse(dadosSalvos);
-            atualizarAtributosNoDashboard(dados);
-        }
-    }
+    });
     
-    // Calcula saldo de pontos
+    limiteDesvInput.addEventListener('change', function() {
+        configPontos.limite = parseInt(this.value) || -75;
+        localStorage.setItem('gurps_config_pontos', JSON.stringify(configPontos));
+        calcularSaldoPontos();
+    });
+    
+    // Calcula saldo inicial
     calcularSaldoPontos();
 }
 
-function atualizarAtributosNoDashboard(dados) {
-    if (!dados) return;
-    
-    // Atributos principais
-    if (dados.atributos) {
-        document.getElementById('summary-st').textContent = dados.atributos.ST || 10;
-        document.getElementById('summary-dx').textContent = dados.atributos.DX || 10;
-        document.getElementById('summary-iq').textContent = dados.atributos.IQ || 10;
-        document.getElementById('summary-ht').textContent = dados.atributos.HT || 10;
+// ===== 3. PEGA ATRIBUTOS DO LOCALSTORAGE =====
+function carregarAtributos() {
+    try {
+        // Pega dados da aba de atributos
+        const dadosAtributos = JSON.parse(localStorage.getItem('gurps_atributos') || '{}');
         
-        // Atributos secundários
-        const pvTotal = (dados.atributos.ST || 10) + (dados.bonus?.PV || 0);
-        const fpTotal = (dados.atributos.HT || 10) + (dados.bonus?.PF || 0);
-        const vontadeTotal = (dados.atributos.IQ || 10) + (dados.bonus?.Vontade || 0);
-        const percepcaoTotal = (dados.atributos.IQ || 10) + (dados.bonus?.Percepcao || 0);
-        
-        document.getElementById('summary-hp').textContent = pvTotal;
-        document.getElementById('summary-fp').textContent = fpTotal;
-        document.getElementById('summary-will').textContent = vontadeTotal;
-        document.getElementById('summary-per').textContent = percepcaoTotal;
-        
-        // Status rápido
-        document.getElementById('quick-hp').textContent = pvTotal;
-        document.getElementById('quick-fp').textContent = fpTotal;
+        if (dadosAtributos.atributos) {
+            const att = dadosAtributos.atributos;
+            
+            // Atributos principais no dashboard
+            document.getElementById('summary-st').textContent = att.ST || 10;
+            document.getElementById('summary-dx').textContent = att.DX || 10;
+            document.getElementById('summary-iq').textContent = att.IQ || 10;
+            document.getElementById('summary-ht').textContent = att.HT || 10;
+            
+            // Calcula atributos secundários
+            const pvTotal = (att.ST || 10) + (dadosAtributos.bonus?.PV || 0);
+            const fpTotal = (att.HT || 10) + (dadosAtributos.bonus?.PF || 0);
+            const vontadeTotal = (att.IQ || 10) + (dadosAtributos.bonus?.Vontade || 0);
+            const percepcaoTotal = (att.IQ || 10) + (dadosAtributos.bonus?.Percepcao || 0);
+            
+            // Atualiza dashboard
+            document.getElementById('summary-hp').textContent = pvTotal;
+            document.getElementById('summary-fp').textContent = fpTotal;
+            document.getElementById('summary-will').textContent = vontadeTotal;
+            document.getElementById('summary-per').textContent = percepcaoTotal;
+            
+            // Status rápido
+            document.getElementById('quick-hp').textContent = pvTotal;
+            document.getElementById('quick-fp').textContent = fpTotal;
+            
+            // Calcula pontos gastos em atributos
+            const custoST = ((att.ST || 10) - 10) * 10;
+            const custoDX = ((att.DX || 10) - 10) * 20;
+            const custoIQ = ((att.IQ || 10) - 10) * 20;
+            const custoHT = ((att.HT || 10) - 10) * 10;
+            const totalAtributos = custoST + custoDX + custoIQ + custoHT;
+            
+            // Atualiza no card de pontos
+            document.getElementById('points-attr').textContent = totalAtributos;
+            
+            return totalAtributos;
+        }
+    } catch (error) {
+        console.warn('Erro ao carregar atributos:', error);
     }
-    
-    // Pontos gastos
-    if (dados.pontosGastosAtributos !== undefined) {
-        document.getElementById('points-attr').textContent = dados.pontosGastosAtributos;
-    }
+    return 0;
 }
 
+// ===== 4. CALCULA SALDO DE PONTOS =====
 function calcularSaldoPontos() {
-    const pontosIniciais = parseInt(document.getElementById('start-points').value) || 100;
+    // Pontos gastos em atributos
     const pontosAtributos = parseInt(document.getElementById('points-attr').textContent) || 0;
+    
+    // Pontos de outras categorias (inicialmente 0)
     const pontosVantagens = parseInt(document.getElementById('points-adv').textContent) || 0;
     const pontosDesvantagens = parseInt(document.getElementById('points-dis').textContent) || 0;
     const pontosPeculiaridades = parseInt(document.getElementById('points-pec').textContent) || 0;
@@ -174,40 +140,40 @@ function calcularSaldoPontos() {
     const pontosTecnicas = parseInt(document.getElementById('points-tech').textContent) || 0;
     const pontosMagias = parseInt(document.getElementById('points-spells').textContent) || 0;
     
-    const totalGasto = pontosAtributos + pontosVantagens + pontosDesvantagens + 
-                      pontosPeculiaridades + pontosPericias + pontosTecnicas + pontosMagias;
+    // Total gasto
+    const totalGasto = pontosAtributos + pontosVantagens + Math.abs(pontosDesvantagens) + 
+                       pontosPeculiaridades + pontosPericias + pontosTecnicas + pontosMagias;
     
-    const saldo = pontosIniciais - totalGasto;
+    // Saldo
+    const saldo = configPontos.iniciais - totalGasto;
     
-    // Atualiza total gasto
+    // Atualiza display
     document.getElementById('total-points-spent').textContent = totalGasto + ' pts';
+    document.getElementById('points-balance').textContent = saldo;
     
-    // Atualiza saldo
-    const saldoElement = document.getElementById('points-balance');
-    saldoElement.textContent = saldo;
-    
-    // Atualiza status
+    // Status
     const statusIndicator = document.getElementById('points-status-indicator');
     const statusText = document.getElementById('points-status-text');
     
     if (saldo < 0) {
-        saldoElement.classList.add('saldo-negativo');
+        document.getElementById('points-balance').classList.add('saldo-negativo');
         statusIndicator.style.background = '#f44336';
         statusText.textContent = 'Pontos negativos!';
         statusText.style.color = '#f44336';
     } else if (saldo === 0) {
-        saldoElement.classList.remove('saldo-negativo');
+        document.getElementById('points-balance').classList.remove('saldo-negativo');
         statusIndicator.style.background = '#4CAF50';
         statusText.textContent = 'Todos os pontos usados';
         statusText.style.color = '#4CAF50';
     } else {
-        saldoElement.classList.remove('saldo-negativo');
+        document.getElementById('points-balance').classList.remove('saldo-negativo');
         statusIndicator.style.background = '#FFC107';
         statusText.textContent = saldo + ' pontos disponíveis';
         statusText.style.color = '#FFC107';
     }
 }
 
+// ===== 5. STATUS SOCIAL =====
 function configurarStatusSocial() {
     // Carrega valores salvos
     const sociaisSalvos = JSON.parse(localStorage.getItem('gurps_status_social') || '{"status":0,"reputacao":0,"aparencia":0}');
@@ -216,16 +182,15 @@ function configurarStatusSocial() {
     document.getElementById('rep-value').textContent = sociaisSalvos.reputacao || 0;
     document.getElementById('app-value').textContent = sociaisSalvos.aparencia || 0;
     
-    // Calcula valores iniciais
-    calcularPontosSociais();
+    calcularStatusSocial();
 }
 
-function calcularPontosSociais() {
+function calcularStatusSocial() {
     const status = parseInt(document.getElementById('status-value').textContent) || 0;
     const reputacao = parseInt(document.getElementById('rep-value').textContent) || 0;
     const aparencia = parseInt(document.getElementById('app-value').textContent) || 0;
     
-    // Pontos (Status: 5/pt, Rep/Apar: 5/nível)
+    // Calcula pontos (Status: 5/pt, Rep/Apar: 5/nível)
     const pontosStatus = status * 5;
     const pontosReputacao = reputacao * 5;
     const pontosAparencia = aparencia * 5;
@@ -242,16 +207,10 @@ function calcularPontosSociais() {
     const totalElement = document.getElementById('reaction-total-compact');
     totalElement.textContent = (totalReacao >= 0 ? '+' : '') + totalReacao;
     
-    // Cor
-    if (totalReacao > 0) {
-        totalElement.style.color = '#4CAF50';
-    } else if (totalReacao < 0) {
-        totalElement.style.color = '#f44336';
-    } else {
-        totalElement.style.color = 'var(--text-gold)';
-    }
+    // Cor baseada no valor
+    totalElement.style.color = totalReacao > 0 ? '#4CAF50' : totalReacao < 0 ? '#f44336' : 'var(--text-gold)';
     
-    // Atualiza pontos (negativos vão para desvantagens, positivos para vantagens)
+    // Se pontos sociais negativos, adiciona às desvantagens
     if (totalPontos < 0) {
         document.getElementById('points-dis').textContent = Math.abs(totalPontos);
     }
@@ -259,36 +218,69 @@ function calcularPontosSociais() {
     calcularSaldoPontos();
 }
 
-function atualizarContadores() {
-    // Exemplo - pode ser conectado com outras abas
-    document.getElementById('last-update-time').textContent = 
-        new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-}
-
-function configurarAtualizacaoAutomatica() {
-    // Escuta eventos de atualização de atributos
-    window.addEventListener('atributosAtualizados', function(event) {
-        if (event.detail) {
-            atualizarAtributosNoDashboard(event.detail);
-            calcularSaldoPontos();
-        }
-    });
+// ===== 6. IDENTIFICAÇÃO =====
+function configurarIdentificacao() {
+    // Carrega dados salvos
+    const dadosSalvos = JSON.parse(localStorage.getItem('gurps_identificacao') || '{}');
     
-    // Atualiza quando o storage muda (outra aba)
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'gurps_atributos_dashboard') {
-            try {
-                const dados = JSON.parse(e.newValue);
-                atualizarAtributosNoDashboard(dados);
-                calcularSaldoPontos();
-            } catch (error) {
-                console.warn('Erro ao processar atualização:', error);
-            }
+    document.getElementById('char-name').value = dadosSalvos.nome || '';
+    document.getElementById('char-race').value = dadosSalvos.raca || 'Humano';
+    document.getElementById('char-type').value = dadosSalvos.ocupacao || '';
+    document.getElementById('char-player').value = dadosSalvos.jogador || '';
+    
+    // Salva automaticamente
+    ['char-name', 'char-race', 'char-type', 'char-player'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', function() {
+                const dados = {
+                    nome: document.getElementById('char-name').value,
+                    raca: document.getElementById('char-race').value,
+                    ocupacao: document.getElementById('char-type').value,
+                    jogador: document.getElementById('char-player').value
+                };
+                localStorage.setItem('gurps_identificacao', JSON.stringify(dados));
+            });
         }
     });
 }
 
-// Funções exportadas para o HTML
+// ===== 7. FINANÇAS E CARGA =====
+function atualizarFinancasCarga() {
+    // Pega ST dos atributos
+    const dadosAtributos = JSON.parse(localStorage.getItem('gurps_atributos') || '{}');
+    const ST = dadosAtributos.atributos?.ST || 10;
+    
+    // Calcula limites de carga (simplificado)
+    const limiteLeve = ST * 2;
+    const limiteMedia = ST * 3;
+    const limitePesada = ST * 6;
+    const limiteExtrema = ST * 10;
+    
+    // Atualiza display
+    document.getElementById('limit-light').textContent = limiteLeve.toFixed(1) + ' kg';
+    document.getElementById('limit-medium').textContent = limiteMedia.toFixed(1) + ' kg';
+    document.getElementById('limit-heavy').textContent = limitePesada.toFixed(1) + ' kg';
+    document.getElementById('limit-extreme').textContent = limiteExtrema.toFixed(1) + ' kg';
+}
+
+// ===== 8. CONTADORES =====
+function atualizarContadores() {
+    // Atualiza hora
+    const agora = new Date();
+    document.getElementById('last-update-time').textContent = 
+        agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+    
+    // Contadores básicos (você pode expandir depois)
+    document.getElementById('counter-advantages').textContent = '0';
+    document.getElementById('counter-disadvantages').textContent = '0';
+    document.getElementById('counter-skills').textContent = '0';
+    document.getElementById('counter-spells').textContent = '0';
+    document.getElementById('counter-languages').textContent = '1';
+    document.getElementById('counter-relationships').textContent = '0';
+}
+
+// ===== 9. FUNÇÕES EXPORTADAS PARA O HTML =====
 window.definirPontosIniciais = function(valor) {
     document.getElementById('start-points').value = valor;
     const event = new Event('change');
@@ -302,16 +294,14 @@ window.definirLimiteDesvantagens = function(valor) {
 };
 
 window.ajustarModificador = function(tipo, valor) {
-    const elementId = tipo === 'status' ? 'status-value' : 
-                     tipo === 'reputacao' ? 'rep-value' : 'app-value';
-    const element = document.getElementById(elementId);
-    let current = parseInt(element.textContent) || 0;
+    const element = document.getElementById(tipo + '-value');
+    let atual = parseInt(element.textContent) || 0;
     
-    current += valor;
-    if (current < -5) current = -5;
-    if (current > 5) current = 5;
+    atual += valor;
+    if (atual < -5) atual = -5;
+    if (atual > 5) atual = 5;
     
-    element.textContent = current;
+    element.textContent = atual;
     
     // Salva
     const dados = {
@@ -321,29 +311,53 @@ window.ajustarModificador = function(tipo, valor) {
     };
     localStorage.setItem('gurps_status_social', JSON.stringify(dados));
     
-    calcularPontosSociais();
+    calcularStatusSocial();
 };
 
 window.atualizarDashboard = function() {
-    sincronizarAtributos();
+    // Atualiza tudo
+    carregarAtributos();
     calcularSaldoPontos();
+    atualizarFinancasCarga();
     atualizarContadores();
     
-    // Anima botão
+    // Animação do botão
     const btn = document.querySelector('.refresh-btn');
     btn.classList.add('refreshing');
     setTimeout(() => btn.classList.remove('refreshing'), 500);
 };
 
-// Inicializa quando a DOM estiver pronta
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('dashboard')?.classList.contains('active')) {
-            inicializarDashboard();
+// ===== 10. INICIALIZAÇÃO =====
+function inicializarDashboard() {
+    console.log('🚀 Inicializando Dashboard...');
+    
+    // Configura tudo
+    configurarUploadFoto();
+    configurarIdentificacao();
+    configurarSistemaPontos();
+    configurarStatusSocial();
+    
+    // Carrega dados iniciais
+    carregarAtributos();
+    atualizarFinancasCarga();
+    atualizarContadores();
+    
+    // Escuta mudanças no localStorage (de outras abas)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'gurps_atributos') {
+            console.log('📥 Atualizando dashboard com novos atributos...');
+            carregarAtributos();
+            calcularSaldoPontos();
+            atualizarFinancasCarga();
         }
     });
+    
+    console.log('✅ Dashboard pronto!');
+}
+
+// Inicializa quando a página carrega
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarDashboard);
 } else {
-    if (document.getElementById('dashboard')?.classList.contains('active')) {
-        inicializarDashboard();
-    }
+    inicializarDashboard();
 }
