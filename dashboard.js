@@ -86,6 +86,8 @@ function calcularPontosGastos() {
     const pontosDesvantagens = dashboardState.desvantagens * -5; // Negativo
     const pontosPericias = dashboardState.pericias * 2; // Estimativa
     const pontosMagias = dashboardState.magias * 3; // Estimativa
+    const pontosPeculiaridades = 0; // Placeholder
+    const pontosTecnicas = 0; // Placeholder
     
     // Atualizar display
     document.getElementById('points-attr').textContent = pontosAtributos;
@@ -93,10 +95,13 @@ function calcularPontosGastos() {
     document.getElementById('points-dis').textContent = pontosDesvantagens;
     document.getElementById('points-skills').textContent = pontosPericias;
     document.getElementById('points-spells').textContent = pontosMagias;
+    document.getElementById('points-pec').textContent = pontosPeculiaridades;
+    document.getElementById('points-tech').textContent = pontosTecnicas;
     
     // Calcular total gasto
     const totalGasto = pontosAtributos + pontosVantagens + pontosDesvantagens + 
-                      pontosPericias + pontosMagias + pontosSociais;
+                      pontosPericias + pontosMagias + pontosSociais +
+                      pontosPeculiaridades + pontosTecnicas;
     
     document.getElementById('total-points-spent').textContent = `${totalGasto} pts`;
     
@@ -134,20 +139,35 @@ function atualizarStatusSaldo(saldo) {
 // ===========================================
 
 function ajustarModificador(tipo, valor) {
-    const currentSpan = document.getElementById(`${tipo}-value`);
+    // Mapear tipos para IDs corretos
+    const typeMap = {
+        'status': 'status',
+        'reputacao': 'rep',
+        'aparencia': 'app'
+    };
+    
+    const displayId = typeMap[tipo];
+    if (!displayId) {
+        console.error('Tipo inválido:', tipo);
+        return;
+    }
+    
+    const currentSpan = document.getElementById(`${displayId}-value`);
     const currentPoints = document.getElementById(`${tipo}-points-compact`);
     
-    let currentValue = parseInt(currentSpan.textContent);
+    if (!currentSpan) {
+        console.error('Elemento não encontrado:', `${displayId}-value`);
+        return;
+    }
+    
+    let currentValue = parseInt(currentSpan.textContent) || 0;
     let newValue = currentValue + valor;
     
     // Limites
     if (tipo === 'status') {
         if (newValue < -5) newValue = -5;
         if (newValue > 8) newValue = 8;
-    } else if (tipo === 'reputacao') {
-        if (newValue < -4) newValue = -4;
-        if (newValue > 4) newValue = 4;
-    } else if (tipo === 'aparencia') {
+    } else if (tipo === 'reputacao' || tipo === 'aparencia') {
         if (newValue < -4) newValue = -4;
         if (newValue > 4) newValue = 4;
     }
@@ -160,16 +180,24 @@ function ajustarModificador(tipo, valor) {
     
     // Calcular pontos (cada nível custa 5 pontos)
     const pontos = newValue * 5;
-    currentPoints.textContent = `[${pontos}]`;
+    if (currentPoints) {
+        currentPoints.textContent = `[${pontos}]`;
+    }
     
     // Atualizar total de pontos sociais
     const totalSocial = (dashboardState.status + dashboardState.reputacao + dashboardState.aparencia) * 5;
-    document.getElementById('social-total-points').textContent = `${totalSocial} pts`;
+    const socialPointsElement = document.getElementById('social-total-points');
+    if (socialPointsElement) {
+        socialPointsElement.textContent = `${Math.abs(totalSocial)} pts`;
+    }
     
     // Atualizar modificador total de reação
     const reacaoTotal = dashboardState.status + dashboardState.reputacao + dashboardState.aparencia;
-    const display = reacaoTotal >= 0 ? `+${reacaoTotal}` : reacaoTotal;
-    document.getElementById('reaction-total-compact').textContent = display;
+    const display = reacaoTotal >= 0 ? `+${reacaoTotal}` : reacaoTotal.toString();
+    const reactionElement = document.getElementById('reaction-total-compact');
+    if (reactionElement) {
+        reactionElement.textContent = display;
+    }
     
     // Recalcular sistema de pontos
     atualizarSistemaPontos();
@@ -182,8 +210,10 @@ function ajustarModificador(tipo, valor) {
 
 function sincronizarAtributos() {
     try {
-        // Verificar se atributos.js está carregado e tem dados
+        // TENTATIVA 1: Verificar se atributos.js está carregado
         if (typeof personagemAtributos !== 'undefined') {
+            console.log('✅ atributos.js detectado, sincronizando...');
+            
             // Pegar valores principais
             dashboardState.ST = personagemAtributos.ST || 10;
             dashboardState.DX = personagemAtributos.DX || 10;
@@ -210,14 +240,46 @@ function sincronizarAtributos() {
             // Atualizar dashboard
             atualizarDashboardAtributos();
         } else {
-            console.warn('atributos.js não carregado, usando valores padrão');
+            // TENTATIVA 2: Tentar pegar diretamente dos inputs
+            console.log('⚠️ atributos.js não detectado, tentando pegar valores dos inputs...');
+            
+            const stInput = document.getElementById('ST');
+            const dxInput = document.getElementById('DX');
+            const iqInput = document.getElementById('IQ');
+            const htInput = document.getElementById('HT');
+            
+            if (stInput && dxInput && iqInput && htInput) {
+                dashboardState.ST = parseInt(stInput.value) || 10;
+                dashboardState.DX = parseInt(dxInput.value) || 10;
+                dashboardState.IQ = parseInt(iqInput.value) || 10;
+                dashboardState.HT = parseInt(htInput.value) || 10;
+                
+                // Calcular valores secundários
+                dashboardState.PV = dashboardState.ST;
+                dashboardState.PF = dashboardState.HT;
+                dashboardState.Vontade = dashboardState.IQ;
+                dashboardState.Percepcao = dashboardState.IQ;
+                
+                atualizarDashboardAtributos();
+            } else {
+                console.warn('⚠️ Inputs de atributos não encontrados');
+            }
         }
     } catch (error) {
-        console.error('Erro ao sincronizar atributos:', error);
+        console.error('❌ Erro ao sincronizar atributos:', error);
     }
 }
 
 function atualizarDashboardAtributos() {
+    console.log('📊 Atualizando atributos no dashboard:', {
+        ST: dashboardState.ST,
+        DX: dashboardState.DX,
+        IQ: dashboardState.IQ,
+        HT: dashboardState.HT,
+        PV: dashboardState.PV,
+        PF: dashboardState.PF
+    });
+    
     // Atualizar resumo de atributos
     document.getElementById('summary-st').textContent = dashboardState.ST;
     document.getElementById('summary-dx').textContent = dashboardState.DX;
@@ -242,18 +304,33 @@ function atualizarDashboardAtributos() {
 }
 
 function calcularLimitesCarga(ST) {
-    // Usar a mesma tabela do atributos.js
+    // Tabela simplificada de cargas
+    const cargasTable = {
+        1: { leve: 0.2, media: 0.3, pesada: 0.6, extrema: 1.0 },
+        2: { leve: 0.8, media: 1.2, pesada: 2.4, extrema: 4.0 },
+        3: { leve: 1.8, media: 2.7, pesada: 5.4, extrema: 9.0 },
+        4: { leve: 3.2, media: 4.8, pesada: 9.6, extrema: 16.0 },
+        5: { leve: 5.0, media: 7.5, pesada: 15.0, extrema: 25.5 },
+        6: { leve: 7.2, media: 10.8, pesada: 21.6, extrema: 36.0 },
+        7: { leve: 9.8, media: 14.7, pesada: 29.4, extrema: 49.0 },
+        8: { leve: 13.0, media: 19.5, pesada: 39.0, extrema: 65.0 },
+        9: { leve: 16.0, media: 24.0, pesada: 48.0, extrema: 80.0 },
+        10: { leve: 20.0, media: 30.0, pesada: 60.0, extrema: 100.0 },
+        11: { leve: 24.0, media: 36.0, pesada: 72.0, extrema: 120.0 },
+        12: { leve: 29.0, media: 43.5, pesada: 87.0, extrema: 145.0 },
+        13: { leve: 34.0, media: 51.0, pesada: 102.0, extrema: 170.0 },
+        14: { leve: 39.0, media: 58.5, pesada: 117.0, extrema: 195.0 },
+        15: { leve: 45.0, media: 67.5, pesada: 135.0, extrema: 225.0 },
+        16: { leve: 51.0, media: 76.5, pesada: 153.0, extrema: 255.0 },
+        17: { leve: 58.0, media: 87.0, pesada: 174.0, extrema: 294.0 },
+        18: { leve: 65.0, media: 97.5, pesada: 195.0, extrema: 325.0 },
+        19: { leve: 72.0, media: 108.0, pesada: 216.0, extrema: 360.0 },
+        20: { leve: 80.0, media: 120.0, pesada: 240.0, extrema: 400.0 }
+    };
+    
     let stKey = ST;
     if (ST > 20) stKey = 20;
     if (ST < 1) stKey = 1;
-    
-    const cargasTable = {
-        1: { nenhuma: 0.1, leve: 0.2, media: 0.3, pesada: 0.6, muitoPesada: 1.0 },
-        2: { nenhuma: 0.4, leve: 0.8, media: 1.2, pesada: 2.4, muitoPesada: 4.0 },
-        // ... (mesma tabela do atributos.js)
-        10: { nenhuma: 10.0, leve: 20.0, media: 30.0, pesada: 60.0, muitoPesada: 100.0 },
-        20: { nenhuma: 40.0, leve: 80.0, media: 120.0, pesada: 240.0, muitoPesada: 400.0 }
-    };
     
     const cargas = cargasTable[stKey] || cargasTable[10];
     
@@ -261,7 +338,7 @@ function calcularLimitesCarga(ST) {
     document.getElementById('limit-light').textContent = cargas.leve.toFixed(1) + ' kg';
     document.getElementById('limit-medium').textContent = cargas.media.toFixed(1) + ' kg';
     document.getElementById('limit-heavy').textContent = cargas.pesada.toFixed(1) + ' kg';
-    document.getElementById('limit-extreme').textContent = cargas.muitoPesada.toFixed(1) + ' kg';
+    document.getElementById('limit-extreme').textContent = cargas.extrema.toFixed(1) + ' kg';
     
     // Calcular nível de carga atual
     atualizarNivelCarga(dashboardState.pesoEquipamentos, cargas);
@@ -269,22 +346,26 @@ function calcularLimitesCarga(ST) {
 
 function atualizarNivelCarga(peso, limites) {
     const encLevel = document.getElementById('enc-level-display');
+    if (!encLevel) return;
     
-    if (peso <= limites.nenhuma) {
+    // Remover classes anteriores
+    encLevel.classList.remove('safe', 'light', 'medium', 'heavy', 'extreme');
+    
+    if (peso <= 0) {
         encLevel.textContent = 'Nenhuma';
-        encLevel.className = 'enc-value safe';
+        encLevel.classList.add('safe');
     } else if (peso <= limites.leve) {
         encLevel.textContent = 'Leve';
-        encLevel.className = 'enc-value light';
+        encLevel.classList.add('light');
     } else if (peso <= limites.media) {
         encLevel.textContent = 'Média';
-        encLevel.className = 'enc-value medium';
+        encLevel.classList.add('medium');
     } else if (peso <= limites.pesada) {
         encLevel.textContent = 'Pesada';
-        encLevel.className = 'enc-value heavy';
+        encLevel.classList.add('heavy');
     } else {
         encLevel.textContent = 'Extrema';
-        encLevel.className = 'enc-value extreme';
+        encLevel.classList.add('extreme');
     }
 }
 
@@ -298,8 +379,9 @@ function atualizarFinancas() {
     document.getElementById('current-money').textContent = `$${dinheiro}`;
     
     // Nível de riqueza
+    const pontosRiqueza = calcularPontosRiqueza();
     document.getElementById('wealth-level-display').textContent = 
-        `${dashboardState.nivelRiqueza} [${calcularPontosRiqueza()} pts]`;
+        `${dashboardState.nivelRiqueza} [${pontosRiqueza} pts]`;
     
     // Peso
     document.getElementById('equip-weight').textContent = 
@@ -327,6 +409,7 @@ function calcularPontosRiqueza() {
 
 function atualizarStatusFinanceiro() {
     const statusElement = document.getElementById('finance-status');
+    if (!statusElement) return;
     
     if (dashboardState.dinheiro < 100) {
         statusElement.textContent = 'Baixo';
@@ -338,6 +421,71 @@ function atualizarStatusFinanceiro() {
         statusElement.textContent = 'Alto';
         statusElement.style.backgroundColor = '#4CAF50';
     }
+}
+
+// ===========================================
+// UPLOAD DE FOTO - CORREÇÃO
+// ===========================================
+
+function configurarUploadFoto() {
+    const uploadInput = document.getElementById('char-upload');
+    const photoPreview = document.getElementById('photo-preview');
+    
+    if (!uploadInput || !photoPreview) {
+        console.error('❌ Elementos de upload de foto não encontrados');
+        return;
+    }
+    
+    uploadInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                // Limpar placeholder
+                photoPreview.innerHTML = '';
+                
+                // Criar imagem
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.alt = "Foto do Personagem";
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                
+                // Adicionar à preview
+                photoPreview.appendChild(img);
+                
+                // Adicionar botão de remover
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.className = 'remove-photo-btn';
+                removeBtn.title = 'Remover foto';
+                removeBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    photoPreview.innerHTML = `
+                        <div class="photo-placeholder">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Foto do Personagem</span>
+                            <small>Opcional</small>
+                        </div>`;
+                    uploadInput.value = '';
+                };
+                
+                photoPreview.appendChild(removeBtn);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Clique na área de upload
+    photoPreview.parentElement.addEventListener('click', function(e) {
+        if (!e.target.closest('.remove-photo-btn')) {
+            uploadInput.click();
+        }
+    });
 }
 
 // ===========================================
@@ -394,6 +542,7 @@ function atualizarDashboard() {
 function salvarEstadoDashboard() {
     try {
         localStorage.setItem('gurps_dashboard', JSON.stringify(dashboardState));
+        console.log('💾 Estado do dashboard salvo');
     } catch (error) {
         console.warn('Não foi possível salvar dashboard:', error);
     }
@@ -406,30 +555,145 @@ function carregarEstadoDashboard() {
             const savedState = JSON.parse(dados);
             
             // Mesclar com estado atual (preservando valores padrão)
-            dashboardState = { ...dashboardState, ...savedState };
+            Object.keys(savedState).forEach(key => {
+                if (dashboardState.hasOwnProperty(key)) {
+                    dashboardState[key] = savedState[key];
+                }
+            });
+            
+            console.log('📂 Estado do dashboard carregado:', dashboardState);
             
             // Restaurar configurações
-            document.getElementById('start-points').value = dashboardState.pontosIniciais;
-            document.getElementById('dis-limit').value = dashboardState.limiteDesvantagens;
+            if (document.getElementById('start-points')) {
+                document.getElementById('start-points').value = dashboardState.pontosIniciais;
+            }
+            if (document.getElementById('dis-limit')) {
+                document.getElementById('dis-limit').value = dashboardState.limiteDesvantagens;
+            }
             
             // Restaurar status social
-            document.getElementById('status-value').textContent = dashboardState.status;
-            document.getElementById('rep-value').textContent = dashboardState.reputacao;
-            document.getElementById('app-value').textContent = dashboardState.aparencia;
+            if (document.getElementById('status-value')) {
+                document.getElementById('status-value').textContent = dashboardState.status;
+            }
+            if (document.getElementById('rep-value')) {
+                document.getElementById('rep-value').textContent = dashboardState.reputacao;
+            }
+            if (document.getElementById('app-value')) {
+                document.getElementById('app-value').textContent = dashboardState.aparencia;
+            }
             
             // Atualizar pontos sociais
-            document.getElementById('status-points-compact').textContent = 
-                `[${dashboardState.status * 5}]`;
-            document.getElementById('reputacao-points-compact').textContent = 
-                `[${dashboardState.reputacao * 5}]`;
-            document.getElementById('aparencia-points-compact').textContent = 
-                `[${dashboardState.aparencia * 5}]`;
+            if (document.getElementById('status-points-compact')) {
+                document.getElementById('status-points-compact').textContent = 
+                    `[${dashboardState.status * 5}]`;
+            }
+            if (document.getElementById('reputacao-points-compact')) {
+                document.getElementById('reputacao-points-compact').textContent = 
+                    `[${dashboardState.reputacao * 5}]`;
+            }
+            if (document.getElementById('aparencia-points-compact')) {
+                document.getElementById('aparencia-points-compact').textContent = 
+                    `[${dashboardState.aparencia * 5}]`;
+            }
+            
+            // Atualizar modificador total de reação
+            const reacaoTotal = dashboardState.status + dashboardState.reputacao + dashboardState.aparencia;
+            const display = reacaoTotal >= 0 ? `+${reacaoTotal}` : reacaoTotal.toString();
+            if (document.getElementById('reaction-total-compact')) {
+                document.getElementById('reaction-total-compact').textContent = display;
+            }
             
             return true;
         }
     } catch (error) {
         console.warn('Não foi possível carregar dashboard:', error);
     }
+    return false;
+}
+
+// ===========================================
+// FORÇAR SINCRONIZAÇÃO MANUAL
+// ===========================================
+
+function forcarSincronizacaoAtributos() {
+    console.log('🔄 Forçando sincronização com atributos...');
+    
+    // Tentar múltiplas abordagens
+    const abordagens = [
+        // Abordagem 1: atributos.js global
+        () => {
+            if (typeof personagemAtributos !== 'undefined') {
+                return personagemAtributos;
+            }
+            return null;
+        },
+        
+        // Abordagem 2: Inputs diretos
+        () => {
+            const st = document.getElementById('ST');
+            const dx = document.getElementById('DX');
+            const iq = document.getElementById('IQ');
+            const ht = document.getElementById('HT');
+            
+            if (st && dx && iq && ht) {
+                return {
+                    ST: parseInt(st.value) || 10,
+                    DX: parseInt(dx.value) || 10,
+                    IQ: parseInt(iq.value) || 10,
+                    HT: parseInt(ht.value) || 10,
+                    bonus: {
+                        PV: 0,
+                        PF: 0,
+                        Vontade: 0,
+                        Percepcao: 0
+                    }
+                };
+            }
+            return null;
+        },
+        
+        // Abordagem 3: localStorage
+        () => {
+            try {
+                const dados = localStorage.getItem('gurps_atributos');
+                if (dados) {
+                    return JSON.parse(dados);
+                }
+            } catch (e) {}
+            return null;
+        }
+    ];
+    
+    let dadosAtributos = null;
+    
+    for (let abordagem of abordagens) {
+        dadosAtributos = abordagem();
+        if (dadosAtributos) {
+            console.log('✅ Dados de atributos encontrados via abordagem:', abordagem.name || 'desconhecida');
+            break;
+        }
+    }
+    
+    if (dadosAtributos) {
+        if (dadosAtributos.atributos) {
+            // Formato do atributos.js
+            dashboardState.ST = dadosAtributos.atributos.ST || 10;
+            dashboardState.DX = dadosAtributos.atributos.DX || 10;
+            dashboardState.IQ = dadosAtributos.atributos.IQ || 10;
+            dashboardState.HT = dadosAtributos.atributos.HT || 10;
+        } else {
+            // Formato direto
+            dashboardState.ST = dadosAtributos.ST || 10;
+            dashboardState.DX = dadosAtributos.DX || 10;
+            dashboardState.IQ = dadosAtributos.IQ || 10;
+            dashboardState.HT = dadosAtributos.HT || 10;
+        }
+        
+        atualizarDashboardAtributos();
+        return true;
+    }
+    
+    console.warn('⚠️ Não foi possível encontrar dados de atributos');
     return false;
 }
 
@@ -444,13 +708,17 @@ function inicializarDashboard() {
     carregarEstadoDashboard();
     
     // Configurar event listeners
-    document.getElementById('start-points').addEventListener('change', function() {
-        definirPontosIniciais(this.value);
-    });
+    if (document.getElementById('start-points')) {
+        document.getElementById('start-points').addEventListener('change', function() {
+            definirPontosIniciais(this.value);
+        });
+    }
     
-    document.getElementById('dis-limit').addEventListener('change', function() {
-        definirLimiteDesvantagens(this.value);
-    });
+    if (document.getElementById('dis-limit')) {
+        document.getElementById('dis-limit').addEventListener('change', function() {
+            definirLimiteDesvantagens(this.value);
+        });
+    }
     
     // Configurar botão de atualização
     const refreshBtn = document.querySelector('.refresh-btn');
@@ -458,36 +726,46 @@ function inicializarDashboard() {
         refreshBtn.addEventListener('click', atualizarDashboard);
     }
     
-    // Configurar foto do personagem
-    const uploadInput = document.getElementById('char-upload');
-    if (uploadInput) {
-        uploadInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const preview = document.getElementById('photo-preview');
-                    preview.innerHTML = `<img src="${event.target.result}" alt="Foto do Personagem">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
+    // Configurar upload de foto
+    configurarUploadFoto();
     
-    // Sincronizar com outras abas periodicamente
-    setInterval(sincronizarAtributos, 2000);
+    // Forçar sincronização inicial com atributos
+    setTimeout(() => {
+        forcarSincronizacaoAtributos();
+        atualizarDashboard();
+    }, 500);
     
-    // Primeira atualização
-    setTimeout(atualizarDashboard, 500);
+    // Sincronizar periodicamente
+    setInterval(() => {
+        forcarSincronizacaoAtributos();
+    }, 3000);
+    
+    // Observar mudanças na aba
+    observarMudancasAba();
     
     console.log('✅ Dashboard inicializado');
 }
 
+function observarMudancasAba() {
+    // Observar cliques em tabs
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Quando mudar para dashboard, atualizar
+            if (this.getAttribute('onclick') && this.getAttribute('onclick').includes('dashboard')) {
+                setTimeout(() => {
+                    forcarSincronizacaoAtributos();
+                    atualizarDashboard();
+                }, 300);
+            }
+        });
+    });
+}
+
 // ===========================================
-// FUNÇÕES DE SIMULAÇÃO (PARA TESTES)
+// FUNÇÕES DE TESTE/DEMO
 // ===========================================
 
-// Funções para simular dados (remover na versão final)
 function simularDadosAleatorios() {
     // Simular contadores
     dashboardState.vantagens = Math.floor(Math.random() * 10) + 1;
@@ -513,6 +791,7 @@ window.definirLimiteDesvantagens = definirLimiteDesvantagens;
 window.ajustarModificador = ajustarModificador;
 window.atualizarDashboard = atualizarDashboard;
 window.sincronizarAtributos = sincronizarAtributos;
+window.forcarSincronizacaoAtributos = forcarSincronizacaoAtributos;
 window.inicializarDashboard = inicializarDashboard;
 window.simularDadosAleatorios = simularDadosAleatorios;
 
@@ -520,25 +799,28 @@ window.simularDadosAleatorios = simularDadosAleatorios;
 // INICIALIZAÇÃO AUTOMÁTICA
 // ===========================================
 
-// Inicializar quando a aba dashboard estiver ativa
+// Inicializar quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se estamos na aba dashboard
     const dashboardTab = document.getElementById('dashboard');
-    if (dashboardTab && dashboardTab.classList.contains('active')) {
-        setTimeout(inicializarDashboard, 300);
+    const isDashboardActive = dashboardTab && dashboardTab.classList.contains('active');
+    
+    // Se dashboard estiver ativa ou se for a única aba visível
+    if (isDashboardActive || document.querySelector('.dashboard-gurps')) {
+        setTimeout(inicializarDashboard, 1000);
+    }
+    
+    // Também inicializar se detectar elementos do dashboard
+    if (document.getElementById('summary-st')) {
+        setTimeout(inicializarDashboard, 1500);
     }
 });
 
-// Alternativa: observar mudanças de aba
-document.addEventListener('tabChange', function(e) {
-    if (e.detail && e.detail.tab === 'dashboard') {
-        setTimeout(inicializarDashboard, 100);
+// Fallback: inicializar após um tempo
+setTimeout(() => {
+    if (!window.dashboardInicializado && document.getElementById('summary-st')) {
+        console.log('⏱️ Inicializando dashboard por timeout...');
+        inicializarDashboard();
+        window.dashboardInicializado = true;
     }
-});
-
-// Inicializar se já estiver na aba dashboard
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    const dashboardTab = document.getElementById('dashboard');
-    if (dashboardTab && dashboardTab.classList.contains('active')) {
-        setTimeout(inicializarDashboard, 100);
-    }
-}
+}, 2000);
