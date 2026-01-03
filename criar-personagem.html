@@ -4866,455 +4866,458 @@ body::before {
 
 
     <script>
-    // ===========================================
-    // INICIALIZAÇÃO FIREBASE
-    // ===========================================
-    let app, auth, db;
-    let currentCharacterId = null;
-    let currentUser = null;
-    let isInitialized = false;
+// ===========================================
+// SISTEMA DE MÓDULOS FIREBASE
+// ===========================================
+let firebaseModules = {};
+let currentCharacterId = null;
+let currentUser = null;
+let isFirebaseReady = false;
 
-    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-        app = firebase.app();
-        auth = firebase.auth();
-        db = firebase.firestore();
-    } else {
+// Inicializar Firebase
+async function initializeFirebase() {
+    try {
+        // Configuração Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
             authDomain: "gurpsroll.firebaseapp.com",
-            projectId: "gurpsroll"
+            projectId: "gurpsroll",
+            storageBucket: "gurpsroll.appspot.com",
+            messagingSenderId: "329119610376",
+            appId: "1:329119610376:web:d30fd7e1e2b32e3c0a438c"
         };
-        app = firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-    }
-
-    // ===========================================
-    // VERIFICAÇÃO DE AUTENTICAÇÃO
-    // ===========================================
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
-            console.log('✅ Usuário autenticado:', user.uid);
-            loadCharacterData();
-            isInitialized = true;
-        } else {
-            console.log('❌ Usuário não autenticado');
-            showToast('🔒 Faça login para criar personagens', 'error');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 1500);
-        }
-    });
-
-    // ===========================================
-    // SISTEMA DE ABAS PRINCIPAIS
-    // ===========================================
-    function switchTab(tabId) {
-        if (!isInitialized) return;
         
-        console.log('📁 Mudando para aba:', tabId);
+        // Inicializar app
+        firebase.initializeApp(firebaseConfig);
         
-        // Remove active de todas as abas e botões
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        // Ativa a aba selecionada
-        const tabElement = document.getElementById(tabId);
-        if (tabElement) {
-            tabElement.classList.add('active');
-            console.log('✅ Aba', tabId, 'ativada');
-        } else {
-            console.error('❌ Aba não encontrada:', tabId);
-        }
-
-        // Ativa o botão correspondente
-        const tabBtn = document.getElementById(`tab${capitalizeFirstLetter(tabId)}`);
-        if (tabBtn) {
-            tabBtn.classList.add('active');
-        }
-
-        // Salva a última aba acessada
-        localStorage.setItem('lastTab', tabId);
+        // Referências principais
+        const auth = firebase.auth();
+        const db = firebase.firestore();
         
-        // Rola para o topo
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Dispara evento para inicialização específica da aba
-        if (typeof window[`init${capitalizeFirstLetter(tabId)}Tab`] === 'function') {
-            window[`init${capitalizeFirstLetter(tabId)}Tab`]();
-        }
-        
-        // Inicializa subtabs se houver
-        setTimeout(() => {
-            const subtabBtn = tabElement?.querySelector('.subtab-btn.active');
-            if (subtabBtn) {
-                const subtabId = subtabBtn.getAttribute('data-subtab');
-                if (subtabId && typeof window[`init${capitalizeFirstLetter(subtabId)}Subtab`] === 'function') {
-                    window[`init${capitalizeFirstLetter(subtabId)}Subtab`]();
-                }
-            }
-        }, 100);
-    }
-
-    // ===========================================
-    // SISTEMA DE SUB-ABAS
-    // ===========================================
-    document.addEventListener('click', function(e) {
-        // Sistema de sub-abas
-        if (e.target.closest('.subtab-btn')) {
-            const btn = e.target.closest('.subtab-btn');
-            const subtabId = btn.getAttribute('data-subtab');
-            
-            // Remove active de todos os botões da mesma sub-aba
-            const parent = btn.closest('.subtabs-navigation');
-            if (parent) {
-                parent.querySelectorAll('.subtab-btn').forEach(b => {
-                    b.classList.remove('active');
-                });
-            }
-            
-            // Adiciona active ao botão clicado
-            btn.classList.add('active');
-            
-            // Encontra o conteúdo da sub-aba
-            const subtabPane = document.getElementById(`subtab-${subtabId}`);
-            if (subtabPane) {
-                // Esconde todas as sub-abas do mesmo container
-                const container = subtabPane.closest('.subtabs-content');
-                if (container) {
-                    container.querySelectorAll('.subtab-pane').forEach(pane => {
-                        pane.classList.remove('active');
-                    });
-                }
+        // Autenticação automática (anônima)
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                console.log('Usuário autenticado:', user.uid);
+                isFirebaseReady = true;
                 
-                // Mostra a sub-aba selecionada
-                subtabPane.classList.add('active');
+                // Carregar personagem se houver ID na URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const charId = urlParams.get('id');
                 
-                // Inicializa a sub-aba se existir função específica
-                if (typeof window[`init${capitalizeFirstLetter(subtabId)}Subtab`] === 'function') {
-                    window[`init${capitalizeFirstLetter(subtabId)}Subtab`]();
-                }
-            }
-        }
-    });
-
-    function capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    // ===========================================
-    // CARREGAR DADOS DO PERSONAGEM
-    // ===========================================
-    async function loadCharacterData() {
-        // Verifica se tem ID de personagem na URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const charId = urlParams.get('id');
-
-        if (charId) {
-            // CARREGAR PERSONAGEM EXISTENTE
-            try {
-                const charDoc = await db.collection('characters').doc(charId).get();
-                
-                if (charDoc.exists && charDoc.data().owner === currentUser.uid) {
-                    currentCharacterId = charId;
-                    const charData = charDoc.data();
-                    
-                    // Preenche dados básicos
-                    document.getElementById('characterName').value = charData.name || '';
-                    
-                    showToast('📜 Personagem carregado: ' + charData.name, 'success');
-                    
-                    // Carrega última aba acessada
-                    const lastTab = charData.lastTab || 'atributos';
-                    setTimeout(() => switchTab(lastTab), 100);
-                    
-                    // Carrega peculiaridades se existirem
-                    if (charData.peculiaridades && typeof window.carregarPeculiaridades === 'function') {
-                        setTimeout(() => {
-                            window.carregarPeculiaridades(charData.peculiaridades);
-                        }, 500);
-                    }
+                if (charId) {
+                    await loadCharacterFromFirebase(charId);
                 } else {
-                    showToast('❌ Personagem não encontrado ou acesso negado', 'error');
-                    currentCharacterId = null;
-                    switchTab('atributos');
+                    // Criar novo personagem
+                    createNewCharacter();
                 }
-            } catch (error) {
-                console.error('Erro ao carregar personagem:', error);
-                showToast('❌ Erro ao carregar personagem', 'error');
-                switchTab('atributos');
-            }
-        } else {
-            // NOVO PERSONAGEM
-            currentCharacterId = null;
-            document.getElementById('characterName').value = '';
-            
-            // Restaura última aba acessada ou vai para atributos
-            const lastTab = localStorage.getItem('lastTab') || 'atributos';
-            setTimeout(() => switchTab(lastTab), 100);
-        }
-    }
-
-    // ===========================================
-    // SALVAR RASCUNHO
-    // ===========================================
-    async function saveDraft() {
-        if (!currentUser) {
-            showToast('❌ Faça login para salvar', 'error');
-            return;
-        }
-
-        const characterName = document.getElementById('characterName').value.trim();
-        if (!characterName) {
-            showToast('⚠️ Digite um nome para o personagem', 'warning');
-            document.getElementById('characterName').focus();
-            return;
-        }
-
-        // Coletar dados das peculiaridades
-        let peculiaridadesData = [];
-        if (typeof window.obterPeculiaridades === 'function') {
-            peculiaridadesData = window.obterPeculiaridades();
-        }
-
-        const characterData = {
-            name: characterName,
-            owner: currentUser.uid,
-            lastTab: localStorage.getItem('lastTab') || 'atributos',
-            lastUpdated: new Date().toISOString(),
-            status: 'draft',
-            peculiaridades: peculiaridadesData
-        };
-
-        try {
-            if (currentCharacterId) {
-                // Atualiza personagem existente
-                await db.collection('characters').doc(currentCharacterId).update(characterData);
-                showToast('💾 Rascunho atualizado', 'success');
-            } else {
-                // Cria novo personagem
-                const docRef = await db.collection('characters').add({
-                    ...characterData,
-                    createdAt: new Date().toISOString()
-                });
-                currentCharacterId = docRef.id;
                 
-                // Atualiza URL com o ID
-                window.history.replaceState({}, '', `?id=${currentCharacterId}`);
-                showToast('✅ Personagem criado e salvo', 'success');
+                // Inicializar módulos
+                initializeAllModules();
+                
+            } else {
+                // Login anônimo automático
+                await auth.signInAnonymously();
             }
-        } catch (error) {
-            console.error('Erro ao salvar:', error);
-            showToast('❌ Erro ao salvar personagem', 'error');
+        });
+        
+        // Se não há usuário, faz login anônimo
+        if (!auth.currentUser) {
+            await auth.signInAnonymously();
         }
+        
+    } catch (error) {
+        console.error('Erro ao inicializar Firebase:', error);
+        showToast('Erro de conexão com o servidor', 'error');
+    }
+}
+
+// ===========================================
+// GERENCIADOR DE MÓDULOS
+// ===========================================
+function initializeAllModules() {
+    console.log('Inicializando módulos Firebase...');
+    
+    // Mapeamento de módulos e suas funções de inicialização
+    const modules = {
+        'atributos': window.initAtributosTab,
+        'caracteristicas': window.iniciarSistemaCaracteristicas,
+        'vantagens': window.iniciarSistemaVantagens,
+        'peculiaridades': window.iniciarSistemaPeculiaridades,
+        'relacionamentos': window.iniciarSistemaRelacionamentos,
+        'pericias': window.iniciarSistemaPericias,
+        'magias': window.iniciarSistemaMagias,
+        'dashboard': window.initDashboardTab
+    };
+    
+    // Inicializar cada módulo que existir
+    Object.entries(modules).forEach(([name, initFunction]) => {
+        if (typeof initFunction === 'function') {
+            try {
+                initFunction();
+                console.log(`✅ Módulo ${name} inicializado`);
+            } catch (error) {
+                console.warn(`⚠️ Erro ao inicializar ${name}:`, error);
+            }
+        }
+    });
+}
+
+// ===========================================
+// SISTEMA DE PERSISTÊNCIA FIREBASE
+// ===========================================
+function registerModule(moduleName, saveFunction, loadFunction) {
+    firebaseModules[moduleName] = {
+        save: saveFunction,
+        load: loadFunction
+    };
+}
+
+async function saveAllModules() {
+    if (!isFirebaseReady || !currentCharacterId) {
+        console.log('Firebase não está pronto ou não há personagem');
+        return;
+    }
+    
+    try {
+        const characterData = {
+            nome: document.getElementById('characterName').value.trim() || 'Sem nome',
+            atualizadoEm: new Date().toISOString(),
+            userId: currentUser.uid
+        };
+        
+        // Coletar dados de cada módulo registrado
+        for (const [moduleName, module] of Object.entries(firebaseModules)) {
+            if (typeof module.save === 'function') {
+                try {
+                    const moduleData = module.save();
+                    if (moduleData) {
+                        characterData[moduleName] = moduleData;
+                    }
+                } catch (error) {
+                    console.error(`Erro ao salvar módulo ${moduleName}:`, error);
+                }
+            }
+        }
+        
+        // Salvar no Firebase
+        const db = firebase.firestore();
+        await db.collection('personagens').doc(currentCharacterId).set(characterData, { merge: true });
+        
+        console.log('Personagem salvo no Firebase:', currentCharacterId);
+        showToast('Personagem salvo com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao salvar no Firebase:', error);
+        showToast('Erro ao salvar personagem', 'error');
+    }
+}
+
+async function loadCharacterFromFirebase(characterId) {
+    try {
+        const db = firebase.firestore();
+        const doc = await db.collection('personagens').doc(characterId).get();
+        
+        if (doc.exists) {
+            currentCharacterId = characterId;
+            const data = doc.data();
+            
+            // Carregar nome
+            if (data.nome) {
+                document.getElementById('characterName').value = data.nome;
+            }
+            
+            // Carregar cada módulo
+            for (const [moduleName, module] of Object.entries(firebaseModules)) {
+                if (typeof module.load === 'function' && data[moduleName]) {
+                    try {
+                        module.load(data[moduleName]);
+                        console.log(`✅ Módulo ${moduleName} carregado`);
+                    } catch (error) {
+                        console.error(`Erro ao carregar módulo ${moduleName}:`, error);
+                    }
+                }
+            }
+            
+            showToast('Personagem carregado: ' + data.nome, 'success');
+            
+        } else {
+            createNewCharacter();
+        }
+        
+    } catch (error) {
+        console.error('Erro ao carregar personagem:', error);
+        createNewCharacter();
+    }
+}
+
+async function createNewCharacter() {
+    const db = firebase.firestore();
+    const docRef = await db.collection('personagens').add({
+        nome: 'Novo Personagem',
+        criadoEm: new Date().toISOString(),
+        atualizadoEm: new Date().toISOString(),
+        userId: currentUser.uid,
+        status: 'rascunho'
+    });
+    
+    currentCharacterId = docRef.id;
+    
+    // Atualizar URL com o novo ID
+    const newUrl = window.location.pathname + '?id=' + currentCharacterId;
+    window.history.replaceState({}, '', newUrl);
+    
+    console.log('Novo personagem criado:', currentCharacterId);
+}
+
+// ===========================================
+// SISTEMA DE ABAS (MANTIDO)
+// ===========================================
+function switchTab(tabId) {
+    console.log('Mudando para aba:', tabId);
+    
+    // Remove active de todas as abas
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Ativa nova aba
+    const tabElement = document.getElementById(tabId);
+    if (tabElement) {
+        tabElement.classList.add('active');
     }
 
-    // ===========================================
-    // FINALIZAR PERSONAGEM
-    // ===========================================
-    async function finalizeCharacter() {
-        if (!currentUser) {
-            showToast('❌ Faça login para finalizar', 'error');
-            return;
-        }
+    // Ativa botão correspondente
+    const tabBtn = document.getElementById(`tab${capitalizeFirstLetter(tabId)}`);
+    if (tabBtn) {
+        tabBtn.classList.add('active');
+    }
 
-        const characterName = document.getElementById('characterName').value.trim();
-        if (!characterName) {
-            showToast('⚠️ Digite um nome para o personagem', 'warning');
-            return;
-        }
+    // Salva última aba
+    localStorage.setItem('lastTab', tabId);
+    
+    // Rola para topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Inicializa aba específica
+    const initFunctionName = `init${capitalizeFirstLetter(tabId)}Tab`;
+    if (typeof window[initFunctionName] === 'function') {
+        window[initFunctionName]();
+    }
+}
 
-        // Primeiro salva como draft
-        await saveDraft();
+document.addEventListener('click', function(e) {
+    // Sistema de sub-abas
+    if (e.target.closest('.subtab-btn')) {
+        const btn = e.target.closest('.subtab-btn');
+        const subtabId = btn.getAttribute('data-subtab');
         
-        // Depois atualiza status para finalizado
-        try {
-            await db.collection('characters').doc(currentCharacterId).update({
-                status: 'finalized',
-                finalizedAt: new Date().toISOString()
+        // Remove active dos botões
+        btn.parentElement.querySelectorAll('.subtab-btn').forEach(b => {
+            b.classList.remove('active');
+        });
+        
+        // Ativa botão clicado
+        btn.classList.add('active');
+        
+        // Mostra conteúdo
+        const subtabPane = document.getElementById(`subtab-${subtabId}`);
+        if (subtabPane) {
+            subtabPane.parentElement.querySelectorAll('.subtab-pane').forEach(pane => {
+                pane.classList.remove('active');
             });
-            
-            showToast('🎉 Personagem finalizado com sucesso!', 'success');
-            
-            // Redireciona para a página do personagem após 2 segundos
-            setTimeout(() => {
-                window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
-            }, 2000);
-        } catch (error) {
-            console.error('Erro ao finalizar:', error);
-            showToast('❌ Erro ao finalizar personagem', 'error');
+            subtabPane.classList.add('active');
         }
     }
+});
 
-    // ===========================================
-    // FUNÇÕES AUXILIARES
-    // ===========================================
-    function goBack() {
-        if (currentCharacterId) {
-            window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
-        } else {
-            window.location.href = 'modo-personagem.html';
-        }
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// ===========================================
+// FUNÇÕES DE CONTROLE
+// ===========================================
+async function saveDraft() {
+    if (!isFirebaseReady) {
+        showToast('Aguardando conexão...', 'warning');
+        return;
     }
+    
+    await saveAllModules();
+}
 
-    function cancelCreation() {
-        if (confirm('Tem certeza que deseja cancelar? Todo progresso não salvo será perdido.')) {
-            window.location.href = 'modo-personagem.html';
-        }
+async function finalizeCharacter() {
+    const nome = document.getElementById('characterName').value.trim();
+    if (!nome) {
+        showToast('Digite um nome para o personagem', 'warning');
+        return;
     }
-
-    function toggleEditMode() {
-        const btnEdit = document.getElementById('btnEditMode');
-        const isActive = btnEdit.classList.contains('active');
+    
+    // Primeiro salva
+    await saveDraft();
+    
+    try {
+        // Atualiza status para finalizado
+        const db = firebase.firestore();
+        await db.collection('personagens').doc(currentCharacterId).update({
+            status: 'finalizado',
+            finalizadoEm: new Date().toISOString()
+        });
         
-        if (isActive) {
-            btnEdit.classList.remove('active');
-            btnEdit.innerHTML = '<i class="fas fa-edit"></i> Editar';
-            showToast('📝 Modo de visualização ativado', 'info');
-        } else {
-            btnEdit.classList.add('active');
-            btnEdit.innerHTML = '<i class="fas fa-pencil-alt"></i> Editando';
-            showToast('✏️ Modo de edição ativado', 'success');
-        }
-    }
-
-    function showToast(message, type = 'info') {
-        const toast = document.getElementById('custom-toast');
-        toast.innerHTML = `<i class="fas fa-${getToastIcon(type)}"></i> ${message}`;
-        toast.style.display = 'block';
+        showToast('Personagem finalizado com sucesso!', 'success');
         
-        const bgColor = type === 'error' ? 'var(--accent-red)' : 
-                       type === 'success' ? 'var(--accent-green)' : 
-                       type === 'warning' ? 'var(--primary-gold)' : 
-                       'var(--secondary-dark)';
-        
-        toast.style.background = bgColor;
-        toast.style.animation = 'slideIn 0.3s ease';
-        
+        // Redireciona após 2 segundos
         setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 300);
-        }, 3000);
+            window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Erro ao finalizar:', error);
+        showToast('Erro ao finalizar personagem', 'error');
     }
+}
 
-    function getToastIcon(type) {
-        switch(type) {
-            case 'success': return 'check-circle';
-            case 'error': return 'exclamation-circle';
-            case 'warning': return 'exclamation-triangle';
-            default: return 'info-circle';
-        }
+function goBack() {
+    if (currentCharacterId) {
+        window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
+    } else {
+        window.location.href = 'modo-personagem.html';
     }
+}
 
-    // ===========================================
-    // AUTO-SAVE A CADA 30 SEGUNDOS
-    // ===========================================
-    let autoSaveTimer;
+function cancelCreation() {
+    if (confirm('Cancelar criação? Dados não salvos serão perdidos.')) {
+        window.location.href = 'modo-personagem.html';
+    }
+}
+
+// ===========================================
+// TOAST NOTIFICATION
+// ===========================================
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('custom-toast');
+    if (!toast) return;
+    
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    
+    toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i> ${message}`;
+    toast.style.display = 'block';
+    
+    const bgColor = type === 'error' ? 'var(--accent-red)' : 
+                   type === 'success' ? 'var(--accent-green)' : 
+                   type === 'warning' ? 'var(--primary-gold)' : 
+                   'var(--secondary-dark)';
+    
+    toast.style.background = bgColor;
+    toast.style.animation = 'slideIn 0.3s ease';
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 300);
+    }, 3000);
+}
+
+// ===========================================
+// AUTO-SAVE
+// ===========================================
+let autoSaveTimer;
+function setupAutoSave() {
+    // Auto-save quando muda o nome
     document.getElementById('characterName').addEventListener('input', () => {
         clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => {
-            if (currentCharacterId && isInitialized) {
+            if (isFirebaseReady && currentCharacterId) {
                 saveDraft();
             }
-        }, 30000);
+        }, 5000);
     });
-
-    // ===========================================
-    // FUNÇÕES PARA INICIALIZAÇÃO DAS ABAS
-    // ===========================================
-    window.initAtributosTab = function() {
-        console.log('⚔️ Inicializando aba de Atributos...');
-        if (typeof window.inicializarAtributos === 'function') {
-            window.inicializarAtributos();
+    
+    // Auto-save a cada 30 segundos
+    setInterval(() => {
+        if (isFirebaseReady && currentCharacterId) {
+            saveDraft();
         }
-    };
+    }, 30000);
+}
 
-    window.initCaracteristicasTab = function() {
-        console.log('👤 Inicializando aba de Características...');
-        if (typeof window.iniciarSistemaCaracteristicas === 'function') {
-            window.iniciarSistemaCaracteristicas();
-        }
-    };
+// ===========================================
+// INICIALIZAÇÃO
+// ===========================================
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Editor de Personagem iniciando...');
+    
+    // Efeito de entrada
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 0.5s ease';
+        document.body.style.opacity = '1';
+    }, 100);
+    
+    // Inicializar Firebase
+    await initializeFirebase();
+    
+    // Configurar auto-save
+    setupAutoSave();
+    
+    // Carregar última aba
+    const lastTab = localStorage.getItem('lastTab') || 'atributos';
+    setTimeout(() => switchTab(lastTab), 300);
+    
+    // Configurar botões
+    document.getElementById('btnSaveDraft')?.addEventListener('click', saveDraft);
+    document.getElementById('btnFinalize')?.addEventListener('click', finalizeCharacter);
+    document.getElementById('btnBack')?.addEventListener('click', goBack);
+    document.getElementById('btnCancel')?.addEventListener('click', cancelCreation);
+});
 
-    window.initVantagensTab = function() {
-        console.log('⭐ Inicializando aba de Vantagens...');
-        if (typeof window.iniciarSistemaVantagens === 'function') {
-            window.iniciarSistemaVantagens();
-        }
+// ===========================================
+// FUNÇÕES DE INICIALIZAÇÃO DAS ABAS
+// ===========================================
+window.initAtributosTab = function() {
+    console.log('Inicializando atributos...');
+    if (typeof window.inicializarAtributos === 'function') {
+        window.inicializarAtributos();
         
-        // Inicializa sub-aba de peculiaridades se estiver ativa
-        const peculiaridadesSubtab = document.querySelector('[data-subtab="peculiaridades"].active');
-        if (peculiaridadesSubtab) {
-            setTimeout(() => {
-                if (typeof window.iniciarSistemaPeculiaridades === 'function') {
-                    window.iniciarSistemaPeculiaridades();
+        // Registrar módulo de atributos para Firebase
+        registerModule(
+            'atributos',
+            () => {
+                if (typeof window.obterDadosAtributos === 'function') {
+                    return window.obterDadosAtributos();
                 }
-            }, 100);
-        }
-    };
-
-    // Funções de inicialização para sub-abas
-    window.initPeculiaridadesSubtab = function() {
-        console.log('❓ Inicializando sub-aba de Peculiaridades...');
-        if (typeof window.iniciarSistemaPeculiaridades === 'function') {
-            window.iniciarSistemaPeculiaridades();
-        }
-    };
-
-    window.initCatalogoGeralSubtab = function() {
-        console.log('📚 Inicializando sub-aba de Catálogo Geral...');
-        if (typeof window.iniciarCatalogoVantagens === 'function') {
-            window.iniciarCatalogoVantagens();
-        }
-    };
-
-    window.initCatalogoDesvantagensSubtab = function() {
-        console.log('⚠️ Inicializando sub-aba de Catálogo Desvantagens...');
-        if (typeof window.iniciarCatalogoDesvantagens === 'function') {
-            window.iniciarCatalogoDesvantagens();
-        }
-    };
-
-    // ===========================================
-    // INICIALIZAÇÃO GERAL
-    // ===========================================
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('🏰 Editor de Personagem GURPS carregado');
-        
-        // Adiciona classe para animação de entrada
-        document.body.style.opacity = '0';
-        setTimeout(() => {
-            document.body.style.transition = 'opacity 0.5s ease';
-            document.body.style.opacity = '1';
-        }, 100);
-        
-        // Inicializa sistemas específicos se as abas correspondentes estiverem ativas
-        setTimeout(() => {
-            const activeTab = document.querySelector('.tab-content.active');
-            if (activeTab) {
-                const tabId = activeTab.id;
-                if (typeof window[`init${capitalizeFirstLetter(tabId)}Tab`] === 'function') {
-                    window[`init${capitalizeFirstLetter(tabId)}Tab`]();
+                return null;
+            },
+            (dados) => {
+                if (typeof window.carregarDadosAtributos === 'function') {
+                    window.carregarDadosAtributos(dados);
                 }
             }
-            
-            // Inicializa sub-abas ativas
-            const activeSubtab = document.querySelector('.subtab-pane.active');
-            if (activeSubtab) {
-                const subtabId = activeSubtab.id.replace('subtab-', '');
-                if (typeof window[`init${capitalizeFirstLetter(subtabId)}Subtab`] === 'function') {
-                    window[`init${capitalizeFirstLetter(subtabId)}Subtab`]();
-                }
-            }
-        }, 500);
-    });
+        );
+    }
+};
+
+window.initDashboardTab = function() {
+    console.log('Inicializando dashboard...');
+    if (typeof window.initDashboardTab === 'function') {
+        window.initDashboardTab();
+    }
+};
+
+// Função auxiliar para outros módulos se registrarem
+window.registerFirebaseModule = registerModule;
+window.saveToFirebase = saveAllModules;
+window.loadFromFirebase = loadCharacterFromFirebase;
 </script>
 </body>
 </html>
