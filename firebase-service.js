@@ -1,8 +1,4 @@
-// ===========================================
-// FIREBASE-SERVICE.JS - VERSÃO COMPLETA E FUNCIONAL
-// SEM MERCY, SEM ERROS, SÓ FUNÇÃO
-// ===========================================
-
+// js/firebase-service.js
 import { db, auth } from './firebase-config.js';
 import { 
   doc, 
@@ -20,115 +16,177 @@ class FirebaseService {
     this.characterId = null;
     this.characterData = {};
     this.unsubscribe = null;
-    this.isInitializing = false;
-    this.initialized = false;
     
-    console.log('🔥 FirebaseService criado');
+    console.log('🔥 FirebaseService iniciado');
     
-    // Iniciar AUTOMATICAMENTE
-    this.initialize();
-  }
-
-  async initialize() {
-    if (this.isInitializing || this.initialized) return;
-    this.isInitializing = true;
-    
-    console.log('🚀 INICIANDO FIREBASE SERVICE...');
-    
-    try {
-      // 1. AUTENTICAÇÃO
-      await this.setupAuth();
-      
-      // 2. CONFIGURAR PERSONAGEM DA URL
-      await this.setupCharacterFromURL();
-      
-      // 3. CARREGAR DADOS EXISTENTES
-      await this.loadCharacter();
-      
-      this.initialized = true;
-      console.log('✅✅✅ FIREBASE SERVICE INICIALIZADO COM SUCESSO');
-      
-      // DISPARAR EVENTO DE PRONTIDÃO
-      this.dispatchEvent('firebase-ready');
-      
-    } catch (error) {
-      console.error('❌❌❌ ERRO NA INICIALIZAÇÃO:', error);
-      this.initialized = false;
-    } finally {
-      this.isInitializing = false;
+    // Iniciar quando DOM carregar
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.initialize());
+    } else {
+      this.initialize();
     }
   }
 
+  async initialize() {
+    console.group('🚀 INICIALIZANDO FIREBASE SERVICE');
+    
+    try {
+      // 1. CONFIGURAR FIREBASE
+      await this.setupFirebase();
+      
+      // 2. AUTENTICAÇÃO
+      await this.setupAuth();
+      
+      // 3. DEFINIR CHARACTER ID (CRÍTICO!)
+      await this.setCharacterId();
+      
+      // 4. CARREGAR DADOS EXISTENTES
+      await this.loadCharacter();
+      
+      console.log('✅✅✅ FIREBASE SERVICE PRONTO');
+      console.groupEnd();
+      
+      // Disparar evento
+      this.dispatchEvent('firebase-ready');
+      
+    } catch (error) {
+      console.error('❌ ERRO NA INICIALIZAÇÃO:', error);
+      console.groupEnd();
+    }
+  }
+
+  async setupFirebase() {
+    // Já configurado no firebase-config.js
+    console.log('✅ Firebase configurado');
+  }
+
   async setupAuth() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       console.log('🔐 Configurando autenticação...');
       
       onAuthStateChanged(auth, async (user) => {
         if (user) {
-          // USUÁRIO JÁ LOGADO
           this.userId = user.uid;
           console.log('✅ Usuário autenticado:', this.userId);
-          resolve(true);
+          resolve();
         } else {
-          // LOGIN ANÔNIMO AUTOMÁTICO
           try {
-            console.log('👤 Fazendo login anônimo...');
             const result = await signInAnonymously(auth);
             this.userId = result.user.uid;
             console.log('✅ Novo usuário anônimo:', this.userId);
-            resolve(true);
-          } catch (authError) {
-            console.error('❌ Erro de autenticação:', authError);
-            
-            // MODO EMERGÊNCIA - LOCALSTORAGE
+            resolve();
+          } catch (error) {
+            console.warn('⚠️ Erro de autenticação, usando local');
             this.userId = 'local_' + Date.now();
-            console.log('⚠️ Modo emergência - ID local:', this.userId);
-            resolve(true);
+            resolve();
           }
         }
       });
-      
-      // TIMEOUT DE SEGURANÇA
-      setTimeout(() => {
-        if (!this.userId) {
-          console.warn('⚠️ Timeout de autenticação');
-          this.userId = 'local_' + Date.now();
-          resolve(true);
-        }
-      }, 10000);
     });
   }
 
-  async setupCharacterFromURL() {
-    console.log('🔗 Verificando URL...');
+  async setCharacterId() {
+    console.log('🎯 Definindo Character ID...');
     
-    // PEGAR ID DA URL
+    // ORDEM DE PRIORIDADE:
+    // 1. URL (?id=XXXX)
+    // 2. localStorage
+    // 3. sessionStorage
+    // 4. Criar novo (APENAS SE NÃO EXISTIR NENHUM)
+    
     const urlParams = new URLSearchParams(window.location.search);
-    const urlCharId = urlParams.get('id');
+    let charId = urlParams.get('id');
     
-    if (urlCharId) {
-      // USAR ID DA URL
-      this.characterId = urlCharId;
-      console.log('📂 Usando personagem da URL:', this.characterId);
+    if (charId) {
+      console.log('📌 ID da URL:', charId);
     } else {
-      // CRIAR NOVO PERSONAGEM
-      this.characterId = 'char_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      console.log('🆕 Novo personagem criado:', this.characterId);
-      
-      // ATUALIZAR URL
-      this.updateURL();
+      charId = localStorage.getItem('gurps_character_id');
+      if (charId) console.log('📌 ID do localStorage:', charId);
     }
     
-    // SALVAR NO LOCALSTORAGE PARA BACKUP
-    localStorage.setItem('lastCharacterId', this.characterId);
+    if (!charId) {
+      charId = sessionStorage.getItem('character_id');
+      if (charId) console.log('📌 ID do sessionStorage:', charId);
+    }
+    
+    // SE NÃO TEM NENHUM ID -> CRIAR NOVO
+    if (!charId) {
+      charId = 'char_' + Date.now();
+      console.log('🆕 NOVO Character ID criado:', charId);
+      
+      // Criar documento vazio no Firebase
+      await this.createEmptyCharacter(charId);
+    }
+    
+    this.characterId = charId;
+    
+    // SALVAR EM TODOS OS LUGARES
+    this.saveCharacterIdEverywhere(charId);
+    
+    console.log('🎯 Character ID DEFINITIVO:', this.characterId);
   }
 
-  updateURL() {
-    if (!this.characterId) return;
-    
-    const newUrl = window.location.pathname + '?id=' + this.characterId;
+  async createEmptyCharacter(charId) {
+    try {
+      const docRef = doc(db, "personagens", charId);
+      await setDoc(docRef, {
+        userId: this.userId,
+        nome: "Novo Personagem",
+        criadoEm: serverTimestamp(),
+        atualizadoEm: serverTimestamp()
+      });
+      console.log('📄 Documento vazio criado no Firebase');
+    } catch (error) {
+      console.error('❌ Erro ao criar documento:', error);
+    }
+  }
+
+  saveCharacterIdEverywhere(charId) {
+    // 1. URL
+    const newUrl = window.location.pathname + '?id=' + charId;
     window.history.replaceState({}, '', newUrl);
-    console.log('🔗 URL atualizada:', newUrl);
+    
+    // 2. localStorage (PERMANENTE)
+    localStorage.setItem('gurps_character_id', charId);
+    
+    // 3. sessionStorage (SESSÃO)
+    sessionStorage.setItem('character_id', charId);
+    
+    // 4. Cookie (opcional)
+    document.cookie = `character_id=${charId}; path=/; max-age=${60*60*24*365}`;
+    
+    console.log('💾 ID salvo em todos os lugares');
+  }
+
+  async loadCharacter() {
+    console.log('📥 Carregando personagem...');
+    
+    if (!this.characterId) {
+      console.error('❌ Nenhum characterId para carregar');
+      return {};
+    }
+    
+    try {
+      const docRef = doc(db, "personagens", this.characterId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        this.characterData = docSnap.data();
+        console.log('✅ Personagem carregado do Firebase:', this.characterData);
+        
+        // Disparar evento com os dados
+        this.dispatchEvent('firebase-loaded', this.characterData);
+        
+        return this.characterData;
+      } else {
+        console.log('📭 Personagem não encontrado no Firebase');
+        return {};
+      }
+      
+    } catch (error) {
+      console.error('❌ Erro ao carregar:', error);
+      return {};
+    }
   }
 
   // ===========================================
@@ -138,47 +196,46 @@ class FirebaseService {
   async saveModule(moduleName, moduleData) {
     console.log(`💾 SALVANDO: ${moduleName}`, moduleData);
     
+    // VERIFICAÇÕES CRÍTICAS
+    if (!this.characterId) {
+      console.error('❌ ERRO: characterId não definido!');
+      await this.setCharacterId(); // Tenta recuperar
+    }
+    
+    if (!this.userId) {
+      console.error('❌ ERRO: userId não definido!');
+      return false;
+    }
+    
+    console.log('✅ IDs válidos:', {
+      characterId: this.characterId,
+      userId: this.userId
+    });
+    
     try {
-      // VERIFICAÇÕES CRÍTICAS
-      if (!this.userId) {
-        console.error('❌ userId não definido');
-        await this.initialize();
-      }
-      
-      if (!this.characterId) {
-        console.error('❌ characterId não definido');
-        await this.setupCharacterFromURL();
-      }
-      
-      if (!this.initialized) {
-        console.warn('⚠️ Firebase não inicializado, tentando...');
-        await this.initialize();
-      }
-      
-      // PREPARAR DADOS
-      const dadosParaSalvar = {
+      // Dados para salvar
+      const updateData = {
         [moduleName]: moduleData,
         userId: this.userId,
-        atualizadoEm: serverTimestamp(),
-        ultimaModificacao: new Date().toISOString()
+        atualizadoEm: serverTimestamp()
       };
       
-      console.log('📦 Dados preparados:', dadosParaSalvar);
+      console.log('📦 Enviando para Firebase:', updateData);
       
-      // REFERÊNCIA DO DOCUMENTO
+      // Referência do documento
       const docRef = doc(db, "personagens", this.characterId);
       
-      // SALVAR NO FIREBASE (MERGE = atualizar sem apagar)
-      await setDoc(docRef, dadosParaSalvar, { merge: true });
+      // ⚠️ IMPORTANTE: setDoc com merge:true para ATUALIZAR, não criar novo
+      await setDoc(docRef, updateData, { merge: true });
       
-      // ATUALIZAR CACHE LOCAL
+      // Atualizar cache local
       this.characterData[moduleName] = moduleData;
       
       console.log(`✅✅✅ ${moduleName} SALVO COM SUCESSO!`);
       console.log('   Documento:', this.characterId);
       console.log('   Collection: personagens');
       
-      // DISPARAR EVENTO DE SALVAMENTO
+      // Disparar evento
       this.dispatchEvent('firebase-saved', { module: moduleName, data: moduleData });
       
       return true;
@@ -188,189 +245,12 @@ class FirebaseService {
       console.error('   Código:', error.code);
       console.error('   Mensagem:', error.message);
       
-      // FALLBACK PARA LOCALSTORAGE
-      this.saveToLocalStorage(moduleName, moduleData);
-      
-      // DISPARAR EVENTO DE ERRO
-      this.dispatchEvent('firebase-error', { 
-        module: moduleName, 
-        error: error.message 
-      });
-      
       return false;
     }
   }
 
   // ===========================================
-  // CARREGAMENTO - FUNÇÃO PRINCIPAL
-  // ===========================================
-
-  async loadCharacter(characterId = null) {
-    console.log('📥 CARREGANDO PERSONAGEM...');
-    
-    try {
-      // USAR ID ESPECÍFICO OU O ATUAL
-      const loadId = characterId || this.characterId;
-      
-      if (!loadId) {
-        console.error('❌ Nenhum characterId para carregar');
-        return this.loadFromLocalStorage();
-      }
-      
-      // ATUALIZAR ID SE FOR DIFERENTE
-      if (characterId && characterId !== this.characterId) {
-        this.characterId = characterId;
-        this.updateURL();
-      }
-      
-      console.log('   ID do personagem:', loadId);
-      
-      // CARREGAR DO FIREBASE
-      const docRef = doc(db, "personagens", loadId);
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        this.characterData = docSnap.data();
-        console.log('✅ Personagem carregado do Firebase:', this.characterData);
-        
-        // DISPARAR EVENTO DE CARREGAMENTO
-        this.dispatchEvent('firebase-loaded', { data: this.characterData });
-        
-        // SALVAR BACKUP LOCAL
-        this.saveBackupToLocalStorage();
-        
-        return this.characterData;
-      } else {
-        console.log('📭 Personagem não encontrado no Firebase');
-        
-        // TENTAR CARREGAR DO LOCALSTORAGE
-        const localData = this.loadFromLocalStorage();
-        if (Object.keys(localData).length > 0) {
-          this.characterData = localData;
-          console.log('✅ Dados carregados do localStorage:', this.characterData);
-          return this.characterData;
-        }
-        
-        return {};
-      }
-      
-    } catch (error) {
-      console.error('❌ ERRO AO CARREGAR:', error);
-      
-      // FALLBACK PARA LOCALSTORAGE
-      return this.loadFromLocalStorage();
-    }
-  }
-
-  // ===========================================
   // FUNÇÕES AUXILIARES
-  // ===========================================
-
-  async savePoints(pointsData) {
-    console.log('💰 Salvando pontos...', pointsData);
-    return this.saveModule('pontos', pointsData);
-  }
-
-  async saveCharacterName(name) {
-    console.log('🏷️ Salvando nome:', name);
-    return this.saveModule('info', { nome: name, atualizadoEm: new Date().toISOString() });
-  }
-
-  subscribeToCharacter(callback) {
-    if (!this.characterId) {
-      console.error('❌ Não é possível escutar sem characterId');
-      return null;
-    }
-    
-    console.log('👂 Inscrito em mudanças em tempo real');
-    
-    const docRef = doc(db, "personagens", this.characterId);
-    
-    // CANCELAR INSCRIÇÃO ANTERIOR
-    if (this.unsubscribe) {
-      this.unsubscribe();
-    }
-    
-    // ESCUTAR MUDANÇAS
-    this.unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        this.characterData = data;
-        console.log('🔄 Dados atualizados em tempo real');
-        
-        // EXECUTAR CALLBACK
-        if (callback && typeof callback === 'function') {
-          callback(data);
-        }
-        
-        // DISPARAR EVENTO
-        this.dispatchEvent('firebase-updated', { data });
-      }
-    }, (error) => {
-      console.error('❌ Erro na escuta em tempo real:', error);
-    });
-    
-    return this.unsubscribe;
-  }
-
-  // ===========================================
-  // LOCALSTORAGE (FALLBACK)
-  // ===========================================
-
-  saveToLocalStorage(moduleName, moduleData) {
-    try {
-      const key = `gurps_${this.characterId}_${moduleName}`;
-      localStorage.setItem(key, JSON.stringify({
-        data: moduleData,
-        timestamp: new Date().toISOString()
-      }));
-      console.log('📦 Salvado no localStorage:', key);
-    } catch (error) {
-      console.error('❌ Erro no localStorage:', error);
-    }
-  }
-
-  saveBackupToLocalStorage() {
-    try {
-      const key = `gurps_backup_${this.characterId}`;
-      localStorage.setItem(key, JSON.stringify({
-        data: this.characterData,
-        timestamp: new Date().toISOString(),
-        characterId: this.characterId
-      }));
-      console.log('💾 Backup salvo no localStorage');
-    } catch (error) {
-      console.error('❌ Erro no backup:', error);
-    }
-  }
-
-  loadFromLocalStorage() {
-    try {
-      const data = {};
-      
-      // PROCURAR DADOS DESTE PERSONAGEM
-      const prefix = `gurps_${this.characterId}_`;
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith(prefix)) {
-          const moduleName = key.replace(prefix, '');
-          const stored = JSON.parse(localStorage.getItem(key));
-          data[moduleName] = stored.data;
-        }
-      }
-      
-      console.log('📦 Dados do localStorage:', Object.keys(data).length > 0 ? data : 'VAZIO');
-      return data;
-      
-    } catch (error) {
-      console.error('❌ Erro ao carregar do localStorage:', error);
-      return {};
-    }
-  }
-
-  // ===========================================
-  // SISTEMA DE EVENTOS
   // ===========================================
 
   dispatchEvent(eventName, detail = {}) {
@@ -380,36 +260,17 @@ class FirebaseService {
     document.dispatchEvent(event);
   }
 
-  // ===========================================
-  // GETTERS E UTILITÁRIOS
-  // ===========================================
-
   getCharacterId() {
     return this.characterId;
-  }
-
-  getUserId() {
-    return this.userId;
   }
 
   getCharacterData() {
     return this.characterData;
   }
 
-  isReady() {
-    return this.initialized;
-  }
-
-  clear() {
-    this.characterId = null;
-    this.characterData = {};
-    
-    if (this.unsubscribe) {
-      this.unsubscribe();
-      this.unsubscribe = null;
-    }
-    
-    console.log('🧹 FirebaseService limpo');
+  // Para dashboard salvar pontos
+  async savePoints(pointsData) {
+    return this.saveModule('pontos', pointsData);
   }
 }
 
@@ -417,15 +278,10 @@ class FirebaseService {
 // INSTÂNCIA GLOBAL
 // ===========================================
 
-// CRIAR ÚNICA INSTÂNCIA
 const firebaseService = new FirebaseService();
-
-// EXPORTAR PARA USO GLOBAL
 export default firebaseService;
 
-// EXPORTAR TAMBÉM PARA WINDOW (SE PRECISAR)
+// Exportar para window também
 if (typeof window !== 'undefined') {
   window.firebaseService = firebaseService;
 }
-
-console.log('✅ firebase-service.js CARREGADO - PRONTO PARA AÇÃO');
