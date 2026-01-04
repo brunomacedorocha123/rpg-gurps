@@ -822,57 +822,68 @@ body::before {
     }
 }
 /* =========================================== */
-/* ID DO PERSONAGEM - ESTILO NÃO-INVASIVO     */
+/* ID DO PERSONAGEM - VISÍVEL E INTEGRADO      */
 /* =========================================== */
 
 .character-id-display {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(26, 18, 0, 0.9);
-    color: var(--text-light);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    z-index: 9999;
-    border: 1px solid var(--primary-gold);
-    font-family: monospace;
-    max-width: 160px;
-    word-break: break-all;
-    opacity: 0.9;
+    background: linear-gradient(145deg, rgba(212, 175, 55, 0.15), rgba(44, 32, 8, 0.8));
+    color: var(--text-gold);
+    border: 2px solid var(--primary-gold);
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 140px;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    z-index: 100;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
 }
 
 .character-id-display:hover {
-    opacity: 1;
+    background: linear-gradient(145deg, rgba(212, 175, 55, 0.25), rgba(44, 32, 8, 0.9));
+    border-color: var(--secondary-gold);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+}
+
+.character-id-display:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.character-id-display i {
+    color: var(--secondary-gold);
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
 .char-id {
     color: var(--text-gold);
     font-weight: bold;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.char-id:hover {
-    color: var(--secondary-gold);
-    text-decoration: underline;
-}
-
-.char-id:active {
-    transform: scale(0.95);
+    letter-spacing: 0.5px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    flex: 1;
+    text-align: center;
 }
 
 /* Tooltip para ID completo */
-.char-id[title] {
+.character-id-display {
     position: relative;
 }
 
-.char-id[title]:hover::after {
+.character-id-display::before {
     content: attr(title);
     position: absolute;
     bottom: 100%;
@@ -880,26 +891,163 @@ body::before {
     transform: translateX(-50%);
     background: rgba(26, 18, 0, 0.95);
     color: var(--text-light);
-    padding: 8px 12px;
+    padding: 10px 15px;
     border-radius: 6px;
+    font-size: 11px;
+    white-space: normal;
+    width: 250px;
+    max-width: 90vw;
+    z-index: 10000;
+    border: 1px solid var(--primary-gold);
+    margin-bottom: 10px;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    word-break: break-all;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    font-family: monospace;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+.character-id-display:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* Indicador de cópia */
+.character-id-display::after {
+    content: "📋 Clique para copiar";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(46, 92, 58, 0.9);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
     font-size: 10px;
     white-space: nowrap;
     z-index: 10000;
-    border: 1px solid var(--primary-gold);
-    margin-bottom: 5px;
-    min-width: 200px;
-    text-align: center;
+    margin-top: 5px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    font-family: 'Cinzel', serif;
 }
 
-/* Para telas pequenas */
+.character-id-display:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(5px);
+}
+
+/* Feedback visual ao copiar */
+.character-id-display.copied {
+    background: linear-gradient(145deg, rgba(46, 92, 58, 0.8), rgba(30, 64, 40, 0.9));
+    border-color: var(--accent-green);
+    animation: pulseCopied 0.5s ease;
+}
+
+@keyframes pulseCopied {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Para telas pequenas - Mobile First */
 @media (max-width: 768px) {
+    .character-header {
+        gap: 10px;
+        justify-content: space-between;
+        width: 100%;
+    }
+    
     .character-id-display {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        max-width: 140px;
+        order: 1;
+        min-width: 120px;
+        padding: 8px 12px;
+        font-size: 11px;
+        flex: 1;
+        max-width: 45%;
+    }
+    
+    .character-name-input {
+        order: 2;
+        min-width: auto;
+        flex: 2;
+        max-width: 100%;
+    }
+    
+    .btn-voltar {
+        order: 3;
+        flex: 1;
+        max-width: 30%;
+        justify-content: center;
+    }
+    
+    .character-id-display::before {
+        width: 200px;
         font-size: 10px;
-        padding: 5px 8px;
+        padding: 8px 12px;
+    }
+    
+    .character-id-display::after {
+        font-size: 9px;
+        padding: 4px 8px;
+    }
+}
+
+/* Para telas médias */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .character-header {
+        gap: 15px;
+    }
+    
+    .character-id-display {
+        min-width: 130px;
+        padding: 9px 14px;
+        font-size: 12px;
+    }
+}
+
+/* Para telas grandes */
+@media (min-width: 1025px) {
+    .character-header {
+        gap: 20px;
+    }
+    
+    .character-id-display {
+        min-width: 150px;
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+}
+
+/* Responsividade extra para telas muito pequenas */
+@media (max-width: 480px) {
+    .character-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .character-id-display,
+    .character-name-input,
+    .btn-voltar {
+        width: 100%;
+        max-width: 100%;
+        min-width: 100%;
+        order: 0;
+    }
+    
+    .character-id-display {
+        margin-bottom: 5px;
+    }
+    
+    .character-name-input {
+        margin-bottom: 5px;
     }
 }
 
@@ -941,39 +1089,72 @@ body::before {
     border: 1px solid var(--primary-gold);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     animation: quickFadeIn 0.3s ease;
+    text-align: center;
+    min-width: 200px;
+    max-width: 90%;
 }
 
 .quick-toast.fading {
     animation: quickFadeOut 0.3s ease;
 }
+
+/* Feedback visual para cópia bem sucedida */
+.quick-toast.success {
+    background: var(--accent-green);
+    border-color: #4CAF50;
+}
+
+.quick-toast.error {
+    background: var(--accent-red);
+    border-color: #f44336;
+}
+
+/* Ajuste para o header não quebrar */
+.header {
+    position: relative;
+    min-height: 80px;
+}
+
+.character-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex: 1;
+}
 </style>
 </head>
 <body>
     <!-- HEADER PRINCIPAL -->
-    <header class="header">
+   <header class="header">
     <div class="logo">
         <i class="fas fa-dragon" style="color: var(--primary-gold); font-size: 1.8rem;"></i>
         <h1>FORJAR PERSONAGEM</h1>
     </div>
     
     <div class="character-header">
+        <!-- ID DO PERSONAGEM - AGORA VISÍVEL -->
+        <div id="character-id-display" class="character-id-display" 
+             style="display: none; order: 1;" 
+             title="Clique para copiar ID">
+            <i class="fas fa-id-card" style="margin-right: 5px;"></i>
+            <span id="current-char-id" class="char-id">carregando...</span>
+        </div>
+        
+        <!-- INPUT DE NOME (mantido mas opcional) -->
         <input type="text" 
                class="character-name-input" 
                id="characterName" 
-               placeholder="Nome do Herói" 
+               placeholder="Nome do Personagem" 
                maxlength="50"
-               autocomplete="off">
+               autocomplete="off"
+               style="order: 2;">
         
-        <button class="btn-voltar" onclick="goBack()">
+        <!-- BOTÃO VOLTAR -->
+        <button class="btn-voltar" onclick="goBack()" style="order: 3;">
             <i class="fas fa-arrow-left"></i> Voltar
         </button>
-    </div>
-    
-    <!-- ADICIONE ESTA DIV DENTRO DO HEADER -->
-    <div id="character-id-display" class="character-id-display" 
-         style="display: none;" 
-         title="Clique para copiar ID">
-        Personagem: <span id="current-char-id" class="char-id">carregando...</span>
     </div>
 </header>
 
