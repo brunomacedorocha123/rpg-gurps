@@ -1,276 +1,270 @@
-// js/firebase-service.js
-import { db, auth } from './firebase-config.js';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc,
-  serverTimestamp,
-  onSnapshot
-} from "firebase/firestore";
-import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
+// ===========================================
+// DASHBOARD-SERVICE.JS - Serviço de Dashboard
+// ===========================================
+import firebaseService from './firebase-service.js';
 
-class FirebaseService {
+class DashboardService {
   constructor() {
-    this.userId = null;
-    this.characterId = null;
-    this.characterData = {};
-    this.unsubscribe = null;
+    this.dashboardData = {};
+    this.listeners = [];
+    this.isInitialized = false;
     
-    console.log('🔥 FirebaseService iniciado');
+    console.log('📊 DashboardService iniciado');
     
-    // Iniciar quando DOM carregar
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.initialize());
-    } else {
+    // Aguardar Firebase estar pronto
+    this.waitForFirebase().then(() => {
       this.initialize();
-    }
+    });
   }
-
-  async initialize() {
-    console.group('🚀 INICIALIZANDO FIREBASE SERVICE');
-    
-    try {
-      // 1. CONFIGURAR FIREBASE
-      await this.setupFirebase();
-      
-      // 2. AUTENTICAÇÃO
-      await this.setupAuth();
-      
-      // 3. DEFINIR CHARACTER ID (CRÍTICO!)
-      await this.setCharacterId();
-      
-      // 4. CARREGAR DADOS EXISTENTES
-      await this.loadCharacter();
-      
-      console.log('✅✅✅ FIREBASE SERVICE PRONTO');
-      console.groupEnd();
-      
-      // Disparar evento
-      this.dispatchEvent('firebase-ready');
-      
-    } catch (error) {
-      console.error('❌ ERRO NA INICIALIZAÇÃO:', error);
-      console.groupEnd();
-    }
-  }
-
-  async setupFirebase() {
-    // Já configurado no firebase-config.js
-    console.log('✅ Firebase configurado');
-  }
-
-  async setupAuth() {
+  
+  async waitForFirebase() {
     return new Promise((resolve) => {
-      console.log('🔐 Configurando autenticação...');
-      
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          this.userId = user.uid;
-          console.log('✅ Usuário autenticado:', this.userId);
-          resolve();
+      const check = () => {
+        if (firebaseService.getCharacterId()) {
+          resolve(true);
         } else {
-          try {
-            const result = await signInAnonymously(auth);
-            this.userId = result.user.uid;
-            console.log('✅ Novo usuário anônimo:', this.userId);
-            resolve();
-          } catch (error) {
-            console.warn('⚠️ Erro de autenticação, usando local');
-            this.userId = 'local_' + Date.now();
-            resolve();
-          }
+          setTimeout(check, 100);
         }
-      });
-    });
-  }
-
-  async setCharacterId() {
-    console.log('🎯 Definindo Character ID...');
-    
-    // ORDEM DE PRIORIDADE:
-    // 1. URL (?id=XXXX)
-    // 2. localStorage
-    // 3. sessionStorage
-    // 4. Criar novo (APENAS SE NÃO EXISTIR NENHUM)
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    let charId = urlParams.get('id');
-    
-    if (charId) {
-      console.log('📌 ID da URL:', charId);
-    } else {
-      charId = localStorage.getItem('gurps_character_id');
-      if (charId) console.log('📌 ID do localStorage:', charId);
-    }
-    
-    if (!charId) {
-      charId = sessionStorage.getItem('character_id');
-      if (charId) console.log('📌 ID do sessionStorage:', charId);
-    }
-    
-    // SE NÃO TEM NENHUM ID -> CRIAR NOVO
-    if (!charId) {
-      charId = 'char_' + Date.now();
-      console.log('🆕 NOVO Character ID criado:', charId);
-      
-      // Criar documento vazio no Firebase
-      await this.createEmptyCharacter(charId);
-    }
-    
-    this.characterId = charId;
-    
-    // SALVAR EM TODOS OS LUGARES
-    this.saveCharacterIdEverywhere(charId);
-    
-    console.log('🎯 Character ID DEFINITIVO:', this.characterId);
-  }
-
-  async createEmptyCharacter(charId) {
-    try {
-      const docRef = doc(db, "personagens", charId);
-      await setDoc(docRef, {
-        userId: this.userId,
-        nome: "Novo Personagem",
-        criadoEm: serverTimestamp(),
-        atualizadoEm: serverTimestamp()
-      });
-      console.log('📄 Documento vazio criado no Firebase');
-    } catch (error) {
-      console.error('❌ Erro ao criar documento:', error);
-    }
-  }
-
-  saveCharacterIdEverywhere(charId) {
-    // 1. URL
-    const newUrl = window.location.pathname + '?id=' + charId;
-    window.history.replaceState({}, '', newUrl);
-    
-    // 2. localStorage (PERMANENTE)
-    localStorage.setItem('gurps_character_id', charId);
-    
-    // 3. sessionStorage (SESSÃO)
-    sessionStorage.setItem('character_id', charId);
-    
-    // 4. Cookie (opcional)
-    document.cookie = `character_id=${charId}; path=/; max-age=${60*60*24*365}`;
-    
-    console.log('💾 ID salvo em todos os lugares');
-  }
-
-  async loadCharacter() {
-    console.log('📥 Carregando personagem...');
-    
-    if (!this.characterId) {
-      console.error('❌ Nenhum characterId para carregar');
-      return {};
-    }
-    
-    try {
-      const docRef = doc(db, "personagens", this.characterId);
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        this.characterData = docSnap.data();
-        console.log('✅ Personagem carregado do Firebase:', this.characterData);
-        
-        // Disparar evento com os dados
-        this.dispatchEvent('firebase-loaded', this.characterData);
-        
-        return this.characterData;
-      } else {
-        console.log('📭 Personagem não encontrado no Firebase');
-        return {};
-      }
-      
-    } catch (error) {
-      console.error('❌ Erro ao carregar:', error);
-      return {};
-    }
-  }
-
-  // ===========================================
-  // SALVAMENTO - FUNÇÃO PRINCIPAL
-  // ===========================================
-
-  async saveModule(moduleName, moduleData) {
-    console.log(`💾 SALVANDO: ${moduleName}`, moduleData);
-    
-    // VERIFICAÇÕES CRÍTICAS
-    if (!this.characterId) {
-      console.error('❌ ERRO: characterId não definido!');
-      await this.setCharacterId(); // Tenta recuperar
-    }
-    
-    if (!this.userId) {
-      console.error('❌ ERRO: userId não definido!');
-      return false;
-    }
-    
-    console.log('✅ IDs válidos:', {
-      characterId: this.characterId,
-      userId: this.userId
-    });
-    
-    try {
-      // Dados para salvar
-      const updateData = {
-        [moduleName]: moduleData,
-        userId: this.userId,
-        atualizadoEm: serverTimestamp()
       };
+      check();
+    });
+  }
+  
+  async initialize() {
+    if (this.isInitialized) return;
+    
+    console.log('🚀 Inicializando DashboardService...');
+    
+    try {
+      // Carregar dados iniciais
+      await this.loadDashboardData();
       
-      console.log('📦 Enviando para Firebase:', updateData);
+      // Configurar escuta em tempo real
+      this.setupRealtimeListener();
       
-      // Referência do documento
-      const docRef = doc(db, "personagens", this.characterId);
+      this.isInitialized = true;
+      console.log('✅ DashboardService inicializado');
       
-      // ⚠️ IMPORTANTE: setDoc com merge:true para ATUALIZAR, não criar novo
-      await setDoc(docRef, updateData, { merge: true });
+    } catch (error) {
+      console.error('❌ Erro ao inicializar DashboardService:', error);
+    }
+  }
+  
+  async loadDashboardData() {
+    try {
+      // Carregar do FirebaseService (que já tem os dados)
+      this.dashboardData = firebaseService.getDashboardData() || {};
       
-      // Atualizar cache local
-      this.characterData[moduleName] = moduleData;
+      console.log('📥 Dashboard carregado:', this.dashboardData);
       
-      console.log(`✅✅✅ ${moduleName} SALVO COM SUCESSO!`);
-      console.log('   Documento:', this.characterId);
-      console.log('   Collection: personagens');
+      // Notificar listeners
+      this.notifyListeners();
       
-      // Disparar evento
-      this.dispatchEvent('firebase-saved', { module: moduleName, data: moduleData });
+      return this.dashboardData;
       
+    } catch (error) {
+      console.error('❌ Erro ao carregar dashboard:', error);
+      return {};
+    }
+  }
+  
+  setupRealtimeListener() {
+    // Escutar eventos do firebaseService
+    document.addEventListener('dashboard-updated', (event) => {
+      this.dashboardData = event.detail;
+      console.log('🔄 Dashboard atualizado via evento:', this.dashboardData);
+      this.notifyListeners();
+    });
+    
+    document.addEventListener('dashboard-realtime-update', (event) => {
+      this.dashboardData = event.detail;
+      console.log('🔄 Dashboard atualizado em tempo real');
+      this.notifyListeners();
+    });
+    
+    // Escutar atualizações de módulos específicos
+    document.addEventListener('firebase-saved', (event) => {
+      const { module, data } = event.detail;
+      this.handleModuleUpdate(module, data);
+    });
+    
+    console.log('👂 DashboardService escutando eventos');
+  }
+  
+  handleModuleUpdate(moduleName, moduleData) {
+    // Atualizar contadores ou dados específicos localmente
+    switch(moduleName) {
+      case 'vantagens':
+        this.updateCounter('vantagens', moduleData);
+        break;
+      case 'desvantagens':
+        this.updateCounter('desvantagens', moduleData);
+        break;
+      case 'pericias':
+        this.updateCounter('pericias', moduleData);
+        break;
+      case 'magias':
+        this.updateCounter('magias', moduleData);
+        break;
+    }
+  }
+  
+  updateCounter(counterName, data) {
+    if (!this.dashboardData.contadores) {
+      this.dashboardData.contadores = {};
+    }
+    
+    const count = Array.isArray(data) ? data.length : 0;
+    this.dashboardData.contadores[counterName] = count;
+    
+    console.log(`📊 Contador ${counterName}: ${count}`);
+    
+    this.notifyListeners();
+  }
+  
+  // ===========================================
+  // FUNÇÕES PARA OUTROS MÓDULOS REPORTAREM
+  // ===========================================
+  
+  reportAttributeChange(atributosData) {
+    console.log('📤 Reportando mudança de atributos para dashboard:', atributosData);
+    
+    // Atualizar localmente
+    this.dashboardData.atributosResumo = {
+      ST: atributosData.ST || 10,
+      DX: atributosData.DX || 10,
+      IQ: atributosData.IQ || 10,
+      HT: atributosData.HT || 10
+    };
+    
+    // Calcular derivados se necessário
+    if (atributosData.bonus) {
+      this.dashboardData.totaisResumo = {
+        PV: (atributosData.ST || 10) + (atributosData.bonus.PV || 0),
+        PF: (atributosData.HT || 10) + (atributosData.bonus.PF || 0),
+        Vontade: (atributosData.IQ || 10) + (atributosData.bonus.Vontade || 0),
+        Percepcao: (atributosData.IQ || 10) + (atributosData.bonus.Percepcao || 0),
+        Deslocamento: ((atributosData.HT + atributosData.DX) / 4).toFixed(2)
+      };
+    }
+    
+    this.notifyListeners();
+  }
+  
+  reportPointsChange(pointsData) {
+    console.log('📤 Reportando mudança de pontos para dashboard:', pointsData);
+    
+    this.dashboardData.pontos = pointsData.total || pointsData.totalPontos || 0;
+    
+    if (pointsData.distribuicao) {
+      this.dashboardData.pontosDistribuicao = pointsData.distribuicao;
+    }
+    
+    this.notifyListeners();
+  }
+  
+  // ===========================================
+  // GETTERS PARA A INTERFACE
+  // ===========================================
+  
+  getResumo() {
+    return {
+      nome: this.dashboardData.nome || "Novo Personagem",
+      status: this.dashboardData.status || "rascunho",
+      pontos: this.dashboardData.pontos || 0,
+      atributos: this.dashboardData.atributosResumo || {
+        ST: 10, DX: 10, IQ: 10, HT: 10
+      },
+      totais: this.dashboardData.totaisResumo || {
+        PV: 10, PF: 10, Vontade: 10, Percepcao: 10, Deslocamento: "5.00"
+      },
+      cargas: this.dashboardData.cargasResumo || {},
+      contadores: this.dashboardData.contadores || {
+        vantagens: 0,
+        desvantagens: 0,
+        pericias: 0,
+        magias: 0,
+        equipamentos: 0,
+        relacionamentos: 0,
+        idiomas: 0
+      },
+      ultimaAtualizacao: this.dashboardData.ultimaAtualizacao || new Date().toISOString()
+    };
+  }
+  
+  getAtributos() {
+    return this.dashboardData.atributosResumo || {
+      ST: 10, DX: 10, IQ: 10, HT: 10
+    };
+  }
+  
+  getPontos() {
+    return this.dashboardData.pontos || 0;
+  }
+  
+  getPontosDistribuicao() {
+    return this.dashboardData.pontosDistribuicao || {};
+  }
+  
+  getContadores() {
+    return this.dashboardData.contadores || {
+      vantagens: 0,
+      desvantagens: 0,
+      pericias: 0,
+      magias: 0,
+      equipamentos: 0,
+      relacionamentos: 0,
+      idiomas: 0
+    };
+  }
+  
+  // ===========================================
+  // SISTEMA DE LISTENERS
+  // ===========================================
+  
+  addListener(callback) {
+    this.listeners.push(callback);
+    
+    // Notificar imediatamente com dados atuais
+    callback(this.getResumo());
+  }
+  
+  notifyListeners() {
+    const data = this.getResumo();
+    
+    this.listeners.forEach(callback => {
+      try {
+        callback(data);
+      } catch (error) {
+        console.error('❌ Erro em listener do dashboard:', error);
+      }
+    });
+  }
+  
+  // ===========================================
+  // FUNÇÕES PARA ATUALIZAÇÃO MANUAL
+  // ===========================================
+  
+  async forceRefresh() {
+    console.log('🔄 Forçando atualização do dashboard...');
+    
+    await this.loadDashboardData();
+    
+    return this.getResumo();
+  }
+  
+  async updateCharacterName(nome) {
+    try {
+      this.dashboardData.nome = nome;
+      await firebaseService.saveModule('nome', nome);
+      
+      this.notifyListeners();
       return true;
       
     } catch (error) {
-      console.error(`❌❌❌ ERRO AO SALVAR ${moduleName}:`, error);
-      console.error('   Código:', error.code);
-      console.error('   Mensagem:', error.message);
-      
+      console.error('❌ Erro ao atualizar nome:', error);
       return false;
     }
-  }
-
-  // ===========================================
-  // FUNÇÕES AUXILIARES
-  // ===========================================
-
-  dispatchEvent(eventName, detail = {}) {
-    const event = new CustomEvent(eventName, { 
-      detail: { ...detail, characterId: this.characterId }
-    });
-    document.dispatchEvent(event);
-  }
-
-  getCharacterId() {
-    return this.characterId;
-  }
-
-  getCharacterData() {
-    return this.characterData;
-  }
-
-  // Para dashboard salvar pontos
-  async savePoints(pointsData) {
-    return this.saveModule('pontos', pointsData);
   }
 }
 
@@ -278,10 +272,13 @@ class FirebaseService {
 // INSTÂNCIA GLOBAL
 // ===========================================
 
-const firebaseService = new FirebaseService();
-export default firebaseService;
+const dashboardService = new DashboardService();
 
-// Exportar para window também
+// Exportar para window
 if (typeof window !== 'undefined') {
-  window.firebaseService = firebaseService;
+  window.dashboardService = dashboardService;
 }
+
+export default dashboardService;
+
+console.log('✅ dashboard-service.js carregado');
