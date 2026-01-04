@@ -1,5 +1,5 @@
 // ===========================================
-// ATRIBUTOS.JS - SISTEMA COMPLETO DE ATRIBUTOS GURPS
+// ATRIBUTOS.JS - SISTEMA CORRIGIDO COM FIREBASE
 // ===========================================
 
 // TABELA DE CARGAS CORRETA (COM DECIMAIS EXATOS)
@@ -26,7 +26,7 @@ const cargasTable = {
     20: { nenhuma: 40.0, leve: 80.0, media: 120.0, pesada: 240.0, muitoPesada: 400.0 }
 };
 
-// TABELA DE DANO BASE CORRETA (GDP e GEB)
+// TABELA DE DANO BASE CORRETA
 const tabelaDanoST = {
     1: { gdp: "1d-6", geb: "1d-5" }, 2: { gdp: "1d-6", geb: "1d-5" },
     3: { gdp: "1d-5", geb: "1d-4" }, 4: { gdp: "1d-5", geb: "1d-4" },
@@ -65,15 +65,10 @@ let personagemAtributos = {
     }
 };
 
-// VARIÁVEIS DE CONTROLE
-let isSalvando = false;
-let ultimoSave = null;
-
 // ===========================================
-// FUNÇÕES DE FORMATAÇÃO CORRETA
+// FUNÇÕES CORRIGIDAS DE FORMATAÇÃO
 // ===========================================
 
-// FUNÇÃO CORRIGIDA: Formatar números com decimais exatos
 function formatarCarga(valor) {
     // Se for número inteiro, mostra sem decimal
     if (Number.isInteger(valor)) {
@@ -81,25 +76,19 @@ function formatarCarga(valor) {
     }
     
     // Para números decimais, mostrar com 1 casa decimal
-    const strValor = valor.toString();
-    const partes = strValor.split('.');
+    const num = parseFloat(valor);
+    const strValor = num.toFixed(1);
     
-    if (partes.length === 1) {
-        return strValor;
+    // Remover ".0" se for o caso
+    if (strValor.endsWith('.0')) {
+        return strValor.split('.')[0];
     }
     
-    // Se a parte decimal for só ".0", mostra sem decimal
-    if (partes[1] === '0') {
-        return partes[0];
-    }
-    
-    // Mostra com 1 casa decimal (14.5, não 14.50)
-    const decimal = partes[1].length > 1 ? partes[1].substring(0, 1) : partes[1];
-    return partes[0] + '.' + decimal;
+    return strValor;
 }
 
 // ===========================================
-// FUNÇÕES PRINCIPAIS DE ATRIBUTOS
+// FUNÇÕES PRINCIPAIS (MANTIDAS)
 // ===========================================
 
 function alterarAtributo(atributo, valor) {
@@ -114,8 +103,7 @@ function alterarAtributo(atributo, valor) {
     personagemAtributos[atributo] = novoValor;
 
     atualizarTudo();
-    salvarLocalAtributos();
-    mostrarStatus(`Atributo ${atributo} alterado para ${novoValor}`, 'success');
+    salvarAtributos(); // Salva automaticamente
 }
 
 function ajustarSecundario(atributo, valor) {
@@ -142,12 +130,11 @@ function ajustarSecundario(atributo, valor) {
     else if (novoValor < 0) input.classList.add('negativo');
 
     atualizarTotaisSecundarios();
-    salvarLocalAtributos();
-    mostrarStatus(`Bônus ${atributo} alterado para ${novoValor}`, 'info');
+    salvarAtributos(); // Salva automaticamente
 }
 
 // ===========================================
-// FUNÇÕES DE ATUALIZAÇÃO (CORRIGIDAS)
+// FUNÇÕES DE ATUALIZAÇÃO (COM FORMATAÇÃO CORRIGIDA)
 // ===========================================
 
 function atualizarTudo() {
@@ -173,7 +160,7 @@ function atualizarTudo() {
     // Atualizar tabela de dano
     atualizarDanoBase(ST);
     
-    // Atualizar cargas (COM FORMATAÇÃO CORRETA)
+    // Atualizar cargas COM FORMATAÇÃO CORRETA
     atualizarCargas(ST);
     
     // Calcular custos
@@ -183,7 +170,6 @@ function atualizarTudo() {
     atualizarTotaisSecundarios();
 }
 
-// FUNÇÃO CORRIGIDA: Mostrar cargas com decimais exatos
 function atualizarCargas(ST) {
     let stKey = ST;
     if (ST > 20) stKey = 20;
@@ -219,7 +205,6 @@ function calcularCustos() {
     const IQ = personagemAtributos.IQ;
     const HT = personagemAtributos.HT;
 
-    // Cálculo GURPS
     const custoST = (ST - 10) * 10;
     const custoDX = (DX - 10) * 20;
     const custoIQ = (IQ - 10) * 20;
@@ -227,7 +212,6 @@ function calcularCustos() {
 
     const totalGastos = custoST + custoDX + custoIQ + custoHT;
 
-    // Atualizar display
     document.getElementById('custoST').textContent = custoST;
     document.getElementById('custoDX').textContent = custoDX;
     document.getElementById('custoIQ').textContent = custoIQ;
@@ -236,7 +220,6 @@ function calcularCustos() {
     const pontosElement = document.getElementById('pontosGastos');
     pontosElement.textContent = totalGastos;
 
-    // Estilo
     pontosElement.classList.remove('excedido');
     if (totalGastos > 150) {
         pontosElement.classList.add('excedido');
@@ -270,18 +253,24 @@ function atualizarTotaisSecundarios() {
 }
 
 // ===========================================
-// SISTEMA DE SALVAMENTO HÍBRIDO
+// SISTEMA DE SALVAMENTO RESTAURADO
 // ===========================================
 
-// SALVAMENTO LOCAL (automático)
-function salvarLocalAtributos() {
+async function salvarAtributos() {
+    console.log('💾 Salvando atributos...');
+    
+    // Preparar dados completos como estava antes
     const dados = {
-        atributos: {
-            ST: personagemAtributos.ST,
-            DX: personagemAtributos.DX,
-            IQ: personagemAtributos.IQ,
-            HT: personagemAtributos.HT,
-            bonus: { ...personagemAtributos.bonus }
+        ST: personagemAtributos.ST,
+        DX: personagemAtributos.DX,
+        IQ: personagemAtributos.IQ,
+        HT: personagemAtributos.HT,
+        bonus: { ...personagemAtributos.bonus },
+        custos: {
+            ST: (personagemAtributos.ST - 10) * 10,
+            DX: (personagemAtributos.DX - 10) * 20,
+            IQ: (personagemAtributos.IQ - 10) * 20,
+            HT: (personagemAtributos.HT - 10) * 10
         },
         totais: {
             PV: Math.max(personagemAtributos.ST + (personagemAtributos.bonus.PV || 0), 1),
@@ -292,163 +281,171 @@ function salvarLocalAtributos() {
         },
         cargas: obterCargasAtuais(),
         danoBase: obterDanoBase(),
-        custos: {
-            ST: (personagemAtributos.ST - 10) * 10,
-            DX: (personagemAtributos.DX - 10) * 20,
-            IQ: (personagemAtributos.IQ - 10) * 20,
-            HT: (personagemAtributos.HT - 10) * 10
-        },
         ultimaAtualizacao: new Date().toISOString()
     };
     
+    function calcularDeslocamentoTotal() {
+        const base = (personagemAtributos.HT + personagemAtributos.DX) / 4;
+        return Math.max(base + (personagemAtributos.bonus.Deslocamento || 0), 0).toFixed(2);
+    }
+    
+    function obterCargasAtuais() {
+        const ST = personagemAtributos.ST;
+        let stKey = ST > 20 ? 20 : (ST < 1 ? 1 : ST);
+        return cargasTable[stKey] || cargasTable[10];
+    }
+    
+    function obterDanoBase() {
+        const ST = personagemAtributos.ST;
+        let stKey = ST;
+        if (ST > 40) stKey = 40;
+        if (ST < 1) stKey = 1;
+        
+        return tabelaDanoST[stKey] || tabelaDanoST[10];
+    }
+    
+    // 1. SALVAR NO LOCALSTORAGE (instantâneo)
     localStorage.setItem('gurps_atributos', JSON.stringify(dados));
-}
-
-// SALVAMENTO NO FIREBASE (apenas no botão)
-async function salvarAtributosNoFirebase() {
-    if (isSalvando) return;
+    console.log('✅ Atributos salvos no LocalStorage');
+    mostrarStatus('Dados salvos localmente', 'success');
     
-    isSalvando = true;
-    mostrarStatus('Salvando no Firebase...', 'loading');
-    
-    try {
-        // Preparar dados separados por coleções
-        const dadosParaFirebase = {
-            atributos: {
-                ...personagemAtributos,
-                ultimaAtualizacao: new Date().toISOString()
-            },
-            pontos: {
-                atributos: calcularCustos(),
-                total: calcularCustos(),
-                atualizadoEm: new Date().toISOString()
-            },
-            status: {
-                PV: Math.max(personagemAtributos.ST + (personagemAtributos.bonus.PV || 0), 1),
-                PF: Math.max(personagemAtributos.HT + (personagemAtributos.bonus.PF || 0), 1),
-                Vontade: Math.max(personagemAtributos.IQ + (personagemAtributos.bonus.Vontade || 0), 1),
-                Percepcao: Math.max(personagemAtributos.IQ + (personagemAtributos.bonus.Percepcao || 0), 1),
-                Deslocamento: calcularDeslocamentoTotal()
-            },
-            cargas: obterCargasAtuais(),
-            danoBase: obterDanoBase(),
-            atualizadoEm: new Date().toISOString()
-        };
-        
-        // Salvar usando o firebaseService
-        if (window.firebaseService && typeof window.firebaseService.saveModule === 'function') {
-            await window.firebaseService.saveModule('atributos_completos', dadosParaFirebase);
-            ultimoSave = new Date();
-            mostrarStatus('✅ Atributos salvos no Firebase!', 'success');
-            
-            // Atualizar dados locais também
-            salvarLocalAtributos();
-            
-            // Disparar evento para outras abas
-            document.dispatchEvent(new CustomEvent('atributos-salvos', {
-                detail: dadosParaFirebase
-            }));
-        } else {
-            throw new Error('Firebase não disponível');
+    // 2. SALVAR NO FIREBASE (usando a função que já existe)
+    if (window.saveCharacterData && typeof window.saveCharacterData === 'function') {
+        try {
+            await window.saveCharacterData('atributos', dados);
+            console.log('✅ Atributos salvos no Firebase');
+            mostrarStatus('✅ Dados sincronizados com o Firebase', 'success');
+        } catch (error) {
+            console.error('❌ Erro ao salvar no Firebase:', error);
+            mostrarStatus('⚠️ Dados salvos localmente (Firebase offline)', 'warning');
         }
-        
-    } catch (error) {
-        console.error('❌ Erro ao salvar no Firebase:', error);
-        mostrarStatus('❌ Erro ao salvar: ' + error.message, 'error');
-    } finally {
-        isSalvando = false;
+    }
+    
+    // 3. Também usar firebaseService se disponível
+    if (window.firebaseService && typeof window.firebaseService.saveModule === 'function') {
+        try {
+            await window.firebaseService.saveModule('atributos', dados);
+            console.log('✅ Atributos salvos via firebaseService');
+        } catch (error) {
+            console.error('❌ Erro no firebaseService:', error);
+        }
     }
 }
 
-// CARREGAMENTO DOS DADOS
 function carregarAtributos() {
     console.log('📥 Carregando atributos...');
     
-    // 1. Tentar LocalStorage primeiro
+    let dadosCarregados = null;
+    
+    // 1. TENTAR DO LOCALSTORAGE PRIMEIRO (rápido)
     const localData = localStorage.getItem('gurps_atributos');
     if (localData) {
         try {
-            const dados = JSON.parse(localData);
-            aplicarDadosAtributos(dados);
-            console.log('✅ Atributos carregados do LocalStorage');
-            return;
+            dadosCarregados = JSON.parse(localData);
+            console.log('✅ Dados encontrados no LocalStorage');
         } catch (error) {
-            console.error('❌ Erro ao carregar LocalStorage:', error);
+            console.error('❌ Erro ao ler LocalStorage:', error);
         }
     }
     
-    // 2. Tentar carregar do Firebase se disponível
-    if (window.firebaseService && window.firebaseService.characterData) {
-        const firebaseData = window.firebaseService.characterData;
-        
-        // Verificar em várias estruturas possíveis
-        if (firebaseData.atributos_completos) {
-            aplicarDadosAtributos(firebaseData.atributos_completos);
-            console.log('✅ Atributos carregados do Firebase (completo)');
-        } else if (firebaseData.atributos) {
-            aplicarDadosAtributos(firebaseData);
-            console.log('✅ Atributos carregados do Firebase (simples)');
+    // 2. Se não encontrou local, verificar se há função global para carregar
+    if (!dadosCarregados && window.loadCharacterData && typeof window.loadCharacterData === 'function') {
+        console.log('🔍 Procurando dados via função global...');
+        try {
+            const firebaseData = window.loadCharacterData('atributos');
+            if (firebaseData) {
+                dadosCarregados = firebaseData;
+                console.log('✅ Dados carregados via função global');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar do Firebase:', error);
         }
     }
+    
+    // 3. Aplicar os dados se encontrou
+    if (dadosCarregados) {
+        aplicarDadosAtributos(dadosCarregados);
+    } else {
+        console.log('ℹ️ Nenhum dado salvo encontrado, usando valores padrão');
+    }
+    
+    return dadosCarregados !== null;
 }
 
-// APLICAR DADOS CARREGADOS
 function aplicarDadosAtributos(dados) {
-    console.log('🔄 Aplicando dados:', dados);
+    console.log('🔄 Aplicando dados dos atributos:', dados);
     
     // Atributos principais
-    if (dados.atributos) {
-        ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
-            if (dados.atributos[atributo] !== undefined) {
-                personagemAtributos[atributo] = dados.atributos[atributo];
-                const input = document.getElementById(atributo);
-                if (input) input.value = dados.atributos[atributo];
+    ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
+        if (dados[atributo] !== undefined) {
+            personagemAtributos[atributo] = dados[atributo];
+            const input = document.getElementById(atributo);
+            if (input) {
+                input.value = dados[atributo];
+            }
+        }
+    });
+    
+    // Bônus
+    if (dados.bonus) {
+        Object.keys(personagemAtributos.bonus).forEach(key => {
+            if (dados.bonus[key] !== undefined) {
+                personagemAtributos.bonus[key] = dados.bonus[key];
+                const input = document.getElementById('bonus' + key);
+                if (input) {
+                    input.value = dados.bonus[key];
+                    
+                    // Aplicar cor
+                    input.classList.remove('positivo', 'negativo');
+                    if (dados.bonus[key] > 0) input.classList.add('positivo');
+                    else if (dados.bonus[key] < 0) input.classList.add('negativo');
+                }
             }
         });
-        
-        // Bônus
-        if (dados.atributos.bonus) {
-            Object.keys(personagemAtributos.bonus).forEach(key => {
-                if (dados.atributos.bonus[key] !== undefined) {
-                    personagemAtributos.bonus[key] = dados.atributos.bonus[key];
-                    const input = document.getElementById('bonus' + key);
-                    if (input) {
-                        input.value = dados.atributos.bonus[key];
-                        input.classList.remove('positivo', 'negativo');
-                        if (dados.atributos.bonus[key] > 0) input.classList.add('positivo');
-                        else if (dados.atributos.bonus[key] < 0) input.classList.add('negativo');
-                    }
-                }
-            });
-        }
     }
     
     // Atualizar interface
     atualizarTudo();
+    console.log('✅ Dados aplicados com sucesso');
 }
 
 // ===========================================
-// FUNÇÕES AUXILIARES
+// BOTÃO DE SALVAR RESTAURADO (igual ao original)
 // ===========================================
 
-function calcularDeslocamentoTotal() {
-    const base = (personagemAtributos.HT + personagemAtributos.DX) / 4;
-    return Math.max(base + (personagemAtributos.bonus.Deslocamento || 0), 0).toFixed(2);
+function criarBotaoSalvar() {
+    // Verificar se já existe o botão principal do sistema
+    const botaoSalvarGlobal = document.getElementById('salvarPersonagemBtn');
+    if (botaoSalvarGlobal) {
+        console.log('✅ Botão global de salvar já existe');
+        return;
+    }
+    
+    // Verificar se já tem botão na aba atributos
+    const header = document.querySelector('.atributos-header');
+    if (!header) return;
+    
+    const botaoExistente = document.getElementById('btnSalvarAtributosFirebase');
+    if (botaoExistente) botaoExistente.remove();
+    
+    // Criar botão específico para atributos
+    const botaoSalvar = document.createElement('button');
+    botaoSalvar.id = 'btnSalvarAtributosFirebase';
+    botaoSalvar.className = 'btn-salvar-atributos';
+    botaoSalvar.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sincronizar com Firebase';
+    botaoSalvar.title = 'Forçar salvamento dos atributos no Firebase';
+    botaoSalvar.onclick = async function() {
+        mostrarStatus('Sincronizando com Firebase...', 'loading');
+        await salvarAtributos();
+    };
+    
+    // Adicionar ao header
+    header.appendChild(botaoSalvar);
 }
 
-function obterCargasAtuais() {
-    const ST = personagemAtributos.ST;
-    let stKey = ST > 20 ? 20 : (ST < 1 ? 1 : ST);
-    return cargasTable[stKey] || cargasTable[10];
-}
-
-function obterDanoBase() {
-    const ST = personagemAtributos.ST;
-    let stKey = ST;
-    if (ST > 40) stKey = 40;
-    if (ST < 1) stKey = 1;
-    return tabelaDanoST[stKey] || tabelaDanoST[10];
-}
+// ===========================================
+// FUNÇÃO DE STATUS
+// ===========================================
 
 function mostrarStatus(mensagem, tipo = 'info') {
     const statusElement = document.getElementById('statusAtributos');
@@ -475,56 +472,17 @@ function mostrarStatus(mensagem, tipo = 'info') {
 }
 
 // ===========================================
-// INICIALIZAÇÃO COMPLETA
+// INICIALIZAÇÃO (MANTIDA SIMPLES)
 // ===========================================
 
 function inicializarAtributos() {
     console.log('🚀 Inicializando sistema de atributos...');
     
-    // 1. Adicionar botão de salvar
-    criarBotaoSalvar();
-    
-    // 2. Configurar eventos dos inputs
-    configurarEventosInputs();
-    
-    // 3. Carregar dados salvos
-    carregarAtributos();
-    
-    // 4. Atualizar interface
-    atualizarTudo();
-    
-    // 5. Escutar eventos do Firebase
-    configurarEventListeners();
-    
-    mostrarStatus('Sistema de atributos inicializado', 'success');
-}
-
-function criarBotaoSalvar() {
-    const header = document.querySelector('.atributos-header');
-    if (!header) return;
-    
-    // Remover botão existente
-    const botaoExistente = document.getElementById('btnSalvarAtributos');
-    if (botaoExistente) botaoExistente.remove();
-    
-    // Criar novo botão
-    const botaoSalvar = document.createElement('button');
-    botaoSalvar.id = 'btnSalvarAtributos';
-    botaoSalvar.className = 'btn-salvar-atributos';
-    botaoSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar no Firebase';
-    botaoSalvar.title = 'Clique para salvar todos os atributos no Firebase';
-    botaoSalvar.onclick = salvarAtributosNoFirebase;
-    
-    // Adicionar ao header
-    header.appendChild(botaoSalvar);
-}
-
-function configurarEventosInputs() {
-    // Inputs principais (ST, DX, IQ, HT)
+    // Configurar eventos dos inputs principais
     ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
         const input = document.getElementById(atributo);
         if (input) {
-            // Remover listeners antigos
+            // Remover event listeners antigos
             const newInput = input.cloneNode(true);
             input.parentNode.replaceChild(newInput, input);
             
@@ -537,46 +495,47 @@ function configurarEventosInputs() {
                 this.value = valor;
                 personagemAtributos[atributo] = valor;
                 atualizarTudo();
-                salvarLocalAtributos();
+                salvarAtributos();
             });
             
-            // Setas do teclado
-            newInput.addEventListener('keydown', function(e) {
+            // Permitir usar as setas do teclado
+            newInput.addEventListener('keyup', function(e) {
                 if (e.key === 'ArrowUp') {
-                    e.preventDefault();
                     alterarAtributo(atributo, 1);
                 } else if (e.key === 'ArrowDown') {
-                    e.preventDefault();
                     alterarAtributo(atributo, -1);
                 }
             });
         }
     });
     
-    // Bônus
+    // Configurar bônus
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById('bonus' + atributo);
         if (input) {
+            // Remover event listeners antigos
             const newInput = input.cloneNode(true);
             input.parentNode.replaceChild(newInput, input);
             
+            // Adicionar novo listener
             newInput.addEventListener('change', function() {
                 let valor;
                 if (atributo === 'Deslocamento') {
                     valor = parseFloat(this.value) || 0;
-                    valor = Math.round(valor * 100) / 100;
                 } else {
                     valor = parseInt(this.value) || 0;
                 }
                 
+                // Limites
                 if (valor < -10) valor = -10;
                 if (valor > 20) valor = 20;
                 
                 this.value = valor;
                 personagemAtributos.bonus[atributo] = valor;
                 atualizarTotaisSecundarios();
-                salvarLocalAtributos();
+                salvarAtributos();
                 
+                // Aplicar cor
                 this.classList.remove('positivo', 'negativo');
                 if (valor > 0) this.classList.add('positivo');
                 else if (valor < 0) this.classList.add('negativo');
@@ -584,52 +543,39 @@ function configurarEventosInputs() {
         }
     });
     
-    // Botões de incremento
-    document.querySelectorAll('.btn-atributo, .btn-secundario').forEach(btn => {
+    // Configurar botões de incremento/decremento
+    document.querySelectorAll('.btn-atributo').forEach(btn => {
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
     });
-}
-
-function configurarEventListeners() {
-    // Quando Firebase carregar dados
-    document.addEventListener('firebase-loaded', function(e) {
-        console.log('📡 Dados do Firebase recebidos em atributos.js');
-        if (e.detail?.atributos_completos || e.detail?.atributos) {
-            aplicarDadosAtributos(e.detail);
-        }
+    
+    document.querySelectorAll('.btn-secundario').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
     });
     
-    // Quando outra aba salvar algo
-    document.addEventListener('character-data-changed', function() {
-        console.log('🔄 Dados do personagem atualizados, recarregando atributos...');
-        carregarAtributos();
-    });
+    // Criar botão de salvar
+    criarBotaoSalvar();
+    
+    // Carregar dados salvos
+    carregarAtributos();
+    
+    // Se não carregou nada, fazer primeira atualização
+    if (!localStorage.getItem('gurps_atributos')) {
+        atualizarTudo();
+    }
+    
+    console.log('✅ Sistema de atributos inicializado');
 }
 
 // ===========================================
-// EXPORTAR PARA O SISTEMA PRINCIPAL
+// FUNÇÕES PARA O SISTEMA PRINCIPAL
 // ===========================================
 
-window.obterDadosAtributos = function() {
-    return {
-        atributos: { ...personagemAtributos },
-        totais: {
-            PV: Math.max(personagemAtributos.ST + (personagemAtributos.bonus.PV || 0), 1),
-            PF: Math.max(personagemAtributos.HT + (personagemAtributos.bonus.PF || 0), 1),
-            Vontade: Math.max(personagemAtributos.IQ + (personagemAtributos.bonus.Vontade || 0), 1),
-            Percepcao: Math.max(personagemAtributos.IQ + (personagemAtributos.bonus.Percepcao || 0), 1),
-            Deslocamento: calcularDeslocamentoTotal()
-        },
-        cargas: obterCargasAtuais(),
-        danoBase: obterDanoBase(),
-        pontos: calcularCustos(),
-        ultimaAtualizacao: new Date().toISOString()
-    };
-};
-
-window.salvarAtributosNoFirebase = salvarAtributosNoFirebase;
-window.initAtributosTab = function() {
+// Iniciar quando a aba for ativada
+function initAtributosTab() {
+    console.log('🎯 Iniciando aba de atributos');
+    
     setTimeout(() => {
         if (document.getElementById('ST')) {
             inicializarAtributos();
@@ -638,17 +584,72 @@ window.initAtributosTab = function() {
             setTimeout(initAtributosTab, 500);
         }
     }, 100);
+}
+
+// Exportar funções para o sistema principal
+window.obterDadosAtributos = function() {
+    return {
+        ST: personagemAtributos.ST,
+        DX: personagemAtributos.DX,
+        IQ: personagemAtributos.IQ,
+        HT: personagemAtributos.HT,
+        bonus: { ...personagemAtributos.bonus },
+        totalPontos: calcularCustos(),
+        cargas: obterCargasAtuais(),
+        danoBase: obterDanoBaseCorreto(),
+        ultimaAtualizacao: new Date().toISOString()
+    };
 };
 
+window.carregarDadosAtributos = function(dados) {
+    aplicarDadosAtributos(dados);
+};
+
+window.initAtributosTab = initAtributosTab;
+
+// Funções auxiliares
+window.getAtributosPersonagem = () => ({ ...personagemAtributos });
+
+window.getCargasPersonagem = () => {
+    const ST = personagemAtributos.ST;
+    let stKey = ST > 20 ? 20 : (ST < 1 ? 1 : ST);
+    return cargasTable[stKey] || cargasTable[10];
+};
+
+window.getDanoBasePersonagem = () => {
+    const ST = personagemAtributos.ST;
+    let stKey = ST;
+    if (ST > 40) stKey = 40;
+    if (ST < 1) stKey = 1;
+    return tabelaDanoST[stKey] || tabelaDanoST[10];
+};
+
+window.calcularCustoAtributos = calcularCustos;
+
+// Funções internas auxiliares
+function obterCargasAtuais() {
+    const ST = personagemAtributos.ST;
+    let stKey = ST > 20 ? 20 : (ST < 1 ? 1 : ST);
+    return cargasTable[stKey] || cargasTable[10];
+}
+
+function obterDanoBaseCorreto() {
+    const ST = personagemAtributos.ST;
+    let stKey = ST;
+    if (ST > 40) stKey = 40;
+    if (ST < 1) stKey = 1;
+    return tabelaDanoST[stKey] || tabelaDanoST[10];
+}
+
 // ===========================================
-// ESTILOS CSS ADICIONAIS (para o botão)
+// ADICIONAR ESTILOS
 // ===========================================
 
 const adicionarEstilos = () => {
     const style = document.createElement('style');
     style.textContent = `
         .btn-salvar-atributos {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -659,48 +660,54 @@ const adicionarEstilos = () => {
             align-items: center;
             gap: 8px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+            margin-left: 15px;
         }
         
         .btn-salvar-atributos:hover {
-            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+            background: linear-gradient(135deg, #2980b9 0%, #1f639e 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 6px 8px rgba(52, 152, 219, 0.3);
         }
         
         .btn-salvar-atributos:active {
             transform: translateY(0);
         }
         
-        .status-mensagem {
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-        }
-        
         .status-mensagem.success {
             background-color: #d4edda;
             color: #155724;
             border-left: 4px solid #28a745;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
         }
         
         .status-mensagem.error {
             background-color: #f8d7da;
             color: #721c24;
             border-left: 4px solid #dc3545;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
         }
         
         .status-mensagem.warning {
             background-color: #fff3cd;
             color: #856404;
             border-left: 4px solid #ffc107;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
         }
         
         .status-mensagem.loading {
             background-color: #e7f3ff;
             color: #004085;
             border-left: 4px solid #007bff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
         }
         
         .positivo {
@@ -724,6 +731,12 @@ const adicionarEstilos = () => {
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
+        
+        /* Garantir que as cargas mostrem decimais corretamente */
+        .tabela-valor {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
     `;
     document.head.appendChild(style);
 };
@@ -746,4 +759,12 @@ if (document.readyState === 'loading') {
     }
 }
 
-console.log('✅ atributos.js carregado - SISTEMA HÍBRIDO ATIVADO');
+// Event listener para quando Firebase terminar de carregar
+document.addEventListener('firebase-data-loaded', function(e) {
+    console.log('📡 Firebase carregado, verificando atributos...');
+    if (e.detail?.atributos) {
+        aplicarDadosAtributos(e.detail.atributos);
+    }
+});
+
+console.log('✅ atributos.js carregado - SISTEMA RESTAURADO COM FIREBASE');
