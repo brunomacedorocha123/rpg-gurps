@@ -1,5 +1,5 @@
 // ============================================
-// DASHBOARD.JS - VERSÃO COMPLETA E FUNCIONAL
+// DASHBOARD.JS - VERSÃO LIMPA E FUNCIONAL
 // ============================================
 
 class DashboardGURPS {
@@ -15,9 +15,6 @@ class DashboardGURPS {
     }
     
     async init() {
-        console.log('🚀 Inicializando Dashboard GURPS...');
-        
-        // Aguardar DOM carregar
         if (document.readyState !== 'loading') {
             await this.initialize();
         } else {
@@ -27,28 +24,13 @@ class DashboardGURPS {
     
     async initialize() {
         try {
-            // 1. Configurar eventos
             this.configurarEventos();
-            
-            // 2. Carregar dados iniciais
             await this.carregarDadosIniciais();
-            
-            // 3. Iniciar sistema de pontos
             this.iniciarSistemaPontos();
-            
-            // 4. Configurar sincronização
             this.configurarSincronizacao();
-            
-            // 5. Atualizar interface
             this.atualizarTudo();
-            
             this.inicializado = true;
-            console.log('✅ Dashboard inicializada com sucesso!');
-            
-            this.mostrarMensagem('Dashboard carregada com sucesso!', 'success');
-            
         } catch (error) {
-            console.error('❌ Erro ao inicializar dashboard:', error);
             this.mostrarMensagem('Erro ao carregar dashboard', 'error');
         }
     }
@@ -58,31 +40,19 @@ class DashboardGURPS {
     // ============================================
     
     configurarEventos() {
-        console.log('🔧 Configurando eventos da dashboard...');
-        
-        // EVENTOS DE IDENTIFICAÇÃO
         this.configurarEventosIdentificacao();
-        
-        // EVENTOS DO SISTEMA DE PONTOS
         this.configurarEventosPontos();
-        
-        // EVENTOS DE STATUS SOCIAL
         this.configurarEventosStatusSocial();
-        
-        // EVENTOS DE FINANÇAS
         this.configurarEventosFinancas();
-        
-        // BOTÕES DE AÇÃO
         this.configurarBotoesAcao();
     }
     
     configurarEventosIdentificacao() {
-        // Inputs de identificação
         ['char-name', 'char-race', 'char-type', 'char-player'].forEach(id => {
             const input = document.getElementById(id);
             if (input) {
-                // Remover readonly se existir
                 input.removeAttribute('readonly');
+                input.removeAttribute('disabled');
                 
                 input.addEventListener('input', () => {
                     this.salvarDado(id.replace('char-', ''), input.value);
@@ -94,7 +64,6 @@ class DashboardGURPS {
             }
         });
         
-        // Upload de foto
         const uploadInput = document.getElementById('char-upload');
         if (uploadInput) {
             uploadInput.addEventListener('change', (e) => {
@@ -104,7 +73,6 @@ class DashboardGURPS {
     }
     
     configurarEventosPontos() {
-        // Pontos iniciais
         const pontosInput = document.getElementById('start-points');
         if (pontosInput) {
             pontosInput.addEventListener('change', () => {
@@ -114,7 +82,6 @@ class DashboardGURPS {
             });
         }
         
-        // Limite de desvantagens
         const limiteInput = document.getElementById('dis-limit');
         if (limiteInput) {
             limiteInput.addEventListener('change', () => {
@@ -125,32 +92,42 @@ class DashboardGURPS {
     }
     
     configurarEventosStatusSocial() {
-        // Botões de ajuste
-        document.querySelectorAll('[onclick*="ajustarModificador"]').forEach(btn => {
-            const originalOnclick = btn.getAttribute('onclick');
-            const match = originalOnclick.match(/ajustarModificador\('(.+)',\s*(-?\d+)\)/);
-            
-            if (match) {
-                const [_, tipo, valor] = match;
-                btn.addEventListener('click', () => {
-                    this.ajustarModificadorSocial(tipo, parseInt(valor));
-                });
-            }
-        });
-        
-        // Inputs diretos
+        // Configurar botões + e -
         ['status', 'reputacao', 'aparencia'].forEach(tipo => {
+            // Botão -
+            const btnMinus = document.querySelector(`.mod-btn.minus[onclick*="${tipo}"]`);
+            if (btnMinus) {
+                btnMinus.onclick = () => this.ajustarModificadorSocial(tipo, -1);
+                btnMinus.removeAttribute('onclick');
+            }
+            
+            // Botão +
+            const btnPlus = document.querySelector(`.mod-btn.plus[onclick*="${tipo}"]`);
+            if (btnPlus) {
+                btnPlus.onclick = () => this.ajustarModificadorSocial(tipo, 1);
+                btnPlus.removeAttribute('onclick');
+            }
+            
+            // Input
             const input = document.getElementById(`${tipo}-value`);
             if (input) {
-                input.addEventListener('change', () => {
-                    this.atualizarModificadorSocial(tipo, input.value);
+                input.addEventListener('change', (e) => {
+                    this.atualizarModificadorSocial(tipo, e.target.value);
                 });
+                
+                input.addEventListener('blur', (e) => {
+                    this.atualizarModificadorSocial(tipo, e.target.value);
+                });
+                
+                // Remover bloqueio do CSS
+                input.style.pointerEvents = 'auto';
+                input.style.userSelect = 'auto';
+                input.style.cursor = 'text';
             }
         });
     }
     
     configurarEventosFinancas() {
-        // Nível de riqueza
         const riquezaSelect = document.getElementById('wealth-level');
         if (riquezaSelect) {
             riquezaSelect.addEventListener('change', () => {
@@ -160,13 +137,11 @@ class DashboardGURPS {
     }
     
     configurarBotoesAcao() {
-        // Botão de atualizar
         const refreshBtn = document.querySelector('.refresh-btn');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => this.atualizarTudo());
         }
         
-        // Botão de sincronizar com Firebase
         const syncBtn = document.querySelector('.btn-sync');
         if (syncBtn) {
             syncBtn.addEventListener('click', () => this.sincronizarComFirebase());
@@ -178,39 +153,23 @@ class DashboardGURPS {
     // ============================================
     
     async carregarDadosIniciais() {
-        console.log('📥 Carregando dados iniciais...');
-        
         try {
-            // 1. Carregar identificação
             await this.carregarIdentificacao();
-            
-            // 2. Carregar atributos (da aba atributos)
             await this.carregarAtributos();
-            
-            // 3. Carregar pontos
             await this.carregarPontos();
-            
-            // 4. Carregar status social
             await this.carregarStatusSocial();
-            
-            // 5. Carregar finanças e carga
             await this.carregarFinancasCarga();
-            
-            // 6. Atualizar hora
             this.atualizarHoraAtualizacao();
-            
         } catch (error) {
-            console.error('Erro ao carregar dados:', error);
+            // Silencioso
         }
     }
     
     async carregarIdentificacao() {
-        // Tentar do localStorage primeiro
         const dadosLocal = localStorage.getItem('gurps_personagem_completo');
         if (dadosLocal) {
             this.dadosPersonagem = JSON.parse(dadosLocal);
             
-            // Preencher inputs
             const campos = {
                 'char-name': 'nome',
                 'char-race': 'raca',
@@ -222,10 +181,13 @@ class DashboardGURPS {
                 const input = document.getElementById(id);
                 if (input && this.dadosPersonagem[campo]) {
                     input.value = this.dadosPersonagem[campo];
+                    // Remover bloqueio
+                    input.style.pointerEvents = 'auto';
+                    input.style.userSelect = 'auto';
+                    input.style.cursor = 'text';
                 }
             }
             
-            // Carregar foto se existir
             if (this.dadosPersonagem.foto) {
                 this.carregarFoto(this.dadosPersonagem.foto);
             }
@@ -233,34 +195,29 @@ class DashboardGURPS {
     }
     
     async carregarAtributos() {
-        // Método 1: Tentar pegar do localStorage (que atributos.js salva)
         const dadosAtributosLocal = localStorage.getItem('gurps_atributos');
         if (dadosAtributosLocal) {
             try {
                 this.atributosAtuais = JSON.parse(dadosAtributosLocal);
                 this.atualizarAtributosDashboard(this.atributosAtuais);
-                console.log('✅ Atributos carregados do localStorage');
                 return;
             } catch (error) {
-                console.error('Erro ao parsear atributos do localStorage:', error);
+                // Silencioso
             }
         }
         
-        // Método 2: Tentar pegar da função global do atributos.js
         if (typeof window.getAtributosPersonagem === 'function') {
             try {
                 this.atributosAtuais = window.getAtributosPersonagem();
                 if (this.atributosAtuais) {
                     this.atualizarAtributosDashboard(this.atributosAtuais);
-                    console.log('✅ Atributos carregados da função global');
                     return;
                 }
             } catch (error) {
-                console.error('Erro ao pegar atributos da função global:', error);
+                // Silencioso
             }
         }
         
-        // Método 3: Valores padrão
         this.atributosAtuais = {
             ST: 10,
             DX: 10,
@@ -276,28 +233,25 @@ class DashboardGURPS {
         };
         
         this.atualizarAtributosDashboard(this.atributosAtuais);
-        console.log('⚠️ Atributos carregados com valores padrão');
     }
     
     async carregarPontos() {
-        // Tentar do localStorage
         const pontosLocal = localStorage.getItem('gurps_pontos');
         if (pontosLocal) {
             try {
                 this.pontosAtuais = JSON.parse(pontosLocal);
                 this.atualizarDisplayPontos(this.pontosAtuais);
             } catch (error) {
-                console.error('Erro ao carregar pontos:', error);
+                // Silencioso
             }
         }
         
-        // Se existir pontosManager, usar ele
         if (window.pontosManager) {
             try {
                 const pontosData = window.pontosManager.getResumo();
                 this.atualizarDisplayPontos(pontosData);
             } catch (error) {
-                console.error('Erro ao pegar dados do pontosManager:', error);
+                // Silencioso
             }
         }
     }
@@ -309,13 +263,12 @@ class DashboardGURPS {
                 const statusData = JSON.parse(statusLocal);
                 this.atualizarStatusSocial(statusData);
             } catch (error) {
-                console.error('Erro ao carregar status social:', error);
+                // Silencioso
             }
         }
     }
     
     async carregarFinancasCarga() {
-        // Carregar cargas
         if (typeof window.getCargasPersonagem === 'function') {
             try {
                 this.cargasAtuais = window.getCargasPersonagem();
@@ -323,18 +276,17 @@ class DashboardGURPS {
                     this.atualizarCargasDashboard(this.cargasAtuais);
                 }
             } catch (error) {
-                console.error('Erro ao carregar cargas:', error);
+                // Silencioso
             }
         }
         
-        // Carregar finanças
         const financasLocal = localStorage.getItem('gurps_financas');
         if (financasLocal) {
             try {
                 const financasData = JSON.parse(financasLocal);
                 this.atualizarFinancas(financasData);
             } catch (error) {
-                console.error('Erro ao carregar finanças:', error);
+                // Silencioso
             }
         }
     }
@@ -346,78 +298,39 @@ class DashboardGURPS {
     atualizarAtributosDashboard(dadosAtributos) {
         if (!dadosAtributos) return;
         
-        console.log('🔄 Atualizando atributos na dashboard:', dadosAtributos);
-        
-        // Atributos principais
         const st = dadosAtributos.ST || 10;
         const dx = dadosAtributos.DX || 10;
         const iq = dadosAtributos.IQ || 10;
         const ht = dadosAtributos.HT || 10;
         
-        // Atualizar display
         this.atualizarElemento('dashboard-ST', st);
         this.atualizarElemento('dashboard-DX', dx);
         this.atualizarElemento('dashboard-IQ', iq);
         this.atualizarElemento('dashboard-HT', ht);
         
-        // Atualizar resumo
-        this.atualizarElemento('summary-st', st);
-        this.atualizarElemento('summary-dx', dx);
-        this.atualizarElemento('summary-iq', iq);
-        this.atualizarElemento('summary-ht', ht);
-        
-        // Calcular atributos derivados
         const bonus = dadosAtributos.bonus || {};
         
-        const pvBase = st;
-        const pvBonus = bonus.PV || 0;
-        const pvTotal = Math.max(pvBase + pvBonus, 1);
+        const pvTotal = Math.max(st + (bonus.PV || 0), 1);
+        const pfTotal = Math.max(ht + (bonus.PF || 0), 1);
+        const vontadeTotal = Math.max(iq + (bonus.Vontade || 0), 1);
+        const percepcaoTotal = Math.max(iq + (bonus.Percepcao || 0), 1);
+        const deslocamentoTotal = ((ht + dx) / 4 + (bonus.Deslocamento || 0)).toFixed(2);
         
-        const pfBase = ht;
-        const pfBonus = bonus.PF || 0;
-        const pfTotal = Math.max(pfBase + pfBonus, 1);
-        
-        const vontadeBase = iq;
-        const vontadeBonus = bonus.Vontade || 0;
-        const vontadeTotal = Math.max(vontadeBase + vontadeBonus, 1);
-        
-        const percepcaoBase = iq;
-        const percepcaoBonus = bonus.Percepcao || 0;
-        const percepcaoTotal = Math.max(percepcaoBase + percepcaoBonus, 1);
-        
-        const deslocamentoBase = (ht + dx) / 4;
-        const deslocamentoBonus = bonus.Deslocamento || 0;
-        const deslocamentoTotal = (parseFloat(deslocamentoBase) + parseFloat(deslocamentoBonus)).toFixed(2);
-        
-        // Atualizar totais
         this.atualizarElemento('dashboard-HP', pvTotal);
         this.atualizarElemento('dashboard-FP', pfTotal);
         this.atualizarElemento('dashboard-WILL', vontadeTotal);
         this.atualizarElemento('dashboard-PER', percepcaoTotal);
         this.atualizarElemento('dashboard-MOVE', deslocamentoTotal);
         
-        // Atualizar resumo
-        this.atualizarElemento('summary-hp', pvTotal);
-        this.atualizarElemento('summary-fp', pfTotal);
-        this.atualizarElemento('summary-will', vontadeTotal);
-        this.atualizarElemento('summary-per', percepcaoTotal);
-        
-        // Atualizar quick stats
         this.atualizarElemento('quick-hp', pvTotal);
         this.atualizarElemento('quick-fp', pfTotal);
         this.atualizarElemento('quick-hp-max', pvTotal);
         this.atualizarElemento('quick-fp-max', pfTotal);
         
-        // Atualizar ST para dano
         this.atualizarElemento('current-ST-damage', st);
         
-        // Calcular custos
         this.calcularCustosAtributos(dadosAtributos);
-        
-        // Atualizar cargas baseadas no ST
         this.atualizarCargasBaseST(st);
-        
-        // Atualizar dano base
         this.atualizarDanoBase(st);
     }
     
@@ -439,12 +352,10 @@ class DashboardGURPS {
         
         const totalGastos = custoST + custoDX + custoIQ + custoHT;
         
-        // Reportar para pontos manager
         if (window.pontosManager && typeof window.pontosManager.atualizarPontosAba === 'function') {
             window.pontosManager.atualizarPontosAba('atributos', totalGastos);
         }
         
-        // Atualizar na distribuição de pontos
         this.atualizarElemento('points-attr', totalGastos);
         
         return totalGastos;
@@ -494,15 +405,11 @@ class DashboardGURPS {
     // ============================================
     
     iniciarSistemaPontos() {
-        console.log('💰 Iniciando sistema de pontos...');
-        
-        // Se existir pontosManager, integrar com ele
         if (window.pontosManager) {
             window.pontosManager.adicionarListener((dados) => {
                 this.atualizarDisplayPontos(dados);
             });
             
-            // Carregar pontos existentes
             setTimeout(() => {
                 if (window.pontosManager.carregarPontos) {
                     window.pontosManager.carregarPontos();
@@ -510,7 +417,6 @@ class DashboardGURPS {
             }, 1000);
         }
         
-        // Configurar valores iniciais
         const pontosIniciais = document.getElementById('start-points');
         const limiteDesv = document.getElementById('dis-limit');
         
@@ -526,13 +432,9 @@ class DashboardGURPS {
     atualizarDisplayPontos(dadosPontos) {
         if (!dadosPontos) return;
         
-        console.log('📊 Atualizando display de pontos:', dadosPontos);
-        
-        // Total gasto
         const totalGasto = dadosPontos.total || 0;
         this.atualizarElemento('total-points-spent', totalGasto + ' pts');
         
-        // Distribuição
         if (dadosPontos.distribuicao) {
             const dist = dadosPontos.distribuicao;
             
@@ -545,7 +447,6 @@ class DashboardGURPS {
             this.atualizarElemento('points-spells', dist.magias || 0);
         }
         
-        // Atualizar saldo
         this.atualizarSaldoPontos(totalGasto);
     }
     
@@ -559,36 +460,30 @@ class DashboardGURPS {
         if (saldoElement) {
             saldoElement.textContent = saldo;
             
-            // Estilizar o saldo
             const container = saldoElement.closest('.balance-value-container');
             const statusText = document.getElementById('points-status-text');
             const statusIndicator = document.getElementById('points-status-indicator');
             
             if (container && statusText && statusIndicator) {
-                // Resetar classes
                 container.className = 'balance-value-container';
                 statusText.className = 'status-text';
                 
                 if (saldo < 0) {
-                    // Excedeu
                     container.classList.add('negativo');
                     statusText.textContent = 'EXCEDEU O LIMITE!';
                     statusText.classList.add('negativo');
                     statusIndicator.style.backgroundColor = '#dc3545';
                 } else if (saldo === 0) {
-                    // Perfeito
                     container.classList.add('exato');
                     statusText.textContent = 'PERFEITO!';
                     statusText.classList.add('positivo');
                     statusIndicator.style.backgroundColor = '#28a745';
                 } else if (saldo <= 10) {
-                    // Poucos pontos
                     container.classList.add('baixo');
                     statusText.textContent = 'Poucos pontos restantes';
                     statusText.classList.add('warning');
                     statusIndicator.style.backgroundColor = '#ffc107';
                 } else {
-                    // Normal
                     container.classList.add('positivo');
                     statusText.textContent = 'Personagem válido';
                     statusText.classList.add('positivo');
@@ -618,7 +513,6 @@ class DashboardGURPS {
         let valorAtual = parseInt(input.value) || 0;
         valorAtual += valor;
         
-        // Limites: -5 a +5
         if (valorAtual < -5) valorAtual = -5;
         if (valorAtual > 5) valorAtual = 5;
         
@@ -629,7 +523,6 @@ class DashboardGURPS {
     atualizarModificadorSocial(tipo, valor) {
         const valorNum = parseInt(valor) || 0;
         
-        // Atualizar display
         const valueElement = document.getElementById(`${tipo}-value`);
         const pointsElement = document.getElementById(`${tipo}-points`);
         
@@ -644,41 +537,33 @@ class DashboardGURPS {
             }
         }
         
-        // Calcular pontos (5 pontos por nível)
         const pontos = valorNum * 5;
         if (pointsElement) {
             pointsElement.textContent = `[${pontos}]`;
         }
         
-        // Salvar no localStorage
         this.salvarStatusSocial();
-        
-        // Calcular total de reação
         this.calcularTotalReacao();
     }
     
     calcularTotalReacao() {
         let total = 0;
         
-        // Status
         const statusInput = document.getElementById('status-value');
         if (statusInput) {
             total += parseInt(statusInput.value) || 0;
         }
         
-        // Reputação
         const repInput = document.getElementById('reputacao-value');
         if (repInput) {
             total += parseInt(repInput.value) || 0;
         }
         
-        // Aparência
         const appInput = document.getElementById('aparencia-value');
         if (appInput) {
             total += parseInt(appInput.value) || 0;
         }
         
-        // Atualizar display
         const totalElement = document.getElementById('reaction-total');
         if (totalElement) {
             totalElement.textContent = total >= 0 ? `+${total}` : total.toString();
@@ -731,7 +616,6 @@ class DashboardGURPS {
             displayElement.textContent = riquezaPontos[valor] || 'Médio [5 pts]';
         }
         
-        // Salvar
         const financas = {
             nivelRiqueza: valor,
             nivelRiquezaTexto: riquezaPontos[valor] || 'Médio [5 pts]'
@@ -761,7 +645,6 @@ class DashboardGURPS {
     atualizarCargasDashboard(cargas) {
         if (!cargas) return;
         
-        // Formatar valores
         const formatarValor = (valor) => {
             if (Number.isInteger(valor)) {
                 return valor.toString();
@@ -769,7 +652,6 @@ class DashboardGURPS {
             return valor.toFixed(1);
         };
         
-        // Atualizar limites (resumo)
         this.atualizarElemento('limit-light', formatarValor(cargas.leve || 0) + ' kg');
         this.atualizarElemento('limit-medium', formatarValor(cargas.media || 0) + ' kg');
         this.atualizarElemento('limit-heavy', formatarValor(cargas.pesada || 0) + ' kg');
@@ -788,21 +670,14 @@ class DashboardGURPS {
     }
     
     async salvarDado(chave, valor) {
-        // Salvar no objeto local
         this.dadosPersonagem[chave] = valor;
-        
-        // Salvar no localStorage
         localStorage.setItem('gurps_personagem_completo', JSON.stringify(this.dadosPersonagem));
         
-        console.log(`💾 Dashboard: ${chave} =`, valor);
-        
-        // Se estiver conectado ao Firebase, salvar lá também
         if (window.firebaseService && typeof window.firebaseService.saveModule === 'function') {
             try {
                 await window.firebaseService.saveModule(chave, valor);
-                console.log(`✅ ${chave} salvo no Firebase`);
             } catch (error) {
-                console.error(`❌ Erro ao salvar ${chave} no Firebase:`, error);
+                // Silencioso
             }
         }
     }
@@ -823,7 +698,6 @@ class DashboardGURPS {
                 `;
             }
             
-            // Salvar dados da foto
             const fotoData = {
                 base64: e.target.result,
                 tipo: arquivo.type,
@@ -882,18 +756,15 @@ class DashboardGURPS {
     }
     
     configurarSincronizacao() {
-        // Escutar eventos de atualização dos atributos
         document.addEventListener('atributos-atualizados', (e) => {
             if (e.detail) {
                 this.atualizarAtributosDashboard(e.detail);
             }
         });
         
-        // Atualizar periodicamente
         this.intervaloAtualizacao = setInterval(() => {
             this.atualizarHoraAtualizacao();
             
-            // Verificar se há novos dados dos atributos
             if (typeof window.getAtributosPersonagem === 'function') {
                 const novosAtributos = window.getAtributosPersonagem();
                 if (novosAtributos && JSON.stringify(novosAtributos) !== JSON.stringify(this.atributosAtuais)) {
@@ -901,7 +772,7 @@ class DashboardGURPS {
                     this.atualizarAtributosDashboard(novosAtributos);
                 }
             }
-        }, 3000); // A cada 3 segundos
+        }, 3000);
     }
     
     // ============================================
@@ -909,13 +780,10 @@ class DashboardGURPS {
     // ============================================
     
     async atualizarTudo() {
-        console.log('🔄 Atualizando dashboard...');
-        
         await this.carregarAtributos();
         await this.carregarPontos();
         this.calcularTotalReacao();
         this.atualizarHoraAtualizacao();
-        
         this.mostrarMensagem('Dashboard atualizada!', 'success');
     }
     
@@ -928,17 +796,14 @@ class DashboardGURPS {
         this.mostrarMensagem('Sincronizando com Firebase...', 'loading');
         
         try {
-            // Salvar todos os dados da dashboard
             await this.salvarDado('dashboard_completo', this.dadosPersonagem);
             
-            // Se existir atributos atuais, salvar também
             if (this.atributosAtuais) {
                 await window.firebaseService.saveModule('atributos', this.atributosAtuais);
             }
             
             this.mostrarMensagem('✅ Sincronização completa!', 'success');
         } catch (error) {
-            console.error('❌ Erro na sincronização:', error);
             this.mostrarMensagem('Erro na sincronização', 'error');
         }
     }
@@ -964,7 +829,6 @@ class DashboardGURPS {
             </div>
         `;
         
-        // Auto-remover após 5 segundos (exceto loading)
         if (tipo !== 'loading') {
             setTimeout(() => {
                 mensagemElement.innerHTML = '';
@@ -977,19 +841,16 @@ class DashboardGURPS {
     // ============================================
     
     static initDashboard() {
-        // Criar instância global
         if (!window.dashboard) {
             window.dashboard = new DashboardGURPS();
         }
         
-        // Iniciar quando a aba for ativada
         const dashboardTab = document.getElementById('dashboard');
         if (dashboardTab) {
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.attributeName === 'class') {
                         if (dashboardTab.classList.contains('active')) {
-                            // Aguardar um pouco e inicializar
                             setTimeout(() => {
                                 if (!window.dashboard?.inicializado) {
                                     window.dashboard = new DashboardGURPS();
@@ -998,7 +859,6 @@ class DashboardGURPS {
                                 }
                             }, 100);
                         } else if (window.dashboard?.intervaloAtualizacao) {
-                            // Limpar intervalo quando sair da dashboard
                             clearInterval(window.dashboard.intervaloAtualizacao);
                             window.dashboard.intervaloAtualizacao = null;
                         }
@@ -1008,7 +868,6 @@ class DashboardGURPS {
             
             observer.observe(dashboardTab, { attributes: true });
             
-            // Se já estiver ativa, iniciar
             if (dashboardTab.classList.contains('active')) {
                 setTimeout(() => {
                     window.dashboard = new DashboardGURPS();
@@ -1032,5 +891,3 @@ if (document.readyState === 'loading') {
 window.initDashboardTab = () => window.dashboard?.init();
 window.atualizarDashboard = () => window.dashboard?.atualizarTudo();
 window.sincronizarAtributos = () => window.dashboard?.sincronizarComFirebase();
-
-console.log('✅ dashboard.js carregado (classe completa)');
