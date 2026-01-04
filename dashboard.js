@@ -1,5 +1,5 @@
 // ============================================
-// DASHBOARD.JS - VERSÃO LIMPA E FUNCIONAL
+// DASHBOARD.JS - VERSÃO FUNCIONAL
 // ============================================
 
 class DashboardGURPS {
@@ -15,10 +15,10 @@ class DashboardGURPS {
     }
     
     async init() {
-        if (document.readyState !== 'loading') {
-            await this.initialize();
-        } else {
+        if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.initialize());
+        } else {
+            await this.initialize();
         }
     }
     
@@ -31,12 +31,12 @@ class DashboardGURPS {
             this.atualizarTudo();
             this.inicializado = true;
         } catch (error) {
-            this.mostrarMensagem('Erro ao carregar dashboard', 'error');
+            // Erro silencioso
         }
     }
     
     // ============================================
-    // 1. CONFIGURAR EVENTOS
+    // 1. CONFIGURAR EVENTOS - CORRIGIDO
     // ============================================
     
     configurarEventos() {
@@ -48,22 +48,29 @@ class DashboardGURPS {
     }
     
     configurarEventosIdentificacao() {
-        ['char-name', 'char-race', 'char-type', 'char-player'].forEach(id => {
+        // Inputs de identificação
+        const inputs = ['char-name', 'char-race', 'char-type', 'char-player'];
+        
+        inputs.forEach(id => {
             const input = document.getElementById(id);
             if (input) {
+                // Remover bloqueios
                 input.removeAttribute('readonly');
                 input.removeAttribute('disabled');
                 
-                input.addEventListener('input', () => {
-                    this.salvarDado(id.replace('char-', ''), input.value);
+                input.addEventListener('input', (e) => {
+                    const campo = id.replace('char-', '');
+                    this.salvarDado(campo, e.target.value);
                 });
                 
-                input.addEventListener('blur', () => {
-                    this.salvarDado(id.replace('char-', ''), input.value);
+                input.addEventListener('blur', (e) => {
+                    const campo = id.replace('char-', '');
+                    this.salvarDado(campo, e.target.value);
                 });
             }
         });
         
+        // Upload de foto
         const uploadInput = document.getElementById('char-upload');
         if (uploadInput) {
             uploadInput.addEventListener('change', (e) => {
@@ -73,6 +80,7 @@ class DashboardGURPS {
     }
     
     configurarEventosPontos() {
+        // Pontos iniciais
         const pontosInput = document.getElementById('start-points');
         if (pontosInput) {
             pontosInput.addEventListener('change', () => {
@@ -82,6 +90,7 @@ class DashboardGURPS {
             });
         }
         
+        // Limite de desvantagens
         const limiteInput = document.getElementById('dis-limit');
         if (limiteInput) {
             limiteInput.addEventListener('change', () => {
@@ -92,20 +101,26 @@ class DashboardGURPS {
     }
     
     configurarEventosStatusSocial() {
-        // Configurar botões + e -
-        ['status', 'reputacao', 'aparencia'].forEach(tipo => {
+        // BOTÕES + e - - CORREÇÃO AQUI
+        const tipos = ['status', 'reputacao', 'aparencia'];
+        
+        tipos.forEach(tipo => {
             // Botão -
             const btnMinus = document.querySelector(`.mod-btn.minus[onclick*="${tipo}"]`);
             if (btnMinus) {
-                btnMinus.onclick = () => this.ajustarModificadorSocial(tipo, -1);
-                btnMinus.removeAttribute('onclick');
+                btnMinus.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.ajustarModificadorSocial(tipo, -1);
+                });
             }
             
             // Botão +
             const btnPlus = document.querySelector(`.mod-btn.plus[onclick*="${tipo}"]`);
             if (btnPlus) {
-                btnPlus.onclick = () => this.ajustarModificadorSocial(tipo, 1);
-                btnPlus.removeAttribute('onclick');
+                btnPlus.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.ajustarModificadorSocial(tipo, 1);
+                });
             }
             
             // Input
@@ -118,11 +133,6 @@ class DashboardGURPS {
                 input.addEventListener('blur', (e) => {
                     this.atualizarModificadorSocial(tipo, e.target.value);
                 });
-                
-                // Remover bloqueio do CSS
-                input.style.pointerEvents = 'auto';
-                input.style.userSelect = 'auto';
-                input.style.cursor = 'text';
             }
         });
     }
@@ -168,33 +178,34 @@ class DashboardGURPS {
     async carregarIdentificacao() {
         const dadosLocal = localStorage.getItem('gurps_personagem_completo');
         if (dadosLocal) {
-            this.dadosPersonagem = JSON.parse(dadosLocal);
-            
-            const campos = {
-                'char-name': 'nome',
-                'char-race': 'raca',
-                'char-type': 'ocupacao',
-                'char-player': 'jogador'
-            };
-            
-            for (const [id, campo] of Object.entries(campos)) {
-                const input = document.getElementById(id);
-                if (input && this.dadosPersonagem[campo]) {
-                    input.value = this.dadosPersonagem[campo];
-                    // Remover bloqueio
-                    input.style.pointerEvents = 'auto';
-                    input.style.userSelect = 'auto';
-                    input.style.cursor = 'text';
+            try {
+                this.dadosPersonagem = JSON.parse(dadosLocal);
+                
+                const campos = {
+                    'char-name': 'nome',
+                    'char-race': 'raca',
+                    'char-type': 'ocupacao',
+                    'char-player': 'jogador'
+                };
+                
+                for (const [id, campo] of Object.entries(campos)) {
+                    const input = document.getElementById(id);
+                    if (input && this.dadosPersonagem[campo]) {
+                        input.value = this.dadosPersonagem[campo];
+                    }
                 }
-            }
-            
-            if (this.dadosPersonagem.foto) {
-                this.carregarFoto(this.dadosPersonagem.foto);
+                
+                if (this.dadosPersonagem.foto) {
+                    this.carregarFoto(this.dadosPersonagem.foto);
+                }
+            } catch (error) {
+                this.dadosPersonagem = {};
             }
         }
     }
     
     async carregarAtributos() {
+        // Método 1: localStorage
         const dadosAtributosLocal = localStorage.getItem('gurps_atributos');
         if (dadosAtributosLocal) {
             try {
@@ -202,22 +213,25 @@ class DashboardGURPS {
                 this.atualizarAtributosDashboard(this.atributosAtuais);
                 return;
             } catch (error) {
-                // Silencioso
+                // Continua
             }
         }
         
+        // Método 2: Função global
         if (typeof window.getAtributosPersonagem === 'function') {
             try {
-                this.atributosAtuais = window.getAtributosPersonagem();
-                if (this.atributosAtuais) {
+                const atributos = window.getAtributosPersonagem();
+                if (atributos) {
+                    this.atributosAtuais = atributos;
                     this.atualizarAtributosDashboard(this.atributosAtuais);
                     return;
                 }
             } catch (error) {
-                // Silencioso
+                // Continua
             }
         }
         
+        // Método 3: Padrão
         this.atributosAtuais = {
             ST: 10,
             DX: 10,
@@ -357,8 +371,6 @@ class DashboardGURPS {
         }
         
         this.atualizarElemento('points-attr', totalGastos);
-        
-        return totalGastos;
     }
     
     atualizarCargasBaseST(ST) {
@@ -503,7 +515,7 @@ class DashboardGURPS {
     }
     
     // ============================================
-    // 5. STATUS SOCIAL
+    // 5. STATUS SOCIAL - CORRIGIDO
     // ============================================
     
     ajustarModificadorSocial(tipo, valor) {
@@ -646,10 +658,7 @@ class DashboardGURPS {
         if (!cargas) return;
         
         const formatarValor = (valor) => {
-            if (Number.isInteger(valor)) {
-                return valor.toString();
-            }
-            return valor.toFixed(1);
+            return Number.isInteger(valor) ? valor.toString() : valor.toFixed(1);
         };
         
         this.atualizarElemento('limit-light', formatarValor(cargas.leve || 0) + ' kg');
