@@ -1,8 +1,8 @@
 // ===========================================
-// ATRIBUTOS.JS - FUNCIONAL E TESTADO
+// ATRIBUTOS.JS - SISTEMA COMPLETO DE ATRIBUTOS GURPS
 // ===========================================
 
-// Tabela de cargas CORRETA
+// TABELA DE CARGAS CORRETA
 const cargasTable = {
     1: { nenhuma: 0.1, leve: 0.2, media: 0.3, pesada: 0.6, muitoPesada: 1.0 },
     2: { nenhuma: 0.4, leve: 0.8, media: 1.2, pesada: 2.4, muitoPesada: 4.0 },
@@ -26,7 +26,32 @@ const cargasTable = {
     20: { nenhuma: 40.0, leve: 80.0, media: 120.0, pesada: 240.0, muitoPesada: 400.0 }
 };
 
-// Estado do personagem
+// TABELA DE DANO BASE CORRETA (GDP e GEB)
+const tabelaDanoST = {
+    1: { gdp: "1d-6", geb: "1d-5" }, 2: { gdp: "1d-6", geb: "1d-5" },
+    3: { gdp: "1d-5", geb: "1d-4" }, 4: { gdp: "1d-5", geb: "1d-4" },
+    5: { gdp: "1d-4", geb: "1d-3" }, 6: { gdp: "1d-4", geb: "1d-3" },
+    7: { gdp: "1d-3", geb: "1d-2" }, 8: { gdp: "1d-3", geb: "1d-2" },
+    9: { gdp: "1d-2", geb: "1d-1" }, 10: { gdp: "1d-2", geb: "1d" },
+    11: { gdp: "1d-1", geb: "1d+1" }, 12: { gdp: "1d", geb: "1d+2" },
+    13: { gdp: "1d", geb: "2d-1" }, 14: { gdp: "1d", geb: "2d" },
+    15: { gdp: "1d+1", geb: "2d+1" }, 16: { gdp: "1d+1", geb: "2d+2" },
+    17: { gdp: "1d+2", geb: "3d-1" }, 18: { gdp: "1d+2", geb: "3d" },
+    19: { gdp: "2d-1", geb: "3d+1" }, 20: { gdp: "2d-1", geb: "3d+2" },
+    21: { gdp: "2d", geb: "4d-1" }, 22: { gdp: "2d", geb: "4d" },
+    23: { gdp: "2d+1", geb: "4d+1" }, 24: { gdp: "2d+1", geb: "4d+2" },
+    25: { gdp: "2d+2", geb: "5d-1" }, 26: { gdp: "2d+2", geb: "5d" },
+    27: { gdp: "3d-1", geb: "5d+1" }, 28: { gdp: "3d-1", geb: "5d+1" },
+    29: { gdp: "3d", geb: "5d+2" }, 30: { gdp: "3d", geb: "5d+2" },
+    // Extensão para valores acima de 30 (progressão linear)
+    31: { gdp: "3d+1", geb: "6d-1" }, 32: { gdp: "3d+1", geb: "6d" },
+    33: { gdp: "3d+2", geb: "6d+1" }, 34: { gdp: "3d+2", geb: "6d+2" },
+    35: { gdp: "4d-1", geb: "7d-1" }, 36: { gdp: "4d-1", geb: "7d" },
+    37: { gdp: "4d", geb: "7d+1" }, 38: { gdp: "4d", geb: "7d+2" },
+    39: { gdp: "4d+1", geb: "8d-1" }, 40: { gdp: "4d+1", geb: "8d" }
+};
+
+// ESTADO DO PERSONAGEM
 let personagemAtributos = {
     ST: 10,
     DX: 10,
@@ -42,7 +67,7 @@ let personagemAtributos = {
 };
 
 // ===========================================
-// FUNÇÕES SIMPLES E DIRETAS
+// FUNÇÕES PRINCIPAIS DE ATRIBUTOS
 // ===========================================
 
 function alterarAtributo(atributo, valor) {
@@ -57,7 +82,7 @@ function alterarAtributo(atributo, valor) {
     personagemAtributos[atributo] = novoValor;
 
     atualizarTudo();
-    salvarNoFirebase();
+    salvarAtributos();
 }
 
 function ajustarSecundario(atributo, valor) {
@@ -84,7 +109,7 @@ function ajustarSecundario(atributo, valor) {
     else if (novoValor < 0) input.classList.add('negativo');
 
     atualizarTotaisSecundarios();
-    salvarNoFirebase();
+    salvarAtributos();
 }
 
 // ===========================================
@@ -97,7 +122,12 @@ function atualizarTudo() {
     const IQ = personagemAtributos.IQ;
     const HT = personagemAtributos.HT;
 
-    // Atualizar bases
+    // Atualizar ST nos lugares onde aparece
+    document.querySelectorAll('#currentST, #currentST2').forEach(el => {
+        el.textContent = ST;
+    });
+
+    // Atualizar bases dos atributos secundários
     document.getElementById('PVBase').textContent = ST;
     document.getElementById('PFBase').textContent = HT;
     document.getElementById('VontadeBase').textContent = IQ;
@@ -106,7 +136,10 @@ function atualizarTudo() {
     const deslocamentoBase = (HT + DX) / 4;
     document.getElementById('DeslocamentoBase').textContent = deslocamentoBase.toFixed(2);
 
-    // Atualizar cargas - FUNÇÃO CRÍTICA
+    // Atualizar tabela de dano (USANDO A TABELA CORRETA)
+    atualizarDanoBase(ST);
+    
+    // Atualizar cargas
     atualizarCargas(ST);
     
     // Calcular custos
@@ -116,7 +149,20 @@ function atualizarTudo() {
     atualizarTotaisSecundarios();
 }
 
-// FUNÇÃO CRÍTICA - CARGAS CORRETAS
+function atualizarDanoBase(ST) {
+    // Usar a tabela correta de dano
+    let stKey = ST;
+    if (ST > 40) stKey = 40;
+    if (ST < 1) stKey = 1;
+    
+    const dano = tabelaDanoST[stKey] || tabelaDanoST[10];
+    
+    if (dano) {
+        document.getElementById('danoGDP').textContent = dano.gdp;
+        document.getElementById('danoGEB').textContent = dano.geb;
+    }
+}
+
 function atualizarCargas(ST) {
     let stKey = ST;
     if (ST > 20) stKey = 20;
@@ -135,12 +181,9 @@ function atualizarCargas(ST) {
         document.getElementById('cargaMedia').textContent = formatar(cargas.media);
         document.getElementById('cargaPesada').textContent = formatar(cargas.pesada);
         document.getElementById('cargaMuitoPesada').textContent = formatar(cargas.muitoPesada);
-        
-        console.log('🏋️ Cargas para ST ' + ST + ':', cargas);
     }
 }
 
-// CÁLCULO DE CUSTOS - CORRETO
 function calcularCustos() {
     const ST = personagemAtributos.ST;
     const DX = personagemAtributos.DX;
@@ -171,8 +214,8 @@ function calcularCustos() {
     }
     
     // Reportar para pontos manager
-    if (typeof pontosManager !== 'undefined') {
-        pontosManager.atualizarPontosAba('atributos', totalGastos);
+    if (window.pontosManager && typeof window.pontosManager.atualizarPontosAba === 'function') {
+        window.pontosManager.atualizarPontosAba('atributos', totalGastos);
     }
     
     return totalGastos;
@@ -197,101 +240,185 @@ function atualizarTotaisSecundarios() {
 }
 
 // ===========================================
-// FIREBASE - FUNÇÕES SIMPLES
+// SISTEMA DE PERSISTÊNCIA
 // ===========================================
 
-async function salvarNoFirebase() {
+async function salvarAtributos() {
     console.log('💾 Salvando atributos...');
     
-    // Preparar dados
+    // Preparar dados completos
     const dados = {
         ST: personagemAtributos.ST,
         DX: personagemAtributos.DX,
         IQ: personagemAtributos.IQ,
         HT: personagemAtributos.HT,
         bonus: { ...personagemAtributos.bonus },
+        custos: {
+            ST: (personagemAtributos.ST - 10) * 10,
+            DX: (personagemAtributos.DX - 10) * 20,
+            IQ: (personagemAtributos.IQ - 10) * 20,
+            HT: (personagemAtributos.HT - 10) * 10
+        },
+        totais: {
+            PV: Math.max(personagemAtributos.ST + (personagemAtributos.bonus.PV || 0), 1),
+            PF: Math.max(personagemAtributos.HT + (personagemAtributos.bonus.PF || 0), 1),
+            Vontade: Math.max(personagemAtributos.IQ + (personagemAtributos.bonus.Vontade || 0), 1),
+            Percepcao: Math.max(personagemAtributos.IQ + (personagemAtributos.bonus.Percepcao || 0), 1),
+            Deslocamento: calcularDeslocamentoTotal()
+        },
+        cargas: obterCargasAtuais(),
+        danoBase: obterDanoBase(),
         ultimaAtualizacao: new Date().toISOString()
     };
     
-    // Salvar no Firebase se disponível
-    if (typeof firebaseService !== 'undefined' && firebaseService.saveModule) {
+    function calcularDeslocamentoTotal() {
+        const base = (personagemAtributos.HT + personagemAtributos.DX) / 4;
+        return Math.max(base + (personagemAtributos.bonus.Deslocamento || 0), 0).toFixed(2);
+    }
+    
+    function obterCargasAtuais() {
+        const ST = personagemAtributos.ST;
+        let stKey = ST > 20 ? 20 : (ST < 1 ? 1 : ST);
+        return cargasTable[stKey] || cargasTable[10];
+    }
+    
+    function obterDanoBase() {
+        const ST = personagemAtributos.ST;
+        let stKey = ST;
+        if (ST > 40) stKey = 40;
+        if (ST < 1) stKey = 1;
+        
+        return tabelaDanoST[stKey] || tabelaDanoST[10];
+    }
+    
+    // 1. SALVAR NO LOCALSTORAGE (instantâneo)
+    localStorage.setItem('gurps_atributos', JSON.stringify(dados));
+    console.log('✅ Atributos salvos no LocalStorage');
+    
+    // 2. SALVAR NO FIREBASE (se disponível)
+    if (window.saveCharacterData && typeof window.saveCharacterData === 'function') {
         try {
-            await firebaseService.saveModule('atributos', dados);
+            await window.saveCharacterData('atributos', dados);
             console.log('✅ Atributos salvos no Firebase');
         } catch (error) {
-            console.error('❌ Erro ao salvar:', error);
+            console.error('❌ Erro ao salvar no Firebase:', error);
         }
     }
 }
 
-async function carregarDoFirebase() {
+function carregarAtributos() {
     console.log('📥 Carregando atributos...');
     
-    if (typeof firebaseService !== 'undefined' && firebaseService.loadCharacter) {
+    let dadosCarregados = null;
+    
+    // 1. TENTAR DO LOCALSTORAGE PRIMEIRO (rápido)
+    const localData = localStorage.getItem('gurps_atributos');
+    if (localData) {
         try {
-            const dados = await firebaseService.loadCharacter();
-            if (dados?.atributos) {
-                const att = dados.atributos;
-                
-                // Carregar valores
-                if (att.ST !== undefined) {
-                    personagemAtributos.ST = att.ST;
-                    document.getElementById('ST').value = att.ST;
-                }
-                if (att.DX !== undefined) {
-                    personagemAtributos.DX = att.DX;
-                    document.getElementById('DX').value = att.DX;
-                }
-                if (att.IQ !== undefined) {
-                    personagemAtributos.IQ = att.IQ;
-                    document.getElementById('IQ').value = att.IQ;
-                }
-                if (att.HT !== undefined) {
-                    personagemAtributos.HT = att.HT;
-                    document.getElementById('HT').value = att.HT;
-                }
-                
-                // Carregar bônus
-                if (att.bonus) {
-                    Object.keys(personagemAtributos.bonus).forEach(key => {
-                        if (att.bonus[key] !== undefined) {
-                            personagemAtributos.bonus[key] = att.bonus[key];
-                            const input = document.getElementById('bonus' + key);
-                            if (input) input.value = att.bonus[key];
-                        }
-                    });
-                }
-                
-                console.log('✅ Atributos carregados:', personagemAtributos);
-                atualizarTudo();
-                return true;
-            }
+            dadosCarregados = JSON.parse(localData);
+            console.log('✅ Dados encontrados no LocalStorage');
         } catch (error) {
-            console.error('❌ Erro ao carregar:', error);
+            console.error('❌ Erro ao ler LocalStorage:', error);
         }
     }
-    return false;
+    
+    // 2. Se não encontrou local, verificar se há função global para carregar
+    if (!dadosCarregados && window.loadCharacterData && typeof window.loadCharacterData === 'function') {
+        console.log('🔍 Procurando dados via função global...');
+        setTimeout(() => {
+            const updatedData = localStorage.getItem('gurps_atributos');
+            if (updatedData) {
+                try {
+                    dadosCarregados = JSON.parse(updatedData);
+                    console.log('✅ Dados carregados via função global');
+                } catch (error) {
+                    console.error('❌ Erro após tentativa global:', error);
+                }
+            }
+        }, 1000);
+    }
+    
+    // 3. Aplicar os dados se encontrou
+    if (dadosCarregados) {
+        aplicarDadosAtributos(dadosCarregados);
+    } else {
+        console.log('ℹ️ Nenhum dado salvo encontrado, usando valores padrão');
+    }
+    
+    return dadosCarregados !== null;
+}
+
+function aplicarDadosAtributos(dados) {
+    console.log('🔄 Aplicando dados dos atributos:', dados);
+    
+    // Atributos principais
+    ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
+        if (dados[atributo] !== undefined) {
+            personagemAtributos[atributo] = dados[atributo];
+            const input = document.getElementById(atributo);
+            if (input) {
+                input.value = dados[atributo];
+            }
+        }
+    });
+    
+    // Bônus
+    if (dados.bonus) {
+        Object.keys(personagemAtributos.bonus).forEach(key => {
+            if (dados.bonus[key] !== undefined) {
+                personagemAtributos.bonus[key] = dados.bonus[key];
+                const input = document.getElementById('bonus' + key);
+                if (input) {
+                    input.value = dados.bonus[key];
+                    
+                    // Aplicar cor
+                    input.classList.remove('positivo', 'negativo');
+                    if (dados.bonus[key] > 0) input.classList.add('positivo');
+                    else if (dados.bonus[key] < 0) input.classList.add('negativo');
+                }
+            }
+        });
+    }
+    
+    // Atualizar interface
+    atualizarTudo();
+    console.log('✅ Dados aplicados com sucesso');
 }
 
 // ===========================================
 // INICIALIZAÇÃO
-// ===========================================
+// ============================================
 
 function inicializarAtributos() {
-    console.log('🚀 Inicializando atributos...');
+    console.log('🚀 Inicializando sistema de atributos...');
     
-    // Configurar eventos dos inputs
+    // Configurar eventos dos inputs principais
     ['ST', 'DX', 'IQ', 'HT'].forEach(atributo => {
         const input = document.getElementById(atributo);
         if (input) {
-            input.addEventListener('change', function() {
+            // Remover event listeners antigos
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            // Adicionar novo listener
+            newInput.addEventListener('change', function() {
                 let valor = parseInt(this.value) || 10;
                 if (valor < 1) valor = 1;
                 if (valor > 40) valor = 40;
                 
+                this.value = valor;
                 personagemAtributos[atributo] = valor;
                 atualizarTudo();
-                salvarNoFirebase();
+                salvarAtributos();
+            });
+            
+            // Permitir usar as setas do teclado
+            newInput.addEventListener('keyup', function(e) {
+                if (e.key === 'ArrowUp') {
+                    alterarAtributo(atributo, 1);
+                } else if (e.key === 'ArrowDown') {
+                    alterarAtributo(atributo, -1);
+                }
             });
         }
     });
@@ -300,7 +427,12 @@ function inicializarAtributos() {
     ['PV', 'PF', 'Vontade', 'Percepcao', 'Deslocamento'].forEach(atributo => {
         const input = document.getElementById('bonus' + atributo);
         if (input) {
-            input.addEventListener('change', function() {
+            // Remover event listeners antigos
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            // Adicionar novo listener
+            newInput.addEventListener('change', function() {
                 let valor;
                 if (atributo === 'Deslocamento') {
                     valor = parseFloat(this.value) || 0;
@@ -308,30 +440,53 @@ function inicializarAtributos() {
                     valor = parseInt(this.value) || 0;
                 }
                 
+                // Limites
+                if (valor < -10) valor = -10;
+                if (valor > 20) valor = 20;
+                
+                this.value = valor;
                 personagemAtributos.bonus[atributo] = valor;
                 atualizarTotaisSecundarios();
-                salvarNoFirebase();
+                salvarAtributos();
+                
+                // Aplicar cor
+                this.classList.remove('positivo', 'negativo');
+                if (valor > 0) this.classList.add('positivo');
+                else if (valor < 0) this.classList.add('negativo');
             });
         }
     });
     
-    // Carregar dados salvos
-    setTimeout(() => {
-        carregarDoFirebase();
-    }, 1000);
+    // Configurar botões de incremento/decremento
+    document.querySelectorAll('.btn-atributo').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
     
-    // Primeira atualização
-    atualizarTudo();
+    document.querySelectorAll('.btn-secundario').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // Carregar dados salvos
+    carregarAtributos();
+    
+    // Se não carregou nada, fazer primeira atualização
+    if (!localStorage.getItem('gurps_atributos')) {
+        atualizarTudo();
+    }
+    
+    console.log('✅ Sistema de atributos inicializado');
 }
 
 // ===========================================
-// INICIAR QUANDO A ABA FOR ATIVADA
-// ===========================================
+// FUNÇÕES PARA O SISTEMA PRINCIPAL
+// ============================================
 
+// Iniciar quando a aba for ativada
 function initAtributosTab() {
     console.log('🎯 Iniciando aba de atributos');
     
-    // Pequeno delay para garantir que o DOM está pronto
     setTimeout(() => {
         if (document.getElementById('ST')) {
             inicializarAtributos();
@@ -342,23 +497,76 @@ function initAtributosTab() {
     }, 100);
 }
 
-// ===========================================
-// EXPORTAR FUNÇÕES
-// ===========================================
+// Exportar funções para o sistema principal
+window.obterDadosAtributos = function() {
+    return {
+        ST: personagemAtributos.ST,
+        DX: personagemAtributos.DX,
+        IQ: personagemAtributos.IQ,
+        HT: personagemAtributos.HT,
+        bonus: { ...personagemAtributos.bonus },
+        totalPontos: calcularCustos(),
+        cargas: obterCargasAtuais(),
+        danoBase: obterDanoBaseCorreto(),
+        ultimaAtualizacao: new Date().toISOString()
+    };
+};
 
-window.alterarAtributo = alterarAtributo;
-window.ajustarSecundario = ajustarSecundario;
+window.carregarDadosAtributos = function(dados) {
+    aplicarDadosAtributos(dados);
+};
+
 window.initAtributosTab = initAtributosTab;
+
+// Funções auxiliares
 window.getAtributosPersonagem = () => ({ ...personagemAtributos });
+
 window.getCargasPersonagem = () => {
     const ST = personagemAtributos.ST;
     let stKey = ST > 20 ? 20 : (ST < 1 ? 1 : ST);
     return cargasTable[stKey] || cargasTable[10];
 };
 
-// Iniciar se a aba já estiver ativa
-if (document.getElementById('atributos')?.classList.contains('active')) {
-    initAtributosTab();
+window.getDanoBasePersonagem = () => {
+    const ST = personagemAtributos.ST;
+    let stKey = ST;
+    if (ST > 40) stKey = 40;
+    if (ST < 1) stKey = 1;
+    return tabelaDanoST[stKey] || tabelaDanoST[10];
+};
+
+window.calcularCustoAtributos = calcularCustos;
+
+// Funções internas auxiliares
+function obterCargasAtuais() {
+    const ST = personagemAtributos.ST;
+    let stKey = ST > 20 ? 20 : (ST < 1 ? 1 : ST);
+    return cargasTable[stKey] || cargasTable[10];
 }
 
-console.log('✅ atributos.js carregado - TABELA CORRIGIDA');
+function obterDanoBaseCorreto() {
+    const ST = personagemAtributos.ST;
+    let stKey = ST;
+    if (ST > 40) stKey = 40;
+    if (ST < 1) stKey = 1;
+    return tabelaDanoST[stKey] || tabelaDanoST[10];
+}
+
+// ===========================================
+// INICIAR SE A ABA JÁ ESTIVER ATIVA
+// ============================================
+
+if (document.getElementById('atributos')?.classList.contains('active')) {
+    console.log('⚡ Iniciando atributos imediatamente (aba ativa)');
+    setTimeout(initAtributosTab, 100);
+}
+
+// Event listener para quando Firebase terminar de carregar
+document.addEventListener('firebase-data-loaded', function(e) {
+    console.log('📡 Firebase carregado, verificando atributos...');
+    if (e.detail?.atributos) {
+        aplicarDadosAtributos(e.detail.atributos);
+    }
+});
+
+console.log('✅ atributos.js carregado - SISTEMA COMPLETO ATIVADO');

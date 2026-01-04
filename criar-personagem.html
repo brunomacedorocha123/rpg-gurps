@@ -821,29 +821,161 @@ body::before {
         width: 100%;
     }
 }
+/* =========================================== */
+/* ID DO PERSONAGEM - ESTILO NÃO-INVASIVO     */
+/* =========================================== */
+
+.character-id-display {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(26, 18, 0, 0.9);
+    color: var(--text-light);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    z-index: 9999;
+    border: 1px solid var(--primary-gold);
+    font-family: monospace;
+    max-width: 160px;
+    word-break: break-all;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    display: none;
+}
+
+.character-id-display:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.char-id {
+    color: var(--text-gold);
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.char-id:hover {
+    color: var(--secondary-gold);
+    text-decoration: underline;
+}
+
+.char-id:active {
+    transform: scale(0.95);
+}
+
+/* Tooltip para ID completo */
+.char-id[title] {
+    position: relative;
+}
+
+.char-id[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 18, 0, 0.95);
+    color: var(--text-light);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 10000;
+    border: 1px solid var(--primary-gold);
+    margin-bottom: 5px;
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Para telas pequenas */
+@media (max-width: 768px) {
+    .character-id-display {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        max-width: 140px;
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+}
+
+/* Animações para toast rápido */
+@keyframes quickFadeIn {
+    from { 
+        opacity: 0; 
+        transform: translate(-50%, 10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translate(-50%, 0); 
+    }
+}
+
+@keyframes quickFadeOut {
+    from { 
+        opacity: 1; 
+        transform: translate(-50%, 0); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translate(-50%, 10px); 
+    }
+}
+
+.quick-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-green);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    z-index: 10000;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    border: 1px solid var(--primary-gold);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    animation: quickFadeIn 0.3s ease;
+}
+
+.quick-toast.fading {
+    animation: quickFadeOut 0.3s ease;
+}
 </style>
 </head>
 <body>
     <!-- HEADER PRINCIPAL -->
     <header class="header">
-        <div class="logo">
-            <i class="fas fa-dragon" style="color: var(--primary-gold); font-size: 1.8rem;"></i>
-            <h1>FORJAR PERSONAGEM</h1>
-        </div>
+    <div class="logo">
+        <i class="fas fa-dragon" style="color: var(--primary-gold); font-size: 1.8rem;"></i>
+        <h1>FORJAR PERSONAGEM</h1>
+    </div>
+    
+    <div class="character-header">
+        <input type="text" 
+               class="character-name-input" 
+               id="characterName" 
+               placeholder="Nome do Herói" 
+               maxlength="50"
+               autocomplete="off">
         
-        <div class="character-header">
-            <input type="text" 
-                   class="character-name-input" 
-                   id="characterName" 
-                   placeholder="Nome do Herói" 
-                   maxlength="50"
-                   autocomplete="off">
-            
-            <button class="btn-voltar" onclick="goBack()">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </button>
-        </div>
-    </header>
+        <button class="btn-voltar" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </button>
+    </div>
+    
+    <!-- ADICIONE ESTA DIV DENTRO DO HEADER -->
+    <div id="character-id-display" class="character-id-display" 
+         style="display: none;" 
+         title="Clique para copiar ID">
+        Personagem: <span id="current-char-id" class="char-id">carregando...</span>
+    </div>
+</header>
 
     <!-- BARRA DE AÇÕES DO TOPO - NOVA POSIÇÃO -->
     <div class="top-action-bar">
@@ -4826,23 +4958,29 @@ body::before {
     <!-- NOTIFICAÇÃO -->
     <div id="custom-toast"></div>
    <!-- ORDEM CORRETA -->
+<!-- 1º FIREBASE (BASE) -->
+<script src="firebase-config.js"></script> <!-- Configuração do Firebase -->
+<script src="firebase-service.js"></script> <!-- Serviço principal -->
+<script src="pontos-manager.js"></script> <!-- Gerenciador de pontos -->
+
+<!-- 2º SISTEMA DE ATRIBUTOS (BASE DO PERSONAGEM) -->
 <script src="atributos.js"></script>
-<!-- CARACTERÍSTICAS -->
+
+<!-- 3º CARACTERÍSTICAS -->
 <script src="caracteristicas-main.js"></script> <!-- Controller principal -->
 <script src="caracteristicas-fisicas.js"></script>
 <script src="caracteristicas-aparencia.js"></script>
 <script src="caracteristicas-riqueza.js"></script>
-<script src="dashboard.js"></script>
 <script src="caracteristicas-idiomas.js"></script>
 
-<!-- CATÁLOGOS (DEVEM VIR ANTES DOS SISTEMAS QUE OS USAM) -->
+<!-- 4º CATÁLOGOS -->
 <script src="catalogo-vantagens.js"></script>
 <script src="catalogo-desvantagens.js"></script>
 <script src="catalogo-pericias.js"></script>
 <script src="catalogo-magias.js"></script>
 <script src="catalogo-equipamentos.js"></script>
 
-<!-- SISTEMAS QUE USAM OS CATÁLOGOS -->
+<!-- 5º SISTEMAS QUE USAM CATÁLOGOS -->
 <script src="vantagens-atributos.js"></script>
 <script src="vantagens.js"></script>
 <script src="desvantagens.js"></script>
@@ -4851,231 +4989,619 @@ body::before {
 <script src="tecnicas.js"></script>
 <script src="magia.js"></script>
 
-<!-- SISTEMAS DE COMBATE (DEPENDEM DOS ATRIBUTOS) -->
+<!-- 6º SISTEMAS DE COMBATE -->
 <script src="pv-pf.js"></script>
 <script src="defesa.js"></script>
 <script src="sistema-dano.js"></script>
 <script src="sistema-rd.js"></script>
 <script src="sistema-escudo.js"></script>
 
-<!-- RELACIONAMENTOS E EQUIPAMENTOS -->
+<!-- 7º RELACIONAMENTOS E EQUIPAMENTOS -->
 <script src="relacionamentos.js"></script>
 <script src="equipamentos.js"></script>
 
-<!-- DASHBOARD (DEVE SER O ÚLTIMO, USA TODOS OS SISTEMAS) -->
+<script src="dashboard.js"></script>
+<script>
+// ============================================
+// SISTEMA COMPLETO DE PERSISTÊNCIA
+// ============================================
 
+// CONFIGURAÇÃO DO FIREBASE
+const firebaseConfig = {
+    apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
+    authDomain: "gurpsroll.firebaseapp.com",
+    projectId: "gurpsroll",
+    storageBucket: "gurpsroll.appspot.com",
+    messagingSenderId: "329119610376",
+    appId: "1:329119610376:web:d30fd7e1e2b32e3c0a438c"
+};
 
-    <script>
-// ===========================================
-// SISTEMA DE MÓDULOS FIREBASE
-// ===========================================
-let firebaseModules = {};
+// VARIÁVEIS GLOBAIS
 let currentCharacterId = null;
 let currentUser = null;
+let db = null;
+let auth = null;
 let isFirebaseReady = false;
+let personagemDados = {
+    atributos: null,
+    pontos: null,
+    pericias: null,
+    vantagens: null
+};
 
-// Inicializar Firebase
+// ============================================
+// 1. INICIALIZAÇÃO DO FIREBASE
+// ============================================
 async function initializeFirebase() {
     try {
-        // Configuração Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBoTP0oJH4q3yrc0N8sCv9ynKN53dN-UbU",
-            authDomain: "gurpsroll.firebaseapp.com",
-            projectId: "gurpsroll",
-            storageBucket: "gurpsroll.appspot.com",
-            messagingSenderId: "329119610376",
-            appId: "1:329119610376:web:d30fd7e1e2b32e3c0a438c"
-        };
-        
-        // Inicializar app
-        firebase.initializeApp(firebaseConfig);
-        
-        // Referências principais
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
-        // Autenticação automática (anônima)
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                console.log('Usuário autenticado:', user.uid);
-                isFirebaseReady = true;
-                
-                // Carregar personagem se houver ID na URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const charId = urlParams.get('id');
-                
-                if (charId) {
-                    await loadCharacterFromFirebase(charId);
-                } else {
-                    // Criar novo personagem
-                    createNewCharacter();
-                }
-                
-                // Inicializar módulos
-                initializeAllModules();
-                
-            } else {
-                // Login anônimo automático
-                await auth.signInAnonymously();
-            }
-        });
-        
-        // Se não há usuário, faz login anônimo
-        if (!auth.currentUser) {
-            await auth.signInAnonymously();
+        // Verificar se Firebase já foi inicializado
+        if (firebase.apps.length === 0) {
+            firebase.initializeApp(firebaseConfig);
         }
         
+        // Inicializar serviços
+        auth = firebase.auth();
+        db = firebase.firestore();
+        
+        console.log('✅ Firebase inicializado');
+        
+        // Configurar autenticação
+        await setupAuth();
+        
     } catch (error) {
-        console.error('Erro ao inicializar Firebase:', error);
+        console.error('❌ Erro ao inicializar Firebase:', error);
         showToast('Erro de conexão com o servidor', 'error');
+        // Continuar sem Firebase
+        isFirebaseReady = true;
+        setupCharacterId();
     }
 }
 
-// ===========================================
-// GERENCIADOR DE MÓDULOS
-// ===========================================
-function initializeAllModules() {
-    console.log('Inicializando módulos Firebase...');
-    
-    // Mapeamento de módulos e suas funções de inicialização
-    const modules = {
-        'atributos': window.initAtributosTab,
-        'caracteristicas': window.iniciarSistemaCaracteristicas,
-        'vantagens': window.iniciarSistemaVantagens,
-        'peculiaridades': window.iniciarSistemaPeculiaridades,
-        'relacionamentos': window.iniciarSistemaRelacionamentos,
-        'pericias': window.iniciarSistemaPericias,
-        'magias': window.iniciarSistemaMagias,
-        'dashboard': window.initDashboardTab
-    };
-    
-    // Inicializar cada módulo que existir
-    Object.entries(modules).forEach(([name, initFunction]) => {
-        if (typeof initFunction === 'function') {
-            try {
-                initFunction();
-                console.log(`✅ Módulo ${name} inicializado`);
-            } catch (error) {
-                console.warn(`⚠️ Erro ao inicializar ${name}:`, error);
+// ============================================
+// 2. AUTENTICAÇÃO
+// ============================================
+async function setupAuth() {
+    return new Promise((resolve) => {
+        console.log('🔐 Configurando autenticação...');
+        
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                console.log('✅ Usuário autenticado:', user.uid);
+                isFirebaseReady = true;
+                
+                // Configurar ID do personagem
+                await setupCharacterId();
+                
+                // Carregar dados
+                await loadCharacterData();
+                
+                resolve();
+            } else {
+                // Login anônimo
+                try {
+                    const result = await auth.signInAnonymously();
+                    currentUser = result.user;
+                    console.log('✅ Novo usuário anônimo:', currentUser.uid);
+                    isFirebaseReady = true;
+                    
+                    await setupCharacterId();
+                    await loadCharacterData();
+                    
+                    resolve();
+                } catch (error) {
+                    console.error('❌ Erro na autenticação:', error);
+                    isFirebaseReady = true;
+                    setupCharacterId();
+                    resolve();
+                }
             }
-        }
+        });
     });
 }
 
-// ===========================================
-// SISTEMA DE PERSISTÊNCIA FIREBASE
-// ===========================================
-function registerModule(moduleName, saveFunction, loadFunction) {
-    firebaseModules[moduleName] = {
-        save: saveFunction,
-        load: loadFunction
+// ============================================
+// 3. SISTEMA DE ID DO PERSONAGEM (CRÍTICO)
+// ============================================
+async function setupCharacterId() {
+    console.log('🎯 Configurando ID do personagem...');
+    
+    // 1. Verificar se já tem ID na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let charId = urlParams.get('id');
+    
+    // 2. Verificar LocalStorage
+    if (!charId) {
+        charId = localStorage.getItem('gurps_character_id');
+        console.log('📌 ID encontrado no LocalStorage:', charId ? 'Sim' : 'Não');
+    }
+    
+    // 3. Verificar SessionStorage
+    if (!charId) {
+        charId = sessionStorage.getItem('character_id');
+        console.log('📌 ID encontrado no SessionStorage:', charId ? 'Sim' : 'Não');
+    }
+    
+    // 4. Se não tem ID, criar um novo
+    if (!charId) {
+        charId = 'char_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        console.log('🆕 Novo ID criado:', charId);
+        
+        // Criar registro no Firebase se estiver pronto
+        if (isFirebaseReady && db) {
+            await createEmptyCharacter(charId);
+        }
+    }
+    
+    // Definir ID atual
+    currentCharacterId = charId;
+    console.log('🎯 ID do personagem definido:', currentCharacterId);
+    
+    // Salvar ID em todos os lugares
+    saveCharacterIdEverywhere(charId);
+    
+    // Mostrar ID na interface
+    showCharacterId(charId);
+}
+
+function saveCharacterIdEverywhere(charId) {
+    // Atualizar URL sem recarregar
+    const newUrl = window.location.pathname + '?id=' + charId;
+    window.history.replaceState({}, '', newUrl);
+    
+    // Salvar no LocalStorage (persistente)
+    localStorage.setItem('gurps_character_id', charId);
+    
+    // Salvar no SessionStorage (sessão)
+    sessionStorage.setItem('character_id', charId);
+    
+    // Cookie (opcional)
+    document.cookie = `character_id=${charId}; path=/; max-age=${60*60*24*365}`;
+    
+    console.log('💾 ID salvo em todos os locais');
+}
+
+async function createEmptyCharacter(charId) {
+    try {
+        const characterData = {
+            userId: currentUser ? currentUser.uid : 'anonymous',
+            nome: document.getElementById('characterName').value || 'Novo Personagem',
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+            status: 'rascunho'
+        };
+        
+        await db.collection('personagens').doc(charId).set(characterData);
+        console.log('📄 Personagem criado no Firebase');
+    } catch (error) {
+        console.error('❌ Erro ao criar personagem:', error);
+    }
+}
+
+// ============================================
+// 4. MOSTRAR ID NA INTERFACE
+// ============================================
+function showCharacterId(charId) {
+    const display = document.getElementById('character-id-display');
+    const charIdSpan = document.getElementById('current-char-id');
+    
+    if (!display || !charIdSpan) {
+        console.warn('⚠️ Elementos de display do ID não encontrados');
+        return;
+    }
+    
+    // Formatar ID para mostrar
+    const shortId = charId.length > 12 ? 
+        charId.substring(0, 8) + '...' + charId.substring(charId.length - 4) : 
+        charId;
+    
+    charIdSpan.textContent = shortId;
+    charIdSpan.title = `ID completo: ${charId}\nClique para copiar`;
+    display.style.display = 'block';
+    
+    // Configurar clique para copiar
+    charIdSpan.onclick = function(e) {
+        e.stopPropagation();
+        navigator.clipboard.writeText(charId).then(() => {
+            showQuickToast('✓ ID copiado para a área de transferência');
+        }).catch(() => {
+            // Fallback para navegadores antigos
+            const textArea = document.createElement('textarea');
+            textArea.value = charId;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showQuickToast('✓ ID copiado!');
+        });
     };
 }
 
-async function saveAllModules() {
-    if (!isFirebaseReady || !currentCharacterId) {
-        console.log('Firebase não está pronto ou não há personagem');
+// ============================================
+// 5. CARREGAR DADOS DO PERSONAGEM
+// ============================================
+async function loadCharacterData() {
+    console.log('📥 Carregando dados do personagem...');
+    
+    if (!currentCharacterId) {
+        console.error('❌ Nenhum ID de personagem para carregar');
         return;
     }
     
     try {
-        const characterData = {
-            nome: document.getElementById('characterName').value.trim() || 'Sem nome',
-            atualizadoEm: new Date().toISOString(),
-            userId: currentUser.uid
-        };
+        // 1. PRIMEIRO: Tentar carregar do LocalStorage (instantâneo)
+        loadFromLocalStorage();
         
-        // Coletar dados de cada módulo registrado
-        for (const [moduleName, module] of Object.entries(firebaseModules)) {
-            if (typeof module.save === 'function') {
-                try {
-                    const moduleData = module.save();
-                    if (moduleData) {
-                        characterData[moduleName] = moduleData;
-                    }
-                } catch (error) {
-                    console.error(`Erro ao salvar módulo ${moduleName}:`, error);
-                }
-            }
+        // 2. DEPOIS: Sincronizar com Firebase (em background)
+        if (isFirebaseReady && db) {
+            await loadFromFirebase();
         }
         
-        // Salvar no Firebase
-        const db = firebase.firestore();
-        await db.collection('personagens').doc(currentCharacterId).set(characterData, { merge: true });
-        
-        console.log('Personagem salvo no Firebase:', currentCharacterId);
-        showToast('Personagem salvo com sucesso!', 'success');
-        
     } catch (error) {
-        console.error('Erro ao salvar no Firebase:', error);
-        showToast('Erro ao salvar personagem', 'error');
+        console.error('❌ Erro ao carregar dados:', error);
     }
 }
 
-async function loadCharacterFromFirebase(characterId) {
+function loadFromLocalStorage() {
+    console.log('📂 Carregando do LocalStorage...');
+    
+    // Carregar atributos
+    const atributosData = localStorage.getItem('gurps_atributos');
+    if (atributosData) {
+        try {
+            const dados = JSON.parse(atributosData);
+            if (window.carregarDadosAtributos && typeof window.carregarDadosAtributos === 'function') {
+                window.carregarDadosAtributos(dados);
+                console.log('✅ Atributos carregados do LocalStorage');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar atributos:', error);
+        }
+    }
+    
+    // Carregar pontos
+    const pontosData = localStorage.getItem('gurps_pontos');
+    if (pontosData && window.pontosManager) {
+        try {
+            const dados = JSON.parse(pontosData);
+            if (window.pontosManager.carregarDados) {
+                window.pontosManager.carregarDados(dados);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar pontos:', error);
+        }
+    }
+    
+    console.log('✅ Dados locais carregados');
+}
+
+async function loadFromFirebase() {
     try {
-        const db = firebase.firestore();
-        const doc = await db.collection('personagens').doc(characterId).get();
+        const docRef = db.collection('personagens').doc(currentCharacterId);
+        const docSnap = await docRef.get();
         
-        if (doc.exists) {
-            currentCharacterId = characterId;
-            const data = doc.data();
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            console.log('✅ Dados carregados do Firebase:', data);
             
-            // Carregar nome
+            // Atualizar nome se existir
             if (data.nome) {
                 document.getElementById('characterName').value = data.nome;
             }
             
-            // Carregar cada módulo
-            for (const [moduleName, module] of Object.entries(firebaseModules)) {
-                if (typeof module.load === 'function' && data[moduleName]) {
-                    try {
-                        module.load(data[moduleName]);
-                        console.log(`✅ Módulo ${moduleName} carregado`);
-                    } catch (error) {
-                        console.error(`Erro ao carregar módulo ${moduleName}:`, error);
-                    }
-                }
+            // Carregar atributos do Firebase
+            if (data.atributos && window.carregarDadosAtributos) {
+                window.carregarDadosAtributos(data.atributos);
+                
+                // Salvar também no LocalStorage
+                localStorage.setItem('gurps_atributos', JSON.stringify(data.atributos));
+                console.log('🔄 Atributos sincronizados com LocalStorage');
             }
             
-            showToast('Personagem carregado: ' + data.nome, 'success');
+            // Carregar pontos do Firebase
+            if (data.pontos && window.pontosManager && window.pontosManager.carregarDados) {
+                window.pontosManager.carregarDados(data.pontos);
+                localStorage.setItem('gurps_pontos', JSON.stringify(data.pontos));
+            }
+            
+            // Disparar evento para outros módulos
+            document.dispatchEvent(new CustomEvent('firebase-data-loaded', { detail: data }));
             
         } else {
-            createNewCharacter();
+            console.log('📭 Personagem não encontrado no Firebase');
         }
         
     } catch (error) {
-        console.error('Erro ao carregar personagem:', error);
-        createNewCharacter();
+        console.error('❌ Erro ao carregar do Firebase:', error);
     }
 }
 
-async function createNewCharacter() {
-    const db = firebase.firestore();
-    const docRef = await db.collection('personagens').add({
-        nome: 'Novo Personagem',
-        criadoEm: new Date().toISOString(),
-        atualizadoEm: new Date().toISOString(),
-        userId: currentUser.uid,
-        status: 'rascunho'
-    });
+// ============================================
+// 6. SALVAR DADOS DO PERSONAGEM
+// ============================================
+async function saveCharacterData(moduleName, moduleData) {
+    console.log(`💾 Salvando ${moduleName}...`, moduleData);
     
-    currentCharacterId = docRef.id;
+    // 1. SALVAR NO LOCALSTORAGE (INSTANTÂNEO)
+    saveToLocalStorage(moduleName, moduleData);
     
-    // Atualizar URL com o novo ID
-    const newUrl = window.location.pathname + '?id=' + currentCharacterId;
-    window.history.replaceState({}, '', newUrl);
-    
-    console.log('Novo personagem criado:', currentCharacterId);
+    // 2. SALVAR NO FIREBASE (BACKGROUND)
+    if (isFirebaseReady && db && currentCharacterId) {
+        await saveToFirebase(moduleName, moduleData);
+    }
 }
 
-// ===========================================
-// SISTEMA DE ABAS (MANTIDO)
-// ===========================================
-function switchTab(tabId) {
-    console.log('Mudando para aba:', tabId);
+function saveToLocalStorage(moduleName, moduleData) {
+    switch (moduleName) {
+        case 'atributos':
+            localStorage.setItem('gurps_atributos', JSON.stringify(moduleData));
+            break;
+        case 'pontos':
+            localStorage.setItem('gurps_pontos', JSON.stringify(moduleData));
+            break;
+        case 'pericias':
+            localStorage.setItem('gurps_pericias', JSON.stringify(moduleData));
+            break;
+        case 'vantagens':
+            localStorage.setItem('gurps_vantagens', JSON.stringify(moduleData));
+            break;
+        default:
+            localStorage.setItem(`gurps_${moduleName}`, JSON.stringify(moduleData));
+    }
+    console.log(`✅ ${moduleName} salvo no LocalStorage`);
+}
+
+async function saveToFirebase(moduleName, moduleData) {
+    try {
+        const updateData = {
+            [moduleName]: moduleData,
+            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+            nome: document.getElementById('characterName').value || 'Novo Personagem'
+        };
+        
+        // Adicionar userId se disponível
+        if (currentUser) {
+            updateData.userId = currentUser.uid;
+        }
+        
+        await db.collection('personagens').doc(currentCharacterId).set(updateData, { merge: true });
+        console.log(`✅ ${moduleName} salvo no Firebase`);
+        
+        // Mostrar notificação
+        showQuickToast('✓ Dados salvos na nuvem');
+        
+    } catch (error) {
+        console.error(`❌ Erro ao salvar ${moduleName} no Firebase:`, error);
+    }
+}
+
+// ============================================
+// 7. FUNÇÕES DE ATRIBUTOS (MODIFICADAS)
+// ============================================
+// Estas funções serão usadas pelo atributos.js
+window.saveAtributos = async function(dadosAtributos) {
+    await saveCharacterData('atributos', dadosAtributos);
+};
+
+window.loadAtributos = function() {
+    loadFromLocalStorage(); // Carrega do LocalStorage primeiro
+    if (isFirebaseReady) {
+        loadFromFirebase(); // Depois sincroniza com Firebase
+    }
+};
+
+// ============================================
+// 8. FUNÇÕES DE PONTOS (MODIFICADAS)
+// ============================================
+window.savePontos = async function(dadosPontos) {
+    await saveCharacterData('pontos', dadosPontos);
+};
+
+// ============================================
+// 9. FUNÇÕES DE CONTROLE DA PÁGINA
+// ============================================
+async function saveDraft() {
+    console.log('💾 Salvando rascunho...');
     
+    // Salvar nome do personagem
+    const nome = document.getElementById('characterName').value;
+    if (nome && currentCharacterId && db) {
+        try {
+            await db.collection('personagens').doc(currentCharacterId).update({
+                nome: nome,
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch (error) {
+            console.error('❌ Erro ao salvar nome:', error);
+        }
+    }
+    
+    // Salvar todos os módulos
+    if (window.saveAllModules && typeof window.saveAllModules === 'function') {
+        await window.saveAllModules();
+    }
+    
+    showToast('Rascunho salvo com sucesso!', 'success');
+}
+
+async function finalizeCharacter() {
+    const nome = document.getElementById('characterName').value.trim();
+    if (!nome) {
+        showToast('Digite um nome para o personagem', 'warning');
+        return;
+    }
+    
+    // Primeiro salva tudo
+    await saveDraft();
+    
+    try {
+        // Atualizar status
+        if (db && currentCharacterId) {
+            await db.collection('personagens').doc(currentCharacterId).update({
+                status: 'finalizado',
+                finalizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                nome: nome
+            });
+        }
+        
+        showToast('Personagem finalizado com sucesso!', 'success');
+        
+        // Redirecionar
+        setTimeout(() => {
+            window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Erro ao finalizar:', error);
+        showToast('Erro ao finalizar personagem', 'error');
+    }
+}
+
+function goBack() {
+    if (currentCharacterId) {
+        window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
+    } else {
+        window.location.href = 'modo-personagem.html';
+    }
+}
+
+function cancelCreation() {
+    if (confirm('Cancelar criação? Os dados não salvos serão perdidos.')) {
+        // Limpar localStorage deste personagem
+        localStorage.removeItem('gurps_character_id');
+        sessionStorage.removeItem('character_id');
+        
+        window.location.href = 'modo-personagem.html';
+    }
+}
+
+// ============================================
+// 10. NOTIFICAÇÕES
+// ============================================
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('custom-toast');
+    if (!toast) return;
+    
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    
+    toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i> ${message}`;
+    toast.style.display = 'block';
+    
+    const bgColor = type === 'error' ? 'var(--accent-red)' : 
+                   type === 'success' ? 'var(--accent-green)' : 
+                   type === 'warning' ? 'var(--primary-gold)' : 
+                   'var(--secondary-dark)';
+    
+    toast.style.background = bgColor;
+    toast.style.animation = 'slideIn 0.3s ease';
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 300);
+    }, 3000);
+}
+
+function showQuickToast(message) {
+    // Criar toast rápido
+    const toast = document.createElement('div');
+    toast.className = 'quick-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--accent-green);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        z-index: 10000;
+        font-family: 'Cinzel', serif;
+        font-size: 0.9rem;
+        border: 1px solid var(--primary-gold);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 2000);
+}
+
+// ============================================
+// 11. AUTO-SAVE
+// ============================================
+let autoSaveTimer;
+function setupAutoSave() {
+    // Auto-save no nome
+    document.getElementById('characterName').addEventListener('input', () => {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            if (isFirebaseReady && currentCharacterId) {
+                saveDraft();
+            }
+        }, 2000);
+    });
+    
+    // Auto-save periódico
+    setInterval(() => {
+        if (isFirebaseReady && currentCharacterId) {
+            saveDraft();
+            console.log('🔄 Auto-save realizado');
+        }
+    }, 60000); // A cada 1 minuto
+}
+
+// ============================================
+// 12. INICIALIZAÇÃO FINAL
+// ============================================
+async function initPage() {
+    console.log('🚀 Inicializando página...');
+    
+    // Efeito de entrada
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 0.5s ease';
+        document.body.style.opacity = '1';
+    }, 100);
+    
+    // Inicializar Firebase
+    await initializeFirebase();
+    
+    // Configurar auto-save
+    setupAutoSave();
+    
+    // Configurar botões
+    document.getElementById('btnSaveDraft')?.addEventListener('click', saveDraft);
+    document.getElementById('btnFinalize')?.addEventListener('click', finalizeCharacter);
+    document.getElementById('btnBack')?.addEventListener('click', goBack);
+    document.getElementById('btnCancel')?.addEventListener('click', cancelCreation);
+    
+    // Carregar última aba
+    const lastTab = localStorage.getItem('lastTab') || 'atributos';
+    setTimeout(() => switchTab(lastTab), 300);
+    
+    console.log('✅ Página inicializada com sucesso');
+}
+
+// ============================================
+// 13. SISTEMA DE ABAS (MANTIDO)
+// ============================================
+function switchTab(tabId) {
     // Remove active de todas as abas
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
@@ -5109,6 +5635,13 @@ function switchTab(tabId) {
     }
 }
 
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// ============================================
+// 14. EVENT LISTENERS
+// ============================================
 document.addEventListener('click', function(e) {
     // Sistema de sub-abas
     if (e.target.closest('.subtab-btn')) {
@@ -5134,190 +5667,25 @@ document.addEventListener('click', function(e) {
     }
 });
 
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+// ============================================
+// 15. INICIAR TUDO
+// ============================================
+// Iniciar quando DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPage);
+} else {
+    initPage();
 }
 
-// ===========================================
-// FUNÇÕES DE CONTROLE
-// ===========================================
-async function saveDraft() {
-    if (!isFirebaseReady) {
-        showToast('Aguardando conexão...', 'warning');
-        return;
-    }
-    
-    await saveAllModules();
-}
-
-async function finalizeCharacter() {
-    const nome = document.getElementById('characterName').value.trim();
-    if (!nome) {
-        showToast('Digite um nome para o personagem', 'warning');
-        return;
-    }
-    
-    // Primeiro salva
-    await saveDraft();
-    
-    try {
-        // Atualiza status para finalizado
-        const db = firebase.firestore();
-        await db.collection('personagens').doc(currentCharacterId).update({
-            status: 'finalizado',
-            finalizadoEm: new Date().toISOString()
-        });
-        
-        showToast('Personagem finalizado com sucesso!', 'success');
-        
-        // Redireciona após 2 segundos
-        setTimeout(() => {
-            window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
-        }, 2000);
-        
-    } catch (error) {
-        console.error('Erro ao finalizar:', error);
-        showToast('Erro ao finalizar personagem', 'error');
-    }
-}
-
-function goBack() {
-    if (currentCharacterId) {
-        window.location.href = `modo-personagem.html?id=${currentCharacterId}`;
-    } else {
-        window.location.href = 'modo-personagem.html';
-    }
-}
-
-function cancelCreation() {
-    if (confirm('Cancelar criação? Dados não salvos serão perdidos.')) {
-        window.location.href = 'modo-personagem.html';
-    }
-}
-
-// ===========================================
-// TOAST NOTIFICATION
-// ===========================================
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('custom-toast');
-    if (!toast) return;
-    
-    const icons = {
-        success: 'check-circle',
-        error: 'exclamation-circle',
-        warning: 'exclamation-triangle',
-        info: 'info-circle'
-    };
-    
-    toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i> ${message}`;
-    toast.style.display = 'block';
-    
-    const bgColor = type === 'error' ? 'var(--accent-red)' : 
-                   type === 'success' ? 'var(--accent-green)' : 
-                   type === 'warning' ? 'var(--primary-gold)' : 
-                   'var(--secondary-dark)';
-    
-    toast.style.background = bgColor;
-    toast.style.animation = 'slideIn 0.3s ease';
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 300);
-    }, 3000);
-}
-
-// ===========================================
-// AUTO-SAVE
-// ===========================================
-let autoSaveTimer;
-function setupAutoSave() {
-    // Auto-save quando muda o nome
-    document.getElementById('characterName').addEventListener('input', () => {
-        clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-            if (isFirebaseReady && currentCharacterId) {
-                saveDraft();
-            }
-        }, 5000);
-    });
-    
-    // Auto-save a cada 30 segundos
-    setInterval(() => {
-        if (isFirebaseReady && currentCharacterId) {
-            saveDraft();
-        }
-    }, 30000);
-}
-
-// ===========================================
-// INICIALIZAÇÃO
-// ===========================================
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Editor de Personagem iniciando...');
-    
-    // Efeito de entrada
-    document.body.style.opacity = '0';
-    setTimeout(() => {
-        document.body.style.transition = 'opacity 0.5s ease';
-        document.body.style.opacity = '1';
-    }, 100);
-    
-    // Inicializar Firebase
-    await initializeFirebase();
-    
-    // Configurar auto-save
-    setupAutoSave();
-    
-    // Carregar última aba
-    const lastTab = localStorage.getItem('lastTab') || 'atributos';
-    setTimeout(() => switchTab(lastTab), 300);
-    
-    // Configurar botões
-    document.getElementById('btnSaveDraft')?.addEventListener('click', saveDraft);
-    document.getElementById('btnFinalize')?.addEventListener('click', finalizeCharacter);
-    document.getElementById('btnBack')?.addEventListener('click', goBack);
-    document.getElementById('btnCancel')?.addEventListener('click', cancelCreation);
-});
-
-// ===========================================
-// FUNÇÕES DE INICIALIZAÇÃO DAS ABAS
-// ===========================================
-window.initAtributosTab = function() {
-    console.log('Inicializando atributos...');
-    if (typeof window.inicializarAtributos === 'function') {
-        window.inicializarAtributos();
-        
-        // Registrar módulo de atributos para Firebase
-        registerModule(
-            'atributos',
-            () => {
-                if (typeof window.obterDadosAtributos === 'function') {
-                    return window.obterDadosAtributos();
-                }
-                return null;
-            },
-            (dados) => {
-                if (typeof window.carregarDadosAtributos === 'function') {
-                    window.carregarDadosAtributos(dados);
-                }
-            }
-        );
-    }
-};
-
-window.initDashboardTab = function() {
-    console.log('Inicializando dashboard...');
-    if (typeof window.initDashboardTab === 'function') {
-        window.initDashboardTab();
-    }
-};
-
-// Função auxiliar para outros módulos se registrarem
-window.registerFirebaseModule = registerModule;
-window.saveToFirebase = saveAllModules;
-window.loadFromFirebase = loadCharacterFromFirebase;
+// ============================================
+// 16. EXPORTAR FUNÇÕES PARA OUTROS MÓDULOS
+// ============================================
+window.saveCharacterData = saveCharacterData;
+window.loadCharacterData = loadCharacterData;
+window.getCurrentCharacterId = () => currentCharacterId;
+window.isFirebaseReady = () => isFirebaseReady;
+window.switchTab = switchTab;
+window.showToast = showToast;
 </script>
 </body>
 </html>
